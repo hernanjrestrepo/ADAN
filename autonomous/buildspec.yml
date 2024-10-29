@@ -1,0 +1,18 @@
+version: 0.2
+
+phases:
+  install:
+    commands:
+      - echo Installing AWS CLI...
+      - pip install awscli --upgrade --user
+
+  build:
+    commands:
+      - echo Downloading deployment package from S3...
+      - aws s3 cp s3://adan-execution-results/lambda_function.zip lambda_function.zip
+      - echo Updating Lambda function code...
+      - aws lambda update-function-code --function-name adan_clone_manager --zip-file fileb://lambda_function.zip --region us-east-2
+
+artifacts:
+  files:
+    - lambda_function.zip
