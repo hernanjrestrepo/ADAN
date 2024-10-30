@@ -13,6 +13,11 @@ phases:
       - echo Updating Lambda function code...
       - aws lambda update-function-code --function-name adan_clone_manager_v2 --zip-file fileb://lambda_function.zip --region us-east-2
 
+  test:
+    commands:
+      - echo Running unit tests...
+      - python -m unittest discover -s tests
+
 artifacts:
   files:
     - lambda_function.zip
