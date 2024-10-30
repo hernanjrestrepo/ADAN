@@ -11,7 +11,7 @@ phases:
       - echo Downloading deployment package from S3...
       - aws s3 cp s3://adan-execution-results/lambda_function.zip lambda_function.zip
       - echo Updating Lambda function code...
-      - aws lambda update-function-code --function-name adan_clone_manager --zip-file fileb://lambda_function.zip --region us-east-2
+      - aws lambda update-function-code --function-name adan_clone_manager_v2 --zip-file fileb://lambda_function.zip --region us-east-2
 
 artifacts:
   files:
