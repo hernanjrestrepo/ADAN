@@ -5,6 +5,8 @@ phases:
     commands:
       - echo Installing AWS CLI...
       - pip install awscli --upgrade --user
+      - echo Installing pytest...
+      - pip install pytest
 
   build:
     commands:
@@ -17,7 +19,6 @@ phases:
     commands:
       - echo Running unit tests...
       - pytest tests/
-      - echo Lambda function code updated successfully for adan_clone_manager_v2!
 
 artifacts:
   files:
