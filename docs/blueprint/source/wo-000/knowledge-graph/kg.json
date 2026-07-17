@@ -402,6 +402,24 @@
         "AD-002",
         "AD-004"
       ]
+    },
+    {
+      "id": "AD-FUNC-08",
+      "name": "User Journey Map",
+      "current_version": "v1.0",
+      "status": "constructed_and_self_audited",
+      "note": "7 etapas (Descubrimiento/Onboarding/Uso/Adopcion/Expansion/Renovacion/Embajador) mapeadas 1:1 contra la Identidad Progresiva de AD-FUNC-06 SS3.1 - no crea segunda taxonomia. Uso=Niveles 1-5 (AD-FUNC-01), Expansion=Estrategias (AD-FUNC-05), metricas=Scores (AD-FUNC-07). Renovacion y Embajador explicitamente diferidos a WO-100 (mecanismo de negocio).",
+      "path": "docs/blueprint/source/wo-000/02-funcionalidades/AD-FUNC-08_User_Journey_Map_v1.0.md",
+      "confidence_level": 45,
+      "depends_on": [
+        "AD-FUNC-06",
+        "AD-FUNC-01",
+        "AD-FUNC-03",
+        "AD-FUNC-05",
+        "AD-FUNC-07",
+        "AD-000",
+        "AD-004"
+      ]
     }
   ],
   "workshops": [
@@ -1454,6 +1472,36 @@
       "from": "AD-006",
       "to": "AD-FUNC-07",
       "type": "motivated_by"
+    },
+    {
+      "from": "AD-FUNC-08",
+      "to": "AD-FUNC-06",
+      "type": "depends_on"
+    },
+    {
+      "from": "AD-FUNC-08",
+      "to": "AD-FUNC-01",
+      "type": "depends_on"
+    },
+    {
+      "from": "AD-FUNC-08",
+      "to": "AD-FUNC-03",
+      "type": "depends_on"
+    },
+    {
+      "from": "AD-FUNC-08",
+      "to": "AD-FUNC-05",
+      "type": "depends_on"
+    },
+    {
+      "from": "AD-FUNC-08",
+      "to": "AD-FUNC-07",
+      "type": "depends_on"
+    },
+    {
+      "from": "AD-FUNC-08",
+      "to": "AD-FUNC-09",
+      "type": "feeds_future"
     }
   ],
   "future_seeds": [
