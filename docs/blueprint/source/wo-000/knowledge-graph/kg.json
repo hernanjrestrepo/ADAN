@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "last_updated": "2026-07-14",
+  "last_updated": "2026-07-17",
   "maintained_by": "Se actualiza manualmente con cada documento nuevo, como parte obligatoria de la autoauditoría previa a la entrega (AD-002 v2.0 regla 1.10). Ver README.md de esta carpeta para el procedimiento exacto de actualización.",
   "internal_docs": [
     {
@@ -87,9 +87,9 @@
       "id": "AD-003",
       "name": "Product Language",
       "category": "fundamentos",
-      "current_version": "v1.0",
+      "current_version": "v1.2",
       "status": "approved",
-      "path": "docs/wo-000/00-fundamentos/AD-003_Product_Language_v1.0.md",
+      "path": "docs/blueprint/source/wo-000/00-fundamentos/AD-003_Product_Language_v1.2.md",
       "confidence_level": 65,
       "depends_on": [
         "AD-000",
@@ -140,13 +140,13 @@
       "id": "AD-006",
       "name": "Domain Model (Software)",
       "category": "fundamentos",
-      "current_version": "v1.1",
+      "current_version": "v1.2",
       "status": "approved",
       "note": "AD-006 tiene dos dominios: traduce las 26 entidades de AD-005 (cero nuevas) MAS define 12 entidades operativas de ADAN ya mandatadas por el indice v3.1 desde el origen (Proyecto, Usuario, Nivel, Card, Agente, Workspace, Conversacion, Tarea, Decision, Score, Evento, Usuario Principal), que nunca fueron responsabilidad de AD-005. Aclaracion formalizada en v1.1 tras refinamiento del Board",
       "version_history": [
         "v1.0 — aprobada y congelada 2026-07-14, superseded el mismo dia por v1.1 (aclaracion menor de alcance, sin cambio de entidades)"
       ],
-      "path": "docs/wo-000/00-fundamentos/AD-006_Domain_Model_v1.1.md",
+      "path": "docs/blueprint/source/wo-000/00-fundamentos/AD-006_Domain_Model_v1.2.md",
       "confidence_level": 66,
       "business_entities_translated": 26,
       "operational_entities_new": 12,
@@ -382,6 +382,25 @@
         "AD-FUNC-04",
         "AD-FUNC-03",
         "AD-005"
+      ]
+    },
+    {
+      "id": "AD-FUNC-07",
+      "name": "Sistema de Scoring (Producto)",
+      "current_version": "v1.0",
+      "status": "constructed_and_self_audited",
+      "note": "Reconcilia dos taxonomias de Score (indice original 8 nombres vs Plan Maestro 7 categorias). 8 Scores en 2 familias: diagnostico secuencial (Problem/Solution/Business/Product/Market/Execution, ya anclados por AD-FUNC-01) y continuos (Score del Responsable -antes Founder Score-, Venture Score). Score por Objetivo/Estrategia = regla generica de aplicacion, no scores fijos nuevos. Confidence Level nunca es un score separado. Requirio AD-003 v1.2 y AD-006 v1.2 (cardinalidad de Score ampliada a Empresa o Usuario Principal).",
+      "path": "docs/blueprint/source/wo-000/02-funcionalidades/AD-FUNC-07_Sistema_de_Scoring_v1.0.md",
+      "confidence_level": 50,
+      "depends_on": [
+        "AD-FUNC-01",
+        "AD-CMP-05",
+        "AD-006",
+        "AD-005",
+        "AD-FUNC-05",
+        "AD-FUNC-06",
+        "AD-002",
+        "AD-004"
       ]
     }
   ],
@@ -749,6 +768,25 @@
       "defined_in": "AD-FUNC-06",
       "referenced_in": [
         "AD-FUNC-08"
+      ]
+    },
+    {
+      "id": "concept:score-del-responsable",
+      "name": "Score del Responsable (antes Founder Score)",
+      "note": "AD-FUNC-07 SS3: score continuo N:1 con Usuario Principal (no Empresa), track record de ejecucion de la persona. Renombrado desde 'Founder Score' - misma colision que 'Founder' en AD-FUNC-06 (sesgo hacia solo startups, ya corregido por AD-006 al renombrar Fundador a Usuario Principal). Alimenta Probabilidad de exito de Estrategias (AD-FUNC-05 SS6).",
+      "defined_in": "AD-FUNC-07",
+      "referenced_in": [
+        "AD-FUNC-05",
+        "AD-FUNC-06"
+      ]
+    },
+    {
+      "id": "concept:venture-score",
+      "name": "Venture Score",
+      "note": "AD-FUNC-07 SS4: score continuo y agregado N:1 con Empresa, activo desde Nivel 6 (acompanamiento continuo, no secuencial). Sucesor de los 6 scores de diagnostico. Resumen ejecutivo del Dashboard, insumo para AD-FUNC-05.",
+      "defined_in": "AD-FUNC-07",
+      "referenced_in": [
+        "AD-FUNC-05"
       ]
     }
   ],
@@ -1371,6 +1409,51 @@
       "from": "AD-FUNC-06",
       "to": "AD-FUNC-09",
       "type": "feeds_future"
+    },
+    {
+      "from": "AD-FUNC-07",
+      "to": "AD-FUNC-01",
+      "type": "depends_on"
+    },
+    {
+      "from": "AD-FUNC-07",
+      "to": "AD-CMP-05",
+      "type": "depends_on"
+    },
+    {
+      "from": "AD-FUNC-07",
+      "to": "AD-006",
+      "type": "depends_on"
+    },
+    {
+      "from": "AD-FUNC-07",
+      "to": "AD-005",
+      "type": "depends_on"
+    },
+    {
+      "from": "AD-FUNC-07",
+      "to": "AD-FUNC-05",
+      "type": "depends_on"
+    },
+    {
+      "from": "AD-FUNC-07",
+      "to": "AD-FUNC-06",
+      "type": "depends_on"
+    },
+    {
+      "from": "AD-FUNC-07",
+      "to": "AD-FUNC-09",
+      "type": "feeds_future"
+    },
+    {
+      "from": "AD-003",
+      "to": "AD-FUNC-07",
+      "type": "motivated_by"
+    },
+    {
+      "from": "AD-006",
+      "to": "AD-FUNC-07",
+      "type": "motivated_by"
     }
   ],
   "future_seeds": [
