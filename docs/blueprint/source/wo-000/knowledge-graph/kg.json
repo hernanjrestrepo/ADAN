@@ -420,6 +420,27 @@
         "AD-000",
         "AD-004"
       ]
+    },
+    {
+      "id": "AD-FUNC-09",
+      "name": "Learning Engine",
+      "current_version": "v1.0",
+      "status": "constructed_and_self_audited",
+      "note": "Unifica 4 semillas ya sembradas (AD-FUNC-02 SS2.5 desacuerdos, AD-FUNC-05 SS10 ciclo ROI, AD-FUNC-06 SS10.1 Playbook, AD-FUNC-07 SS5 Score por Estrategia) en 3 loops: recalibracion de Confidence Level, priors del Motor de Estrategias (inactivo sin evidencia agregada), registro en Gemelo Digital (Patron C). Playbook Empresarial especificado (umbral N de evidencia) sin construirse. 6 Salvaguardas permanentes: nunca ejecuta, nunca optimiza engagement, nunca trata empresas como intercambiables, nunca aprende de una sola conversacion, nunca oculta cuantos casos sostienen un patron, nunca presiona al cliente a seguir la recomendacion.",
+      "path": "docs/blueprint/source/wo-000/02-funcionalidades/AD-FUNC-09_Learning_Engine_v1.0.md",
+      "confidence_level": 38,
+      "depends_on": [
+        "AD-FUNC-02",
+        "AD-FUNC-05",
+        "AD-FUNC-06",
+        "AD-FUNC-07",
+        "AD-FUNC-08",
+        "AD-CMP-05",
+        "AD-008",
+        "AD-FUNC-04",
+        "AD-001",
+        "AD-004"
+      ]
     }
   ],
   "workshops": [
@@ -805,6 +826,15 @@
       "defined_in": "AD-FUNC-07",
       "referenced_in": [
         "AD-FUNC-05"
+      ]
+    },
+    {
+      "id": "concept:playbook-empresarial",
+      "name": "Playbook Empresarial (mecanismo especificado, no construido)",
+      "note": "AD-FUNC-09 SS5: patron admitido solo con evidencia agregada de >=N Empresas reales (N es Decision de Diseno de AD-ARQ-10). Mide perfil (Etapa/Madurez/sector), combinacion de Estrategias, resultado agregado (Delta Venture Score/Indicador), Confidence Level del patron mismo. Si necesita entidad propia, se decide en futura version de AD-005/006 contra evidencia real.",
+      "defined_in": "AD-FUNC-09",
+      "referenced_in": [
+        "AD-FUNC-06"
       ]
     }
   ],
@@ -1502,6 +1532,41 @@
       "from": "AD-FUNC-08",
       "to": "AD-FUNC-09",
       "type": "feeds_future"
+    },
+    {
+      "from": "AD-FUNC-09",
+      "to": "AD-FUNC-02",
+      "type": "depends_on"
+    },
+    {
+      "from": "AD-FUNC-09",
+      "to": "AD-FUNC-05",
+      "type": "depends_on"
+    },
+    {
+      "from": "AD-FUNC-09",
+      "to": "AD-FUNC-06",
+      "type": "depends_on"
+    },
+    {
+      "from": "AD-FUNC-09",
+      "to": "AD-FUNC-07",
+      "type": "depends_on"
+    },
+    {
+      "from": "AD-FUNC-09",
+      "to": "AD-FUNC-08",
+      "type": "depends_on"
+    },
+    {
+      "from": "AD-FUNC-09",
+      "to": "AD-CMP-05",
+      "type": "depends_on"
+    },
+    {
+      "from": "AD-FUNC-09",
+      "to": "AD-008",
+      "type": "depends_on"
     }
   ],
   "future_seeds": [
@@ -1509,7 +1574,8 @@
       "id": "SEED-AD-FUNC-09-DISAGREEMENT-LEARNING",
       "target_document": "AD-FUNC-09",
       "note": "El sistema aprende MAS de las decisiones que contradicen la recomendacion del Board que de las que la siguen (planted en AD-FUNC-02 SS2.5). Preguntas futuras que el Learning Engine deberia poder responder, segun el Board: ¿en que tipo de empresas el Board suele equivocarse? ¿que perfiles de empresarios toman mejores decisiones contra la recomendacion? ¿que modelos LLM sobreestiman ciertos riesgos? ¿en que industrias conviene ser mas conservador? ¿cuando un fundador debe ignorar la recomendacion del sistema? Este conocimiento no existe hoy - depende de acumular casos reales de discrepancia + resultado a lo largo del tiempo, via la Ley 2 de AD-005. AMPLIADO en AD-FUNC-05 Revision 2 (2026-07-14): ciclo de aprendizaje completo registrado como dependencia explicita: Brecha -> Capacidad -> Estrategia elegida -> Implementacion -> Resultado -> ROI real -> Desviacion frente al ROI esperado -> Aprendizaje -> Recalibracion del Confidence Level. Compara proyeccion contra resultado real, no solo si se acepto o rechazo una recomendacion. REGISTRO ADICIONAL (AD-FUNC-05 SS10.1, 2026-07-14): el Learning Engine debe eventualmente producir un Playbook Empresarial (patrones de que combinaciones de Estrategias funcionan mejor para que perfil de empresa) como uno de sus outputs de mayor valor - no construido todavia, solo registrado como direccion futura.",
-      "date": "2026-07-14"
+      "date": "2026-07-14",
+      "status": "fulfilled_by_AD-FUNC-09_v1.0"
     },
     {
       "id": "SEED-AD-INT-MARKETPLACE",
