@@ -53,6 +53,7 @@ class AgentDefinition:
     rol: str  # ej. "CEO", "CTO", "CFO" (AD-003)
     instrucciones: str  # instrucciones del blueprint (AD-FUNC especifico que lo define)
     tools: list[Tool] = field(default_factory=list)
+    allowed_tools: list[str] = field(default_factory=list)  # ver agents/tools.py - permisos
     max_steps: int = 5
     max_tokens: int = 4000
 
@@ -104,13 +105,19 @@ class AgentRuntime:
         user_input: str,
         *,
         cancellation_token: CancellationToken | None = None,
+        memory_hook: MemoryHook | None = None,
     ) -> RunResult:
+        """`memory_hook`, si se pasa, reemplaza al de la instancia solo para esta corrida
+        - permite que el mismo AgentRuntime (compartido por el worker entre tareas) use un
+        hook distinto por ejecucion, ej. con el proyecto_id real de esa tarea (WO-003
+        Sprint 4), sin mutar estado compartido entre tareas concurrentes futuras."""
         cancellation_token = cancellation_token or CancellationToken()
+        active_memory_hook = memory_hook or self.memory_hook
         result = RunResult(status=RunStatus.RUNNING, steps=[], final_output=None)
 
         context = ""
-        if self.memory_hook.fetch_context:
-            context = self.memory_hook.fetch_context(definition.agent_id)
+        if active_memory_hook.fetch_context:
+            context = active_memory_hook.fetch_context(definition.agent_id)
 
         prompt = self._build_prompt(definition, user_input, context)
 
@@ -144,8 +151,8 @@ class AgentRuntime:
 
         result.finished_at = datetime.now(UTC)
 
-        if self.memory_hook.store_result and result.final_output:
-            self.memory_hook.store_result(definition.agent_id, result.final_output)
+        if active_memory_hook.store_result and result.final_output:
+            active_memory_hook.store_result(definition.agent_id, result.final_output)
 
         return result
 

@@ -39,4 +39,8 @@ def build_diagnostico_agent() -> AgentDefinition:
         instrucciones=_INSTRUCCIONES,
         max_steps=1,
         max_tokens=1000,
+        # Solo lectura de memoria (contexto de conversaciones/diagnosticos previos del
+        # mismo Proyecto) - nunca kg_write ni memory_store: un Diagnostico no decide por
+        # si solo que hechos quedan permanentes en el grafo (WO-003 Sprint 4).
+        allowed_tools=["memory_search"],
     )
