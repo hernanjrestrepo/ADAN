@@ -30,17 +30,25 @@ def get_redis_client() -> redis.Redis:
     return redis.from_url(settings.redis_url)
 
 
-def enqueue_run(agent_id: str, user_input: str, proyecto_id: str | None = None) -> str:
+def enqueue_run(
+    agent_id: str, user_input: str, proyecto_id: str | None = None, *, queue_key: str = QUEUE_KEY
+) -> str:
     """Encola una ejecucion. Devuelve el execution_id para que el llamador (backend)
-    pueda hacer seguimiento via Postgres o suscribirse al canal de eventos."""
+    pueda hacer seguimiento via Postgres o suscribirse al canal de eventos.
+
+    `queue_key` es parametrizable (por defecto la cola real) para que las pruebas puedan
+    usar una cola aislada y no competir por mensajes con un worker real corriendo en la
+    misma maquina durante desarrollo - sin esto, un worker activo consume los mensajes de
+    prueba antes de que el propio test los pueda leer (BRPOP es exclusivo, un mensaje solo
+    lo recibe un consumidor)."""
     execution_id = str(uuid.uuid4())
     task = RunTask(execution_id=execution_id, agent_id=agent_id, user_input=user_input, proyecto_id=proyecto_id)
     client = get_redis_client()
-    client.lpush(QUEUE_KEY, json.dumps(asdict(task)))
+    client.lpush(queue_key, json.dumps(asdict(task)))
     return execution_id
 
 
-def dequeue_run(client: redis.Redis, timeout_s: int = 5) -> RunTask | None:
+def dequeue_run(client: redis.Redis, timeout_s: int = 5, *, queue_key: str = QUEUE_KEY) -> RunTask | None:
     """Bloqueante hasta timeout_s. Usado por el worker.
 
     redis-py, en este entorno, a veces propaga un TimeoutError de socket en vez de
@@ -49,7 +57,7 @@ def dequeue_run(client: redis.Redis, timeout_s: int = 5) -> RunTask | None:
     Se normaliza aqui a None para que el llamador (el loop del worker) no distinga
     entre ambos casos."""
     try:
-        result = client.brpop([QUEUE_KEY], timeout=timeout_s)
+        result = client.brpop([queue_key], timeout=timeout_s)
     except redis.exceptions.TimeoutError:
         return None
     if result is None:
