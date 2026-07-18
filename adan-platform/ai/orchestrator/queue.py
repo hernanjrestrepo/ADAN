@@ -41,8 +41,17 @@ def enqueue_run(agent_id: str, user_input: str, proyecto_id: str | None = None) 
 
 
 def dequeue_run(client: redis.Redis, timeout_s: int = 5) -> RunTask | None:
-    """Bloqueante hasta timeout_s. Usado por el worker."""
-    result = client.brpop([QUEUE_KEY], timeout=timeout_s)
+    """Bloqueante hasta timeout_s. Usado por el worker.
+
+    redis-py, en este entorno, a veces propaga un TimeoutError de socket en vez de
+    devolver None cuando BRPOP agota su timeout de bloqueo sin mensajes - es el
+    comportamiento normal de "no hay tarea todavia", no un error real de conexion.
+    Se normaliza aqui a None para que el llamador (el loop del worker) no distinga
+    entre ambos casos."""
+    try:
+        result = client.brpop([QUEUE_KEY], timeout=timeout_s)
+    except redis.exceptions.TimeoutError:
+        return None
     if result is None:
         return None
     _, raw = result

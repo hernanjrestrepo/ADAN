@@ -1,5 +1,6 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 
+import { Agents } from "./pages/Agents";
 import { Dashboard } from "./pages/Dashboard";
 import { Login } from "./pages/Login";
 
@@ -20,6 +21,14 @@ export function App() {
         element={
           <PrivateRoute>
             <Dashboard />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/agents"
+        element={
+          <PrivateRoute>
+            <Agents />
           </PrivateRoute>
         }
       />

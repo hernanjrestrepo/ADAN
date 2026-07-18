@@ -14,6 +14,21 @@ export interface HealthResponse {
   uptime_seconds: number;
 }
 
+export interface RunAgentResponse {
+  execution_id: string;
+}
+
+export type EjecucionStatus = "pending" | "running" | "completed" | "failed" | "cancelled";
+
+export interface EjecucionAgente {
+  id: string;
+  agent_id: string;
+  status: EjecucionStatus;
+  user_input: string;
+  final_output: string | null;
+  error: string | null;
+}
+
 class ApiError extends Error {
   constructor(
     public status: number,
@@ -65,6 +80,17 @@ export const api = {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password, display_name }),
     }),
+
+  runAgent: (agentId: string, userInput: string) =>
+    request<RunAgentResponse>("/agents/run", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ agent_id: agentId, user_input: userInput }),
+    }),
+
+  getRun: (executionId: string) => request<EjecucionAgente>(`/agents/runs/${executionId}`),
+
+  listRuns: (limit = 20) => request<EjecucionAgente[]>(`/agents/runs?limit=${limit}`),
 };
 
 export { ApiError };
