@@ -19,6 +19,11 @@ def get_redis_client() -> redis.Redis:
 
 
 def enqueue_agent_run(agent_id: str, user_input: str, proyecto_id: str | None = None) -> str:
+    """Lee QUEUE_KEY del modulo en el momento de la llamada (no como valor por defecto
+    del parametro) para que las pruebas puedan hacer `monkeypatch.setattr(agent_queue,
+    "QUEUE_KEY", clave_de_prueba)` y aislarse de un worker real corriendo en la misma
+    maquina durante desarrollo (BRPOP es exclusivo - un worker activo consumiria el
+    mensaje de prueba antes de que el propio test lo pueda leer)."""
     execution_id = str(uuid.uuid4())
     message = {
         "execution_id": execution_id,

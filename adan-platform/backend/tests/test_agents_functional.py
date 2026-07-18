@@ -8,7 +8,8 @@ import uuid
 import pytest
 from fastapi.testclient import TestClient
 
-from app.agent_queue import QUEUE_KEY, get_redis_client
+import app.agent_queue as agent_queue_module
+from app.agent_queue import get_redis_client
 from app.auth.jwt import create_access_token, hash_password
 from app.db import SessionLocal
 from app.main import app
@@ -43,9 +44,16 @@ def test_run_unknown_agent_returns_404(authed_client: TestClient) -> None:
     assert resp.status_code == 404
 
 
-def test_run_known_agent_enqueues_real_redis_message(authed_client: TestClient) -> None:
+def test_run_known_agent_enqueues_real_redis_message(
+    authed_client: TestClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # Cola aislada: un worker real corriendo en la misma maquina durante desarrollo
+    # consumiria este mensaje antes que el propio test (BRPOP es exclusivo), dando un
+    # falso negativo. Se redirige QUEUE_KEY solo para esta prueba.
+    test_queue_key = f"adan:agent_runs:test-queue:{uuid.uuid4().hex[:8]}"
+    monkeypatch.setattr(agent_queue_module, "QUEUE_KEY", test_queue_key)
+
     redis_client = get_redis_client()
-    redis_client.delete(QUEUE_KEY)  # aisla esta prueba de mensajes previos en la cola
 
     resp = authed_client.post(
         "/agents/run", json={"agent_id": "diagnostico-nivel-1", "user_input": "hola"}
@@ -53,7 +61,7 @@ def test_run_known_agent_enqueues_real_redis_message(authed_client: TestClient) 
     assert resp.status_code == 202
     execution_id = resp.json()["execution_id"]
 
-    _, raw = redis_client.brpop([QUEUE_KEY], timeout=2)
+    _, raw = redis_client.brpop([test_queue_key], timeout=2)
     message = json.loads(raw)
     assert message["execution_id"] == execution_id
     assert message["agent_id"] == "diagnostico-nivel-1"

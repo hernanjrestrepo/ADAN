@@ -35,11 +35,17 @@ def db():
 
 
 def test_enqueue_and_dequeue_real_redis() -> None:
-    execution_id = enqueue_run("test-orchestrator-agent", "hola mundo")
+    # Cola aislada (no la real "adan:agent_runs:queue"): un worker real corriendo en la
+    # misma maquina durante desarrollo consumiria este mensaje de prueba antes que el test
+    # (BRPOP es exclusivo), dando un falso negativo. Ver docstring de enqueue_run/dequeue_run.
+    test_queue_key = f"adan:agent_runs:test-queue:{uuid.uuid4().hex[:8]}"
+    execution_id = enqueue_run(
+        "test-orchestrator-agent", "hola mundo", queue_key=test_queue_key
+    )
     assert execution_id is not None
 
     client = get_redis_client()
-    task = dequeue_run(client, timeout_s=2)
+    task = dequeue_run(client, timeout_s=2, queue_key=test_queue_key)
 
     assert task is not None
     assert task.execution_id == execution_id
