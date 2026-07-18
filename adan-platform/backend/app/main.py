@@ -9,6 +9,7 @@ from app.auth.router import router as auth_router
 from app.config import get_settings
 from app.errors import register_error_handlers
 from app.logging_config import configure_logging
+from app.routers.agents import router as agents_router
 from app.routers.health import router as health_router
 
 logger = logging.getLogger("adan")
@@ -36,6 +37,7 @@ def create_app() -> FastAPI:
 
     app.include_router(health_router)
     app.include_router(auth_router)
+    app.include_router(agents_router)
 
     logger.info("ADAN API started (environment=%s)", settings.environment)
     return app
