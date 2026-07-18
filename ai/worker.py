@@ -1,14 +1,16 @@
 """Entrypoint del worker de /ai: consume tareas de Redis, ejecuta el Agente correspondiente,
 persiste el resultado. Uso: python worker.py (dentro del venv de /ai).
 
-El registro de Agentes disponibles vive en agents/registry.py (Sprint 4 agrega el primero
-real). Por ahora, agentes desconocidos se marcan failed con mensaje explicito."""
+El registro de Agentes disponibles vive en agents/registry.py. bootstrap_agents() registra
+aqui, al arrancar el proceso, todos los Agentes reales conocidos (Sprint 4 agrega el
+primero: Diagnostico del Dolor). Agentes desconocidos se marcan failed con mensaje explicito."""
 
 import logging
 import time
 
 from agents.base import AgentRuntime
-from agents.registry import get_agent_definition
+from agents.diagnostico import build_diagnostico_agent
+from agents.registry import get_agent_definition, register_agent
 from db import SessionLocal
 from models.ollama_adapter import OllamaBackend
 from orchestrator.executor import execute_task
@@ -18,7 +20,14 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name
 logger = logging.getLogger("adan.ai.worker")
 
 
+def bootstrap_agents() -> None:
+    """Registra todos los Agentes reales conocidos por el sistema. Se llama una vez al
+    iniciar el worker (y en los tests que necesiten resolver estos agent_id)."""
+    register_agent(build_diagnostico_agent())
+
+
 def main() -> None:
+    bootstrap_agents()
     redis_client = get_redis_client()
     runtime = AgentRuntime(model_backend=OllamaBackend())
     logger.info("Worker started, waiting for tasks on the queue...")
