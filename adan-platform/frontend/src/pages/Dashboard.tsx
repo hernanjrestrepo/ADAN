@@ -36,12 +36,20 @@ export function Dashboard() {
         )}
       </div>
 
-      <Link
-        to="/agents"
-        className="inline-block rounded bg-adan-primary px-4 py-2 font-medium text-white"
-      >
-        Ir al Agente de Diagnóstico →
-      </Link>
+      <div className="flex gap-3">
+        <Link
+          to="/agents"
+          className="inline-block rounded bg-adan-primary px-4 py-2 font-medium text-white"
+        >
+          Ir al Agente de Diagnóstico →
+        </Link>
+        <Link
+          to="/kg"
+          className="inline-block rounded border border-adan-border px-4 py-2 font-medium text-adan-text"
+        >
+          Explorar Knowledge Graph →
+        </Link>
+      </div>
     </div>
   );
 }

@@ -2,6 +2,7 @@ import { Navigate, Route, Routes } from "react-router-dom";
 
 import { Agents } from "./pages/Agents";
 import { Dashboard } from "./pages/Dashboard";
+import { KGExplorer } from "./pages/KGExplorer";
 import { Login } from "./pages/Login";
 
 function isAuthenticated(): boolean {
@@ -29,6 +30,14 @@ export function App() {
         element={
           <PrivateRoute>
             <Agents />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/kg"
+        element={
+          <PrivateRoute>
+            <KGExplorer />
           </PrivateRoute>
         }
       />
