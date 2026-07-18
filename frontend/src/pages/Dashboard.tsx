@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 import { api, HealthResponse, setToken } from "../api/client";
 
@@ -25,7 +25,7 @@ export function Dashboard() {
         </button>
       </header>
 
-      <div className="rounded-lg border border-adan-border bg-adan-surface p-6">
+      <div className="mb-6 rounded-lg border border-adan-border bg-adan-surface p-6">
         <h2 className="mb-2 text-sm text-adan-muted">Estado de la API</h2>
         {health ? (
           <p className="text-adan-success">
@@ -35,6 +35,13 @@ export function Dashboard() {
           <p className="text-adan-warning">Sin conexión con la API</p>
         )}
       </div>
+
+      <Link
+        to="/agents"
+        className="inline-block rounded bg-adan-primary px-4 py-2 font-medium text-white"
+      >
+        Ir al Agente de Diagnóstico →
+      </Link>
     </div>
   );
 }

@@ -2,7 +2,7 @@
 Enfoque asincrono: POST encola y devuelve execution_id de inmediato (no bloquea esperando
 inferencia real); GET consulta el estado real en Postgres, escrito por el worker de /ai."""
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
@@ -38,6 +38,17 @@ class EjecucionAgenteResponse(BaseModel):
     error: str | None
 
 
+def _to_response(ejecucion: EjecucionAgenteLectura) -> EjecucionAgenteResponse:
+    return EjecucionAgenteResponse(
+        id=str(ejecucion.id),
+        agent_id=ejecucion.agent_id,
+        status=ejecucion.status,
+        user_input=ejecucion.user_input,
+        final_output=ejecucion.final_output,
+        error=ejecucion.error,
+    )
+
+
 @router.post("/run", response_model=RunAgentResponse, status_code=status.HTTP_202_ACCEPTED)
 def run_agent(
     payload: RunAgentRequest,
@@ -47,6 +58,21 @@ def run_agent(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Unknown agent_id")
     execution_id = enqueue_agent_run(payload.agent_id, payload.user_input, payload.proyecto_id)
     return RunAgentResponse(execution_id=execution_id)
+
+
+@router.get("/runs", response_model=list[EjecucionAgenteResponse])
+def list_runs(
+    limit: int = Query(default=20, le=100),
+    db: Session = Depends(get_db),
+    _user: Usuario = Depends(get_current_user),
+) -> list[EjecucionAgenteResponse]:
+    ejecuciones = (
+        db.query(EjecucionAgenteLectura)
+        .order_by(EjecucionAgenteLectura.created_at.desc())
+        .limit(limit)
+        .all()
+    )
+    return [_to_response(e) for e in ejecuciones]
 
 
 @router.get("/runs/{execution_id}", response_model=EjecucionAgenteResponse)
@@ -60,11 +86,4 @@ def get_run(
     )
     if ejecucion is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Execution not found")
-    return EjecucionAgenteResponse(
-        id=str(ejecucion.id),
-        agent_id=ejecucion.agent_id,
-        status=ejecucion.status,
-        user_input=ejecucion.user_input,
-        final_output=ejecucion.final_output,
-        error=ejecucion.error,
-    )
+    return _to_response(ejecucion)

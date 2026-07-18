@@ -33,20 +33,25 @@ def main() -> None:
     logger.info("Worker started, waiting for tasks on the queue...")
 
     while True:
-        task = dequeue_run(redis_client, timeout_s=5)
-        if task is None:
-            continue
-
-        definition = get_agent_definition(task.agent_id)
-        if definition is None:
-            logger.error("Unknown agent_id=%s, skipping task %s", task.agent_id, task.execution_id)
-            continue
-
-        db = SessionLocal()
         try:
-            execute_task(task, definition, runtime, db)
-        finally:
-            db.close()
+            task = dequeue_run(redis_client, timeout_s=5)
+            if task is None:
+                continue
+
+            definition = get_agent_definition(task.agent_id)
+            if definition is None:
+                logger.error(
+                    "Unknown agent_id=%s, skipping task %s", task.agent_id, task.execution_id
+                )
+                continue
+
+            db = SessionLocal()
+            try:
+                execute_task(task, definition, runtime, db)
+            finally:
+                db.close()
+        except Exception:  # noqa: BLE001 - el worker nunca debe morir por una tarea individual
+            logger.exception("Unexpected error in worker loop, continuing")
 
 
 if __name__ == "__main__":
