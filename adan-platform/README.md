@@ -9,13 +9,26 @@ En ejecución de la cadena WO-000 → WO-012 (`docs/blueprint/source/` para el P
 - **WO-000 (Blueprint Consolidado):** cerrada. Tag `blueprint-v1.0`.
 - **WO-001 (Fundación Técnica):** en curso.
 
-## Arranque rápido (una vez completado WO-001)
+## Arranque rápido (verificado, WO-001 cerrada)
+
+Requiere Docker Desktop y Ollama corriendo en el host (los modelos ya descargados en el host se reutilizan — ver ADR-001, no se conteneriza Ollama).
 
 ```bash
-docker compose -f infra/docker-compose.yml up
+make up          # levanta postgres+pgvector, redis, api, web
+make migrate     # aplica el esquema (37 tablas) contra Postgres real
+make seed        # datos demo: una Empresa completa con Usuario/Proyecto/Nivel 1
 ```
 
-Levanta PostgreSQL 16 + pgvector, Redis, Ollama, la API y el frontend.
+- API: http://localhost:8020 (`/health`, `/health/deep` verifica Postgres+Redis+Ollama reales, `/docs`)
+- Web: http://localhost:5173 (login → dashboard)
+
+```bash
+make test-backend       # pytest, incluye funcionales contra Postgres real
+make test-frontend-e2e  # Playwright contra el stack completo en Docker
+make lint                # ruff (backend) + eslint (frontend)
+```
+
+**Puertos no-default:** se eligieron 5436/6382/8020 tras detectar que 5432/6379/8000 ya estaban ocupados por otros servicios en la máquina de desarrollo — ver `docs/reports/WO-001/sprint-2.md`.
 
 ## Estructura
 

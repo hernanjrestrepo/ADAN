@@ -15,13 +15,13 @@ from app.models import Empresa, Nivel, Proyecto, Usuario, Workspace
 def seed() -> None:
     db = SessionLocal()
     try:
-        existing = db.query(Usuario).filter(Usuario.email == "demo@paradixe.local").first()
+        existing = db.query(Usuario).filter(Usuario.email == "demo@adan-demo.io").first()
         if existing:
             print("Demo data already seeded, skipping.")
             return
 
         usuario = Usuario(
-            email="demo@paradixe.local",
+            email="demo@adan-demo.io",
             hashed_password=hash_password("demo1234"),
             display_name="Demo Responsable",
         )
