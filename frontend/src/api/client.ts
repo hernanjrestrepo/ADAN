@@ -29,6 +29,33 @@ export interface EjecucionAgente {
   error: string | null;
 }
 
+export interface KGNode {
+  id: string;
+  tipo: string;
+  nombre: string;
+  proyecto_id: string | null;
+  atributos: Record<string, unknown> | null;
+}
+
+export interface KGEdge {
+  id: string;
+  origen_id: string;
+  destino_id: string;
+  tipo_relacion: string;
+}
+
+export interface KGTraverseResult {
+  nodos: KGNode[];
+  aristas: KGEdge[];
+}
+
+export interface HybridResult {
+  contenido: string;
+  origen: "semantico" | "grafo";
+  distance: number;
+  nodo_id: string | null;
+}
+
 class ApiError extends Error {
   constructor(
     public status: number,
@@ -91,6 +118,12 @@ export const api = {
   getRun: (executionId: string) => request<EjecucionAgente>(`/agents/runs/${executionId}`),
 
   listRuns: (limit = 20) => request<EjecucionAgente[]>(`/agents/runs?limit=${limit}`),
+
+  hybridQuery: (q: string, topK = 5) =>
+    request<HybridResult[]>(`/kg/query?${new URLSearchParams({ q, top_k: String(topK) })}`),
+
+  getNodeTraverse: (nodeId: string, maxDepth = 2) =>
+    request<KGTraverseResult>(`/kg/nodes/${nodeId}/traverse?max_depth=${maxDepth}`),
 };
 
 export { ApiError };

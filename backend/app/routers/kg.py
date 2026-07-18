@@ -102,6 +102,41 @@ def create_edge(
     return _edge_to_response(edge)
 
 
+class IngestMemoryRequest(BaseModel):
+    contenido: str
+    origen: str = "documento"
+    proyecto_id: str | None = None
+    nodo_id: str | None = None
+
+
+class IngestMemoryResponse(BaseModel):
+    id: str
+
+
+@router.post("/memory", response_model=IngestMemoryResponse, status_code=status.HTTP_201_CREATED)
+def ingest_memory(
+    payload: IngestMemoryRequest, db: Session = Depends(get_db), _user: Usuario = Depends(get_current_user)
+) -> IngestMemoryResponse:
+    """Indexa un texto para busqueda semantica real - via la API, sin pasar por un Agente.
+    Sin chunking (a diferencia de ai/memory/ingestion.py, usado por el runtime de agentes)
+    - para documentos largos, el chunking real sigue viviendo en /ai (Sprint 2); este
+    endpoint cubre el caso simple de indexar un hecho o fragmento ya acotado desde la UI
+    de exploracion (Sprint 5)."""
+    embedding = embed_text(payload.contenido)
+    row = MemoriaSemanticaBackend(
+        contenido=payload.contenido,
+        origen=payload.origen,
+        embedding=embedding,
+        proyecto_id=uuid.UUID(payload.proyecto_id) if payload.proyecto_id else None,
+        nodo_id=uuid.UUID(payload.nodo_id) if payload.nodo_id else None,
+        created_at=datetime.now(UTC),
+    )
+    db.add(row)
+    db.commit()
+    db.refresh(row)
+    return IngestMemoryResponse(id=str(row.id))
+
+
 @router.get("/nodes/{node_id}", response_model=NodeResponse)
 def get_node(
     node_id: str, db: Session = Depends(get_db), _user: Usuario = Depends(get_current_user)
