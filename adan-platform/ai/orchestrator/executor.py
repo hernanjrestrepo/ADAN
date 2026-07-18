@@ -6,11 +6,27 @@ import uuid
 
 from sqlalchemy.orm import Session
 
-from agents.base import AgentDefinition, AgentRuntime, RunStatus
+from agents.base import AgentDefinition, AgentRuntime, MemoryHook, RunStatus
+from agents.tools import AgentTools
 from orchestrator.models import EjecucionAgente
 from orchestrator.queue import RunTask, get_redis_client, publish_event
 
 logger = logging.getLogger("adan.ai.executor")
+
+
+def _build_memory_hook(definition: AgentDefinition, tools: AgentTools, proyecto_id: uuid.UUID | None) -> MemoryHook:
+    """Conecta el MemoryHook (WO-002 Sprint 2, hasta ahora sin implementacion real) a la
+    memoria semantica de WO-003 - solo si el Agente tiene permiso de memory_search."""
+    if "memory_search" not in definition.allowed_tools:
+        return MemoryHook()
+
+    def fetch_context(_agent_id: str) -> str:
+        results = tools.memory_search("contexto relevante", proyecto_id=proyecto_id, top_k=3)
+        if not results:
+            return ""
+        return "\n".join(f"- {r.contenido}" for r in results)
+
+    return MemoryHook(fetch_context=fetch_context)
 
 
 def execute_task(
@@ -20,11 +36,12 @@ def execute_task(
     db: Session,
 ) -> EjecucionAgente:
     redis_client = get_redis_client()
+    proyecto_id = uuid.UUID(task.proyecto_id) if task.proyecto_id else None
 
     ejecucion = EjecucionAgente(
         id=uuid.UUID(task.execution_id),
         agent_id=task.agent_id,
-        proyecto_id=uuid.UUID(task.proyecto_id) if task.proyecto_id else None,
+        proyecto_id=proyecto_id,
         status=RunStatus.RUNNING.value,
         user_input=task.user_input,
     )
@@ -32,7 +49,11 @@ def execute_task(
     db.commit()
     publish_event(redis_client, task.execution_id, "started", {"agent_id": task.agent_id})
 
-    result = runtime.run(definition, task.user_input)
+    tools = AgentTools(
+        db=db, model_backend=runtime.model_backend, agent_id=definition.agent_id, allowed_tools=definition.allowed_tools
+    )
+    memory_hook = _build_memory_hook(definition, tools, proyecto_id)
+    result = runtime.run(definition, task.user_input, memory_hook=memory_hook)
 
     ejecucion.status = result.status.value
     ejecucion.final_output = result.final_output
