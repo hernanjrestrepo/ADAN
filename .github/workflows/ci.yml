@@ -1,0 +1,92 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  backend-lint-and-unit:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install deps
+        run: pip install -e ".[dev]"
+      - name: Lint (ruff)
+        run: ruff check .
+      - name: Unit tests
+        run: pytest -m "not functional" --tb=short
+
+  backend-functional:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: adan
+          POSTGRES_PASSWORD: adan_dev_password
+          POSTGRES_DB: adan
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U adan -d adan"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+      redis:
+        image: redis:7-alpine
+        ports: ["6379:6379"]
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install deps
+        run: pip install -e ".[dev]"
+      - name: Functional tests against real Postgres/Redis
+        env:
+          DATABASE_URL: postgresql+psycopg://adan:adan_dev_password@localhost:5432/adan
+          REDIS_URL: redis://localhost:6379/0
+        run: pytest -m functional --tb=short
+
+  frontend-lint-and-build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: npm install
+      - run: npm run lint
+      - run: npm run build
+
+  e2e-nightly:
+    if: github.event_name == 'schedule' || contains(github.event.head_commit.message, '[e2e]')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: E2E via Docker Compose
+        run: |
+          docker compose -f infra/docker-compose.yml up -d --build
+          sleep 15
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - working-directory: frontend
+        run: |
+          npm install
+          npx playwright install --with-deps chromium
+          npm run test:e2e
