@@ -489,83 +489,73 @@ REGLAS:
         conversation_id: str | None,
         trace_id: str,
     ):
-        """Persiste la conversación en la BD."""
+        """Persiste la conversación en la BD (flush; el commit lo hace quien llama)."""
         try:
-            # Obtener proyecto
+            from app.models.models import CardStatus, Level
+
             project = self.db.query(Project).filter(
                 Project.company_id == company_id
             ).first()
             if not project:
                 return
 
-            # Obtener o crear card y conversación
-            level = self.db.query(
-                __import__('app.models.models', fromlist=['Level']).Level
-            ).filter(
-                __import__('app.models.models', fromlist=['Level']).Level.project_id == project.id,
-                __import__('app.models.models', fromlist=['Level']).Level.status == "active",
-            ).first()
-
-            if not level:
-                return
-
-            from app.models.models import Level as LevelModel
-            level = self.db.query(LevelModel).filter(
-                LevelModel.project_id == project.id,
-                LevelModel.status == "active",
-            ).first()
-
-            if not level:
-                return
-
-            from app.models.models import Card, Conversation, Message
-
-            card = self.db.query(Card).filter(
-                Card.project_id == project.id,
-                Card.level_id == level.id,
-            ).first()
-
-            if not card:
-                return
-
-            # Usar conversación existente o crear nueva
             if conversation_id:
                 conversation = self.db.query(Conversation).filter(
                     Conversation.id == conversation_id
                 ).first()
             else:
+                level = self.db.query(Level).filter(
+                    Level.project_id == project.id,
+                    Level.status == "active",
+                ).first()
+                if not level:
+                    return
+
+                # La conversación cognitiva vive en su propia Card del Nivel activo
+                card = self.db.query(Card).filter(
+                    Card.project_id == project.id,
+                    Card.level_id == level.id,
+                    Card.card_type == "cognitive",
+                ).first()
+                if not card:
+                    card = Card(
+                        project_id=project.id,
+                        level_id=level.id,
+                        title="Conversación con ADÁN",
+                        card_type="cognitive",
+                        status=CardStatus.ACTIVE,
+                    )
+                    self.db.add(card)
+                    self.db.flush()
+
                 conversation = self.db.query(Conversation).filter(
                     Conversation.card_id == card.id,
                 ).order_by(Conversation.created_at.desc()).first()
+                if not conversation:
+                    conversation = Conversation(
+                        card_id=card.id,
+                        title="Conversación Cognitiva",
+                    )
+                    self.db.add(conversation)
+                    self.db.flush()
 
             if not conversation:
-                conversation = Conversation(
-                    card_id=card.id,
-                    title="Conversación Cognitiva",
-                )
-                self.db.add(conversation)
-                self.db.flush()
+                return
 
-            # Guardar mensajes
-            user_msg = Message(
+            self.db.add(Message(
                 conversation_id=conversation.id,
                 role="user",
                 content=user_message,
                 metadata_json={"trace_id": trace_id, "source": "cognitive"},
-            )
-            self.db.add(user_msg)
-
-            assistant_msg = Message(
+            ))
+            self.db.add(Message(
                 conversation_id=conversation.id,
                 role="assistant",
                 agent_name="cognitive_system",
                 content=response_text,
                 metadata_json={"trace_id": trace_id, "source": "cognitive"},
-            )
-            self.db.add(assistant_msg)
-
+            ))
             self.db.flush()
-
         except Exception:
             self.db.rollback()
 

@@ -8,9 +8,14 @@ from sqlalchemy.orm import DeclarativeBase, sessionmaker
 
 from app.core.config import settings
 
-# Ensure data directory exists for SQLite
-db_path = Path(settings.DATABASE_URL.replace("sqlite:///", ""))
-db_path.parent.mkdir(parents=True, exist_ok=True)
+
+def ensure_sqlite_dir(url: str) -> None:
+    """Crea la carpeta del archivo SQLite; con otros motores no toca el disco."""
+    if url.startswith("sqlite:///"):
+        Path(url.replace("sqlite:///", "")).parent.mkdir(parents=True, exist_ok=True)
+
+
+ensure_sqlite_dir(settings.DATABASE_URL)
 
 engine = create_engine(
     settings.DATABASE_URL,

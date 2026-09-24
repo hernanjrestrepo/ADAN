@@ -68,8 +68,13 @@ async def respond_message(
         content=request.content,
         content_type=request.content_type,
     )
-    result = await _manager.respond(request.channel, response)
-    return {"delivered": result}
+    await _manager.respond(request.channel, response)
+    # Los canales todavía no envían nada: los reales llegan con EVA (WO-119)
+    return {
+        "delivered": False,
+        "mock": True,
+        "note": "Simulado: no se envió ningún mensaje. Los canales reales llegan con EVA (WO-119).",
+    }
 
 
 @router.get("/health/{channel_id}")
@@ -79,4 +84,4 @@ async def channel_health(channel_id: str, current_user: User = Depends(get_curre
 
 @router.get("/health")
 async def omnichannel_health():
-    return {"status": "healthy", "channels": _manager.list_channels(), "version": "0.1.0-wo012"}
+    return {"status": "healthy", "channels": _manager.list_channels(), "version": "0.1.0-wo012", "mock": True}

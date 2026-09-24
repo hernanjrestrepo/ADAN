@@ -27,6 +27,9 @@ class ExecuteRequest(BaseModel):
 
 
 # Singleton
+# Solo el conector REST hace llamadas reales; los demás son simulados hasta WO-119
+REAL_CONNECTORS = {"rest_api"}
+
 _manager = ConnectorManager()
 _manager.register(GmailConnector())
 _manager.register(OutlookConnector())
@@ -60,7 +63,8 @@ async def connect_service(
 ):
     """Conecta a un servicio externo."""
     result = await _manager.connect(request.connector_id, request.credentials)
-    return {"connector_id": request.connector_id, "connected": result}
+    return {"connector_id": request.connector_id, "connected": result,
+            "mock": request.connector_id not in REAL_CONNECTORS}
 
 
 @router.post("/disconnect")
@@ -99,6 +103,7 @@ async def execute_connector(
         "output": result.output,
         "error": result.error,
         "duration_ms": result.duration_ms,
+        "mock": result.connector_id not in REAL_CONNECTORS,
     }
 
 

@@ -178,27 +178,16 @@ class CEOAgent(ExecutiveAgent):
         reasoning.steps[-1].status = "completed"
 
         # ============================================================
-        # PASO 4: Ejecutar herramientas si hay gaps que se pueden llenar
+        # PASO 4: Herramientas
+        # Todavía no hay herramientas de datos de la empresa conectadas (ventas,
+        # mercado): los vacíos se reportan como información faltante en vez de
+        # "llenarlos" con llamadas de relleno.
         # ============================================================
-        if reasoning.information_gaps and not reasoning.needs_more_info:
-            reasoning.steps.append(ExecutiveStep(
-                step_type="tools",
-                description="Ejecutando herramientas para obtener información",
-            ))
-
-            tool_results = await self._execute_tools_for_gaps(
-                reasoning.information_gaps,
-                company_id, user_id, trace_id,
-            )
-            reasoning.tool_results = tool_results
-            tools_used = [r.get("tool_id", "unknown") for r in tool_results if r.get("status") == "success"]
-            reasoning.steps[-1].status = "completed"
-        else:
-            reasoning.steps.append(ExecutiveStep(
-                step_type="tools",
-                description="No se requieren herramientas",
-                status="skipped",
-            ))
+        reasoning.steps.append(ExecutiveStep(
+            step_type="tools",
+            description="Sin herramientas de datos conectadas; los vacíos se reportan como información faltante",
+            status="skipped",
+        ))
 
         # ============================================================
         # PASO 5: Generar análisis ejecutivo
@@ -288,52 +277,6 @@ Responde EXCLUSIVAMENTE en JSON:
                 "needs_more": False,
                 "missing_summary": "",
             }
-
-    async def _execute_tools_for_gaps(
-        self,
-        gaps: list[str],
-        company_id: str,
-        user_id: str,
-        trace_id: str,
-    ) -> list[dict]:
-        """Ejecuta herramientas para llenar gaps de información."""
-        results = []
-
-        for gap in gaps:
-            gap_lower = gap.lower()
-
-            # Seleccionar herramienta basada en el gap
-            if any(w in gap_lower for w in ["ventas", "clientes", "pipeline", "ingresos", "facturación"]):
-                result = await self._execute_tool(
-                    "sql_query",
-                    {"query": "SELECT COUNT(*) as total FROM companies"},
-                    company_id, user_id, trace_id,
-                )
-                result["tool_id"] = "sql_query"
-                result["gap_filled"] = gap
-                results.append(result)
-
-            elif any(w in gap_lower for w in ["mercado", "competencia", "tendencias"]):
-                result = await self._execute_tool(
-                    "http_request",
-                    {"url": "https://httpbin.org/get", "method": "GET"},
-                    company_id, user_id, trace_id,
-                )
-                result["tool_id"] = "http_request"
-                result["gap_filled"] = gap
-                results.append(result)
-
-            elif any(w in gap_lower for w in ["cálculo", "ratio", "porcentaje", "projection"]):
-                result = await self._execute_tool(
-                    "calculator",
-                    {"expression": "0"},
-                    company_id, user_id, trace_id,
-                )
-                result["tool_id"] = "calculator"
-                result["gap_filled"] = gap
-                results.append(result)
-
-        return results
 
     def _build_executive_context(self, reasoning: ExecutiveReasoning) -> str:
         """Construye el contexto completo para el LLM."""

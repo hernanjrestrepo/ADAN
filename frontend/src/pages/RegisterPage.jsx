@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { api } from '../lib/api'
+import AiDisclaimer from '../components/AiDisclaimer'
 
 export default function RegisterPage({ onRegister }) {
   const [name, setName] = useState('')
@@ -78,6 +79,8 @@ export default function RegisterPage({ onRegister }) {
             {loading ? 'Creando cuenta...' : 'Crear cuenta'}
           </button>
         </form>
+
+        <AiDisclaimer className="mt-4 text-center" />
 
         <p className="text-center text-adan-muted mt-6">
           ¿Ya tienes cuenta?{' '}

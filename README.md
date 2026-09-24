@@ -27,6 +27,7 @@ Los historiales importados se reescribieron para vivir bajo su carpeta, con auto
 4. `REPORTE_CONSOLIDACION_WO090.md`: estado de Build C al 2026-07-31 (WO-090 abierta).
 5. `docs/auditoria/AUDITORIA_ADAN_2026-09.md`: auditoría completa del código, avance (~22 %), bugs y brechas frente al blueprint.
 6. `docs/auditoria/PLAN_WO_ADAN_100.md`: plan de Work Orders propuesto para llegar al 100 %.
+7. `docs/wo/`: reportes de cierre de cada Work Order, con su evidencia.
 
 Este repositorio y su rama `main` son los oficiales desde el 2026-09-24 (`AD-ROOT-0001 §1-2`).
 
@@ -45,7 +46,7 @@ Pruebas del backend:
 
 ```bash
 cd backend
-pip install -r requirements.txt pytest pytest-asyncio pytest-cov aiohttp
+pip install -r requirements-dev.txt
 pytest
 ```
 

@@ -1,4 +1,6 @@
 """Nivel 1 endpoints — the complete Level 1 flow with real intelligence."""
+import json
+
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
@@ -7,13 +9,15 @@ from app.ai.base import LLMAdapter
 from app.ai.factory import get_llm_adapter
 from app.core.auth import get_current_user
 from app.core.database import get_db
+from app.core.disclaimer import AI_DISCLAIMER
 from app.models.models import (
-    Card, Company, Conversation, Document, Level, Message, Project, Score, User,
+    Card, Company, Conversation, Decision, Document, Level, Message, Project, Score, User,
 )
 from app.nivel1.service import Nivel1Service
+from app.services.gemelo_digital import GemeloDigitalService
 from app.schemas.schemas import (
-    ChatRequest, ChatResponse, CompanyResponse, DocumentResponse,
-    GateReviewResponse, LevelResponse, MessageResponse, ScoreResponse,
+    ChatRequest, ChatResponse, CompanyResponse, DecisionAction, DecisionResponse,
+    DocumentResponse, GateReviewResponse, LevelResponse, MessageResponse, ScoreResponse,
 )
 
 router = APIRouter(prefix="/nivel1", tags=["nivel1"])
@@ -21,6 +25,28 @@ router = APIRouter(prefix="/nivel1", tags=["nivel1"])
 
 def get_llm() -> LLMAdapter:
     return get_llm_adapter()
+
+
+def get_owned_project(db: Session, company_id: str, user: User) -> Project:
+    """Proyecto de una empresa del usuario."""
+    project = db.query(Project).join(Company).filter(
+        Project.company_id == company_id,
+        Company.primary_user_id == user.id,
+    ).first()
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+    return project
+
+
+def get_latest_diagnosis(db: Session, project: Project) -> Document:
+    """El diagnóstico más reciente del proyecto."""
+    diagnosis_doc = db.query(Document).filter(
+        Document.project_id == project.id,
+        Document.doc_type == "diagnosis",
+    ).order_by(Document.created_at.desc()).first()
+    if not diagnosis_doc:
+        raise HTTPException(status_code=400, detail="Generate diagnosis first")
+    return diagnosis_doc
 
 
 def get_owned_conversation(db: Session, conversation_id: str, project: Project) -> Conversation:
@@ -159,7 +185,6 @@ async def chat_stream(
         conversation = service.get_or_create_conversation(card)
 
     # Save user message
-    from datetime import datetime, timezone
     user_msg = Message(
         conversation_id=conversation.id,
         role="user",
@@ -168,37 +193,26 @@ async def chat_stream(
     db.add(user_msg)
     db.commit()
 
-    # Build messages for streaming
-    from app.ai.base import LLMMessage
-    history = db.query(Message).filter(
-        Message.conversation_id == conversation.id
-    ).order_by(Message.created_at).all()
+    messages = service.build_llm_messages(conversation)
 
-    message_count = len([m for m in history if m.role == "user"])
-    system_prompt = service._build_chat_system_prompt(message_count, conversation.summary)
-
-    messages = [LLMMessage(role="system", content=system_prompt)]
-    for msg in history:
-        messages.append(LLMMessage(role=msg.role, content=msg.content))
-
-    # Stream response
+    # Stream response. Each event is JSON so tokens with line breaks don't break SSE framing.
     async def generate():
         full_content = []
-        async for token in llm.chat_stream(messages, temperature=0.7, max_tokens=512):
-            full_content.append(token)
-            yield f"data: {token}\n\n"
-        yield "data: [DONE]\n\n"
-
-        # Save complete response
-        complete_response = "".join(full_content)
-        assistant_msg = Message(
-            conversation_id=conversation.id,
-            role="assistant",
-            content=complete_response,
-            metadata_json={"model": llm._default_model, "streamed": True},
-        )
-        db.add(assistant_msg)
-        db.commit()
+        try:
+            async for token in llm.chat_stream(messages, temperature=0.7, max_tokens=512):
+                full_content.append(token)
+                yield f"data: {json.dumps({'token': token}, ensure_ascii=False)}\n\n"
+            yield f"data: {json.dumps({'done': True, 'disclaimer': AI_DISCLAIMER}, ensure_ascii=False)}\n\n"
+        finally:
+            # Save what was generated, even if the client disconnected mid-stream
+            if full_content:
+                db.add(Message(
+                    conversation_id=conversation.id,
+                    role="assistant",
+                    content="".join(full_content),
+                    metadata_json={"streamed": True},
+                ))
+                db.commit()
 
     return StreamingResponse(generate(), media_type="text/event-stream")
 
@@ -251,6 +265,7 @@ async def run_board_room(
         "concerns_majority": consensus.concerns_majority,
         "strengths_unanimous": consensus.strengths_unanimous,
         "dissent": consensus.dissent,
+        "disclaimer": AI_DISCLAIMER,
     }
 
 
@@ -304,20 +319,12 @@ async def generate_recommendations(
         raise HTTPException(status_code=404, detail="Company not found")
 
     project = db.query(Project).filter(Project.company_id == company_id).first()
+    diagnosis_doc = get_latest_diagnosis(db, project)
 
-    # Get diagnosis
-    diagnosis_doc = db.query(Document).filter(
-        Document.project_id == project.id,
-        Document.doc_type == "diagnosis",
-    ).first()
-
-    if not diagnosis_doc:
-        raise HTTPException(status_code=400, detail="Generate diagnosis first")
-
-    # Get board consensus (re-run for now, could cache)
+    # Reuse the Board Room behind the diagnosis instead of running a new, different one
     service = Nivel1Service(llm, db)
     try:
-        board_consensus = await service.run_board_room(project, company)
+        board_consensus = service.get_last_board_consensus(project)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
@@ -344,15 +351,7 @@ async def gate_review(
         raise HTTPException(status_code=404, detail="Company not found")
 
     project = db.query(Project).filter(Project.company_id == company_id).first()
-
-    # Get diagnosis
-    diagnosis_doc = db.query(Document).filter(
-        Document.project_id == project.id,
-        Document.doc_type == "diagnosis",
-    ).first()
-
-    if not diagnosis_doc:
-        raise HTTPException(status_code=400, detail="Generate diagnosis first")
+    diagnosis_doc = get_latest_diagnosis(db, project)
 
     # Get scores
     scores = db.query(Score).filter(Score.project_id == project.id).all()
@@ -363,14 +362,14 @@ async def gate_review(
 
     service = Nivel1Service(llm, db)
 
-    # Run Board Room
+    # Evaluate the same Board Room that produced the diagnosis
     try:
-        board_consensus = await service.run_board_room(project, company)
+        board_consensus = service.get_last_board_consensus(project)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
     # Run Gate Review
-    result = await service.run_gate_review(
+    result, decision = await service.run_gate_review(
         project,
         diagnosis_doc.content,
         board_consensus,
@@ -386,10 +385,51 @@ async def gate_review(
     return GateReviewResponse(
         approved=result.approved,
         scores=[ScoreResponse.model_validate(s) for s in scores],
-        decisions=[],
+        decisions=[DecisionResponse.model_validate(decision)] if decision else [],
         level_status=level.status.value if level else "unknown",
         message=result.message,
     )
+
+
+@router.get("/{company_id}/decisions", response_model=list[DecisionResponse])
+def list_decisions(
+    company_id: str,
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    """Decisiones del proyecto, las más recientes primero."""
+    project = get_owned_project(db, company_id, user)
+    decisions = db.query(Decision).filter(
+        Decision.project_id == project.id,
+    ).order_by(Decision.created_at.desc()).all()
+    return [DecisionResponse.model_validate(d) for d in decisions]
+
+
+@router.post("/{company_id}/decisions/{decision_id}", response_model=DecisionResponse)
+def decide(
+    company_id: str,
+    decision_id: str,
+    body: DecisionAction,
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    """El cliente aprueba o rechaza una decisión propuesta (Patrón A).
+
+    Aprobar el cierre de un Nivel lo completa y activa el siguiente.
+    """
+    project = get_owned_project(db, company_id, user)
+    decision = db.query(Decision).filter(
+        Decision.id == decision_id,
+        Decision.project_id == project.id,
+    ).first()
+    if not decision:
+        raise HTTPException(status_code=404, detail="Decision not found")
+
+    try:
+        decision = GemeloDigitalService(db).decide(project, decision, body.action == "approve", user.id)
+    except ValueError as e:
+        raise HTTPException(status_code=409, detail=str(e))
+    return DecisionResponse.model_validate(decision)
 
 
 @router.get("/{company_id}/scores", response_model=list[ScoreResponse])
@@ -399,12 +439,7 @@ def get_scores(
     user: User = Depends(get_current_user),
 ):
     """Get all scores for a company."""
-    project = db.query(Project).join(Company).filter(
-        Project.company_id == company_id,
-        Company.primary_user_id == user.id,
-    ).first()
-    if not project:
-        raise HTTPException(status_code=404, detail="Project not found")
+    project = get_owned_project(db, company_id, user)
 
     scores = db.query(Score).filter(Score.project_id == project.id).all()
     return [ScoreResponse.model_validate(s) for s in scores]
@@ -417,12 +452,7 @@ def get_documents(
     user: User = Depends(get_current_user),
 ):
     """Get all documents for a company."""
-    project = db.query(Project).join(Company).filter(
-        Project.company_id == company_id,
-        Company.primary_user_id == user.id,
-    ).first()
-    if not project:
-        raise HTTPException(status_code=404, detail="Project not found")
+    project = get_owned_project(db, company_id, user)
 
     docs = db.query(Document).filter(Document.project_id == project.id).all()
     return [DocumentResponse.model_validate(d) for d in docs]

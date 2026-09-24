@@ -130,8 +130,11 @@ class EnterpriseMemorySystem:
         return self.ingestion.get_document_chunks(document_id)
 
     def delete_document(self, document_id: str) -> bool:
-        """Elimina un documento y sus chunks."""
-        doc = self.db.query(EMSDocument).filter(EMSDocument.id == document_id).first()
+        """Archiva un documento: sale de búsquedas y listados, pero nada se elimina (AD-002)."""
+        doc = self.db.query(EMSDocument).filter(
+            EMSDocument.id == document_id,
+            EMSDocument.status != "archived",
+        ).first()
         if not doc:
             return False
 
@@ -143,9 +146,8 @@ class EnterpriseMemorySystem:
         if chunk_ids:
             self.vector_store.delete(chunk_ids)
 
-        # Eliminar de BD
-        self.db.delete(doc)
-        self.db.flush()
+        doc.status = "archived"
+        doc.is_latest = False
         self.db.commit()
         return True
 
@@ -231,8 +233,6 @@ class EnterpriseMemorySystem:
             created_by=created_by,
         )
         self.db.add(correction)
-        self.db.flush()
-        self.db.commit()
 
         # Ajustar confianza del hecho original
         if fact_id:
@@ -244,7 +244,8 @@ class EnterpriseMemorySystem:
                 fact.confidence = max(0.1, fact.confidence - 0.1)
                 fact.updated_at = datetime.now(timezone.utc)
 
-        self.db.flush()
+        # Un solo commit: antes el ajuste de confianza quedaba sin guardar
+        self.db.commit()
         return correction
 
     def get_corrections(

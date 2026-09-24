@@ -9,7 +9,7 @@ from __future__ import annotations
 import asyncio
 import json
 import time
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 
 from app.ai.base import LLMAdapter, LLMMessage
 from app.ai.normalize import normalize_analysis_response
@@ -20,7 +20,7 @@ class AgentVote:
     agent: str
     analysis: str
     justification: str
-    vote: str  # PROCEED, PIVOT, STOP
+    vote: str  # PROCEED, PIVOT, STOP, or ABSTAIN when the model gave no valid vote
     confidence: float  # 0-100
     key_concerns: list[str] = field(default_factory=list)
     key_strengths: list[str] = field(default_factory=list)
@@ -31,7 +31,7 @@ class AgentVote:
 
 @dataclass
 class BoardConsensus:
-    decision: str  # PROCEED, PIVOT, STOP
+    decision: str  # PROCEED, PIVOT, STOP, or NO_CONSENSUS when no agent gave a valid vote
     score: float  # 0-100 aggregate
     confidence: float  # 0-100
     summary: str
@@ -40,7 +40,15 @@ class BoardConsensus:
     concerns_majority: list[str] = field(default_factory=list)
     strengths_unanimous: list[str] = field(default_factory=list)
     next_steps: list[str] = field(default_factory=list)
-    dissent: str = ""  # If any agent disagrees with majority
+    dissent: str = ""  # Every agent that disagrees with the decision, one per line
+
+    def to_dict(self) -> dict:
+        return asdict(self)
+
+    @classmethod
+    def from_dict(cls, data: dict) -> "BoardConsensus":
+        votes = [AgentVote(**v) for v in data.get("votes", [])]
+        return cls(**{**data, "votes": votes})
 
 
 # Agent system prompts — CONCISE for faster inference
@@ -156,20 +164,37 @@ class BoardRoom:
                 model=response.model,
                 duration_s=duration,
             )
-        except (json.JSONDecodeError, KeyError, ValueError):
-            # Fallback: use raw text as analysis
+        except (json.JSONDecodeError, KeyError, ValueError, AttributeError, TypeError):
+            # Sin JSON válido no hay voto: se registra como abstención y no cuenta
             return AgentVote(
                 agent=agent_key,
                 analysis=response.content,
-                justification="Análisis generado sin formato JSON estructurado",
-                vote="PROCEED",
-                confidence=40,
+                justification="Respuesta sin formato válido: se registra como abstención y no cuenta como voto",
+                vote="ABSTAIN",
+                confidence=0,
                 model=response.model,
                 duration_s=duration,
             )
 
     def _build_consensus(self, votes: list[AgentVote]) -> BoardConsensus:
-        """Build real consensus from independent votes."""
+        """Build real consensus from independent votes. Abstentions are not counted."""
+        abstentions = [v for v in votes if v.vote == "ABSTAIN"]
+        votes_all, votes = votes, [v for v in votes if v.vote != "ABSTAIN"]
+        # Quórum: al menos la mitad de los agentes debe votar; si no, uno solo decidiría por todo el Board
+        if len(votes) * 2 < len(votes_all):
+            return BoardConsensus(
+                decision="NO_CONSENSUS",
+                score=0.0,
+                confidence=0.0,
+                summary=(
+                    "**Decisión del Board Room: sin consenso**\n"
+                    f"Sin quórum: votaron {len(votes)} de {len(votes_all)} agentes. "
+                    "Vuelve a ejecutar el Board Room."
+                ),
+                votes=votes_all,
+                dissent="",
+            )
+
         # Count votes
         vote_counts = {"PROCEED": 0, "PIVOT": 0, "STOP": 0}
         for v in votes:
@@ -201,11 +226,10 @@ class BoardRoom:
         concerns_majority = list(set.union(*all_concerns)) if all_concerns else []
         strengths_unanimous = list(set.intersection(*all_strengths)) if len(all_strengths) == total else []
 
-        # Find dissent
-        dissent = ""
-        for v in votes:
-            if v.vote != decision:
-                dissent = f"{v.agent} votó {v.vote}: {v.justification}"
+        # Find dissent: every agent that disagrees, not only the last one (AD-FUNC-02)
+        dissent = "\n".join(
+            f"{v.agent} votó {v.vote}: {v.justification}" for v in votes if v.vote != decision
+        )
 
         # Build summary
         summary_parts = []
@@ -219,14 +243,16 @@ class BoardRoom:
         )
 
         if dissent:
-            summary += f"\n\n**Disenso:** {dissent}"
+            summary += f"\n\n**Disenso:**\n{dissent}"
+        if abstentions:
+            summary += "\n\n**Abstenciones:** " + ", ".join(v.agent for v in abstentions)
 
         return BoardConsensus(
             decision=decision,
             score=score,
             confidence=avg_confidence,
             summary=summary,
-            votes=votes,
+            votes=votes_all,
             concerns_unanimous=concerns_unanimous,
             concerns_majority=concerns_majority,
             strengths_unanimous=strengths_unanimous,

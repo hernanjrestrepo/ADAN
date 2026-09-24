@@ -123,7 +123,9 @@ class HybridRetriever:
 
         chunks = (
             self.db.query(EMSChunk)
+            .join(EMSDocument, EMSChunk.document_id == EMSDocument.id)
             .filter(EMSChunk.company_id == company_id)
+            .filter(EMSDocument.status != "archived")
             .filter(or_(*conditions))
             .limit(limit)
             .all()

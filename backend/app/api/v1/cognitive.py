@@ -12,6 +12,7 @@ from app.core.database import get_db
 from app.core.auth import get_current_user
 from app.models.models import User, Company, Card, Conversation, Project
 from app.ai.factory import get_llm_adapter
+from app.core.disclaimer import AI_DISCLAIMER
 
 from app.cognitive.orchestrator import CognitiveOrchestrator, CognitiveResponse
 
@@ -50,6 +51,7 @@ class CognitiveResponseSchema(BaseModel):
     justification: CognitiveJustificationResponse | None = None
     plan_steps: int
     knowledge_units: int
+    disclaimer: str = AI_DISCLAIMER
 
 
 @router.post("/think", response_model=CognitiveResponseSchema)
@@ -98,6 +100,8 @@ async def cognitive_think(
         user_id=str(current_user.id),
         conversation_id=request.conversation_id,
     )
+    # El orquestador solo hace flush: sin commit se perdían eventos y mensajes
+    db.commit()
 
     # Construir respuesta
     justification_data = None

@@ -26,14 +26,15 @@
 | WO-090 | Consolidación (abierta: falta el tag de baseline y la revisión humana) |
 | WO-091, 092, 093 | Ya definidas en el Canon: PostgreSQL, TypeScript, Producción |
 | **WO-094** | **Hotfix de seguridad: ejecutada y fusionada (hernanjrestrepo/ADAN#1)** |
-| WO-095 → WO-099 | Nuevas |
+| **WO-095** | **Estabilización funcional: ejecutada y fusionada (`docs/wo/WO-095_REPORTE.md`)** |
+| WO-096 → WO-099 | Nuevas |
 | WO-100 → WO-106 | Reservadas; no se tocan |
 | WO-107 → WO-122 | Nuevas |
 
 ## 2. Ruta crítica
 
 ```
-WO-094 ✅ ─► WO-095 ─► WO-096
+WO-094 ✅ ─► WO-095 ✅ ─► WO-096
                  │
      ┌───────────┴──────────────────────┐
      ▼                                  ▼
@@ -86,7 +87,7 @@ Criterio de cierre común (EPWO-051), además de lo específico de cada ficha:
 - 5 pruebas de board room corregidas y `tests/test_security.py`.
 - Fusionada en `main`.
 
-### WO-095 — Estabilización funcional
+### WO-095 — Estabilización funcional ✅
 - **Alcance:** bugs B1–B4 y B6–B18 de la auditoría. B5, el Gate por palabras clave, es de diseño y va en WO-107. Además:
   - Aprobación explícita del cliente para las decisiones y para cerrar un Nivel (Patrón A), en backend y en la interfaz.
   - **Avisos de IA** en la interfaz, en los documentos y en la API (`AD-DEC-0002` decisión 6).
@@ -277,6 +278,6 @@ Con un solo frente de trabajo son unos 7–11 meses; con dos frentes en paralelo
 
 ## 6. Orden de ejecución
 
-1. WO-095, en curso.
-2. WO-096, en lo que no dependa de la laptop.
+1. WO-095 ✅ (`docs/wo/WO-095_REPORTE.md`).
+2. WO-096, en curso en lo que no dependa de la laptop.
 3. H2 en el orden de la ruta crítica.

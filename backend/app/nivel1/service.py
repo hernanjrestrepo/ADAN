@@ -19,6 +19,7 @@ from sqlalchemy.orm import Session
 
 from app.ai.base import LLMAdapter, LLMMessage
 from app.ai.normalize import normalize_string, normalize_list
+from app.core.disclaimer import strip_disclaimer
 from app.models.models import (
     Card, CardStatus, Company, Conversation, Decision, DecisionStatus,
     Document, Event, Level, Message, NivelStatus, Project, Score, ScoreType,
@@ -26,6 +27,10 @@ from app.models.models import (
 from app.nivel1.board_room import BoardRoom, BoardConsensus
 from app.nivel1.gate_review import GateReviewEngine, GateReviewResult
 from app.services.gemelo_digital import GemeloDigitalService
+
+# Mensajes recientes que se envían completos al modelo; los anteriores van resumidos
+MAX_CONTEXT_MESSAGES = 12
+MAX_SUMMARY_CHARS = 2000
 
 
 class Nivel1Service:
@@ -104,19 +109,7 @@ class Nivel1Service:
         self.db.add(user_msg)
         self.db.commit()
 
-        # Build context from conversation history
-        history = self.db.query(Message).filter(
-            Message.conversation_id == conversation.id
-        ).order_by(Message.created_at).all()
-
-        # Build intelligent prompt based on conversation stage
-        message_count = len([m for m in history if m.role == "user"])
-
-        system_prompt = self._build_chat_system_prompt(message_count, conversation.summary)
-
-        messages = [LLMMessage(role="system", content=system_prompt)]
-        for msg in history:
-            messages.append(LLMMessage(role=msg.role, content=msg.content))
+        messages = self.build_llm_messages(conversation)
 
         # Get AI response — reduced tokens for faster inference
         response = await self.llm.chat(messages, temperature=0.7, max_tokens=512)
@@ -137,6 +130,33 @@ class Nivel1Service:
         self.db.refresh(assistant_msg)
 
         return assistant_msg, conversation
+
+    def build_llm_messages(self, conversation: Conversation) -> list[LLMMessage]:
+        """Contexto para el modelo: resumen de lo antiguo + los mensajes recientes completos.
+
+        Evita desbordar la ventana de contexto en conversaciones largas (AD-CMP-04).
+        """
+        history = self.db.query(Message).filter(
+            Message.conversation_id == conversation.id
+        ).order_by(Message.created_at).all()
+
+        message_count = len([m for m in history if m.role == "user"])
+        older, recent = history[:-MAX_CONTEXT_MESSAGES], history[-MAX_CONTEXT_MESSAGES:]
+        if older:
+            conversation.summary = self._summarize(older)
+            self.db.commit()
+
+        system_prompt = self._build_chat_system_prompt(message_count, conversation.summary)
+        messages = [LLMMessage(role="system", content=system_prompt)]
+        for msg in recent:
+            messages.append(LLMMessage(role=msg.role, content=msg.content))
+        return messages
+
+    @staticmethod
+    def _summarize(messages: list[Message]) -> str:
+        """Resumen extractivo de lo que el usuario ya contó (sin llamar al modelo)."""
+        summary = " | ".join(m.content[:200] for m in messages if m.role == "user")
+        return summary[:MAX_SUMMARY_CHARS]
 
     def _build_chat_system_prompt(self, message_count: int, existing_summary: str = None) -> str:
         """Build an intelligent system prompt that evolves with the conversation."""
@@ -213,9 +233,17 @@ class Nivel1Service:
             consensus.score,
             consensus.summary,
             votes_data,
+            consensus=consensus.to_dict(),
         )
 
         return consensus
+
+    def get_last_board_consensus(self, project: Project) -> BoardConsensus:
+        """Último Board Room guardado: recomendaciones y Gate Review no lo vuelven a ejecutar."""
+        data = self.gemelo.get_last_board_consensus(project)
+        if data is None:
+            raise ValueError("Ejecuta primero el Board Room o el diagnóstico.")
+        return BoardConsensus.from_dict(data)
 
     # --- Step 4: Generate Diagnosis ---
 
@@ -349,12 +377,16 @@ class Nivel1Service:
         board_consensus: BoardConsensus,
         scores: list[Score],
         deliverables: list[str],
-    ) -> GateReviewResult:
-        """Run the DETERMINISTIC Gate Review engine (rules, not LLM)."""
-        # Build board votes for deterministic evaluation
+    ) -> tuple[GateReviewResult, Decision | None]:
+        """Run the DETERMINISTIC Gate Review engine (rules, not LLM).
+
+        Si aprueba, propone cerrar el Nivel: se completa solo cuando el cliente lo aprueba.
+        """
+        # Build board votes for deterministic evaluation (abstentions are not votes)
         board_votes = [
             {"agent": v.agent, "vote": v.vote, "confidence": v.confidence}
             for v in board_consensus.votes
+            if v.vote != "ABSTAIN"
         ]
 
         scores_data = [
@@ -380,24 +412,18 @@ class Nivel1Service:
 
         # DETERMINISTIC evaluation — no LLM involved in scoring
         result = self.gate_review.evaluate(
-            diagnosis=diagnosis,
+            diagnosis=strip_disclaimer(diagnosis),
             board_votes=board_votes,
             scores=scores_data,
             deliverables=deliverables,
             conversation_messages=messages,
         )
 
-        # If approved, complete the level
+        # If approved, propose closing the level; the client decides
+        decision = None
         if result.approved:
-            self.gemelo.complete_level(project, 1)
-
-            # Record the gate review decision
-            self.gemelo.save_board_room_result(
-                project,
-                "GATE_REVIEW_APPROVED",
-                result.overall_score,
-                result.message,
-                [{"agent": "GateReview", "vote": "APPROVED", "confidence": result.overall_score}],
+            decision = self.gemelo.propose_level_completion(
+                project, 1, result.overall_score, result.message,
             )
 
-        return result
+        return result, decision

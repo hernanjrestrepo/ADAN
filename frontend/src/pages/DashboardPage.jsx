@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { api } from '../lib/api'
+import AiDisclaimer from '../components/AiDisclaimer'
 
 export default function DashboardPage({ user }) {
   const [companies, setCompanies] = useState([])
@@ -162,6 +163,7 @@ export default function DashboardPage({ user }) {
             ))}
           </div>
         )}
+        <AiDisclaimer className="mt-12 text-center" />
       </main>
     </div>
   )

@@ -123,6 +123,8 @@ Severidad: 🔴 crítica · 🟠 alta · 🟡 media · ⚪ baja.
 
 ### 5.3 Bugs funcionales
 
+*Actualización 2026-09-24:* B1–B4 y B6–B18 quedaron corregidos en **WO-095**, cada uno con su prueba de regresión (`docs/wo/WO-095_REPORTE.md`). B5 sigue abierto y pasa a WO-107.
+
 | # | Sev. | Hallazgo | Dónde |
 |---|---|---|---|
 | B1 | 🟠 | `POST /nivel1/{id}/recommendations` **siempre falla con 500**, después de gastar 5 llamadas al LLM: `_record_event` recibe los argumentos corridos | `services/gemelo_digital.py:199` |
@@ -200,5 +202,5 @@ Build B (WO-000 → WO-012, tag `v1.0.0`) cubre además Gemelo Digital v1, Board
 ## 8. Recomendación
 
 1. Aprobar y fusionar **WO-094** (este PR) antes de exponer cualquier instancia de ADÁN a una red.
-2. Cerrar **WO-090** (tag de baseline y revisión humana, EPWO-053) y ejecutar **WO-095** (bugs B1–B9) y **WO-096** (importar Build B y unificar la documentación) antes de construir funcionalidad nueva.
+2. Cerrar **WO-090** (tag de baseline y revisión humana, EPWO-053) y ejecutar **WO-095** (bugs B1–B18; ✅ fusionada) y **WO-096** (importar Build B y unificar la documentación) antes de construir funcionalidad nueva.
 3. Seguir el plan `docs/auditoria/PLAN_WO_ADAN_100.md`: primero la plataforma (PostgreSQL, seguridad por empresa, TypeScript, producción), después el núcleo (Gemelo, Board Room único, memoria, scoring) y por último los Niveles 2–7.

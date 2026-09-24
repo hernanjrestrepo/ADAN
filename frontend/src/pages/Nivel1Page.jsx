@@ -2,6 +2,20 @@ import { useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import ReactMarkdown from 'react-markdown'
 import { api } from '../lib/api'
+import AiDisclaimer from '../components/AiDisclaimer'
+
+const VOTE_LABELS = {
+  PROCEED: { text: 'Avanzar', className: 'bg-green-500/20 text-green-400' },
+  PIVOT: { text: 'Pivotar', className: 'bg-yellow-500/20 text-yellow-400' },
+  STOP: { text: 'Detener', className: 'bg-red-500/20 text-red-400' },
+  ABSTAIN: { text: 'Abstención', className: 'bg-gray-500/20 text-gray-400' },
+  NO_CONSENSUS: { text: 'Sin consenso', className: 'bg-gray-500/20 text-gray-400' },
+}
+
+function VoteBadge({ vote }) {
+  const label = VOTE_LABELS[vote] || { text: vote, className: 'bg-gray-500/20 text-gray-400' }
+  return <span className={`text-xs px-2 py-1 rounded ${label.className}`}>{label.text}</span>
+}
 
 export default function Nivel1Page({ user }) {
   const { companyId } = useParams()
@@ -15,6 +29,8 @@ export default function Nivel1Page({ user }) {
   const [diagnosis, setDiagnosis] = useState(null)
   const [scores, setScores] = useState([])
   const [gateResult, setGateResult] = useState(null)
+  const [pendingDecision, setPendingDecision] = useState(null)
+  const [deciding, setDeciding] = useState(false)
   const [activeTab, setActiveTab] = useState('chat')
   const messagesEndRef = useRef(null)
 
@@ -78,7 +94,7 @@ export default function Nivel1Page({ user }) {
     setBoardResults(null)
     try {
       const data = await api.runBoardRoom(companyId)
-      setBoardResults(data.board_results)
+      setBoardResults(data)
     } catch (err) {
       alert(err.message)
     }
@@ -97,12 +113,36 @@ export default function Nivel1Page({ user }) {
   }
 
   const handleGateReview = async () => {
+    setActiveTab('scores')
     try {
       const data = await api.gateReview(companyId)
       setGateResult(data)
+      setPendingDecision(data.decisions?.[0] || null)
       loadStatus()
     } catch (err) {
       alert(err.message)
+    }
+  }
+
+  // El Nivel solo se cierra con la aprobación explícita del cliente (AD-FUNC-01)
+  const handleDecision = async (action) => {
+    if (!pendingDecision || deciding) return
+    setDeciding(true)
+    try {
+      await api.decide(companyId, pendingDecision.id, action)
+      setPendingDecision(null)
+      setGateResult((prev) => prev && {
+        ...prev,
+        level_status: action === 'approve' ? 'completed' : prev.level_status,
+        message: action === 'approve'
+          ? 'Aprobaste el cierre del Nivel 1. El Nivel 2 quedó activo.'
+          : 'Rechazaste el cierre del Nivel 1. Puedes seguir trabajando en él.',
+      })
+      loadStatus()
+    } catch (err) {
+      alert(err.message)
+    } finally {
+      setDeciding(false)
     }
   }
 
@@ -275,16 +315,37 @@ export default function Nivel1Page({ user }) {
               </div>
             ) : (
               <div className="space-y-6">
-                {boardResults.map((result) => (
+                <div className="bg-adan-surface border border-adan-border rounded-xl p-6">
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-bold">Decisión del Board</h3>
+                    <VoteBadge vote={boardResults.decision} />
+                  </div>
+                  <p className="text-sm text-adan-muted mt-2">
+                    Score {boardResults.score.toFixed(0)}/100 · Confianza {boardResults.confidence.toFixed(0)}%
+                  </p>
+                  {boardResults.dissent && (
+                    <div className="mt-4 text-sm whitespace-pre-wrap">
+                      <span className="font-bold">Disenso:</span>
+                      {'\n'}{boardResults.dissent}
+                    </div>
+                  )}
+                  <p className="text-xs text-adan-muted mt-4">
+                    Es una propuesta del Board: la decisión final es tuya.
+                  </p>
+                </div>
+                {boardResults.votes.map((result) => (
                   <div key={result.agent} className="bg-adan-surface border border-adan-border rounded-xl p-6">
                     <div className="flex items-center gap-3 mb-4">
                       <div className="w-10 h-10 rounded-full bg-adan-accent/20 flex items-center justify-center text-adan-accent font-bold">
                         {result.agent[0]}
                       </div>
-                      <div>
+                      <div className="flex-1">
                         <h3 className="font-bold">{result.agent}</h3>
-                        <p className="text-xs text-adan-muted">Agente del Board Room</p>
+                        <p className="text-xs text-adan-muted">
+                          Agente del Board Room · confianza {result.confidence.toFixed(0)}%
+                        </p>
                       </div>
+                      <VoteBadge vote={result.vote} />
                     </div>
                     <div className="text-sm whitespace-pre-wrap text-adan-text/90">
                       {result.analysis}
@@ -377,10 +438,32 @@ export default function Nivel1Page({ user }) {
                 <p className="text-xs text-adan-muted mt-2">
                   Estado del nivel: {gateResult.level_status}
                 </p>
+                {pendingDecision && (
+                  <div className="flex gap-3 mt-4">
+                    <button
+                      onClick={() => handleDecision('approve')}
+                      disabled={deciding}
+                      className="flex-1 py-2 bg-adan-success text-white rounded-lg text-sm font-medium disabled:opacity-50"
+                    >
+                      Aprobar cierre del Nivel 1
+                    </button>
+                    <button
+                      onClick={() => handleDecision('reject')}
+                      disabled={deciding}
+                      className="flex-1 py-2 bg-adan-surface border border-adan-border rounded-lg text-sm font-medium disabled:opacity-50"
+                    >
+                      Todavía no
+                    </button>
+                  </div>
+                )}
               </div>
             )}
           </div>
         )}
+      </div>
+
+      <div className="border-t border-adan-border px-6 py-2">
+        <AiDisclaimer className="max-w-7xl mx-auto" />
       </div>
     </div>
   )

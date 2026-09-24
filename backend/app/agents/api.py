@@ -11,8 +11,9 @@ from app.core.database import get_db
 from app.core.auth import get_current_user
 from app.models.models import User, Company
 from app.ai.factory import get_llm_adapter
+from app.core.disclaimer import AI_DISCLAIMER
 from app.ems.memory import EnterpriseMemorySystem
-from app.ems.providers import LocalEmbeddingProvider, LocalVectorStoreProvider
+from app.ems.store import embedding_provider, get_vector_store
 from app.tef.executor import ToolExecutor
 from app.tef.registry import ToolRegistry
 from app.tef.tools import CalculatorTool, HttpRequestTool, EmailSenderTool
@@ -51,14 +52,13 @@ class AgentResponseSchema(BaseModel):
     justification: str
     confidence: float
     duration_ms: int
+    disclaimer: str = AI_DISCLAIMER
 
 
 # ============================================================
 # Singletons
 # ============================================================
 
-_embedding_provider = LocalEmbeddingProvider(dim=128)
-_vector_store = LocalVectorStoreProvider()
 _tef_registry = ToolRegistry()
 _tef_executor = ToolExecutor(_tef_registry)
 
@@ -99,7 +99,7 @@ async def ceo_analyze(
 
     # Crear componentes
     llm = get_llm_adapter()
-    ems = EnterpriseMemorySystem(db, _embedding_provider, _vector_store)
+    ems = EnterpriseMemorySystem(db, embedding_provider, get_vector_store(db))
 
     # Crear agente CEO
     ceo = CEOAgent(llm, ems, _tef_executor)
