@@ -8,7 +8,7 @@ Este repositorio reúne en un solo lugar todo el código de ADAN que existía po
 
 | Ubicación | Qué es | Estado | Origen |
 |---|---|---|---|
-| Raíz: `backend/`, `frontend/`, `docs/`, `scripts/`, `docker-compose.yml` | **Build C**, "Vertical Nivel 1". FastAPI + PostgreSQL/pgvector (SQLite en desarrollo y pruebas) + React (JSX) + Ollama. | **Línea oficial** (`AD-DEC-0001 §5.1`) | Carpeta `repos-active/adan` de la laptop. No tenía historial de git; su primer commit es `abc6b6c`. |
+| Raíz: `backend/`, `frontend/`, `docs/`, `scripts/`, `docker-compose.yml` | **Build C**, "Vertical Nivel 1". FastAPI + PostgreSQL/pgvector (SQLite en desarrollo y pruebas) + React 19 con TypeScript + Ollama. | **Línea oficial** (`AD-DEC-0001 §5.1`) | Carpeta `repos-active/adan` de la laptop. No tenía historial de git; su primer commit es `abc6b6c`. |
 | `adan-platform/` | **Build A**. Monorepo FastAPI + PostgreSQL/pgvector + React/TypeScript, WO-000 → WO-003. | Archivo histórico, sin más desarrollo (`AD-DEC-0001 §5.2`) | Repo local sin remote. Sus 25 commits se conservan. |
 | `autonomous/` | Prototipo de 2024: Lambda que crea clones de sí misma, código autogenerado y despliegue con CodePipeline/CodeBuild. | Histórico | `hernanjrestrepo/adan_autonomous`. Sus 14 commits se conservan (último original: `2fab0bc`). |
 
@@ -81,6 +81,20 @@ TEST_DATABASE_URL=postgresql://adan:<clave>@localhost:5432/adan_test pytest  # P
 ```
 
 `tests/test_stress.py` necesita el backend levantado en `localhost:8050`, con Ollama y con `REGISTER_PER_IP_PER_HOUR` alto, porque simula muchos usuarios desde una sola IP.
+
+Frontend (Node 22 o más reciente):
+
+```bash
+cd frontend
+npm ci
+npm run dev          # http://localhost:5173
+npm run typecheck    # TypeScript
+npm run lint         # ESLint
+npm run build
+npm run test:e2e     # Playwright con el API simulado; no necesita backend
+```
+
+Si ya hay un Chromium instalado, `PW_CHROMIUM_PATH=/ruta/a/chromium npm run test:e2e` lo usa. Si no, primero `npx playwright install chromium`.
 
 Sin Docker, `.claude/launch.json` levanta el backend en `:8020` y el frontend en `:5173`. El proxy de Vite apunta a `:8020`; para otro backend, define `ADAN_API_URL`.
 

@@ -47,3 +47,7 @@ adan-integration/
 # Tests
 .coverage
 .pytest_cache/
+
+# Playwright
+playwright-report/
+test-results/

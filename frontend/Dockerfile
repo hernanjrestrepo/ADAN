@@ -1,10 +1,10 @@
-FROM node:20-slim
+FROM node:22-slim
 
 WORKDIR /app
 
-# Install dependencies
-COPY package.json ./
-RUN npm install
+# Dependencias exactas del lockfile (react-router 8 exige Node 22)
+COPY package.json package-lock.json ./
+RUN PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 npm ci
 
 # Copy source
 COPY . .

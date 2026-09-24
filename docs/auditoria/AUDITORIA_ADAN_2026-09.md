@@ -111,7 +111,7 @@ Severidad: 🔴 crítica · 🟠 alta · 🟡 media · ⚪ baja.
 
 ### 5.2 Seguridad — pendientes
 
-*Actualización 2026-09-24:* WO-097 corrigió S12 a S16. S17 quedó parcialmente corregido: la vulnerabilidad alta de `nanoid` está resuelta; las otras (vite/esbuild del servidor de desarrollo y react-router) requieren versiones mayores y pasan a WO-092. S18 queda aceptado. Detalle en `docs/wo/WO-097_REPORTE.md`.
+*Actualización 2026-09-24:* WO-097 corrigió S12 a S16 y S17 en parte; WO-092 cerró S17 (`npm audit`: 0 vulnerabilidades, con vite 8 y react-router 8). S18 queda aceptado. Detalle en `docs/wo/WO-097_REPORTE.md`.
 
 | # | Sev. | Hallazgo | Dónde |
 |---|---|---|---|

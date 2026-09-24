@@ -39,7 +39,7 @@ WO-094 ✅ ─► WO-095 ✅ ─► WO-096
                  │
      ┌───────────┴──────────────────────┐
      ▼                                  ▼
-  WO-091 PostgreSQL ✅ ─► WO-097 Seguridad ✅   WO-092 TypeScript + UX base
+  WO-091 PostgreSQL ✅ ─► WO-097 Seguridad ✅   WO-092 TypeScript + UX base ✅
      └──────────────► WO-093 Producción ◄──────┘
                           │
                           ▼
@@ -130,7 +130,8 @@ Criterio de cierre común (EPWO-051), además de lo específico de cada ficha:
   - Sandbox aislado que permita reactivar `python_sandbox` y `file_reader`.
 - **Estimación:** 5–8 días.
 
-### WO-092 — Frontend TypeScript y base de UX *(Canon)*
+### WO-092 — Frontend TypeScript y base de UX *(Canon)* ✅
+- **Estado:** fusionada (`docs/wo/WO-092_REPORTE.md`). Las pantallas de AD-UX-01/02/04 esperan su especificación (la categoría AD-UX no está escrita en el blueprint).
 - **Alcance:**
   - Vite y react-router en sus versiones mayores actuales: cierra lo que queda de S17 (viene de WO-097).
   - TypeScript, tomando como base el frontend de Build A.
@@ -172,6 +173,7 @@ Criterio de cierre común (EPWO-051), además de lo específico de cada ficha:
   - **Enrutamiento de modelos (`AD-DEC-0002` decisión 3):**
     - Ollama avanzado (un modelo local de 7B–14B en lugar del 0,5B actual) para tareas simples.
     - Claude Haiku, Sonnet u Opus de Anthropic según la complejidad.
+    - Salidas estructuradas (esquema JSON de Ollama y de Anthropic) y más tokens para los votos del Board: con `qwen2.5:0.5b` y 512 tokens el JSON llega cortado o mal formado y todos los agentes se abstienen (visto en WO-092).
     - Fallback, degradación controlada y medición de costo por proyecto y Nivel (AD-IA-03).
 - **Estimación:** 10–15 días.
 
@@ -287,4 +289,4 @@ Con un solo frente de trabajo son unos 7–11 meses; con dos frentes en paralelo
 
 1. WO-095 ✅ (`docs/wo/WO-095_REPORTE.md`).
 2. WO-096 🟡: solo falta Build B, que depende de la laptop.
-3. H2 en el orden de la ruta crítica: WO-091 ✅, WO-097 ✅; siguen WO-092 y WO-093.
+3. H2 en el orden de la ruta crítica: WO-091 ✅, WO-097 ✅, WO-092 ✅; sigue WO-093.
