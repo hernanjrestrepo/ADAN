@@ -136,6 +136,37 @@ def get_meeting_service(db: Session) -> MeetingService:
 
 
 # ============================================================
+# Autorización
+# ============================================================
+
+def require_organization(db: Session, organization_id: str, user: User) -> Organization:
+    """Verifica que la organización pertenece a una empresa del usuario."""
+    org = (
+        db.query(Organization)
+        .join(Company, Company.id == Organization.company_id)
+        .filter(Organization.id == organization_id, Company.primary_user_id == user.id)
+        .first()
+    )
+    if not org:
+        raise HTTPException(status_code=404, detail="Organización no encontrada")
+    return org
+
+
+def require_work_order(db: Session, work_order_id: str, user: User) -> WorkOrder:
+    """Verifica que la Work Order pertenece a una organización del usuario."""
+    wo = (
+        db.query(WorkOrder)
+        .join(Organization, Organization.id == WorkOrder.organization_id)
+        .join(Company, Company.id == Organization.company_id)
+        .filter(WorkOrder.id == work_order_id, Company.primary_user_id == user.id)
+        .first()
+    )
+    if not wo:
+        raise HTTPException(status_code=404, detail="Work Order not found")
+    return wo
+
+
+# ============================================================
 # Work Orders
 # ============================================================
 
@@ -146,6 +177,7 @@ async def create_work_order(
     db: Session = Depends(get_db),
 ):
     """Crea una Work Order."""
+    require_organization(db, request.organization_id, current_user)
     service = get_wo_service(db)
     wo = service.create_from_decision(
         organization_id=request.organization_id,
@@ -177,6 +209,7 @@ async def list_work_orders(
     db: Session = Depends(get_db),
 ):
     """Lista Work Orders de una organización."""
+    require_organization(db, organization_id, current_user)
     service = get_wo_service(db)
     if status:
         wos = service.list_by_org(organization_id, status)
@@ -206,10 +239,7 @@ async def update_work_order(
     db: Session = Depends(get_db),
 ):
     """Actualiza una Work Order."""
-    service = get_wo_service(db)
-    wo = service.get(work_order_id)
-    if not wo:
-        raise HTTPException(status_code=404, detail="Work Order not found")
+    wo = require_work_order(db, work_order_id, current_user)
 
     if request.status:
         wo.status = request.status
@@ -231,6 +261,7 @@ async def start_work_order(
     db: Session = Depends(get_db),
 ):
     """Marca una Work Order como en progreso."""
+    require_work_order(db, work_order_id, current_user)
     service = get_wo_service(db)
     service.start(work_order_id)
     db.commit()
@@ -245,6 +276,7 @@ async def complete_work_order(
     db: Session = Depends(get_db),
 ):
     """Marca una Work Order como completada."""
+    require_work_order(db, work_order_id, current_user)
     service = get_wo_service(db)
     service.complete(work_order_id, result)
     db.commit()
@@ -259,6 +291,7 @@ async def report_progress(
     db: Session = Depends(get_db),
 ):
     """Reporta progreso de una Work Order."""
+    require_work_order(db, work_order_id, current_user)
     service = get_progress_service(db)
     report = service.report(
         work_order_id=work_order_id,
@@ -285,14 +318,13 @@ async def get_dashboard(
     db: Session = Depends(get_db),
 ):
     """Dashboard ejecutivo completo."""
-    org_service = get_org_service(db)
+    org = require_organization(db, organization_id, current_user)
     wo_service = get_wo_service(db)
     kpi_engine = get_kpi_engine(db)
     scheduler = get_scheduler(db)
     kpi_svc = get_kpi_service(db)
     risk_svc = get_risk_service(db)
 
-    org = org_service.get(organization_id)
     wos = wo_service.list_by_org(organization_id)
     open_wos = wo_service.list_open(organization_id)
     blocked_wos = wo_service.list_blocked(organization_id)
@@ -360,6 +392,7 @@ async def get_kpis(
     db: Session = Depends(get_db),
 ):
     """Obtiene todos los KPIs de una organización."""
+    require_organization(db, organization_id, current_user)
     service = get_kpi_service(db)
     kpis = service.get_all(organization_id)
     return [
@@ -384,6 +417,7 @@ async def create_kpi(
     db: Session = Depends(get_db),
 ):
     """Crea un KPI."""
+    require_organization(db, request.organization_id, current_user)
     service = get_kpi_service(db)
     kpi = service.create(
         organization_id=request.organization_id,
@@ -408,6 +442,7 @@ async def get_risks(
     db: Session = Depends(get_db),
 ):
     """Obtiene todos los riesgos de una organización."""
+    require_organization(db, organization_id, current_user)
     service = get_risk_service(db)
     risks = service.get_all(organization_id)
     return [
@@ -432,6 +467,7 @@ async def create_risk(
     db: Session = Depends(get_db),
 ):
     """Crea un riesgo."""
+    require_organization(db, request.organization_id, current_user)
     service = get_risk_service(db)
     risk = service.create(
         organization_id=request.organization_id,
@@ -459,6 +495,7 @@ async def board_review(
     Revisión ejecutiva — responde preguntas del Board
     usando información persistida.
     """
+    require_organization(db, request.organization_id, current_user)
     wo_service = get_wo_service(db)
     scheduler = get_scheduler(db)
     kpi_engine = get_kpi_engine(db)
@@ -527,6 +564,7 @@ async def create_meeting(
     db: Session = Depends(get_db),
 ):
     """Crea una reunión."""
+    require_organization(db, request.organization_id, current_user)
     service = get_meeting_service(db)
     meeting = service.create(
         organization_id=request.organization_id,

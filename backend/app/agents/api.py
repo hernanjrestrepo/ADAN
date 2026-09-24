@@ -15,10 +15,7 @@ from app.ems.memory import EnterpriseMemorySystem
 from app.ems.providers import LocalEmbeddingProvider, LocalVectorStoreProvider
 from app.tef.executor import ToolExecutor
 from app.tef.registry import ToolRegistry
-from app.tef.tools import (
-    CalculatorTool, FileReaderTool, HttpRequestTool,
-    SqlQueryTool, PythonSandboxTool, EmailSenderTool,
-)
+from app.tef.tools import CalculatorTool, HttpRequestTool, EmailSenderTool
 from app.agents.ceo import CEOAgent
 from app.agents.base import AgentResponse
 
@@ -65,11 +62,10 @@ _vector_store = LocalVectorStoreProvider()
 _tef_registry = ToolRegistry()
 _tef_executor = ToolExecutor(_tef_registry)
 
-# Registrar herramientas
+# Registrar herramientas.
+# file_reader, python_sandbox y sql_query quedan fuera hasta tener aislamiento real.
 _tef_registry.register(CalculatorTool())
-_tef_registry.register(FileReaderTool())
 _tef_registry.register(HttpRequestTool())
-_tef_registry.register(PythonSandboxTool())
 _tef_registry.register(EmailSenderTool())
 
 
@@ -104,11 +100,6 @@ async def ceo_analyze(
     # Crear componentes
     llm = get_llm_adapter()
     ems = EnterpriseMemorySystem(db, _embedding_provider, _vector_store)
-
-    # Inyectar DB en SQL Tool
-    sql_tool = _tef_registry.get("sql_query")
-    if sql_tool and hasattr(sql_tool, "set_db"):
-        sql_tool.set_db(db)
 
     # Crear agente CEO
     ceo = CEOAgent(llm, ems, _tef_executor)

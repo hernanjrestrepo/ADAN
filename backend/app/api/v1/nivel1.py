@@ -23,6 +23,17 @@ def get_llm() -> LLMAdapter:
     return get_llm_adapter()
 
 
+def get_owned_conversation(db: Session, conversation_id: str, project: Project) -> Conversation:
+    """Verifica que la conversación pertenece al proyecto de la empresa del usuario."""
+    conversation = db.query(Conversation).join(Card, Conversation.card_id == Card.id).filter(
+        Conversation.id == conversation_id,
+        Card.project_id == project.id,
+    ).first()
+    if not conversation:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+    return conversation
+
+
 @router.get("/{company_id}/status")
 def get_nivel1_status(
     company_id: str,
@@ -104,9 +115,7 @@ async def chat(
     service = Nivel1Service(llm, db)
     conversation = None
     if body.conversation_id:
-        conversation = db.query(Conversation).filter(
-            Conversation.id == body.conversation_id
-        ).first()
+        conversation = get_owned_conversation(db, body.conversation_id, project)
 
     msg, conv = await service.chat(project, level, body.message, conversation)
 
@@ -143,9 +152,7 @@ async def chat_stream(
     service = Nivel1Service(llm, db)
     conversation = None
     if body.conversation_id:
-        conversation = db.query(Conversation).filter(
-            Conversation.id == body.conversation_id
-        ).first()
+        conversation = get_owned_conversation(db, body.conversation_id, project)
 
     card = service.get_or_create_pain_card(project, level)
     if conversation is None:
@@ -392,7 +399,10 @@ def get_scores(
     user: User = Depends(get_current_user),
 ):
     """Get all scores for a company."""
-    project = db.query(Project).filter(Project.company_id == company_id).first()
+    project = db.query(Project).join(Company).filter(
+        Project.company_id == company_id,
+        Company.primary_user_id == user.id,
+    ).first()
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
 
@@ -407,7 +417,10 @@ def get_documents(
     user: User = Depends(get_current_user),
 ):
     """Get all documents for a company."""
-    project = db.query(Project).filter(Project.company_id == company_id).first()
+    project = db.query(Project).join(Company).filter(
+        Project.company_id == company_id,
+        Company.primary_user_id == user.id,
+    ).first()
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
 

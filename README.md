@@ -23,9 +23,11 @@ Los historiales importados se reescribieron para vivir bajo su carpeta, con auto
 1. `AD-ROOT-0001_Canon_del_Proyecto.md`: repositorio, rama, arquitectura y numeración oficiales. Leer antes de escribir código.
 2. `AD-DEC-0001_Historia_Oficial_de_ADAN.md`: por qué existen tres builds y cuál es la oficial.
 3. `AD-GOV-0001_Reglas_de_Desarrollo.md`: reglas de proceso.
-4. `REPORTE_CONSOLIDACION_WO090.md`: estado actual de Build C (WO-090 abierta).
+4. `REPORTE_CONSOLIDACION_WO090.md`: estado de Build C al 2026-07-31 (WO-090 abierta).
+5. `docs/auditoria/AUDITORIA_ADAN_2026-09.md`: auditoría completa del código, avance (~22 %), bugs y brechas frente al blueprint.
+6. `docs/auditoria/PLAN_WO_ADAN_100.md`: plan de Work Orders propuesto para llegar al 100 %.
 
-`AD-ROOT-0001 §1` todavía declara como repositorio oficial el monorepo local `Paradixe/repos`. Si este repositorio pasa a ser el oficial, hay que actualizar el Canon.
+Este repositorio y su rama `main` son los oficiales desde el 2026-09-24 (`AD-ROOT-0001 §1-2`).
 
 ## Arranque rápido (Build C)
 

@@ -165,18 +165,12 @@ class TestCalculatorTool:
 
 class TestPythonSandboxTool:
     @pytest.mark.asyncio
-    async def test_execute_simple(self, context):
+    async def test_execute_is_disabled(self, context):
+        """Sin aislamiento real, ejecutar código del usuario queda deshabilitado."""
         tool = PythonSandboxTool()
         result = await tool.execute({"code": "print(42)"}, context)
-        assert result.status == "success"
-        assert "42" in result.output["result"]
-
-    @pytest.mark.asyncio
-    async def test_execute_with_result(self, context):
-        tool = PythonSandboxTool()
-        result = await tool.execute({"code": "import math; print(math.sqrt(16))"}, context)
-        assert result.status == "success"
-        assert "4.0" in result.output["result"]
+        assert result.status == "permission_denied"
+        assert result.output is None
 
 
 class TestEmailSenderTool:
