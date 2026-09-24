@@ -1,21 +1,23 @@
 # Plan de Work Orders para llevar ADÁN al 100 %
 
-**Fecha:** 2026-09-24
-**Estado:** PROPUESTA. Requiere aprobación explícita de Hernán (EPWO-007). Ninguna WO de este plan se abre sin su Fase -1 (Regla 7 de `AD-GOV-0001`) ni sin pasar el Gate de Inicio (EPWO-052).
-**Deriva de:** `docs/auditoria/AUDITORIA_ADAN_2026-09.md` (avance actual estimado: ~22 %).
-**No es fuente de verdad** (Regla 6): la numeración vigente la fija `AD-ROOT-0001 §4`; este plan solo propone.
+**Fecha:** 2026-09-24 (v2: incorpora `AD-DEC-0002`, decisiones de modelo de negocio y ecosistema)
+**Estado:** aprobado por Hernán para ejecución ("sí a todas", 2026-09-24). Cada WO igual pasa su Fase -1 (Regla 7 de `AD-GOV-0001`) y el Gate de Inicio (EPWO-052) al abrirse.
+**Deriva de:** `docs/auditoria/AUDITORIA_ADAN_2026-09.md` (avance estimado: ~22 %) y `AD-DEC-0002`.
+**No es fuente de verdad** (Regla 6): la numeración vigente la fija `AD-ROOT-0001 §4`.
 
 ---
 
 ## 0. Qué significa "100 %"
 
-**ADÁN Enterprise v1:** los 7 Niveles funcionando de punta a punta según AD-FUNC-01 a 09, con Board Room, Gemelo Digital, scoring por evidencia, experiencia y aprendizaje, integrado con el ecosistema Paradixe, sobre una plataforma certificada para producción (EPWO-054).
+**ADÁN Enterprise v1:**
+- Los 7 Niveles funcionando de punta a punta según AD-FUNC-01 a 09.
+- Agentes por tiempo para las empresas, Marketplace y Comunidad.
+- Integración con el ecosistema: EVA para ventas y marketing, CSI e internamente Genexis.
+- Todo sobre una plataforma certificada para producción (EPWO-054).
 
-**Fuera de este plan**, porque tienen reserva propia y requieren aprobación separada:
-- **WO-100 Business Architecture:** precio por Nivel, billing, revenue share del Marketplace, marco legal (incluidos "Ondas Expansivas" y la IP en disputa).
-- **WO-101 → WO-106, cadena SaaS:** cuentas multiempresa, billing y administración (`CHAIN_CLOSURE.md`).
-
-Sin ellas ADÁN puede estar técnicamente completo, pero no listo para venderse.
+**Fuera de este plan:**
+- **WO-100 Business Architecture.** Precios, billing, términos del Marketplace, cumplimiento de la red multinivel (Ley 1700 de 2013) y régimen del Programa AAA. Puede abrirse ya, con `AD-DEC-0002` como insumo.
+- **WO-101 → WO-106, cadena SaaS.** Cuentas multiempresa, planes y administración.
 
 ## 1. Numeración (verificada contra el Canon)
 
@@ -23,229 +25,238 @@ Sin ellas ADÁN puede estar técnicamente completo, pero no listo para venderse.
 |---|---|
 | WO-090 | Consolidación (abierta: falta el tag de baseline y la revisión humana) |
 | WO-091, 092, 093 | Ya definidas en el Canon: PostgreSQL, TypeScript, Producción |
-| **WO-094** | **Hotfix de seguridad: ejecutada (PR de esta auditoría)** |
-| WO-095 → WO-099 | Nuevas (este plan) |
+| **WO-094** | **Hotfix de seguridad: ejecutada y fusionada (hernanjrestrepo/ADAN#1)** |
+| **WO-095** | **Estabilización funcional: ejecutada y fusionada (`docs/wo/WO-095_REPORTE.md`)** |
+| WO-096 → WO-099 | Nuevas |
 | WO-100 → WO-106 | Reservadas; no se tocan |
-| WO-107 → WO-120 | Nuevas (este plan) |
-
-Numeración interna antigua de Build C (WO-011 → 020): se conserva como historia; toda cita debe indicar la línea (`CATALOGO_WORK_ORDERS.md §1`).
+| WO-107 → WO-122 | Nuevas |
 
 ## 2. Ruta crítica
 
 ```
-WO-094 ✅ ─► WO-090 (cierre) ─► WO-095 ─► WO-096
-                                   │
-          ┌────────────────────────┴────────────────────────┐
-          ▼                                                 ▼
-   WO-091 PostgreSQL ─► WO-097 Seguridad por empresa    WO-092 TypeScript + UX base
-          │                                                 │
-          └──────────────► WO-093 Producción ◄──────────────┘
-                                   │
-                                   ▼
-          WO-098 Gemelo Digital y Decisiones ─► WO-099 Motor cognitivo único
-                                   │
-                                   ▼
-          WO-107 Evidencia y Scoring ─► WO-108 Onboarding + Nivel 1 completo
-                                   │
-                                   ▼
-          WO-109 Nivel 2 ─► WO-110 Nivel 3 ─► WO-111 Nivel 4 ─► WO-112 Nivel 5 ─► WO-113 Nivel 6 ─► WO-114 Nivel 7
-                                   │
-               ┌───────────────────┼────────────────────┬──────────────────┐
-               ▼                   ▼                    ▼                  ▼
-   WO-115 Experiencia     WO-116 Estrategias    WO-117 Learning    WO-118 Ecosistema ─► WO-119 Marketplace
-               └───────────────────┴────────────────────┴──────────────────┘
-                                   ▼
-                     WO-120 Certificación ADÁN Enterprise v1
+WO-094 ✅ ─► WO-095 ✅ ─► WO-096
+                 │
+     ┌───────────┴──────────────────────┐
+     ▼                                  ▼
+  WO-091 PostgreSQL ─► WO-097 Seguridad   WO-092 TypeScript + UX base
+     └──────────────► WO-093 Producción ◄──────┘
+                          │
+                          ▼
+  WO-098 Gemelo y Decisiones ─► WO-099 Motor cognitivo + IA (Ollama/Anthropic)
+                          │
+                          ▼
+  WO-107 Evidencia y Scoring ─► WO-108 Onboarding + Nivel 1 ──► WO-109 Agentes por tiempo (en paralelo)
+                          │
+                          ▼
+  WO-110 N2 ─► WO-111 N3 ─► WO-112 N4 (MVP con Anthropic) ─► WO-113 N5 ─► WO-114 N6 ─► WO-115 N7
+                          │
+       ┌──────────────────┼─────────────────┬───────────────────┬─────────────────┐
+       ▼                  ▼                 ▼                   ▼                 ▼
+  WO-116 Experiencia  WO-117 Estrategias  WO-118 Learning  WO-119 EVA/CSI/canales  WO-120 Marketplace ─► WO-121 Comunidad
+       └──────────────────┴─────────────────┴───────────────────┴─────────────────┘
+                                         ▼
+                           WO-122 Certificación ADÁN Enterprise v1
 ```
-
-Se pueden trabajar en paralelo: WO-092 junto con WO-091/097, y WO-115 → 118 entre sí una vez cerrado WO-114. Los Niveles son secuenciales porque cada uno consume lo que produce el anterior en el Gemelo Digital.
 
 ## 3. Hitos
 
 | Hito | WOs | Resultado | Avance estimado |
 |---|---|---|---:|
-| H1 — Base segura | 094 ✅, 090, 095, 096 | Sin RCE ni fugas; bugs críticos corregidos; los 3 builds y el blueprint en un solo lugar | ~25 % |
-| H2 — Plataforma enterprise | 091, 097, 092, 093 | PostgreSQL, aislamiento por empresa, frontend TS, CI/CD y despliegue reproducible | ~35 % |
-| H3 — Núcleo y Nivel 1 real | 098, 099, 107, 108 | Nivel 1 cumple AD-FUNC-01 completo; primer piloto real con Paradixe (dogfooding) | ~55 % |
-| H4 — Los 7 Niveles | 109 → 114 | Recorrido completo de creación de empresa | ~75 % |
-| H5 — Experiencia, estrategia y aprendizaje | 115, 116, 117 | ADÁN se siente como lo diseña el blueprint y aprende de las decisiones | ~88 % |
-| H6 — Ecosistema y certificación | 118, 119, 120 | Integrado con EVA, ARQAI, Genexis y CSI; Marketplace; Gate de Producción | 100 % |
+| H1 — Base segura | 094 ✅, 090, 095, 096 | Sin RCE ni fugas; bugs críticos corregidos; avisos de IA; builds y blueprint en un solo lugar | ~25 % |
+| H2 — Plataforma enterprise | 091, 097, 092, 093 | PostgreSQL, aislamiento por empresa, frontend TS, CI/CD | ~35 % |
+| H3 — Núcleo, Nivel 1 real e ingreso recurrente | 098, 099, 107, 108, 109 | Nivel 1 completo con piloto real; primeros agentes por tiempo | ~55 % |
+| H4 — Los 7 Niveles | 110 → 115 | Recorrido completo de creación o reinvención de empresa | ~75 % |
+| H5 — Experiencia, estrategia y aprendizaje | 116, 117, 118 | ADÁN se siente como lo diseña el blueprint y aprende de las decisiones | ~85 % |
+| H6 — Ecosistema, comunidad y certificación | 119, 120, 121, 122 | EVA, CSI, Marketplace, Comunidad y red de comisiones; Gate de Producción | 100 % |
 
 ---
 
 ## 4. Fichas de Work Order
 
-Todas comparten el mismo criterio de cierre (EPWO-051): evidencia objetiva ejecutada, pruebas que pasan en CI (desde WO-093), documentación actualizada, deuda registrada, `git status` limpio, commits por Sprint y un PR revisado por Hernán. Cada ficha agrega solo lo específico.
+Criterio de cierre común (EPWO-051), además de lo específico de cada ficha:
+- Evidencia objetiva ejecutada.
+- Pruebas que pasan (en CI desde WO-093).
+- Documentación y deuda registradas.
+- `git status` limpio y commits por Sprint.
+- Reporte en `docs/wo/` y PR fusionado a `main`.
 
-### WO-094 — Hotfix de seguridad ✅ ejecutada
-- **Hecho:** RCE en TEF cerrado (calculadora con AST; `python_sandbox`, `file_reader` y `sql_query` deshabilitadas); protección SSRF en `app/core/net.py`; aislamiento por empresa en Nivel 1, cognitivo, OOS, TEF y EMS; 5 pruebas de `test_board_room` corregidas; `tests/test_security.py`.
-- **Pendiente para su cierre:** revisión y merge del PR.
+### WO-094 — Hotfix de seguridad ✅
+- RCE en TEF cerrado.
+- Protección SSRF.
+- Aislamiento por empresa en Nivel 1, cognitivo, OOS, TEF y EMS.
+- 5 pruebas de board room corregidas y `tests/test_security.py`.
+- Fusionada en `main`.
 
-### WO-095 — Estabilización funcional
-- **Objetivo:** que lo que ya existe funcione como dice que funciona.
-- **Alcance:** bugs B1–B18 de la auditoría. En particular:
-  - Recomendaciones (500).
-  - Persistencia de `/cognitive/think`.
-  - Votos por defecto → abstención y no PROCEED.
-  - Registrar todo el disenso.
-  - Sin autoaprobación de decisiones y avance de Nivel solo con aprobación explícita del cliente (endpoint aprobar/rechazar, Patrón A).
-  - Reutilizar el resultado del Board en recomendaciones y Gate Review.
-  - SSE correcto.
-  - Eliminar `services/memory.py` muerto.
-  - Escala única de confianza.
-  - Etiquetar como `mock` en la API toda respuesta de voz, omnicanal y conectores simulados.
-  - `requirements-dev.txt` con las dependencias de pruebas.
-- **Fuera de alcance:** funcionalidad nueva y cambio de base de datos.
-- **Cierre específico:** prueba de regresión por cada bug; flujo Nivel 1 completo (chat → Board → diagnóstico → recomendaciones → aprobación del cliente → Gate) ejecutado contra Ollama real.
+### WO-095 — Estabilización funcional ✅
+- **Alcance:** bugs B1–B4 y B6–B18 de la auditoría. B5, el Gate por palabras clave, es de diseño y va en WO-107. Además:
+  - Aprobación explícita del cliente para las decisiones y para cerrar un Nivel (Patrón A), en backend y en la interfaz.
+  - **Avisos de IA** en la interfaz, en los documentos y en la API (`AD-DEC-0002` decisión 6).
+  - Etiqueta `mock` en toda respuesta simulada (voz, omnicanal, conectores).
+  - `requirements-dev.txt`.
+- **Cierre específico:** prueba de regresión por cada bug.
 - **Estimación:** 3–5 días.
 
 ### WO-096 — Consolidación de builds y documentación
-- **Objetivo:** un solo repositorio y un solo blueprint.
 - **Alcance:**
-  - Importar Build B (`git subtree split` de `repos-active/adan` en `adan/platform-integration`) a `adan-platform-integration/`, con su historial, previa revisión de secretos.
-  - Llevar a `docs/wo-000/` las versiones más nuevas que hoy solo están en Build A (AD-003 v1.2, AD-006 v1.2, AD-FUNC-07/08/09) y marcar las superadas.
-  - Mapa de reutilización A/B → C por módulo.
-  - Actualizar `.claude/launch.json` y `ADAN_MASTER_ARCHITECTURE_v1.0.md` (quitar la autodeclaración de "Single Source of Truth").
-  - Decidir qué documentos de negocio deben salir del repositorio público.
+  - Importar Build B con su historial.
+  - Llevar a `docs/wo-000/` las versiones más nuevas del blueprint que hoy están en Build A.
+  - Nueva versión de AD-000 según `AD-DEC-0002` (EVA = ventas y marketing, agentes por tiempo, Genexis interno, Comunidad).
+  - Mapa de reutilización A/B → C.
+  - Actualizar `.claude/launch.json` y `ADAN_MASTER_ARCHITECTURE_v1.0.md`.
 - **Estimación:** 2–3 días.
 
-### WO-091 — Migración Enterprise: PostgreSQL + pgvector *(definida en el Canon)*
+### WO-091 — PostgreSQL + pgvector *(Canon)*
 - **Alcance:**
-  - PostgreSQL 16 + pgvector y Alembic.
-  - Unificar `Base`, `EMSBase` y `OOSBase`.
-  - Llevar el modelo a las 38 entidades de AD-006 v1.2, partiendo de la migración de 37 tablas de Build A.
-  - Embeddings reales (`nomic-embed-text` vía Ollama) en pgvector, que reemplazan el hash de palabras y los índices en memoria.
-  - Script de migración de datos desde SQLite.
-- **Reutiliza:** `adan-platform/backend/migrations`, `adan-platform/infra`, `adan-platform/ai/memory`.
-- **Cierre específico:** migración de ida y vuelta probada; suite completa contra PostgreSQL real.
+  - PostgreSQL 16, pgvector y Alembic.
+  - Una sola base declarativa.
+  - Las 38 entidades de AD-006 v1.2, partiendo de la migración de Build A.
+  - Embeddings reales (`nomic-embed-text`) en pgvector.
+  - Migración de datos desde SQLite.
 - **Estimación:** 5–8 días.
 
 ### WO-097 — Seguridad y aislamiento por empresa
-- **Objetivo:** cerrar los pendientes S12–S18 y hacer imposible, por diseño, una fuga entre empresas.
 - **Alcance:**
-  - Dependencia de autorización única (empresa, organización, conversación) usada por todos los routers, más pruebas que lo verifiquen para cada endpoint.
-  - La app no arranca en producción con `JWT_SECRET` por defecto.
-  - Límite de peticiones y de intentos de login; política de contraseñas.
-  - Sesión en cookie `httpOnly` y revocación de tokens.
-  - Conectores y credenciales por empresa, cifrados.
-  - Permisos, confirmaciones y timeouts efectivos en TEF.
-  - Auditoría persistente (AD-OPS-02).
-  - Proxy de salida contra DNS rebinding.
-  - Sandbox aislado (contenedor efímero sin red ni secretos) que permita reactivar `python_sandbox` y `file_reader` con almacenamiento por empresa.
-- **Límite con WO-101 → 106:** esta WO aísla datos dentro de una instancia; cuentas SaaS, planes y billing siguen reservados.
+  - Autorización centralizada.
+  - La app no arranca con `JWT_SECRET` por defecto.
+  - Límite de peticiones y de intentos; política de contraseñas.
+  - Sesión en cookie `httpOnly`.
+  - Credenciales de conectores por empresa y cifradas.
+  - Permisos, confirmaciones y timeouts en TEF.
+  - Auditoría persistente.
+  - Proxy de salida.
+  - Sandbox aislado que permita reactivar `python_sandbox` y `file_reader`.
 - **Estimación:** 5–8 días.
 
-### WO-092 — Frontend TypeScript y base de UX *(definida en el Canon)*
+### WO-092 — Frontend TypeScript y base de UX *(Canon)*
 - **Alcance:**
-  - Migrar a TypeScript tomando como base el frontend de Build A.
-  - Design system (AD-UX-01), workspace (AD-UX-02), navegación (AD-UX-04) y cliente API tipado desde OpenAPI.
-  - ESLint y Playwright; corregir las 5 vulnerabilidades npm.
-  - Redactar antes AD-UX-01/02/04, siguiendo la regla del blueprint: especificación antes que interfaz.
+  - TypeScript, tomando como base el frontend de Build A.
+  - Design system, workspace y navegación (AD-UX-01/02/04).
+  - Cliente API tipado.
+  - ESLint y Playwright.
+  - Corregir las vulnerabilidades npm.
 - **Estimación:** 5–8 días.
 
-### WO-093 — Producción Enterprise *(definida en el Canon)*
+### WO-093 — Producción Enterprise *(Canon)*
 - **Alcance:**
-  - GitHub Actions (pruebas backend, lint, build y E2E frontend).
-  - Imágenes de producción: uvicorn sin `--reload` con workers, frontend compilado y servido estático, versiones fijadas.
+  - GitHub Actions.
+  - Imágenes de producción.
   - Healthchecks.
-  - Logs estructurados, métricas y trazas con `trace_id` (AD-OPS-01).
+  - Logs, métricas y trazas.
   - Backups y restauración probados.
-  - Despliegue y rollback documentados.
-- **Cierre específico:** Gate de Producción (EPWO-054), con despliegue limpio y rollback ensayado.
+  - Despliegue y rollback.
+- **Cierre:** Gate de Producción (EPWO-054).
 - **Estimación:** 5–8 días.
 
 ### WO-098 — Gemelo Digital y Decisiones
 - **Alcance:**
-  - Los 4 Patrones de estado de AD-008 (A aprobación, B progreso, C registro permanente, D contenedor) aplicados a las 38 entidades.
-  - Versionado real: historial y no sobrescritura.
+  - Los 4 Patrones de AD-008.
+  - Versionado real.
   - Event store append-only.
-  - Ciclo de vida AD-CMP-06 (nacer, crecer, dividir, fusionar, archivar).
-  - Decisión con los 6 campos de AD-FUNC-02 §2.5 cuando el cliente decide distinto del Board.
-  - Vista de Decisiones (AD-UX-10) y Timeline (AD-UX-08).
-- **Depende de:** WO-091.
+  - Ciclo de vida AD-CMP-06.
+  - Decisión con los 6 campos de AD-FUNC-02 §2.5.
+  - Vistas de Decisiones y Timeline.
 - **Estimación:** 8–12 días.
 
-### WO-099 — Motor cognitivo único (Board Room, memoria e IA)
-- **Objetivo:** un solo orquestador y un solo Board Room donde hoy hay dos.
+### WO-099 — Motor cognitivo único e IA
 - **Alcance:**
-  - Board Room con los 7 roles de AD-FUNC-02 (CEO, CTO, CFO, CMO, Legal, Producto, Operaciones) y el Master Orchestration Flow de 8 pasos.
-  - Voto ponderado por evidencia y disenso visible.
-  - Participación del cliente e invitados sin voto; actas.
-  - Memoria de 5 capas de AD-CMP-04 con resúmenes y la regla de no repetición.
-  - Enrutamiento de modelos AD-IA-01 (Claude Haiku/Sonnet/Opus y Ollama local) con fallback y degradación controlada.
-  - Evaluación de prompts (AD-IA-02) y medición de costo por proyecto y Nivel (AD-IA-03).
-  - Redactar antes AD-ARQ-02/03/04/05 y AD-IA-01.
-- **Reutiliza:** `adan-platform/ai/orchestrator`, `adan-platform/ai/agents` y el Board de Build B.
-- **Depende de:** WO-098.
+  - Un solo Board Room con los 7 roles de AD-FUNC-02 y el Master Orchestration Flow.
+  - Participación del cliente, disenso visible y actas.
+  - Memoria de 5 capas (AD-CMP-04).
+  - **Enrutamiento de modelos (`AD-DEC-0002` decisión 3):**
+    - Ollama avanzado (un modelo local de 7B–14B en lugar del 0,5B actual) para tareas simples.
+    - Claude Haiku, Sonnet u Opus de Anthropic según la complejidad.
+    - Fallback, degradación controlada y medición de costo por proyecto y Nivel (AD-IA-03).
 - **Estimación:** 10–15 días.
 
 ### WO-107 — Evidencia y Scoring
 - **Alcance:**
-  - Jerarquía de validez de evidencia (AD-CMP-05).
-  - Los 8 scores de AD-FUNC-07 (6 de diagnóstico y 2 continuos) con su motor de cálculo (AD-ARQ-10).
-  - Gate Review que evalúe evidencia registrada, no palabras clave en texto generado.
-  - Confidence Level declarado en cada score.
-- **Depende de:** WO-098, WO-099.
+  - Jerarquía de evidencia (AD-CMP-05).
+  - Los 8 scores de AD-FUNC-07 con su motor (AD-ARQ-10).
+  - Gate Review basado en evidencia registrada. Cierra B5.
 - **Estimación:** 5–8 días.
 
 ### WO-108 — Onboarding y Nivel 1 completo
 - **Alcance:**
-  - AD-FUNC-06 completo: captura mínima, identidad progresiva derivada, recuperación y medición de <30 s hasta la primera pregunta.
-  - Nivel 1 según AD-FUNC-01: evidencia externa vía CSI (AD-INT-04), perfil del Usuario Principal, entregable "Diagnóstico del Dolor" y aprobación explícita del cliente.
-  - Vista de Nivel (AD-UX-05) y Cards (AD-UX-06).
-- **Cierre específico:** piloto real con al menos una empresa de Paradixe.
+  - AD-FUNC-06 completo, con **consentimiento de datos** (`AD-DEC-0002` decisión 8).
+  - Nivel 1 con evidencia externa vía CSI y aprobación del cliente.
+  - Vista de Nivel y Cards.
+- **Cierre:** piloto real con una empresa de Paradixe.
 - **Estimación:** 5–8 días.
 
-### WO-109 → WO-114 — Niveles 2 a 7
-
-Cada Nivel se construye con la misma plantilla: las 3 preguntas de AD-FUNC-01 §0 (qué descubre ADÁN, qué aprende el cliente, qué cambia en el Gemelo), su entregable, su score, su criterio de avance por evidencia, su emoción y ritmo (AD-FUNC-03/04) y su vista.
-
-| WO | Nivel | Específico | Integración | Estimación |
-|---|---|---|---|---|
-| WO-109 | 2 — Propuesta de Valor | Mercado, Competidores, matriz comparativa; validación con clientes reales | CSI | 6–10 días |
-| WO-110 | 3 — Plan de Negocios | Estructura legal y tributaria, proyecciones contra benchmarks, organigrama híbrido, Departamento/Cargo/Activo/Pasivo | EVA, CSI | 6–10 días |
-| WO-111 | 4 — MVP | Blueprint técnico adaptado al perfil, mockups, Iniciativa de construcción; nunca construir sin aprobación | Genexis | 6–10 días |
-| WO-112 | 5 — Validación Simulada | Clientes e inversionistas simulados, Riesgos, tablero de métricas simuladas | — | 6–10 días |
-| WO-113 | 6 — Lanzamiento | Primeros Sucesos Empresariales reales verificados; paso a operación continua sobre OOS | EVA, OOS | 6–10 días |
-| WO-114 | 7 — Escalamiento | Velocidad de Maduración Organizacional, crisis de crecimiento, seguimiento continuo | EVA | 6–10 días |
-
-### WO-115 — Experience, Gamification y User Journey
+### WO-109 — Agentes por tiempo
+- **Objetivo:** que ADÁN suministre agentes por hora, día, semana o mes para tareas específicas de cada empresa (`AD-DEC-0002` decisión 1). Es el ingreso recurrente de ADÁN.
 - **Alcance:**
-  - Las 7 emociones (AD-FUNC-03) y los 7 ritmos (AD-FUNC-04) aplicados a la interfaz.
-  - XP, logros e insignias ligados solo a cambios verificables del Gemelo.
-  - Regla anti-manipulación verificada con pruebas.
-  - Journey de AD-FUNC-08.
-  - Sin rankings sociales.
+  - Catálogo de agentes: rol, habilidades, herramientas y modelo, construido sobre la `agent_factory` actual llevada a persistencia.
+  - Contratación por período y asignación de tareas mediante las Work Orders del OOS.
+  - Ejecución con TEF y el motor de WO-099.
+  - Medición del tiempo y del trabajo real, y reporte al cliente.
+  - Los precios se fijan en WO-100.
+- **Depende de:** WO-097, WO-099.
 - **Estimación:** 8–12 días.
 
-### WO-116 — Motor de Estrategias Empresariales
-- **Alcance:** AD-FUNC-05 (flujo de 11 pasos, 16 tipos de estrategia, recursos internos primero, simulación de impacto y secuencia óptima) conectado al Board Room.
-- **Estimación:** 6–10 días.
+### WO-110 → WO-115 — Niveles 2 a 7
 
-### WO-117 — Learning Engine
-- **Alcance:** AD-FUNC-09 (3 ciclos de aprendizaje, Playbook y 6 salvaguardas contra sesgo e información incorrecta). Aprende de las decisiones, incluidas las que contradicen al Board. Reemplaza `learning/engine.py`.
-- **Estimación:** 6–10 días.
+Cada Nivel se construye con la misma plantilla:
+- Las 3 preguntas de AD-FUNC-01 §0.
+- Entregable, score y criterio de avance por evidencia.
+- Emoción y ritmo (AD-FUNC-03/04).
+- Vista propia y aviso de IA en todos los documentos.
 
-### WO-118 — Integraciones del ecosistema y canales
+| WO | Nivel | Específico | Apoyo | Estimación |
+|---|---|---|---|---|
+| WO-110 | 2 — Propuesta de Valor | Mercado, competidores, matriz comparativa; validación con clientes reales | CSI | 6–10 días |
+| WO-111 | 3 — Plan de Negocios | Estructura legal y tributaria, proyecciones contra benchmarks (agente CFO + CSI), organigrama híbrido | CSI | 6–10 días |
+| WO-112 | 4 — MVP | Blueprint técnico, mockups y **MVP construido con Anthropic** a través de Genexis como motor interno; nunca construir sin aprobación | Genexis, Anthropic | 8–12 días |
+| WO-113 | 5 — Validación Simulada | Clientes e inversionistas simulados, riesgos, tablero de métricas | — | 6–10 días |
+| WO-114 | 6 — Lanzamiento | Primeros sucesos reales verificados; campañas de lanzamiento con EVA | EVA | 6–10 días |
+| WO-115 | 7 — Escalamiento | Velocidad de maduración, crisis de crecimiento, acompañamiento continuo con agentes por tiempo | EVA, WO-109 | 6–10 días |
+
+### WO-116 — Experience, Gamification y User Journey
 - **Alcance:**
-  - Contratos AD-INT-01 a 04: EVA, ARQAI (voz real en lugar del stub), Genexis y CSI.
-  - Canales reales (WhatsApp, Telegram, correo) y conectores reales (Gmail, Calendar, Slack) con OAuth por empresa.
-  - DKA con búsqueda real en lugar de URLs de demostración.
-  - Redactar antes AD-INT-01 a 04 y AD-PLAT-01.
+  - 7 emociones y 7 ritmos.
+  - XP y logros ligados solo a cambios del Gemelo.
+  - Regla anti-manipulación.
+  - Índice ADÁN.
+  - Journey de AD-FUNC-08.
+- **Estimación:** 8–12 días.
+
+### WO-117 — Motor de Estrategias Empresariales
+- **Alcance:** AD-FUNC-05 (11 pasos, 16 tipos de estrategia, recursos internos primero) conectado al Board Room.
+- **Estimación:** 6–10 días.
+
+### WO-118 — Learning Engine
+- **Alcance:** AD-FUNC-09 (3 ciclos de aprendizaje, Playbook, 6 salvaguardas), solo con datos consentidos y anonimizados.
+- **Estimación:** 6–10 días.
+
+### WO-119 — Integración con EVA, CSI y canales
+- **Alcance:**
+  - **EVA** (antes ARQAI): campañas inbound y outbound, voz real en lugar del stub, agentes conversacionales y omnicanalidad.
+  - **CSI:** inteligencia externa.
+  - Conectores reales (Gmail, Calendar, Slack) con OAuth por empresa.
+  - DKA con búsqueda real.
+  - Contratos AD-INT actualizados según `AD-DEC-0002`.
 - **Estimación:** 12–20 días.
 
-### WO-119 — Marketplace
+### WO-120 — Marketplace
 - **Alcance:**
-  - Publicación, descubrimiento y curaduría de SaaS, agentes y servicios Paradixe, sobre el `plugins/` actual llevado a persistencia y API.
-  - El revenue share queda en WO-100.
+  - Publicación, descubrimiento y curaduría de agentes, servicios y APIs del ecosistema y de terceros.
+  - Integración con el catálogo de agentes de WO-109.
+  - Comisiones según WO-100.
 - **Estimación:** 6–10 días.
 
-### WO-120 — Certificación ADÁN Enterprise v1
+### WO-121 — Comunidad y red de comisiones
 - **Alcance:**
-  - Recorrido E2E de los 7 Niveles con empresas reales.
+  - Comunidad de emprendedores y empresas: perfiles, conexiones y espacios.
+  - Red de comisiones multinivel ("Ondas Expansivas"): referidos, árbol de hasta 7 niveles, cálculo y liquidación de comisiones **solo sobre ventas reales**, plan de compensación publicado y contratos (Ley 1700 de 2013, según `AD-DEC-0002` §3.3).
+- **Depende de:** WO-100 (términos) y WO-120.
+- **Estimación:** 10–15 días.
+
+### WO-122 — Certificación ADÁN Enterprise v1
+- **Alcance:**
+  - E2E de los 7 Niveles con empresas reales.
   - Auditoría de seguridad externa.
-  - Pruebas de carga para más de 100 empresas simultáneas (objetivo de `ADAN_MASTER_ARCHITECTURE §1.4`).
-  - Revisión humana de producto (EPWO-053) y Gate de Producción (EPWO-054).
+  - Carga para más de 100 empresas.
+  - Revisión humana (EPWO-053) y Gate de Producción (EPWO-054).
   - Tag `v1.0.0-enterprise`.
 - **Estimación:** 5–8 días.
 
@@ -255,18 +266,18 @@ Cada Nivel se construye con la misma plantilla: las 3 preguntas de AD-FUNC-01 §
 
 | Bloque | WOs | Días de trabajo efectivo |
 |---|---|---:|
-| H1 Base segura | 095, 096 (+ cierre de 090) | 5–8 |
-| H2 Plataforma | 091, 097, 092, 093 | 20–32 |
-| H3 Núcleo y Nivel 1 | 098, 099, 107, 108 | 28–43 |
-| H4 Niveles 2–7 | 109 → 114 | 36–60 |
-| H5 Experiencia y aprendizaje | 115, 116, 117 | 20–32 |
-| H6 Ecosistema y certificación | 118, 119, 120 | 23–38 |
-| **Total** | **22 WOs** | **~130–215 días** |
+| H1 | 095, 096 (+ cierre de 090) | 5–8 |
+| H2 | 091, 097, 092, 093 | 20–32 |
+| H3 | 098, 099, 107, 108, 109 | 36–55 |
+| H4 | 110 → 115 | 38–62 |
+| H5 | 116, 117, 118 | 20–32 |
+| H6 | 119, 120, 121, 122 | 33–53 |
+| **Total** | **24 WOs** | **~150–240 días** |
 
-Con un solo frente de trabajo son unos 6–10 meses; con dos frentes en paralelo (plataforma y producto a partir de H2), unos 4–7 meses. Las estimaciones incluyen las revisiones humanas que exige EPWO. El ritmo de Build B (12 WOs en 3 días) no es referencia, porque no pasó por esos gates.
+Con un solo frente de trabajo son unos 7–11 meses; con dos frentes en paralelo desde H2, unos 5–8 meses. Incluye las revisiones humanas que exige EPWO.
 
-## 6. Próximo paso
+## 6. Orden de ejecución
 
-1. Revisar y fusionar el PR de WO-094.
-2. Aprobar o ajustar este plan (numeración, orden y alcance).
-3. Cerrar WO-090 y abrir WO-095 con su Fase -1.
+1. WO-095 ✅ (`docs/wo/WO-095_REPORTE.md`).
+2. WO-096, en curso en lo que no dependa de la laptop.
+3. H2 en el orden de la ruta crítica.

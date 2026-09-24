@@ -64,8 +64,8 @@ def normalize_list(value: Any, default: list | None = None) -> list:
     return [str(value)]
 
 
-def normalize_vote(value: Any, default: str = "PROCEED") -> str:
-    """Normalize vote to one of: PROCEED, PIVOT, STOP."""
+def normalize_vote(value: Any, default: str = "ABSTAIN") -> str:
+    """Normalize vote to one of: PROCEED, PIVOT, STOP; anything else is ABSTAIN (not counted)."""
     if value is None:
         return default
     if isinstance(value, str):
@@ -113,7 +113,7 @@ def normalize_analysis_response(raw: dict) -> dict:
     {
         "analysis": str,
         "justification": str,
-        "vote": "PROCEED" | "PIVOT" | "STOP",
+        "vote": "PROCEED" | "PIVOT" | "STOP" | "ABSTAIN",
         "confidence": float (0-100),
         "key_strengths": list[str],
         "key_concerns": list[str],

@@ -140,7 +140,7 @@ class GateReviewEngine:
             message = (
                 f"Gate Review APROBADO. Score: {overall_score:.0f}/100 "
                 f"(mínimo: {MINIMUM_PASSING_SCORE}/100). "
-                f"Nivel 1 completado exitosamente."
+                f"Falta tu aprobación para cerrar el Nivel 1."
             )
         else:
             issues_text = "; ".join(blocking_issues) if blocking_issues else "Score insuficiente"

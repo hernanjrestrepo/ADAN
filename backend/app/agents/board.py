@@ -18,6 +18,7 @@ from datetime import datetime, timezone
 from typing import Any
 
 from app.ai.base import LLMAdapter, LLMMessage
+from app.ai.normalize import normalize_list, normalize_string, normalize_vote
 from app.ems.memory import EnterpriseMemorySystem
 from app.tef.executor import ToolExecutor
 
@@ -245,6 +246,17 @@ REGLAS:
     },
 }
 
+def _to_percent(value: Any) -> float:
+    """Confianza en escala 0-100; los prompts piden 0.0-1.0 pero el modelo a veces responde 0-100."""
+    try:
+        number = float(value)
+    except (TypeError, ValueError):
+        return 0.0
+    if 0 <= number <= 1:
+        number *= 100
+    return max(0.0, min(100.0, number))
+
+
 # ============================================================
 # Debate Order
 # ============================================================
@@ -436,8 +448,8 @@ class ExecutiveBoard:
             deliberation.rounds.append(round_result)
             debate_history.append(round_result)
 
-            # Detectar disenso
-            if round_result.vote != "PROCEED":
+            # Detectar disenso (una abstención no es disenso)
+            if round_result.vote not in ("PROCEED", "ABSTAIN"):
                 deliberation.dissent_rounds.append(round_result.round_number)
 
             # Recoger objeciones
@@ -475,7 +487,7 @@ class ExecutiveBoard:
                 parts.append(f"Análisis: {round.analysis[:300]}")
                 if round.response_to_previous:
                     parts.append(f"Respuesta a anteriores: {round.response_to_previous[:200]}")
-                parts.append(f"Voto: {round.vote} (confianza: {round.confidence:.0%})")
+                parts.append(f"Voto: {round.vote} (confianza: {round.confidence:.0f}%)")
                 if round.objections:
                     parts.append(f"Objeciones: {'; '.join(round.objections[:3])}")
                 if round.question_for_board:
@@ -515,13 +527,17 @@ class ExecutiveBoard:
                 agent=agent_key,
                 role=agent_config["name"],
                 round_number=agent_config["order"],
-                analysis=data.get("analysis", ""),
-                response_to_previous=data.get("response_to_ceo", "") or data.get("response_to_previous", "") or data.get("board_summary", ""),
-                vote=data.get("vote", "PROCEED"),
-                confidence=data.get("confidence", 0.5),
-                objections=data.get("objections", []) or [],
-                key_points=data.get("key_points", []) or data.get("financial_constraints", []) or data.get("resource_requirements", []) or [],
-                question_for_board=data.get("question_for_board", ""),
+                analysis=normalize_string(data.get("analysis")),
+                response_to_previous=normalize_string(
+                    data.get("response_to_ceo") or data.get("response_to_previous") or data.get("board_summary")
+                ),
+                vote=normalize_vote(data.get("vote")),
+                confidence=_to_percent(data.get("confidence")),
+                objections=normalize_list(data.get("objections")),
+                key_points=normalize_list(
+                    data.get("key_points") or data.get("financial_constraints") or data.get("resource_requirements")
+                ),
+                question_for_board=normalize_string(data.get("question_for_board")),
                 duration_ms=duration_ms,
             )
 
@@ -533,15 +549,20 @@ class ExecutiveBoard:
                 round_number=agent_config["order"],
                 analysis=f"Error: {str(e)}",
                 response_to_previous="",
-                vote="PROCEED",
-                confidence=0.3,
+                vote="ABSTAIN",
+                confidence=0.0,
                 duration_ms=duration_ms,
             )
 
     def _calculate_final_consensus(self, deliberation: DeliberationResult) -> dict:
-        """Calcula el consenso final desde la deliberación."""
+        """Calcula el consenso final desde la deliberación. Las abstenciones no cuentan."""
+        valid_rounds = [r for r in deliberation.rounds if r.vote != "ABSTAIN"]
+        # Quórum: al menos la mitad de los agentes debe votar
+        if not valid_rounds or len(valid_rounds) * 2 < len(deliberation.rounds):
+            return {"decision": "NO_CONSENSUS", "score": 0.0, "confidence": 0.0}
+
         votes = {}
-        for rnd in deliberation.rounds:
+        for rnd in valid_rounds:
             votes[rnd.agent] = rnd.vote
 
         # Contar votos
@@ -562,8 +583,8 @@ class ExecutiveBoard:
         vote_scores = {"PROCEED": 1.0, "PIVOT": 0.5, "STOP": 0.0}
         avg_score = sum(vote_scores.get(v, 0) for v in votes.values()) / total * 100
 
-        # Confianza promedio
-        avg_confidence = sum(r.confidence for r in deliberation.rounds) / total
+        # Confianza promedio (0-100)
+        avg_confidence = sum(r.confidence for r in valid_rounds) / total
 
         return {
             "decision": decision,
@@ -623,7 +644,7 @@ class ExecutiveBoard:
         parts.append("")
 
         for round in deliberation.rounds:
-            parts.append(f"{round.role} ({round.agent}): {round.vote} ({round.confidence:.0%})")
+            parts.append(f"{round.role} ({round.agent}): {round.vote} ({round.confidence:.0f}%)")
             if round.analysis:
                 parts.append(f"  Análisis: {round.analysis[:150]}")
             if round.objections:
@@ -653,7 +674,7 @@ class ExecutiveBoard:
                 subject=f"Board Decision: {record.topic[:100]}",
                 predicate="decidió",
                 object_value=record.final_decision,
-                confidence=record.final_confidence,
+                confidence=record.final_confidence / 100,
                 source="board_deliberation",
             )
 
@@ -682,7 +703,7 @@ class ExecutiveBoard:
             f"TEMa: {record.topic}",
             f"DECISIÓN: {record.final_decision}",
             f"SCORE: {record.final_score}/100",
-            f"CONFIANZA: {record.final_confidence:.0%}",
+            f"CONFIANZA: {record.final_confidence:.0f}%",
             f"",
             f"PARTICIPANTES: {', '.join(record.participants)}",
             f"",
@@ -723,4 +744,5 @@ class ExecutiveBoard:
                 text = text[start:end].strip()
             return json.loads(text)
         except (json.JSONDecodeError, ValueError):
-            return {"analysis": content[:200], "vote": "PROCEED", "confidence": 0.5}
+            # Sin JSON válido no hay voto: queda como abstención
+            return {"analysis": content[:200]}

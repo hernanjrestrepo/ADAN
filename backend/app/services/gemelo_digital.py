@@ -11,10 +11,14 @@ from datetime import datetime, timezone
 
 from sqlalchemy.orm import Session
 
+from app.core.disclaimer import with_disclaimer
 from app.models.models import (
     Card, CardStatus, Company, Conversation, Decision, DecisionStatus,
     Document, Event, Level, NivelStatus, Message, Project, Score, ScoreType,
 )
+
+
+LAST_LEVEL = 7
 
 
 class GemeloDigitalService:
@@ -69,14 +73,15 @@ class GemeloDigitalService:
         return level
 
     def complete_level(self, project: Project, level_number: int) -> Level:
-        """Mark level as completed and activate next."""
+        """Mark level as completed and activate next (Nivel 7 is the last one)."""
         level = self.get_or_create_level(project, level_number)
         level.status = NivelStatus.COMPLETED
         level.completed_at = datetime.now(timezone.utc)
 
         # Activate next level (create if doesn't exist)
-        next_level = self.get_or_create_level(project, level_number + 1)
-        next_level.status = NivelStatus.ACTIVE
+        if level_number < LAST_LEVEL:
+            next_level = self.get_or_create_level(project, level_number + 1)
+            next_level.status = NivelStatus.ACTIVE
 
         # Record event
         self._record_event(
@@ -96,7 +101,7 @@ class GemeloDigitalService:
         doc = Document(
             project_id=project.id,
             title=title,
-            content=content,
+            content=with_disclaimer(content),
             doc_type="diagnosis",
             origin="generated_by_adan",
         )
@@ -122,26 +127,30 @@ class GemeloDigitalService:
         score: float,
         summary: str,
         votes: list[dict],
+        consensus: dict | None = None,
     ) -> Decision:
-        """Save Board Room result as a Decision."""
+        """Save Board Room result as a proposed Decision: only the client approves (Patrón A)."""
         decision_obj = Decision(
             project_id=project.id,
             title=f"Board Room: {decision}",
             description=summary,
             proposed_by="Board Room",
-            status=DecisionStatus.APPROVED if decision == "PROCEED" else DecisionStatus.PROPOSED,
+            status=DecisionStatus.PROPOSED,
             reasoning=summary,
             confidence_level=score,
         )
         self.db.add(decision_obj)
         self.db.flush()  # Generate ID before using it
 
+        data = {"decision": decision, "score": score, "agents": [v.get("agent") for v in votes]}
+        if consensus is not None:
+            data["consensus"] = consensus
         self._record_event(
             project.id,
             "board_room_completed",
             "decision",
             decision_obj.id,
-            {"decision": decision, "score": score, "agents": [v.get("agent") for v in votes]},
+            data,
         )
 
         self.db.commit()
@@ -189,7 +198,7 @@ class GemeloDigitalService:
         doc = Document(
             project_id=project.id,
             title=title,
-            content=content,
+            content=with_disclaimer(content),
             doc_type="recommendation",
             origin="generated_by_adan",
         )
@@ -197,6 +206,8 @@ class GemeloDigitalService:
         self.db.flush()  # Generate ID before using it
 
         self._record_event(
+            project.id,
+            "recommendation_saved",
             "document",
             doc.id,
             {"title": title},
@@ -205,6 +216,94 @@ class GemeloDigitalService:
         self.db.commit()
         self.db.refresh(doc)
         return doc
+
+    def get_last_board_consensus(self, project: Project) -> dict | None:
+        """Último resultado completo del Board Room, para no volver a ejecutarlo."""
+        events = self.db.query(Event).filter(
+            Event.project_id == project.id,
+            Event.event_type == "board_room_completed",
+        ).order_by(Event.created_at.desc()).all()
+        for event in events:
+            if event.data and event.data.get("consensus"):
+                return event.data["consensus"]
+        return None
+
+    def propose_level_completion(
+        self, project: Project, level_number: int, score: float, message: str,
+    ) -> Decision:
+        """Propone cerrar el Nivel; solo se completa cuando el cliente aprueba (AD-FUNC-01)."""
+        pending = self.get_pending_level_completion(project, level_number)
+        if pending:
+            return pending
+
+        decision_obj = Decision(
+            project_id=project.id,
+            title=f"Cerrar Nivel {level_number}",
+            description=message,
+            proposed_by="Gate Review",
+            status=DecisionStatus.PROPOSED,
+            reasoning=message,
+            confidence_level=score,
+        )
+        self.db.add(decision_obj)
+        self.db.flush()
+        self._record_event(
+            project.id,
+            "level_completion_proposed",
+            "decision",
+            decision_obj.id,
+            {"level_number": level_number, "score": score},
+        )
+        self.db.commit()
+        self.db.refresh(decision_obj)
+        return decision_obj
+
+    def get_pending_level_completion(self, project: Project, level_number: int) -> Decision | None:
+        """Decisión de cierre de Nivel que espera la aprobación del cliente, si existe."""
+        for event in self._level_completion_events(project):
+            if (event.data or {}).get("level_number") == level_number:
+                decision_obj = self.db.query(Decision).filter(Decision.id == event.entity_id).first()
+                if decision_obj and decision_obj.status == DecisionStatus.PROPOSED:
+                    return decision_obj
+        return None
+
+    def decide(self, project: Project, decision_obj: Decision, approve: bool, user_id: str) -> Decision:
+        """El cliente aprueba o rechaza una decisión propuesta (Patrón A, AD-008).
+
+        Si aprueba el cierre de un Nivel, el Nivel se completa y la decisión queda ejecutada.
+        """
+        if decision_obj.status != DecisionStatus.PROPOSED:
+            raise ValueError("Solo se puede aprobar o rechazar una decisión propuesta")
+
+        decision_obj.status = DecisionStatus.APPROVED if approve else DecisionStatus.REJECTED
+        decision_obj.approved_by = user_id
+        self._record_event(
+            project.id,
+            "decision_approved" if approve else "decision_rejected",
+            "decision",
+            decision_obj.id,
+            {"title": decision_obj.title},
+        )
+
+        if approve:
+            level_number = next(
+                ((e.data or {}).get("level_number") for e in self._level_completion_events(project)
+                 if e.entity_id == decision_obj.id),
+                None,
+            )
+            if level_number is not None:
+                self.complete_level(project, level_number)
+                decision_obj.status = DecisionStatus.EXECUTED
+
+        self.db.commit()
+        self.db.refresh(decision_obj)
+        return decision_obj
+
+    def _level_completion_events(self, project: Project) -> list[Event]:
+        return self.db.query(Event).filter(
+            Event.project_id == project.id,
+            Event.event_type == "level_completion_proposed",
+        ).order_by(Event.created_at.desc()).all()
 
     def get_gemelo_state(self, company: Company) -> dict:
         """Get the complete Gemelo Digital state."""

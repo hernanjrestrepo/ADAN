@@ -196,7 +196,10 @@ class IngestionPipeline:
 
     def get_document(self, document_id: str) -> EMSDocument | None:
         """Obtiene un documento por ID."""
-        return self.db.query(EMSDocument).filter(EMSDocument.id == document_id).first()
+        return self.db.query(EMSDocument).filter(
+            EMSDocument.id == document_id,
+            EMSDocument.status != "archived",
+        ).first()
 
     def list_documents(
         self,
@@ -208,6 +211,7 @@ class IngestionPipeline:
         return (
             self.db.query(EMSDocument)
             .filter(EMSDocument.company_id == company_id)
+            .filter(EMSDocument.status != "archived")
             .order_by(EMSDocument.created_at.desc())
             .limit(limit)
             .offset(offset)

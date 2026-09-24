@@ -4,6 +4,8 @@ from __future__ import annotations
 from datetime import datetime
 from pydantic import BaseModel, EmailStr, Field
 
+from app.core.disclaimer import AI_DISCLAIMER
+
 
 # --- Auth ---
 
@@ -183,6 +185,7 @@ class ChatResponse(BaseModel):
     message: MessageResponse
     conversation_id: str
     card_id: str | None = None
+    disclaimer: str = AI_DISCLAIMER
 
 
 # --- Dashboard ---
@@ -208,3 +211,4 @@ class GateReviewResponse(BaseModel):
     decisions: list[DecisionResponse]
     level_status: str
     message: str
+    disclaimer: str = AI_DISCLAIMER

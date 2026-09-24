@@ -11,6 +11,9 @@ from app.voice.adapter import ClaroVoiceAdapter
 
 router = APIRouter(prefix="/voice", tags=["voice"])
 
+# El adaptador todavía no procesa audio: la voz real llega con EVA (WO-119)
+MOCK_NOTE = "Simulado: no se procesó audio. La voz real llega con EVA (WO-119)."
+
 _adapter = ClaroVoiceAdapter()
 
 
@@ -33,7 +36,8 @@ async def speech_to_text(
     import base64
     audio_data = base64.b64decode(request.audio_base64)
     result = await _adapter.stt(audio_data, request.language)
-    return {"status": result.status, "text": result.output.get("text", ""), "duration_ms": result.duration_ms}
+    return {"status": result.status, "text": result.output.get("text", ""), "duration_ms": result.duration_ms,
+            "mock": True, "note": MOCK_NOTE}
 
 
 @router.post("/tts")
@@ -43,9 +47,10 @@ async def text_to_speech(
 ):
     """Convierte texto a audio (Text-to-Speech)."""
     result = await _adapter.tts(request.text, request.voice)
-    return {"status": result.status, "audio_url": result.output.get("audio_url", ""), "duration_ms": result.duration_ms}
+    return {"status": result.status, "audio_url": result.output.get("audio_url", ""), "duration_ms": result.duration_ms,
+            "mock": True, "note": MOCK_NOTE}
 
 
 @router.get("/health")
 async def voice_health():
-    return await _adapter.health()
+    return {**await _adapter.health(), "mock": True}

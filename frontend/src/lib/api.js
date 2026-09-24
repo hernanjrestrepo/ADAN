@@ -117,6 +117,18 @@ class ApiClient {
     return this.request(`/nivel1/${companyId}/documents`)
   }
 
+  async getDecisions(companyId) {
+    return this.request(`/nivel1/${companyId}/decisions`)
+  }
+
+  // action: 'approve' | 'reject'
+  async decide(companyId, decisionId, action) {
+    return this.request(`/nivel1/${companyId}/decisions/${decisionId}`, {
+      method: 'POST',
+      body: JSON.stringify({ action }),
+    })
+  }
+
   logout() {
     this.setToken(null)
   }

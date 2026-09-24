@@ -41,12 +41,14 @@ WO-092            TypeScript (ex "WO-102")
 WO-093            Producción Enterprise — CI/CD, observabilidad, seguridad (ex "WO-103")
 WO-094            Hotfix de seguridad — ejecución remota de código en TEF, SSRF y fugas entre
                   empresas (2026-09-24, aprobado por Hernán). Ver docs/auditoria/.
-WO-095 → WO-099   Asignadas en docs/auditoria/PLAN_WO_ADAN_100.md (propuesta, 2026-09-24).
-WO-107 → WO-120   Propuestas en el mismo plan, a continuación de las reservas WO-100 → WO-106.
+WO-095 → WO-099   Asignadas en docs/auditoria/PLAN_WO_ADAN_100.md (aprobado por Hernán, 2026-09-24).
+WO-107 → WO-122   Asignadas en el mismo plan, a continuación de las reservas WO-100 → WO-106.
 WO-100            RESERVADO — Business Architecture (precio por Nivel, Billing técnico,
                   Marketplace revenue share, Marco Legal/Regulatorio incl. "Ondas Expansivas"
                   e IP en disputa con el socio) — reserva preexistente en el blueprint
                   original (docs/WO-000_INDICE_MAESTRO_v2/v3/v3.21.md), NO tocada por WO-090+.
+                  2026-09-24: insumos decididos en AD-DEC-0002 (no hay disputa de IP; la
+                  red de comisiones es multinivel y debe cumplir la Ley 1700/2013).
 WO-101 → WO-106   RESERVADO — cadena SaaS (multi-tenant, billing, administración de cuentas)
                   — reserva preexistente de CHAIN_CLOSURE.md (Build B), requiere aprobación
                   humana explícita y Plan Maestro II propio para abrirse. NO tocada por WO-090+.
@@ -63,7 +65,7 @@ WO-101 → WO-106   RESERVADO — cadena SaaS (multi-tenant, billing, administra
 
 ✅
 - `docs/wo-000/*` (fuente compartida, idéntica en las tres líneas — canónica independientemente de la decisión de línea oficial).
-- `AD-DEC-0001`, `AD-ROOT-0001` (este documento), `AD-GOV-0001` — canónicos de gobierno.
+- `AD-DEC-0001`, `AD-DEC-0002` (modelo de negocio y ecosistema, 2026-09-24), `AD-ROOT-0001` (este documento), `AD-GOV-0001` — canónicos de gobierno.
 - `ADAN_MASTER_ARCHITECTURE_v1.0.md` (Build C) — **reclasificado**: deja de ser "Single Source of Truth" autodeclarada y pasa a ser documentación de arquitectura subordinada a este Canon. Esta misma sección cumple la función de la nueva Regla 6 de `AD-GOV-0001`: revoca explícitamente esa autodeclaración.
 - `CHAIN_CLOSURE.md` (Build B) — permanece como documento de cierre histórico de la línea experimental, con valor de referencia técnica.
 
@@ -87,4 +89,4 @@ Independientemente de la decisión anterior: el worktree registrado en `C:\Users
 | Fecha | Cambio | Decidido por |
 |---|---|---|
 | 2026-07-31 | Creación: Build C como línea oficial, numeración WO-090+, documentación canónica | Hernán (CTO) |
-| 2026-09-24 | §1 repositorio oficial → GitHub `hernanjrestrepo/ADAN`; §2 rama oficial → `main`; §4 WO-094 y rangos propuestos WO-095→099 y WO-107→120; §6 ubicación de Build A, Build B pendiente y prototipo 2024 | Hernán (CTO) |
+| 2026-09-24 | §1 repositorio oficial → GitHub `hernanjrestrepo/ADAN`; §2 rama oficial → `main`; §4 WO-094 y rangos WO-095→099 y WO-107→122; insumos de WO-100 (AD-DEC-0002); §6 ubicación de Build A, Build B pendiente y prototipo 2024 | Hernán (CTO) |

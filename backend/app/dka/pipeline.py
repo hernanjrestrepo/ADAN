@@ -69,7 +69,13 @@ class KnowledgeAcquisitionPipeline:
         # 1. Obtener URLs (si no se proporcionan, buscar)
         if not urls:
             urls = await self._discover_urls(query)
-        
+        if not urls:
+            result.errors.append(
+                "La búsqueda automática de fuentes todavía no está disponible: envía las URLs a consultar."
+            )
+            result.total_duration_ms = int((time.time() - start_time) * 1000)
+            return result
+
         urls = urls[:max_sources]
         result.sources_scraped = len(urls)
 
@@ -137,33 +143,12 @@ class KnowledgeAcquisitionPipeline:
         return result
 
     async def _discover_urls(self, query: str) -> list[str]:
-        """
-        Descubre URLs relevantes para una query.
-        Por ahora usa URLs hardcodeadas de demostración.
-        En producción, esto conectaría a un motor de búsqueda.
-        """
-        # URLs de demostración para testing
-        demo_urls = {
-            "bpo colombia": [
-                "https://www.procolombia.co/inversión/sectores/servicios",
-                "https://www.banrep.gov.co/es/estadisticas",
-            ],
-            "mercado colombiano": [
-                "https://www.dane.gov.co/",
-                "https://www.banrep.gov.co/es/estadisticas",
-            ],
-            "default": [
-                "https://httpbin.org/html",
-                "https://httpbin.org/json",
-            ],
-        }
+        """Búsqueda automática de fuentes: pendiente de un motor de búsqueda real (WO-119).
 
-        query_lower = query.lower()
-        for key, urls in demo_urls.items():
-            if key in query_lower:
-                return urls
-
-        return demo_urls["default"]
+        Antes devolvía URLs fijas de demostración (httpbin.org) que terminaban guardadas
+        como "conocimiento" de la empresa. Mientras no haya búsqueda, no inventa fuentes.
+        """
+        return []
 
     def _normalize_content(self, content: ScrapedContent) -> ScrapedContent:
         """Normaliza el contenido extraído."""

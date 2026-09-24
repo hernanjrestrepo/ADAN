@@ -10,7 +10,7 @@ from app.core.database import get_db
 from app.core.auth import get_current_user
 from app.models.models import User, Company
 from app.ems.memory import EnterpriseMemorySystem
-from app.ems.providers import LocalEmbeddingProvider, LocalVectorStoreProvider
+from app.ems.store import embedding_provider, get_vector_store
 
 router = APIRouter(prefix="/ems", tags=["ems"])
 
@@ -86,13 +86,8 @@ class CorrectionRequest(BaseModel):
 # Dependency: EMS instance
 # ============================================================
 
-# Providers globales (singleton pattern)
-_embedding_provider = LocalEmbeddingProvider(dim=128)
-_vector_store = LocalVectorStoreProvider()
-
-
 def get_ems(db: Session = Depends(get_db)) -> EnterpriseMemorySystem:
-    return EnterpriseMemorySystem(db, _embedding_provider, _vector_store)
+    return EnterpriseMemorySystem(db, embedding_provider, get_vector_store(db))
 
 
 # ============================================================

@@ -123,6 +123,8 @@ Severidad: 🔴 crítica · 🟠 alta · 🟡 media · ⚪ baja.
 
 ### 5.3 Bugs funcionales
 
+*Actualización 2026-09-24:* B1–B4 y B6–B18 quedaron corregidos en **WO-095**, cada uno con su prueba de regresión (`docs/wo/WO-095_REPORTE.md`). B5 sigue abierto y pasa a WO-107.
+
 | # | Sev. | Hallazgo | Dónde |
 |---|---|---|---|
 | B1 | 🟠 | `POST /nivel1/{id}/recommendations` **siempre falla con 500**, después de gastar 5 llamadas al LLM: `_record_event` recibe los argumentos corridos | `services/gemelo_digital.py:199` |
@@ -186,19 +188,19 @@ Se presentan como funcionalidad pero no hacen el trabajo real:
 | `contracts/openapi/schema.json` | WO-093 (contratos y pruebas de API) |
 | `docs/blueprint/*`: blueprint consolidado v1.0 y AD-FUNC-07/08/09 | WO-096 (unificación documental) |
 
-Build B (WO-000 → WO-012, tag `v1.0.0`) cubre además Gemelo Digital v1, Board Room con estrategias, Scoring, Experience, Gamification, Onboarding y Learning v1: es la mejor fuente para WO-098 → WO-117 cuando esté en el repositorio.
+Build B (WO-000 → WO-012, tag `v1.0.0`) cubre además Gemelo Digital v1, Board Room con estrategias, Scoring, Experience, Gamification, Onboarding y Learning v1: es la mejor fuente para WO-098 → WO-118 cuando esté en el repositorio.
 
 ---
 
 ## 7. Riesgos no técnicos observados
 
-- **El repositorio es público** y contiene documentos de negocio y de estrategia: `ADAN.docx` y `Chat 1.docx` son transcripciones de conversaciones, y el índice maestro menciona una disputa de propiedad intelectual con un socio y el riesgo de "esquema multinivel". Conviene revisar si todo eso debe ser público.
-- El blueprint advierte (WO-000 índice v3, §14) que construir sobre una base de propiedad intelectual en disputa es un riesgo que ningún rigor técnico resuelve. Eso corresponde a WO-100 y sigue abierto.
+- **El repositorio es público** y contiene documentos de negocio y de estrategia: `ADAN.docx` y `Chat 1.docx` son transcripciones de conversaciones. Conviene revisar si todo eso debe ser público.
+- *Actualización 2026-09-24 (`AD-DEC-0002`):* Hernán confirma que **no hay disputa de propiedad intelectual**, así que se retira ese riesgo. La red de comisiones se mantiene como multinivel tipo Amway, con las condiciones de la Ley 1700 de 2013, que se diseñan en WO-100 y WO-121.
 
 ---
 
 ## 8. Recomendación
 
 1. Aprobar y fusionar **WO-094** (este PR) antes de exponer cualquier instancia de ADÁN a una red.
-2. Cerrar **WO-090** (tag de baseline y revisión humana, EPWO-053) y ejecutar **WO-095** (bugs B1–B9) y **WO-096** (importar Build B y unificar la documentación) antes de construir funcionalidad nueva.
+2. Cerrar **WO-090** (tag de baseline y revisión humana, EPWO-053) y ejecutar **WO-095** (bugs B1–B18; ✅ fusionada) y **WO-096** (importar Build B y unificar la documentación) antes de construir funcionalidad nueva.
 3. Seguir el plan `docs/auditoria/PLAN_WO_ADAN_100.md`: primero la plataforma (PostgreSQL, seguridad por empresa, TypeScript, producción), después el núcleo (Gemelo, Board Room único, memoria, scoring) y por último los Niveles 2–7.
