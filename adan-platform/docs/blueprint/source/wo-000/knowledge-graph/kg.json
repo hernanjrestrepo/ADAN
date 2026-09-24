@@ -1,0 +1,1587 @@
+{
+  "schema_version": "1.0",
+  "last_updated": "2026-07-17",
+  "maintained_by": "Se actualiza manualmente con cada documento nuevo, como parte obligatoria de la autoauditoría previa a la entrega (AD-002 v2.0 regla 1.10). Ver README.md de esta carpeta para el procedimiento exacto de actualización.",
+  "internal_docs": [
+    {
+      "id": "WO-000-EXEC-SUMMARY",
+      "name": "WO-000 Executive Architecture Summary",
+      "note": "no es AD-XXX ni WO nueva - documento de consolidacion de lectura unica sobre Fundamentos completo, para onboarding de desarrolladores/arquitectos/inversionistas. Exento de la Regla de No Duplicacion por diseño (su funcion es resumir). Nota post-Gate-Review: llama 'Fase 1' a Fundamentos unicamente - ver WO-000-GATE-REVIEW-FASE1 para la definicion original mas amplia",
+      "path": "docs/WO-000_EXECUTIVE_ARCHITECTURE_SUMMARY.md",
+      "covers": [
+        "AD-000",
+        "AD-001",
+        "AD-002",
+        "AD-003",
+        "AD-004",
+        "AD-005",
+        "AD-006",
+        "AD-007",
+        "WO-000-ANEXO-MPI",
+        "WORKSHOP-ENTERPRISE-TAXONOMY",
+        "WORKSHOP-RELACIONES",
+        "WORKSHOP-COMPORTAMIENTOS"
+      ]
+    },
+    {
+      "id": "WO-000-GATE-REVIEW-FASE1",
+      "name": "WO-000 Gate Review de Fase 1",
+      "note": "checklist interno, no AD-XXX. Resultado: NO completamente verde. Fundamentos (AD-000-007) verificado limpio tras corregir 1 referencia rota real en kg.json (concept:score borrado accidentalmente, edges redirigidas a concept:score-adan). Hallazgo critico: la definicion ORIGINAL de 'Fase 1' en WO-000_INDICE_MAESTRO_v3.md linea 190 = Fundamentos(9) + Comportamientos(6, AD-CMP-01..06) + Funcionalidades(9, AD-FUNC-01..09) = 24 documentos. Solo 8 de 24 completos (falta AD-008 y los 6 AD-CMP, ninguno emerge de lo ya escrito). AD-FUNC-01 depende formalmente de AD-CMP-01 y AD-CMP-05, que no existen.",
+      "path": "docs/WO-000_GATE_REVIEW_FASE1.md",
+      "verdict": "no_complete",
+      "missing_before_ad_func_01": [
+        "AD-008",
+        "AD-CMP-01",
+        "AD-CMP-02",
+        "AD-CMP-03",
+        "AD-CMP-04",
+        "AD-CMP-05",
+        "AD-CMP-06"
+      ],
+      "kg_integrity_bug_fixed": "2 edges redirected from deleted concept:score to concept:score-adan"
+    }
+  ],
+  "documents": [
+    {
+      "id": "AD-000",
+      "name": "Paradixe Ecosystem Vision",
+      "category": "fundamentos",
+      "current_version": "v1.0",
+      "status": "approved",
+      "path": "docs/wo-000/00-fundamentos/AD-000_Paradixe_Ecosystem_Vision_v1.0.md",
+      "confidence_level": 68,
+      "depends_on": []
+    },
+    {
+      "id": "AD-001",
+      "name": "Product DNA",
+      "category": "fundamentos",
+      "current_version": "v1.1",
+      "status": "approved",
+      "path": "docs/wo-000/00-fundamentos/AD-001_Product_DNA_v1.1.md",
+      "confidence_level": 72,
+      "depends_on": [
+        "AD-000"
+      ],
+      "note": "v1.1 generaliza SS14 y agrega SS14.1 Principio de Emocion Reflejada ('la emocion no se fabrica, se refleja') tras su primera aplicacion completa en AD-FUNC-03",
+      "version_history": [
+        "v1.0 — aprobada y congelada 2026-07-14, superseded el mismo dia por v1.1"
+      ]
+    },
+    {
+      "id": "AD-002",
+      "name": "Principios del Sistema",
+      "category": "fundamentos",
+      "current_version": "v2.0",
+      "status": "approved",
+      "version_history": [
+        "v1.0 — aprobada y congelada 2026-07-14, superseded el mismo día por v2.0"
+      ],
+      "path": "docs/wo-000/00-fundamentos/AD-002_Principios_del_Sistema_v2.0.md",
+      "confidence_level": 70,
+      "depends_on": [
+        "AD-001"
+      ]
+    },
+    {
+      "id": "AD-003",
+      "name": "Product Language",
+      "category": "fundamentos",
+      "current_version": "v1.2",
+      "status": "approved",
+      "path": "docs/blueprint/source/wo-000/00-fundamentos/AD-003_Product_Language_v1.2.md",
+      "confidence_level": 65,
+      "depends_on": [
+        "AD-000",
+        "AD-001",
+        "AD-002"
+      ]
+    },
+    {
+      "id": "AD-004",
+      "name": "Product Evolution",
+      "category": "fundamentos",
+      "current_version": "v1.1",
+      "status": "approved",
+      "note": "v1.1 agrega el Criterio de Existencia (SS3.1): ninguna Funcionalidad existe si no modifica el Gemelo Digital, mejora el conocimiento del cliente, o produce evidencia util",
+      "version_history": [
+        "v1.0 — aprobada y congelada 2026-07-14, superseded el mismo dia por v1.1"
+      ],
+      "path": "docs/wo-000/00-fundamentos/AD-004_Product_Evolution_v1.1.md",
+      "confidence_level": 68,
+      "depends_on": [
+        "AD-001",
+        "AD-002",
+        "AD-003",
+        "WO-000-ANEXO-MPI",
+        "AD-007"
+      ]
+    },
+    {
+      "id": "AD-005",
+      "name": "Enterprise Domain Model",
+      "category": "fundamentos",
+      "current_version": "v1.0",
+      "status": "approved",
+      "note": "validado por el Board en el Gate Review de Fase 1",
+      "path": "docs/wo-000/00-fundamentos/AD-005_Enterprise_Domain_Model_v1.0.md",
+      "confidence_level": 70,
+      "core_entity_count": 26,
+      "source_concept_count": 172,
+      "depends_on": [
+        "AD-000",
+        "AD-001",
+        "AD-002",
+        "AD-003",
+        "WO-000-ANEXO-MPI"
+      ]
+    },
+    {
+      "id": "AD-006",
+      "name": "Domain Model (Software)",
+      "category": "fundamentos",
+      "current_version": "v1.2",
+      "status": "approved",
+      "note": "AD-006 tiene dos dominios: traduce las 26 entidades de AD-005 (cero nuevas) MAS define 12 entidades operativas de ADAN ya mandatadas por el indice v3.1 desde el origen (Proyecto, Usuario, Nivel, Card, Agente, Workspace, Conversacion, Tarea, Decision, Score, Evento, Usuario Principal), que nunca fueron responsabilidad de AD-005. Aclaracion formalizada en v1.1 tras refinamiento del Board",
+      "version_history": [
+        "v1.0 — aprobada y congelada 2026-07-14, superseded el mismo dia por v1.1 (aclaracion menor de alcance, sin cambio de entidades)"
+      ],
+      "path": "docs/blueprint/source/wo-000/00-fundamentos/AD-006_Domain_Model_v1.2.md",
+      "confidence_level": 66,
+      "business_entities_translated": 26,
+      "operational_entities_new": 12,
+      "depends_on": [
+        "AD-005",
+        "AD-003",
+        "AD-002"
+      ]
+    },
+    {
+      "id": "AD-007",
+      "name": "Gemelo Digital — Especificación Estructural",
+      "category": "fundamentos",
+      "current_version": "v1.1",
+      "status": "approved",
+      "note": "Definido como limite de agregacion entre Empresa (AD-005) y Proyecto (AD-006), 1:1:1, no como entidad de datos nueva - paso explicito por el Principio de Emergencia en su seccion 0. Ciclo de vida dinamico resuelto en AD-CMP-06 (v1.1 marca la pregunta abierta como cerrada)",
+      "version_history": [
+        "v1.0 — aprobada y congelada 2026-07-14, superseded el mismo dia por v1.1 (cierre de pregunta abierta, sin cambio estructural)"
+      ],
+      "path": "docs/wo-000/00-fundamentos/AD-007_Gemelo_Digital_v1.1.md",
+      "confidence_level": 64,
+      "depends_on": [
+        "AD-005",
+        "AD-006",
+        "AD-000",
+        "AD-001"
+      ]
+    },
+    {
+      "id": "AD-008",
+      "name": "Objetos del Sistema",
+      "category": "fundamentos",
+      "current_version": "v1.0",
+      "status": "approved",
+      "note": "4 patrones de estado (Ciclo de Aprobacion, Progreso Secuencial, Registro Permanente, Contenedor Continuo) cubren las 38 entidades sin crear 38 maquinas de estado custom. Modelo de permisos de 4 actores. Regla de eventos sistematicos",
+      "path": "docs/wo-000/00-fundamentos/AD-008_Objetos_del_Sistema_v1.0.md",
+      "confidence_level": 60,
+      "depends_on": [
+        "AD-006",
+        "AD-007",
+        "AD-002"
+      ]
+    }
+  ],
+  "comportamientos": [
+    {
+      "id": "AD-CMP-01",
+      "name": "Comportamiento de Progresión entre Niveles",
+      "current_version": "v1.0",
+      "status": "approved",
+      "path": "docs/wo-000/01-comportamientos/AD-CMP-01_Progresion_entre_Niveles_v1.0.md",
+      "confidence_level": 62,
+      "depends_on": [
+        "AD-008",
+        "AD-006",
+        "AD-002"
+      ]
+    },
+    {
+      "id": "AD-CMP-02",
+      "name": "Comportamiento de Consenso Multiagente",
+      "current_version": "v1.0",
+      "status": "approved",
+      "path": "docs/wo-000/01-comportamientos/AD-CMP-02_Consenso_Multiagente_v1.0.md",
+      "confidence_level": 60,
+      "depends_on": [
+        "AD-006",
+        "AD-002",
+        "AD-001"
+      ]
+    },
+    {
+      "id": "AD-CMP-03",
+      "name": "Comportamiento de Decisiones",
+      "current_version": "v1.0",
+      "status": "approved",
+      "path": "docs/wo-000/01-comportamientos/AD-CMP-03_Comportamiento_de_Decisiones_v1.0.md",
+      "confidence_level": 63,
+      "depends_on": [
+        "AD-008",
+        "AD-006",
+        "AD-007",
+        "AD-CMP-02"
+      ]
+    },
+    {
+      "id": "AD-CMP-04",
+      "name": "Comportamiento de Memoria y Contexto",
+      "current_version": "v1.0",
+      "status": "approved",
+      "path": "docs/wo-000/01-comportamientos/AD-CMP-04_Memoria_y_Contexto_v1.0.md",
+      "confidence_level": 61,
+      "depends_on": [
+        "AD-007",
+        "AD-006",
+        "AD-002"
+      ]
+    },
+    {
+      "id": "AD-CMP-05",
+      "name": "Comportamiento de Evidencia y Scoring",
+      "current_version": "v1.0",
+      "status": "approved",
+      "path": "docs/wo-000/01-comportamientos/AD-CMP-05_Evidencia_y_Scoring_v1.0.md",
+      "confidence_level": 60,
+      "depends_on": [
+        "AD-006",
+        "AD-005",
+        "AD-002",
+        "AD-001"
+      ]
+    },
+    {
+      "id": "AD-CMP-06",
+      "name": "Digital Twin Lifecycle",
+      "current_version": "v1.0",
+      "status": "approved",
+      "note": "resuelve la pregunta abierta que AD-007 v1.0 habia dejado pendiente (fusion/division de Gemelos Digitales)",
+      "path": "docs/wo-000/01-comportamientos/AD-CMP-06_Digital_Twin_Lifecycle_v1.0.md",
+      "confidence_level": 58,
+      "depends_on": [
+        "AD-007",
+        "AD-005",
+        "AD-004",
+        "AD-008",
+        "AD-002"
+      ]
+    }
+  ],
+  "funcionalidades": [
+    {
+      "id": "AD-FUNC-01",
+      "name": "Los 7 Niveles (PRD Maestro)",
+      "current_version": "v1.0",
+      "status": "approved",
+      "note": "primer documento AD-FUNC. Resuelve la pregunta abierta 6 vs 7 Niveles: 7, con evidencia (Workspace Principal prompt describe Nivel 7 Escalamiento explicitamente; mision de AD-001 tiene 'escalar' como verbo distinto de 'operar'). Cada Nivel especificado con 3 preguntas (que descubre ADAN / que aprende el cliente / que cambia en el Gemelo Digital) y verificado contra el Criterio de Existencia de AD-004 v1.1 — 7 Niveles cerrados definitivamente, no se reabre.",
+      "path": "docs/wo-000/02-funcionalidades/AD-FUNC-01_Los_7_Niveles_v1.0.md",
+      "confidence_level": 58,
+      "depends_on": [
+        "AD-CMP-01",
+        "AD-CMP-05",
+        "AD-005",
+        "AD-004",
+        "AD-007",
+        "AD-008"
+      ]
+    },
+    {
+      "id": "AD-FUNC-02",
+      "name": "Board Room",
+      "current_version": "v1.0",
+      "status": "approved",
+      "note": "Incluye Master Orchestration Flow como seccion interna (no documento separado, por instruccion del Board) y jerarquia de autoridad de 2 dimensiones: autoridad de ejecucion (cliente, absoluta) vs autoridad de fundamentacion (evidencia). Rechaza explicitamente la premisa de 'ADAN como cuarta voz independiente del Board' - el CEO Agent preside el Board, no compite con el. Revision 2: agrega SS2.5, registro de 6 campos cuando el cliente decide distinto a lo recomendado (incluye 'Responsabilidad asumida', no como proteccion legal sino como materia prima de aprendizaje via Ley 2 de AD-005). Declara el principio 'ADAN aprende de las decisiones, no solo del exito', heredado por AD-FUNC-09.",
+      "path": "docs/wo-000/02-funcionalidades/AD-FUNC-02_Board_Room_v1.0.md",
+      "confidence_level": 56,
+      "depends_on": [
+        "AD-CMP-02",
+        "AD-CMP-03",
+        "AD-008",
+        "AD-001",
+        "AD-006"
+      ]
+    },
+    {
+      "id": "AD-FUNC-03",
+      "name": "Experience Engine",
+      "current_version": "v1.0",
+      "status": "approved",
+      "note": "Disena la emocion objetivo de cada uno de los 7 Niveles ANTES que la interfaz, por instruccion explicita del Board. 7 emociones (comprendido/inspirado/seguro/emocionado/desafiado/acompanado/ambicioso), cada una justificada con evidencia de Chat 1.docx o de AD-001/AD-005, con su anti-emocion explicita y una senal cualitativa de logro. No disena mecanicas, avatares ni sonidos - eso es AD-FUNC-04/AD-UX.",
+      "path": "docs/wo-000/02-funcionalidades/AD-FUNC-03_Experience_Engine_v1.0.md",
+      "confidence_level": 52,
+      "depends_on": [
+        "AD-001",
+        "AD-FUNC-01",
+        "AD-FUNC-02",
+        "AD-CMP-01"
+      ]
+    },
+    {
+      "id": "AD-FUNC-04",
+      "name": "Gamification Engine",
+      "current_version": "v1.0",
+      "status": "constructed_and_self_audited",
+      "note": "Disena el RITMO PSICOLOGICO de cada Nivel (Inmediato/Exploratorio/Reflexivo/Constructivo/Intenso/Estable/Expansivo), no mecanicas de juego. Toda mecanica (XP, logros, avatares, rankings, recompensas) debe justificar que emocion de AD-FUNC-03 fortalece y que ritmo sirve. Rankings sociales entre founders PROHIBIDOS por defecto - solo comparacion consigo mismo via Velocidad de Maduracion (AD-005 SS4). Regla Anti-Manipulacion explicita: prohibe streaks de culpa, urgencia artificial, recompensas sin evidencia real, y cualquier mecanica que aumente tiempo en plataforma sin aumentar evidencia real en el Gemelo Digital.",
+      "path": "docs/wo-000/02-funcionalidades/AD-FUNC-04_Gamification_Engine_v1.0.md",
+      "confidence_level": 50,
+      "depends_on": [
+        "AD-FUNC-03",
+        "AD-001",
+        "AD-004",
+        "AD-005"
+      ]
+    },
+    {
+      "id": "AD-FUNC-05",
+      "name": "Motor de Estrategias Empresariales",
+      "note_name_change": "Segundo renombre del mismo dia: Marketplace -> Recomendacion de Recursos -> Motor de Estrategias Empresariales. Cambio de objeto de razonamiento: de Recurso a Capacidad a Estrategia.",
+      "current_version": "v1.0",
+      "status": "approved_for_gate_review",
+      "note": "Ya no recomienda recursos - disena estrategias que cierran brechas empresariales. Flujo obligatorio de 11 pasos: Problema detectado -> Diagnostico -> Brechas -> Capacidades requeridas -> Estrategias posibles -> Simulacion de Impacto -> ROI esperado -> Secuencia optima -> Recomendacion -> Ejecucion (decision del cliente) -> Aprendizaje. 15 tipos de estrategia en 5 clusters (Personas, Operacion, Tecnologia, Estructura, Alianzas y Capital, Expansion y Modelo) - cada uno mapeado a una entidad AD-005 ya existente (Empleado/Proceso/Proveedor/Contrato/Accionista) o a AD-CMP-06 (fusion/adquisicion) o a la Ley 9 del Workshop de Comportamientos (Reinvencion, para cambio de modelo de negocio) sin crear ninguna entidad nueva. Recursos internos primero (Empleado/Activo/Proceso/Proveedor ya vinculado/Documento interno) es Principio Permanente y paso obligatorio. Confidence Level e Impacto Esperado nunca se fusionan. Secuencia optima por Valor Esperado = (Impacto x Probabilidad) / Costo / Tiempo / Riesgo. Ciclo de aprendizaje ampliado: Brecha->Capacidad->Estrategia elegida->Implementacion->Resultado->ROI real->Desviacion->Aprendizaje->Recalibracion del Confidence Level, registrado como dependencia explicita de AD-FUNC-09. REVISION 3 (2026-07-14): se evaluo y descarto el nombre 'Motor de Evolucion Empresarial' (colision con AD-004 y sobre-alcance frente a Declaracion de Mision, ver seccion 0). Se agrego cluster 'Recuperacion' (Recuperacion ante crisis, Leyes 6-7) -> 16 tipos en 6 clusters. Estrategias Compuestas/hibridas (agregacion funcional, no entidad nueva). Horizonte temporal obligatorio (Inmediato/Corto/Mediano/Largo/Transformacional) + Probabilidad de exito + Esfuerzo esperado + Complejidad, todos distinguidos entre si. Estrategias compiten como conjunto en Board Room via AD-CMP-02 (sin mecanismo nuevo). Estrategias Adaptativas (arboles condicion->accion) - condiciones = Suceso Empresarial/Indicador ya existentes, abandono = Patron A de AD-008, sin entidad nueva; mecanismo de vigilancia diferido a AD-ARQ Fase 2. Playbook Empresarial registrado como activo futuro del Learning Engine (AD-FUNC-09), explicitamente NO construido por falta de evidencia real.",
+      "path": "docs/wo-000/02-funcionalidades/AD-FUNC-05_Recomendacion_de_Recursos_v1.0.md",
+      "confidence_level": 35,
+      "depends_on": [
+        "AD-CMP-06",
+        "AD-002",
+        "AD-004",
+        "AD-003",
+        "AD-FUNC-02",
+        "AD-008",
+        "AD-CMP-02",
+        "AD-005",
+        "AD-FUNC-01"
+      ],
+      "note_editorial_correction": "Architectural Consistency Review (2026-07-14): 0 hallazgos Criticos, 2 Altos, 2 Medios. Corregidos editorialmente sin reabrir el modelo: (1) '15 tipos' -> '16 tipos' en tabla del flujo; (2) referencia cruzada con AD-003 v1.1 movida de Dependencias a Documentos relacionados (unidireccionalidad restaurada); (3) Estrategias Compuestas/Horizonte Temporal/Playbook clasificados como Decision de Diseno en el encabezado; (4) invariante permanente del flujo separado de la taxonomia especifica de 11 pasos (Decision de Diseno evolucionable). Marcado Ready for Gate Review."
+    },
+    {
+      "id": "AD-FUNC-06",
+      "name": "Onboarding",
+      "current_version": "v1.0",
+      "status": "constructed_and_self_audited_revision_2",
+      "note": "Especifica el tramo desde registro hasta la primera pregunta de ADAN en Nivel 1 - no es un Nivel 0. Principio rector: Onboarding no es un formulario, es la primera pregunta real llegando lo antes posible (evita la anti-emocion Juzgado de Nivel 1, AD-FUNC-03). Captura minima antes de la primera pregunta (nombre, contacto, senal minima de Empresa); resto (estructura organizacional, finanzas, razon social) diferido. Creacion progresiva de entidades (Usuario/Usuario Principal/Proyecto/Workspace/Empresa) basada en evidencia real, ninguna entidad nueva. Emocion (Comprendido) y ritmo (Inmediato) heredados de AD-FUNC-03/04 sin duplicar. Colision de nombre menor con 'Onboarding' de Empleado en el Enterprise Taxonomy Workshop, documentada y no bloqueante. REVISION 2 (2026-07-14): agregada Identidad Progresiva - 7 etiquetas derivadas (Anonimo/Visitante/Usuario/Responsable de Empresa/Lider Activo/Cliente Activo/Embajador), no entidades, mismo patron que Etapa del Ciclo de Vida (AD-005 SS4). Dos colisiones de nombre detectadas y corregidas: 'Founder' (colisionaba con el Hallazgo 1 de AD-006 que ya lo renombro a Usuario Principal) -> 'Responsable de Empresa'; 'CEO' (colisionaba con CEO Agent de AD-FUNC-02) -> 'Lider Activo'. Unificada con modelo de confianza via hitos de evidencia, reutilizando Patron B (AD-CMP-01) sin mecanismo nuevo. Onboarding conversacional independiente del canal (voz/texto/documento/audio/video/imagen), reutiliza Documento/Conversacion + ARQAI como Motor del Ecosistema. Recuperacion de Onboarding (retomar desde el ultimo paso real) via AD-002 SS1.5 + AD-CMP-04 SS4, sin mecanismo nuevo. Objetivo de tiempo <30s como meta operativa de ADAN, distinta del Indicador de negocio de AD-005. Riesgo senalado: mecanismo de 'Embajador' debe evitar el patron de esquema multinivel ya flaggeado para ADAN, y queda fuera de esta especificacion (WO-100).",
+      "path": "docs/wo-000/02-funcionalidades/AD-FUNC-06_Onboarding_v1.0.md",
+      "confidence_level": 45,
+      "depends_on": [
+        "AD-002",
+        "AD-004",
+        "AD-FUNC-01",
+        "AD-CMP-04",
+        "AD-000",
+        "AD-FUNC-02",
+        "AD-CMP-01",
+        "AD-006",
+        "AD-FUNC-04",
+        "AD-FUNC-03",
+        "AD-005"
+      ]
+    },
+    {
+      "id": "AD-FUNC-07",
+      "name": "Sistema de Scoring (Producto)",
+      "current_version": "v1.0",
+      "status": "constructed_and_self_audited",
+      "note": "Reconcilia dos taxonomias de Score (indice original 8 nombres vs Plan Maestro 7 categorias). 8 Scores en 2 familias: diagnostico secuencial (Problem/Solution/Business/Product/Market/Execution, ya anclados por AD-FUNC-01) y continuos (Score del Responsable -antes Founder Score-, Venture Score). Score por Objetivo/Estrategia = regla generica de aplicacion, no scores fijos nuevos. Confidence Level nunca es un score separado. Requirio AD-003 v1.2 y AD-006 v1.2 (cardinalidad de Score ampliada a Empresa o Usuario Principal).",
+      "path": "docs/blueprint/source/wo-000/02-funcionalidades/AD-FUNC-07_Sistema_de_Scoring_v1.0.md",
+      "confidence_level": 50,
+      "depends_on": [
+        "AD-FUNC-01",
+        "AD-CMP-05",
+        "AD-006",
+        "AD-005",
+        "AD-FUNC-05",
+        "AD-FUNC-06",
+        "AD-002",
+        "AD-004"
+      ]
+    },
+    {
+      "id": "AD-FUNC-08",
+      "name": "User Journey Map",
+      "current_version": "v1.0",
+      "status": "constructed_and_self_audited",
+      "note": "7 etapas (Descubrimiento/Onboarding/Uso/Adopcion/Expansion/Renovacion/Embajador) mapeadas 1:1 contra la Identidad Progresiva de AD-FUNC-06 SS3.1 - no crea segunda taxonomia. Uso=Niveles 1-5 (AD-FUNC-01), Expansion=Estrategias (AD-FUNC-05), metricas=Scores (AD-FUNC-07). Renovacion y Embajador explicitamente diferidos a WO-100 (mecanismo de negocio).",
+      "path": "docs/blueprint/source/wo-000/02-funcionalidades/AD-FUNC-08_User_Journey_Map_v1.0.md",
+      "confidence_level": 45,
+      "depends_on": [
+        "AD-FUNC-06",
+        "AD-FUNC-01",
+        "AD-FUNC-03",
+        "AD-FUNC-05",
+        "AD-FUNC-07",
+        "AD-000",
+        "AD-004"
+      ]
+    },
+    {
+      "id": "AD-FUNC-09",
+      "name": "Learning Engine",
+      "current_version": "v1.0",
+      "status": "constructed_and_self_audited",
+      "note": "Unifica 4 semillas ya sembradas (AD-FUNC-02 SS2.5 desacuerdos, AD-FUNC-05 SS10 ciclo ROI, AD-FUNC-06 SS10.1 Playbook, AD-FUNC-07 SS5 Score por Estrategia) en 3 loops: recalibracion de Confidence Level, priors del Motor de Estrategias (inactivo sin evidencia agregada), registro en Gemelo Digital (Patron C). Playbook Empresarial especificado (umbral N de evidencia) sin construirse. 6 Salvaguardas permanentes: nunca ejecuta, nunca optimiza engagement, nunca trata empresas como intercambiables, nunca aprende de una sola conversacion, nunca oculta cuantos casos sostienen un patron, nunca presiona al cliente a seguir la recomendacion.",
+      "path": "docs/blueprint/source/wo-000/02-funcionalidades/AD-FUNC-09_Learning_Engine_v1.0.md",
+      "confidence_level": 38,
+      "depends_on": [
+        "AD-FUNC-02",
+        "AD-FUNC-05",
+        "AD-FUNC-06",
+        "AD-FUNC-07",
+        "AD-FUNC-08",
+        "AD-CMP-05",
+        "AD-008",
+        "AD-FUNC-04",
+        "AD-001",
+        "AD-004"
+      ]
+    }
+  ],
+  "workshops": [
+    {
+      "id": "WORKSHOP-ENTERPRISE-TAXONOMY",
+      "name": "Enterprise Taxonomy Workshop",
+      "note": "documento de trabajo, no forma parte del arbol de 58, no se aprueba ni se congela — materia prima para AD-005",
+      "path": "docs/wo-000/workshops/ENTERPRISE_TAXONOMY_WORKSHOP.md",
+      "feeds_into": "AD-005",
+      "concept_count": 172,
+      "key_findings": [
+        "5 colisiones de nombre con AD-003: Proyecto, Decision, Evento, Documento, Ecosistema - resueltas caso por caso en el Addendum, no con un patron uniforme",
+        "Riesgo e Intangible son propiedades transversales, no deben modelarse como categorias/entidades separadas por dominio",
+        "Enterprise Genome evaluado y rechazado como concepto nuevo (duplica Gemelo Digital) - se conserva solo como metafora explicativa para AD-007",
+        "Edad y Madurez Organizacional son dos variables independientes; Etapa del Ciclo de Vida es una etiqueta derivada, no almacenada",
+        "Organismo organizacional adoptado como lente narrativo, no como reestructuracion literal de la taxonomia"
+      ]
+    },
+    {
+      "id": "WORKSHOP-RELACIONES",
+      "name": "Workshop de Relaciones",
+      "note": "documento de trabajo, no forma parte del arbol de 58, no se aprueba ni se congela — materia prima para AD-005/AD-006",
+      "path": "docs/wo-000/workshops/WORKSHOP_DE_RELACIONES.md",
+      "feeds_into": [
+        "AD-005",
+        "AD-006"
+      ],
+      "depends_on_workshop": "WORKSHOP-ENTERPRISE-TAXONOMY",
+      "relation_count": 32,
+      "key_findings": [
+        "El dominio empresarial es un grafo con ciclos de causalidad, no un arbol - Proceso<->Iniciativa y Decision de Negocio<->Suceso Empresarial tienen causalidad en ambas direcciones",
+        "Riesgo y Documento (como respaldo de Decision) son relaciones polimorficas - se asocian a mas de un tipo de origen",
+        "Empresa compite con Competidor es realmente una relacion ternaria (dentro de un Mercado compartido)",
+        "Ambiguedad abierta sin resolver: Reputacion pertenece a la Empresa o a la Marca",
+        "Hipotesis 'Relaciones Vivas' evaluada: atributos de relacion (intensidad/criticidad) validos pero son patron de modelado para AD-006, no concepto nuevo; ciclo de vida de relaciones RECHAZADO - ya cubierto por AD-002 reglas 1.5/1.7 + AD-CMP-06, misma logica que rechazo de Enterprise Genome"
+      ]
+    },
+    {
+      "id": "WORKSHOP-COMPORTAMIENTOS",
+      "name": "Workshop de Comportamientos — Dinámica del Sistema Empresarial",
+      "note": "documento de trabajo, no forma parte del arbol de 58 — aprobado por el Board como base suficiente para iniciar AD-005",
+      "status": "approved_as_input",
+      "path": "docs/wo-000/workshops/WORKSHOP_DE_COMPORTAMIENTOS.md",
+      "feeds_into": "AD-005",
+      "depends_on_workshop": [
+        "WORKSHOP-ENTERPRISE-TAXONOMY",
+        "WORKSHOP-RELACIONES"
+      ],
+      "law_count": 10,
+      "new_concepts_introduced": 0,
+      "key_findings": [
+        "10 leyes dinamicas ancladas en teoria organizacional externa (Adizes, Argyris & Schon, Greiner, Holling, teoria de sistemas adaptativos complejos), cero conceptos nuevos propuestos",
+        "Madurez y Edad divergentes = Estancamiento (Ley 5); confirma independencia de variables del Taxonomy Workshop",
+        "Intangibles explican velocidad de Recuperacion post-crisis (Ley 7) - primera validacion funcional de por que esa propiedad transversal importaba",
+        "Muerte de una Empresa no borra su Gemelo Digital - se resuelve enteramente con AD-002 1.5 + AD-CMP-06, sin regla nueva (Ley 8)",
+        "Velocidad de Maduracion Organizacional (Delta Madurez / Delta Tiempo) reemplaza la formulacion inicial de 'trayectoria' (Ley 10) - subsume direccion y magnitud en un solo valor, calculable gratis del historial de versiones ya exigido por AD-002 1.7",
+        "Hallazgo abierto para AD-005: Etapa del Ciclo de Vida necesita un atributo de trayectoria ademas de su posicion Edad x Madurez (Ley 10) - extension, no entidad nueva"
+      ]
+    }
+  ],
+  "annexes": [
+    {
+      "id": "WO-000-ANEXO-MPI",
+      "name": "Meta-Principios de Ingeniería",
+      "note": "no es un documento AD-XXX del árbol de 58 — es un estándar transversal",
+      "current_version": "v2.0",
+      "status": "approved",
+      "version_history": [
+        "v1.0 — aprobada y congelada 2026-07-14, superseded el mismo día por v2.0",
+        "v2.0 tuvo 2 revisiones internas antes de aprobarse: Emergencia se agrego como principio 10, luego se reubico como principio 2 (precede a Economia Conceptual, no la sigue)"
+      ],
+      "path": "docs/WO-000_ANEXO_Meta-Principios-de-Ingenieria_v2.0.md",
+      "confidence_level": 68,
+      "depends_on": [
+        "AD-001",
+        "AD-002"
+      ]
+    }
+  ],
+  "concepts": [
+    {
+      "id": "concept:ecosistema-paradixe",
+      "term": "Ecosistema Paradixe",
+      "group": "producto",
+      "defined_in": "AD-003",
+      "authoritative_owner": "AD-000",
+      "stability": "estable"
+    },
+    {
+      "id": "concept:adan",
+      "term": "ADÁN",
+      "group": "producto",
+      "defined_in": "AD-003",
+      "authoritative_owner": "AD-001",
+      "stability": "estable"
+    },
+    {
+      "id": "concept:orquestador",
+      "term": "Orquestador",
+      "group": "producto",
+      "defined_in": "AD-003",
+      "authoritative_owner": "AD-000",
+      "stability": "estable"
+    },
+    {
+      "id": "concept:motor-de-capacidad",
+      "term": "Motor (de Capacidad)",
+      "group": "producto",
+      "defined_in": "AD-003",
+      "authoritative_owner": "AD-000",
+      "stability": "estable"
+    },
+    {
+      "id": "concept:gemelo-digital",
+      "term": "Gemelo Digital",
+      "group": "producto",
+      "defined_in": "AD-007",
+      "authoritative_owner": "AD-007",
+      "stability": "estable",
+      "note": "resuelto: limite de agregacion 1:1:1 entre Empresa (AD-005) y Proyecto (AD-006), no entidad de datos nueva. Metafora de 'genoma' recuperada aqui, no formalizada como concepto propio"
+    },
+    {
+      "id": "concept:empresa",
+      "term": "Empresa",
+      "group": "producto",
+      "defined_in": "AD-003",
+      "authoritative_owner": "AD-005",
+      "stability": "estable",
+      "note": "resuelta en AD-005 como entidad raiz del Enterprise Domain Model, 26 entidades nucleo"
+    },
+    {
+      "id": "concept:proyecto",
+      "term": "Proyecto",
+      "group": "producto",
+      "defined_in": "AD-003",
+      "authoritative_owner": "AD-006",
+      "stability": "estable",
+      "note": "resuelto en AD-006 seccion 4 (entidad operativa 1:1 con Empresa); significado de negocio ya resuelto por separado como concept:iniciativa en AD-005"
+    },
+    {
+      "id": "concept:usuario-principal",
+      "term": "Usuario Principal",
+      "group": "producto",
+      "defined_in": "AD-006",
+      "authoritative_owner": "AD-006",
+      "stability": "estable",
+      "note": "renombre de 'Fundador' del indice v3.1 original - AD-001 amplio la mision a empresas de cualquier edad, 'Fundador' ya no era el termino correcto"
+    },
+    {
+      "id": "concept:score-adan",
+      "term": "Score (evaluacion de ADAN)",
+      "group": "producto",
+      "defined_in": "AD-006",
+      "authoritative_owner": "AD-006",
+      "stability": "estable",
+      "note": "distinto de Indicador (concept:score original en AD-003 quedaba pendiente; se resuelve aqui como evaluacion propia de ADAN sobre una Empresa, no metrica del negocio)"
+    },
+    {
+      "id": "concept:evento-adan",
+      "term": "Evento (registro tecnico)",
+      "group": "producto",
+      "defined_in": "AD-006",
+      "authoritative_owner": "AD-006",
+      "stability": "estable",
+      "note": "distinto de Suceso Empresarial (AD-005); registro append-only tecnico"
+    },
+    {
+      "id": "concept:iniciativa",
+      "term": "Iniciativa",
+      "group": "producto",
+      "defined_in": "AD-005",
+      "authoritative_owner": "AD-005",
+      "stability": "estable",
+      "note": "renombre definitivo del 'Proyecto Interno' del Taxonomy Workshop, para no colisionar con concept:proyecto"
+    },
+    {
+      "id": "concept:suceso-empresarial",
+      "term": "Suceso Empresarial",
+      "group": "producto",
+      "defined_in": "AD-005",
+      "authoritative_owner": "AD-005",
+      "stability": "estable",
+      "note": "renombre definitivo de 'Evento' en sentido de negocio, para no colisionar con el Evento tecnico de AD-006"
+    },
+    {
+      "id": "concept:decision-de-negocio",
+      "term": "Decisión de Negocio",
+      "group": "producto",
+      "defined_in": "AD-005",
+      "authoritative_owner": "AD-005",
+      "stability": "estable",
+      "note": "tercera punta de la colision original de 'Decision', ya resuelta"
+    },
+    {
+      "id": "concept:nivel",
+      "term": "Nivel",
+      "group": "producto",
+      "defined_in": "AD-003",
+      "authoritative_owner": "AD-FUNC-01",
+      "authoritative_owner_status": "pendiente",
+      "stability": "en_evolucion",
+      "open_question": "numero real de niveles: 6 vs 7, sin resolver"
+    },
+    {
+      "id": "concept:card",
+      "term": "Card",
+      "group": "producto",
+      "defined_in": "AD-003",
+      "authoritative_owner": "AD-006",
+      "stability": "estable",
+      "note": "resuelto en AD-006 seccion 4, entidad 1:N con Nivel"
+    },
+    {
+      "id": "concept:workspace",
+      "term": "Workspace",
+      "group": "producto",
+      "defined_in": "AD-003",
+      "authoritative_owner": "AD-006",
+      "stability": "estable",
+      "note": "resuelto en AD-006 seccion 4 (no en AD-UX-02 como se anticipaba en v3.1 - AD-006 formaliza la entidad, AD-UX-02 formalizara la vista)"
+    },
+    {
+      "id": "concept:decision",
+      "term": "Decisión",
+      "group": "producto",
+      "defined_in": "AD-003",
+      "authoritative_owner": "AD-006",
+      "stability": "estable",
+      "note": "resuelto en AD-006 seccion 4. Colision de 3 puntas resuelta: Decision (ADAN, este nodo) / Decision de Negocio (concept:decision-de-negocio, AD-005) / Eleccion de Diseno (concept:decision-de-diseno, documentacion)"
+    },
+    {
+      "id": "concept:evidencia",
+      "term": "Evidencia",
+      "group": "producto",
+      "defined_in": "AD-003",
+      "authoritative_owner": "AD-CMP-05",
+      "authoritative_owner_status": "pendiente",
+      "stability": "estable"
+    },
+    {
+      "id": "concept:entregable",
+      "term": "Entregable",
+      "group": "producto",
+      "defined_in": "AD-003",
+      "authoritative_owner": "AD-005",
+      "stability": "estable",
+      "note": "resuelto: no es entidad propia, es un valor del atributo Origen de Documento (AD-005 seccion 2.4, confirmado en AD-006 seccion 3)"
+    },
+    {
+      "id": "concept:agente",
+      "term": "Agente",
+      "group": "producto",
+      "defined_in": "AD-003",
+      "authoritative_owner": "AD-006",
+      "stability": "estable",
+      "note": "resuelto en AD-006 seccion 4, N:M con Conversacion. Arquitectura tecnica sigue pendiente en AD-ARQ-03"
+    },
+    {
+      "id": "concept:board-room",
+      "term": "Board Room",
+      "group": "producto",
+      "defined_in": "AD-003",
+      "authoritative_owner": "AD-FUNC-02",
+      "authoritative_owner_status": "pendiente",
+      "stability": "en_evolucion"
+    },
+    {
+      "id": "concept:comportamiento",
+      "term": "Comportamiento",
+      "group": "proceso_documental",
+      "defined_in": "AD-003",
+      "authoritative_owner": "WO-000_INDICE_MAESTRO_v3",
+      "stability": "estable"
+    },
+    {
+      "id": "concept:funcionalidad",
+      "term": "Funcionalidad",
+      "group": "proceso_documental",
+      "defined_in": "AD-003",
+      "authoritative_owner": "WO-000_INDICE_MAESTRO_v3",
+      "stability": "estable"
+    },
+    {
+      "id": "concept:principio-permanente",
+      "term": "Principio Permanente",
+      "group": "proceso_documental",
+      "defined_in": "AD-003",
+      "authoritative_owner": "AD-001",
+      "stability": "estable"
+    },
+    {
+      "id": "concept:decision-de-diseno",
+      "term": "Decisión de Diseño",
+      "group": "proceso_documental",
+      "defined_in": "AD-003",
+      "authoritative_owner": "AD-001",
+      "stability": "estable_pendiente_renombre",
+      "open_question": "colision de nombre con concept:decision, posible renombre a 'Eleccion de Diseno'"
+    },
+    {
+      "id": "concept:confidence-level",
+      "term": "Confidence Level",
+      "group": "proceso_documental",
+      "defined_in": "AD-003",
+      "authoritative_owner": "WO-000_INDICE_MAESTRO_v3.1",
+      "stability": "estable"
+    },
+    {
+      "id": "concept:marketplace-ecosistema",
+      "name": "Marketplace (Ecosistema Paradixe)",
+      "note": "Termino fijo desde AD-000 SS3: infraestructura COMPARTIDA de todo el Ecosistema Paradixe (EVA/ARQAI/ATO/Genexis/ADAN), canal de publicacion/distribucion + descubrimiento de senal. Distinto de AD-FUNC-05 (funcionalidad propia de ADAN que CONSUME datos del Marketplace, entre otras fuentes, para recomendar). No colisiona: AD-FUNC-05 dejo de llamarse 'Marketplace' precisamente para evitar la colision. Tras la Revision 2 de AD-FUNC-05, un Motor del Ecosistema (ej. Genexis) es una de las Estrategias posibles de tipo 'comprar/desarrollar software', no la fuente central del documento.",
+      "defined_in": "AD-000",
+      "referenced_in": [
+        "AD-FUNC-05"
+      ]
+    },
+    {
+      "id": "concept:capacidad-unificada",
+      "name": "Capacidad (concepto unificado)",
+      "note": "AD-003 v1.1: 'Capacidad' es el concepto general (habilidad de producir un resultado), aplicable en dos niveles por contexto: (a) lo que el Ecosistema Paradixe provee a ADAN via un Motor (sentido original v1.0); (b) lo que una Empresa cliente necesita, trabajado por AD-FUNC-05. No se creo 'Capacidad Empresarial' como termino nuevo - se reutilizo el existente, mismo patron que Decision/Decision de Negocio. No es entidad AD-005 - se deriva de Objetivo/Meta/Riesgo/Proceso no alcanzados.",
+      "defined_in": "AD-003 v1.1",
+      "referenced_in": [
+        "AD-FUNC-05"
+      ]
+    },
+    {
+      "id": "concept:estrategia",
+      "name": "Estrategia (candidata pre-decision)",
+      "note": "AD-FUNC-05: camino candidato para cerrar una Capacidad. No es entidad AD-005 - al elegirse se convierte en Decision de Negocio + la entidad que corresponda por tipo (Iniciativa/Contrato/Proveedor/Accionista) o en el mecanismo de fusion ya definido en AD-CMP-06 (para adquirir/fusionarse) o en la Ley 9 (Reinvencion, para cambio de modelo de negocio).",
+      "defined_in": "AD-FUNC-05",
+      "referenced_in": [
+        "AD-CMP-06"
+      ]
+    },
+    {
+      "id": "concept:estrategia-compuesta",
+      "name": "Estrategia Compuesta (hibrida)",
+      "note": "AD-FUNC-05 Revision 3: agrupacion funcional de Estrategias atomicas evaluadas como unidad (impacto/costo/tiempo/riesgo no es la suma de partes, por sinergia o friccion). No es entidad nueva - al ejecutarse resuelve en las mismas entidades AD-005 que sus componentes, uno por componente.",
+      "defined_in": "AD-FUNC-05",
+      "referenced_in": []
+    },
+    {
+      "id": "concept:estrategia-adaptativa",
+      "name": "Estrategia Adaptativa (arbol condicion-accion)",
+      "note": "AD-FUNC-05 Revision 3: Estrategia que se ramifica segun condiciones futuras (Suceso Empresarial/Indicador ya existentes). Abandono = transicion de estado dentro del Patron A de AD-008. No es entidad nueva - es contenido mas rico sobre una Iniciativa/Decision de Negocio ya existente. Mecanismo de vigilancia de condiciones diferido a un futuro AD-ARQ (Fase 2).",
+      "defined_in": "AD-FUNC-05",
+      "referenced_in": [
+        "AD-008"
+      ]
+    },
+    {
+      "id": "concept:playbook-empresarial",
+      "name": "Playbook Empresarial (activo futuro)",
+      "note": "AD-FUNC-05 SS10.1: conocimiento propietario agregado y anonimizado de que combinaciones de Estrategias funcionan mejor para que tipo de empresa. NO construido todavia (sin evidencia real / Economia Conceptual). Es un output futuro del Learning Engine (AD-FUNC-09), no una funcionalidad separada. Si en el futuro necesita entidad propia, se decide contra evidencia real, no por adelantado.",
+      "defined_in": "AD-FUNC-05",
+      "referenced_in": [
+        "AD-FUNC-09"
+      ]
+    },
+    {
+      "id": "concept:identidad-progresiva",
+      "name": "Identidad Progresiva (Onboarding)",
+      "note": "AD-FUNC-06 SS3.1: 7 etiquetas de relacion derivadas (no almacenadas) - Anonimo/Visitante/Usuario/Responsable de Empresa/Lider Activo/Cliente Activo/Embajador. Mismo patron que Etapa del Ciclo de Vida (AD-005 SS4). Cada transicion habilitada por un hito de evidencia ya existente (Patron B, AD-CMP-01, reutilizado sin mecanismo nuevo). 'Founder' y 'CEO' evitados deliberadamente por colision con AD-006 (Usuario Principal) y AD-FUNC-02 (CEO Agent).",
+      "defined_in": "AD-FUNC-06",
+      "referenced_in": [
+        "AD-FUNC-08"
+      ]
+    },
+    {
+      "id": "concept:score-del-responsable",
+      "name": "Score del Responsable (antes Founder Score)",
+      "note": "AD-FUNC-07 SS3: score continuo N:1 con Usuario Principal (no Empresa), track record de ejecucion de la persona. Renombrado desde 'Founder Score' - misma colision que 'Founder' en AD-FUNC-06 (sesgo hacia solo startups, ya corregido por AD-006 al renombrar Fundador a Usuario Principal). Alimenta Probabilidad de exito de Estrategias (AD-FUNC-05 SS6).",
+      "defined_in": "AD-FUNC-07",
+      "referenced_in": [
+        "AD-FUNC-05",
+        "AD-FUNC-06"
+      ]
+    },
+    {
+      "id": "concept:venture-score",
+      "name": "Venture Score",
+      "note": "AD-FUNC-07 SS4: score continuo y agregado N:1 con Empresa, activo desde Nivel 6 (acompanamiento continuo, no secuencial). Sucesor de los 6 scores de diagnostico. Resumen ejecutivo del Dashboard, insumo para AD-FUNC-05.",
+      "defined_in": "AD-FUNC-07",
+      "referenced_in": [
+        "AD-FUNC-05"
+      ]
+    },
+    {
+      "id": "concept:playbook-empresarial",
+      "name": "Playbook Empresarial (mecanismo especificado, no construido)",
+      "note": "AD-FUNC-09 SS5: patron admitido solo con evidencia agregada de >=N Empresas reales (N es Decision de Diseno de AD-ARQ-10). Mide perfil (Etapa/Madurez/sector), combinacion de Estrategias, resultado agregado (Delta Venture Score/Indicador), Confidence Level del patron mismo. Si necesita entidad propia, se decide en futura version de AD-005/006 contra evidencia real.",
+      "defined_in": "AD-FUNC-09",
+      "referenced_in": [
+        "AD-FUNC-06"
+      ]
+    }
+  ],
+  "principles": [
+    {
+      "id": "principle:AD001-inviolable-1",
+      "text": "Ninguna decision avanza sin evidencia",
+      "defined_in": "AD-001",
+      "section": "12"
+    },
+    {
+      "id": "principle:AD001-inviolable-2",
+      "text": "Ninguna decision importante avanza sin aprobacion explicita del cliente",
+      "defined_in": "AD-001",
+      "section": "12"
+    },
+    {
+      "id": "principle:AD001-inviolable-3",
+      "text": "Ninguna recomendacion se presenta sin su razonamiento disponible si el cliente lo solicita",
+      "defined_in": "AD-001",
+      "section": "12"
+    },
+    {
+      "id": "principle:AD001-inviolable-4",
+      "text": "Ninguna empresa pierde su historial - el Gemelo Digital es permanente",
+      "defined_in": "AD-001",
+      "section": "12"
+    },
+    {
+      "id": "principle:AD001-inviolable-5",
+      "text": "ADAN nunca actua fuera de los limites de ecosistema (AD-000 §6) ni de categoria (AD-001 §1.1)",
+      "defined_in": "AD-001",
+      "section": "12"
+    },
+    {
+      "id": "principle:AD001-inviolable-6",
+      "text": "ADAN reconoce los limites de su conocimiento - Principio de Humildad Intelectual",
+      "defined_in": "AD-001",
+      "section": "6.1 / 12"
+    },
+    {
+      "id": "principle:AD002-rule-1.1",
+      "text": "Todo genera evidencia",
+      "defined_in": "AD-002",
+      "section": "1.1",
+      "operationalizes": [
+        "principle:AD001-inviolable-1"
+      ]
+    },
+    {
+      "id": "principle:AD002-rule-1.2",
+      "text": "Todo es trazable",
+      "defined_in": "AD-002",
+      "section": "1.2",
+      "operationalizes": [
+        "principle:AD001-inviolable-3"
+      ]
+    },
+    {
+      "id": "principle:AD002-rule-1.3",
+      "text": "Todo es reversible",
+      "defined_in": "AD-002",
+      "section": "1.3",
+      "operationalizes": [
+        "principle:AD001-inviolable-2"
+      ]
+    },
+    {
+      "id": "principle:AD002-rule-1.4",
+      "text": "Toda decision tiene responsable",
+      "defined_in": "AD-002",
+      "section": "1.4",
+      "operationalizes": [
+        "principle:AD001-inviolable-2"
+      ]
+    },
+    {
+      "id": "principle:AD002-rule-1.5",
+      "text": "Nada se pierde",
+      "defined_in": "AD-002",
+      "section": "1.5",
+      "operationalizes": [
+        "principle:AD001-inviolable-4"
+      ]
+    },
+    {
+      "id": "principle:AD002-rule-1.6",
+      "text": "Toda IA debe justificar",
+      "defined_in": "AD-002",
+      "section": "1.6",
+      "operationalizes": [
+        "principle:AD001-inviolable-3"
+      ]
+    },
+    {
+      "id": "principle:AD002-rule-1.7",
+      "text": "Todo tiene version",
+      "defined_in": "AD-002",
+      "section": "1.7",
+      "operationalizes": [
+        "principle:AD001-inviolable-4"
+      ]
+    },
+    {
+      "id": "principle:AD002-rule-1.8",
+      "text": "Todo genera memoria",
+      "defined_in": "AD-002",
+      "section": "1.8",
+      "operationalizes": [
+        "principle:AD001-inviolable-4"
+      ]
+    },
+    {
+      "id": "principle:AD002-rule-1.9",
+      "text": "Todo tiene un nivel de confianza declarado",
+      "defined_in": "AD-002",
+      "section": "1.9",
+      "operationalizes": [
+        "principle:AD001-inviolable-6"
+      ]
+    },
+    {
+      "id": "principle:AD002-rule-1.10",
+      "text": "Economia Conceptual",
+      "defined_in": "AD-002",
+      "section": "1.10",
+      "operationalizes": [],
+      "note": "instruccion directa del Board, no deriva de un principio inviolable previo de AD-001"
+    },
+    {
+      "id": "principle:MPI-1",
+      "text": "El dominio prevalece sobre la tecnologia",
+      "defined_in": "WO-000-ANEXO-MPI",
+      "section": "1"
+    },
+    {
+      "id": "principle:MPI-10",
+      "text": "Principio de Emergencia: ninguna capacidad que ya emerja de combinar reglas existentes se convierte en concepto/entidad/documento nuevo",
+      "defined_in": "WO-000-ANEXO-MPI",
+      "section": "2 (reubicado desde 10 en v2.0 Revision 2 - precede a Economia Conceptual, no la sigue)",
+      "version_introduced": "v2.0",
+      "precedes": [
+        "principle:AD002-rule-1.10"
+      ],
+      "first_applied_in": [
+        "Enterprise Genome rejection",
+        "relation lifecycle rejection",
+        "WORKSHOP-COMPORTAMIENTOS Ley 10"
+      ]
+    },
+    {
+      "id": "principle:MPI-2",
+      "text": "La evidencia prevalece sobre la opinion",
+      "defined_in": "WO-000-ANEXO-MPI",
+      "section": "3 (era 2 en v2.0 Revision 1)",
+      "extends": [
+        "principle:AD002-rule-1.1"
+      ]
+    },
+    {
+      "id": "principle:MPI-3",
+      "text": "La simplicidad prevalece sobre la sofisticacion innecesaria",
+      "defined_in": "WO-000-ANEXO-MPI",
+      "section": "4 (era 3)",
+      "complements": [
+        "principle:AD002-rule-1.10",
+        "principle:MPI-10"
+      ]
+    },
+    {
+      "id": "principle:MPI-4",
+      "text": "La experiencia del usuario prevalece sobre la comodidad de implementacion",
+      "defined_in": "WO-000-ANEXO-MPI",
+      "section": "5 (era 4)",
+      "extends": [
+        "AD-001-section-14"
+      ]
+    },
+    {
+      "id": "principle:MPI-5",
+      "text": "Toda decision debe minimizar la complejidad futura",
+      "defined_in": "WO-000-ANEXO-MPI",
+      "section": "6 (era 5)"
+    },
+    {
+      "id": "principle:MPI-6",
+      "text": "Ninguna limitacion temporal de una tecnologia debe modificar el modelo conceptual del producto",
+      "defined_in": "WO-000-ANEXO-MPI",
+      "section": "7 (era 6)",
+      "extends": [
+        "principle:MPI-1"
+      ]
+    },
+    {
+      "id": "principle:MPI-7",
+      "text": "La deuda conceptual es tan importante como la deuda tecnica",
+      "defined_in": "WO-000-ANEXO-MPI",
+      "section": "8 (era 7)"
+    },
+    {
+      "id": "principle:MPI-8",
+      "text": "Las decisiones irreversibles requieren mayor evidencia que las reversibles",
+      "defined_in": "WO-000-ANEXO-MPI",
+      "section": "9 (era 8)",
+      "complements": [
+        "principle:AD002-rule-1.3"
+      ]
+    },
+    {
+      "id": "principle:MPI-9",
+      "text": "La arquitectura debe poder evolucionar sin romper el dominio",
+      "defined_in": "WO-000-ANEXO-MPI",
+      "section": "10 (era 9)",
+      "proposed_by": "Claude Code",
+      "extends": [
+        "principle:MPI-1"
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "from": "AD-001",
+      "to": "AD-000",
+      "type": "depends_on"
+    },
+    {
+      "from": "AD-002",
+      "to": "AD-001",
+      "type": "depends_on"
+    },
+    {
+      "from": "AD-003",
+      "to": "AD-000",
+      "type": "depends_on"
+    },
+    {
+      "from": "AD-003",
+      "to": "AD-001",
+      "type": "depends_on"
+    },
+    {
+      "from": "AD-003",
+      "to": "AD-002",
+      "type": "depends_on"
+    },
+    {
+      "from": "concept:ecosistema-paradixe",
+      "to": "AD-000",
+      "type": "defined_by"
+    },
+    {
+      "from": "concept:adan",
+      "to": "AD-001",
+      "type": "defined_by"
+    },
+    {
+      "from": "concept:orquestador",
+      "to": "AD-000",
+      "type": "defined_by"
+    },
+    {
+      "from": "concept:gemelo-digital",
+      "to": "AD-000",
+      "type": "referenced_in"
+    },
+    {
+      "from": "concept:gemelo-digital",
+      "to": "AD-001",
+      "type": "referenced_in"
+    },
+    {
+      "from": "concept:gemelo-digital",
+      "to": "AD-007",
+      "type": "awaits_full_spec"
+    },
+    {
+      "from": "concept:empresa",
+      "to": "AD-005",
+      "type": "awaits_full_spec"
+    },
+    {
+      "from": "concept:proyecto",
+      "to": "AD-006",
+      "type": "awaits_full_spec"
+    },
+    {
+      "from": "concept:nivel",
+      "to": "AD-FUNC-01",
+      "type": "awaits_full_spec"
+    },
+    {
+      "from": "concept:decision",
+      "to": "AD-006",
+      "type": "awaits_full_spec"
+    },
+    {
+      "from": "concept:decision",
+      "to": "AD-CMP-03",
+      "type": "awaits_behavior_spec"
+    },
+    {
+      "from": "concept:decision",
+      "to": "concept:decision-de-diseno",
+      "type": "name_collision_risk"
+    },
+    {
+      "from": "concept:evidencia",
+      "to": "AD-CMP-05",
+      "type": "awaits_behavior_spec"
+    },
+    {
+      "from": "concept:score-adan",
+      "to": "AD-FUNC-07",
+      "type": "awaits_full_spec"
+    },
+    {
+      "from": "concept:score-adan",
+      "to": "AD-ARQ-10",
+      "type": "awaits_calculation_spec"
+    },
+    {
+      "from": "concept:confidence-level",
+      "to": "principle:AD002-rule-1.9",
+      "type": "implements"
+    },
+    {
+      "from": "principle:AD002-rule-1.1",
+      "to": "principle:AD001-inviolable-1",
+      "type": "operationalizes"
+    },
+    {
+      "from": "principle:AD002-rule-1.9",
+      "to": "principle:AD001-inviolable-6",
+      "type": "operationalizes"
+    },
+    {
+      "from": "principle:AD002-rule-1.10",
+      "to": "AD-003",
+      "type": "first_applied_in"
+    },
+    {
+      "from": "AD-004",
+      "to": "AD-001",
+      "type": "depends_on"
+    },
+    {
+      "from": "AD-004",
+      "to": "AD-002",
+      "type": "depends_on"
+    },
+    {
+      "from": "AD-004",
+      "to": "AD-003",
+      "type": "depends_on"
+    },
+    {
+      "from": "AD-004",
+      "to": "WO-000-ANEXO-MPI",
+      "type": "depends_on"
+    },
+    {
+      "from": "WO-000-ANEXO-MPI",
+      "to": "AD-001",
+      "type": "depends_on"
+    },
+    {
+      "from": "WO-000-ANEXO-MPI",
+      "to": "AD-002",
+      "type": "depends_on"
+    },
+    {
+      "from": "principle:MPI-9",
+      "to": "AD-004",
+      "type": "first_applied_in"
+    },
+    {
+      "from": "AD-004",
+      "to": "principle:MPI-1",
+      "type": "applies"
+    },
+    {
+      "from": "AD-004",
+      "to": "principle:MPI-5",
+      "type": "applies"
+    },
+    {
+      "from": "AD-004",
+      "to": "principle:MPI-6",
+      "type": "applies"
+    },
+    {
+      "from": "AD-004",
+      "to": "principle:MPI-7",
+      "type": "applies"
+    },
+    {
+      "from": "AD-004",
+      "to": "principle:MPI-9",
+      "type": "applies"
+    },
+    {
+      "from": "AD-004",
+      "to": "concept:funcionalidad",
+      "type": "defines_lifecycle_of"
+    },
+    {
+      "from": "AD-005",
+      "to": "AD-000",
+      "type": "depends_on"
+    },
+    {
+      "from": "AD-005",
+      "to": "AD-001",
+      "type": "depends_on"
+    },
+    {
+      "from": "AD-005",
+      "to": "AD-002",
+      "type": "depends_on"
+    },
+    {
+      "from": "AD-005",
+      "to": "AD-003",
+      "type": "depends_on"
+    },
+    {
+      "from": "AD-005",
+      "to": "WO-000-ANEXO-MPI",
+      "type": "depends_on"
+    },
+    {
+      "from": "AD-005",
+      "to": "WORKSHOP-ENTERPRISE-TAXONOMY",
+      "type": "consumes"
+    },
+    {
+      "from": "AD-005",
+      "to": "WORKSHOP-RELACIONES",
+      "type": "consumes"
+    },
+    {
+      "from": "AD-005",
+      "to": "WORKSHOP-COMPORTAMIENTOS",
+      "type": "consumes"
+    },
+    {
+      "from": "AD-005",
+      "to": "concept:empresa",
+      "type": "defines_as_root_entity"
+    },
+    {
+      "from": "AD-005",
+      "to": "concept:iniciativa",
+      "type": "defines"
+    },
+    {
+      "from": "AD-005",
+      "to": "concept:suceso-empresarial",
+      "type": "defines"
+    },
+    {
+      "from": "AD-005",
+      "to": "concept:decision-de-negocio",
+      "type": "defines"
+    },
+    {
+      "from": "principle:MPI-10",
+      "to": "AD-005",
+      "type": "first_applied_in"
+    },
+    {
+      "from": "AD-006",
+      "to": "AD-005",
+      "type": "depends_on",
+      "note": "restriccion: AD-006 no puede introducir entidad de negocio ausente en AD-005 sin nueva version de AD-005"
+    },
+    {
+      "from": "AD-007",
+      "to": "AD-005",
+      "type": "depends_on",
+      "note": "el Gemelo Digital representa una instancia de Empresa y sus 25 entidades relacionadas"
+    },
+    {
+      "from": "AD-006",
+      "to": "AD-005",
+      "type": "translates",
+      "note": "26 de 26 entidades, cero nuevas del dominio de negocio"
+    },
+    {
+      "from": "AD-006",
+      "to": "AD-003",
+      "type": "fulfills_pending_ownership",
+      "note": "resuelve Proyecto, Card, Workspace, Decision, Agente marcados 'pendiente' en AD-003"
+    },
+    {
+      "from": "AD-006",
+      "to": "AD-002",
+      "type": "implements",
+      "note": "Contrato Base (seccion 2) es la implementacion a nivel de software de las 10 reglas de AD-002"
+    },
+    {
+      "from": "AD-006",
+      "to": "concept:usuario-principal",
+      "type": "defines"
+    },
+    {
+      "from": "AD-006",
+      "to": "concept:score-adan",
+      "type": "defines"
+    },
+    {
+      "from": "AD-006",
+      "to": "concept:evento-adan",
+      "type": "defines"
+    },
+    {
+      "from": "AD-007",
+      "to": "AD-005",
+      "type": "aggregates_boundary_over"
+    },
+    {
+      "from": "AD-007",
+      "to": "AD-006",
+      "type": "aggregates_boundary_over"
+    },
+    {
+      "from": "AD-007",
+      "to": "AD-000",
+      "type": "implements",
+      "note": "AD-000 §4 principio 5, una sola fuente de verdad por entidad"
+    },
+    {
+      "from": "principle:MPI-10",
+      "to": "AD-007",
+      "type": "first_applied_in",
+      "note": "verificacion explicita seccion 0 antes de admitir el concepto"
+    },
+    {
+      "from": "AD-CMP-06",
+      "to": "AD-007",
+      "type": "depends_on",
+      "note": "opera sobre la estructura que AD-007 define; el comportamiento dinamico vive en AD-CMP-06, no en AD-007"
+    },
+    {
+      "from": "AD-FUNC-05",
+      "to": "AD-000",
+      "type": "depends_on"
+    },
+    {
+      "from": "AD-FUNC-05",
+      "to": "AD-005",
+      "type": "depends_on"
+    },
+    {
+      "from": "AD-FUNC-05",
+      "to": "AD-FUNC-01",
+      "type": "depends_on"
+    },
+    {
+      "from": "AD-FUNC-05",
+      "to": "AD-CMP-05",
+      "type": "depends_on"
+    },
+    {
+      "from": "AD-FUNC-05",
+      "to": "AD-FUNC-02",
+      "type": "depends_on"
+    },
+    {
+      "from": "AD-FUNC-05",
+      "to": "concept:marketplace-ecosistema",
+      "type": "consumes_data_from"
+    },
+    {
+      "from": "AD-FUNC-05",
+      "to": "AD-FUNC-09",
+      "type": "feeds_future"
+    },
+    {
+      "from": "AD-FUNC-06",
+      "to": "AD-FUNC-01",
+      "type": "depends_on"
+    },
+    {
+      "from": "AD-FUNC-06",
+      "to": "AD-FUNC-03",
+      "type": "depends_on"
+    },
+    {
+      "from": "AD-FUNC-06",
+      "to": "AD-FUNC-04",
+      "type": "depends_on"
+    },
+    {
+      "from": "AD-FUNC-06",
+      "to": "AD-CMP-04",
+      "type": "depends_on"
+    },
+    {
+      "from": "AD-FUNC-06",
+      "to": "AD-FUNC-08",
+      "type": "feeds_future"
+    },
+    {
+      "from": "AD-FUNC-06",
+      "to": "AD-CMP-01",
+      "type": "reuses_pattern"
+    },
+    {
+      "from": "AD-FUNC-06",
+      "to": "AD-000",
+      "type": "depends_on"
+    },
+    {
+      "from": "AD-FUNC-06",
+      "to": "AD-FUNC-02",
+      "type": "depends_on"
+    },
+    {
+      "from": "AD-FUNC-06",
+      "to": "AD-FUNC-09",
+      "type": "feeds_future"
+    },
+    {
+      "from": "AD-FUNC-07",
+      "to": "AD-FUNC-01",
+      "type": "depends_on"
+    },
+    {
+      "from": "AD-FUNC-07",
+      "to": "AD-CMP-05",
+      "type": "depends_on"
+    },
+    {
+      "from": "AD-FUNC-07",
+      "to": "AD-006",
+      "type": "depends_on"
+    },
+    {
+      "from": "AD-FUNC-07",
+      "to": "AD-005",
+      "type": "depends_on"
+    },
+    {
+      "from": "AD-FUNC-07",
+      "to": "AD-FUNC-05",
+      "type": "depends_on"
+    },
+    {
+      "from": "AD-FUNC-07",
+      "to": "AD-FUNC-06",
+      "type": "depends_on"
+    },
+    {
+      "from": "AD-FUNC-07",
+      "to": "AD-FUNC-09",
+      "type": "feeds_future"
+    },
+    {
+      "from": "AD-003",
+      "to": "AD-FUNC-07",
+      "type": "motivated_by"
+    },
+    {
+      "from": "AD-006",
+      "to": "AD-FUNC-07",
+      "type": "motivated_by"
+    },
+    {
+      "from": "AD-FUNC-08",
+      "to": "AD-FUNC-06",
+      "type": "depends_on"
+    },
+    {
+      "from": "AD-FUNC-08",
+      "to": "AD-FUNC-01",
+      "type": "depends_on"
+    },
+    {
+      "from": "AD-FUNC-08",
+      "to": "AD-FUNC-03",
+      "type": "depends_on"
+    },
+    {
+      "from": "AD-FUNC-08",
+      "to": "AD-FUNC-05",
+      "type": "depends_on"
+    },
+    {
+      "from": "AD-FUNC-08",
+      "to": "AD-FUNC-07",
+      "type": "depends_on"
+    },
+    {
+      "from": "AD-FUNC-08",
+      "to": "AD-FUNC-09",
+      "type": "feeds_future"
+    },
+    {
+      "from": "AD-FUNC-09",
+      "to": "AD-FUNC-02",
+      "type": "depends_on"
+    },
+    {
+      "from": "AD-FUNC-09",
+      "to": "AD-FUNC-05",
+      "type": "depends_on"
+    },
+    {
+      "from": "AD-FUNC-09",
+      "to": "AD-FUNC-06",
+      "type": "depends_on"
+    },
+    {
+      "from": "AD-FUNC-09",
+      "to": "AD-FUNC-07",
+      "type": "depends_on"
+    },
+    {
+      "from": "AD-FUNC-09",
+      "to": "AD-FUNC-08",
+      "type": "depends_on"
+    },
+    {
+      "from": "AD-FUNC-09",
+      "to": "AD-CMP-05",
+      "type": "depends_on"
+    },
+    {
+      "from": "AD-FUNC-09",
+      "to": "AD-008",
+      "type": "depends_on"
+    }
+  ],
+  "future_seeds": [
+    {
+      "id": "SEED-AD-FUNC-09-DISAGREEMENT-LEARNING",
+      "target_document": "AD-FUNC-09",
+      "note": "El sistema aprende MAS de las decisiones que contradicen la recomendacion del Board que de las que la siguen (planted en AD-FUNC-02 SS2.5). Preguntas futuras que el Learning Engine deberia poder responder, segun el Board: ¿en que tipo de empresas el Board suele equivocarse? ¿que perfiles de empresarios toman mejores decisiones contra la recomendacion? ¿que modelos LLM sobreestiman ciertos riesgos? ¿en que industrias conviene ser mas conservador? ¿cuando un fundador debe ignorar la recomendacion del sistema? Este conocimiento no existe hoy - depende de acumular casos reales de discrepancia + resultado a lo largo del tiempo, via la Ley 2 de AD-005. AMPLIADO en AD-FUNC-05 Revision 2 (2026-07-14): ciclo de aprendizaje completo registrado como dependencia explicita: Brecha -> Capacidad -> Estrategia elegida -> Implementacion -> Resultado -> ROI real -> Desviacion frente al ROI esperado -> Aprendizaje -> Recalibracion del Confidence Level. Compara proyeccion contra resultado real, no solo si se acepto o rechazo una recomendacion. REGISTRO ADICIONAL (AD-FUNC-05 SS10.1, 2026-07-14): el Learning Engine debe eventualmente producir un Playbook Empresarial (patrones de que combinaciones de Estrategias funcionan mejor para que perfil de empresa) como uno de sus outputs de mayor valor - no construido todavia, solo registrado como direccion futura.",
+      "date": "2026-07-14",
+      "status": "fulfilled_by_AD-FUNC-09_v1.0"
+    },
+    {
+      "id": "SEED-AD-INT-MARKETPLACE",
+      "target_document": "AD-INT (Fase 2, no numerado aun)",
+      "note": "AD-FUNC-05 (Recomendacion de Recursos) depende de un contrato de integracion con el Marketplace del Ecosistema Paradixe (AD-000 SS3) que no existe todavia en el indice original (AD-INT-01..04 solo cubren EVA/ARQAI/Genexis/CSI). Se suma al gap ya identificado para ATO. El contrato debe proveer, por recurso: para quien sirve, etapa aplicable, evidencia de empresas similares, resultados, costo, riesgo, recomendacion, Confidence Level (los 8 campos de AD-FUNC-05 SS4).",
+      "date": "2026-07-14"
+    }
+  ]
+}

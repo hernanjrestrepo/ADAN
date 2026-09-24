@@ -1,0 +1,129 @@
+/** Typed API client - BP-0007. Generado a mano contra los contratos reales del backend
+ * (contracts/openapi/); se reemplaza por generacion automatica cuando WO-002 estabilice
+ * el contrato de agentes. */
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8020";
+
+export interface TokenResponse {
+  access_token: string;
+  token_type: string;
+}
+
+export interface HealthResponse {
+  status: string;
+  uptime_seconds: number;
+}
+
+export interface RunAgentResponse {
+  execution_id: string;
+}
+
+export type EjecucionStatus = "pending" | "running" | "completed" | "failed" | "cancelled";
+
+export interface EjecucionAgente {
+  id: string;
+  agent_id: string;
+  status: EjecucionStatus;
+  user_input: string;
+  final_output: string | null;
+  error: string | null;
+}
+
+export interface KGNode {
+  id: string;
+  tipo: string;
+  nombre: string;
+  proyecto_id: string | null;
+  atributos: Record<string, unknown> | null;
+}
+
+export interface KGEdge {
+  id: string;
+  origen_id: string;
+  destino_id: string;
+  tipo_relacion: string;
+}
+
+export interface KGTraverseResult {
+  nodos: KGNode[];
+  aristas: KGEdge[];
+}
+
+export interface HybridResult {
+  contenido: string;
+  origen: "semantico" | "grafo";
+  distance: number;
+  nodo_id: string | null;
+}
+
+class ApiError extends Error {
+  constructor(
+    public status: number,
+    message: string
+  ) {
+    super(message);
+  }
+}
+
+function getToken(): string | null {
+  return localStorage.getItem("adan_token");
+}
+
+export function setToken(token: string | null): void {
+  if (token) localStorage.setItem("adan_token", token);
+  else localStorage.removeItem("adan_token");
+}
+
+async function request<T>(path: string, init?: RequestInit): Promise<T> {
+  const token = getToken();
+  const headers = new Headers(init?.headers);
+  if (token) headers.set("Authorization", `Bearer ${token}`);
+
+  const resp = await fetch(`${API_BASE_URL}${path}`, { ...init, headers });
+  if (!resp.ok) {
+    const body = await resp.json().catch(() => ({ message: resp.statusText }));
+    throw new ApiError(resp.status, body.message ?? body.detail ?? "Request failed");
+  }
+  return resp.json() as Promise<T>;
+}
+
+export const api = {
+  health: () => request<HealthResponse>("/health"),
+
+  login: async (email: string, password: string): Promise<TokenResponse> => {
+    const form = new URLSearchParams();
+    form.set("username", email);
+    form.set("password", password);
+    return request<TokenResponse>("/auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: form,
+    });
+  },
+
+  register: (email: string, password: string, display_name?: string) =>
+    request<TokenResponse>("/auth/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password, display_name }),
+    }),
+
+  runAgent: (agentId: string, userInput: string) =>
+    request<RunAgentResponse>("/agents/run", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ agent_id: agentId, user_input: userInput }),
+    }),
+
+  getRun: (executionId: string) => request<EjecucionAgente>(`/agents/runs/${executionId}`),
+
+  listRuns: (limit = 20) => request<EjecucionAgente[]>(`/agents/runs?limit=${limit}`),
+
+  hybridQuery: (q: string, topK = 5) =>
+    request<HybridResult[]>(`/kg/query?${new URLSearchParams({ q, top_k: String(topK) })}`),
+
+  getNodeTraverse: (nodeId: string, maxDepth = 2) =>
+    request<KGTraverseResult>(`/kg/nodes/${nodeId}/traverse?max_depth=${maxDepth}`),
+};
+
+export { ApiError };
