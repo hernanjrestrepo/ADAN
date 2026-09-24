@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "last_updated": "2026-07-14",
+  "last_updated": "2026-09-24",
   "maintained_by": "Se actualiza manualmente con cada documento nuevo, como parte obligatoria de la autoauditoría previa a la entrega (AD-002 v2.0 regla 1.10). Ver README.md de esta carpeta para el procedimiento exacto de actualización.",
   "internal_docs": [
     {
@@ -46,11 +46,16 @@
       "id": "AD-000",
       "name": "Paradixe Ecosystem Vision",
       "category": "fundamentos",
-      "current_version": "v1.0",
+      "current_version": "v2.0",
       "status": "approved",
-      "path": "docs/wo-000/00-fundamentos/AD-000_Paradixe_Ecosystem_Vision_v1.0.md",
-      "confidence_level": 68,
-      "depends_on": []
+      "path": "docs/wo-000/00-fundamentos/AD-000_Paradixe_Ecosystem_Vision_v2.0.md",
+      "confidence_level": 80,
+      "depends_on": [
+        "AD-DEC-0002"
+      ],
+      "version_history": [
+        "v1.0 — aprobada y congelada 2026-07-14; superseded 2026-09-24 por v2.0 (AD-DEC-0002: EVA = ventas y marketing, ARQAI se funde en EVA, Genexis interno, Comunidad, agentes por tiempo)"
+      ]
     },
     {
       "id": "AD-001",
@@ -87,9 +92,9 @@
       "id": "AD-003",
       "name": "Product Language",
       "category": "fundamentos",
-      "current_version": "v1.0",
+      "current_version": "v1.2",
       "status": "approved",
-      "path": "docs/wo-000/00-fundamentos/AD-003_Product_Language_v1.0.md",
+      "path": "docs/wo-000/00-fundamentos/AD-003_Product_Language_v1.2.md",
       "confidence_level": 65,
       "depends_on": [
         "AD-000",
@@ -140,13 +145,13 @@
       "id": "AD-006",
       "name": "Domain Model (Software)",
       "category": "fundamentos",
-      "current_version": "v1.1",
+      "current_version": "v1.2",
       "status": "approved",
       "note": "AD-006 tiene dos dominios: traduce las 26 entidades de AD-005 (cero nuevas) MAS define 12 entidades operativas de ADAN ya mandatadas por el indice v3.1 desde el origen (Proyecto, Usuario, Nivel, Card, Agente, Workspace, Conversacion, Tarea, Decision, Score, Evento, Usuario Principal), que nunca fueron responsabilidad de AD-005. Aclaracion formalizada en v1.1 tras refinamiento del Board",
       "version_history": [
         "v1.0 — aprobada y congelada 2026-07-14, superseded el mismo dia por v1.1 (aclaracion menor de alcance, sin cambio de entidades)"
       ],
-      "path": "docs/wo-000/00-fundamentos/AD-006_Domain_Model_v1.1.md",
+      "path": "docs/wo-000/00-fundamentos/AD-006_Domain_Model_v1.2.md",
       "confidence_level": 66,
       "business_entities_translated": 26,
       "operational_entities_new": 12,
@@ -382,6 +387,64 @@
         "AD-FUNC-04",
         "AD-FUNC-03",
         "AD-005"
+      ]
+    },
+    {
+      "id": "AD-FUNC-07",
+      "name": "Sistema de Scoring (Producto)",
+      "current_version": "v1.0",
+      "status": "constructed_and_self_audited",
+      "note": "Reconcilia dos taxonomias de Score (indice original 8 nombres vs Plan Maestro 7 categorias). 8 Scores en 2 familias: diagnostico secuencial (Problem/Solution/Business/Product/Market/Execution, ya anclados por AD-FUNC-01) y continuos (Score del Responsable -antes Founder Score-, Venture Score). Score por Objetivo/Estrategia = regla generica de aplicacion, no scores fijos nuevos. Confidence Level nunca es un score separado. Requirio AD-003 v1.2 y AD-006 v1.2 (cardinalidad de Score ampliada a Empresa o Usuario Principal).",
+      "path": "docs/wo-000/02-funcionalidades/AD-FUNC-07_Sistema_de_Scoring_v1.0.md",
+      "confidence_level": 50,
+      "depends_on": [
+        "AD-FUNC-01",
+        "AD-CMP-05",
+        "AD-006",
+        "AD-005",
+        "AD-FUNC-05",
+        "AD-FUNC-06",
+        "AD-002",
+        "AD-004"
+      ]
+    },
+    {
+      "id": "AD-FUNC-08",
+      "name": "User Journey Map",
+      "current_version": "v1.0",
+      "status": "constructed_and_self_audited",
+      "note": "7 etapas (Descubrimiento/Onboarding/Uso/Adopcion/Expansion/Renovacion/Embajador) mapeadas 1:1 contra la Identidad Progresiva de AD-FUNC-06 SS3.1 - no crea segunda taxonomia. Uso=Niveles 1-5 (AD-FUNC-01), Expansion=Estrategias (AD-FUNC-05), metricas=Scores (AD-FUNC-07). Renovacion y Embajador explicitamente diferidos a WO-100 (mecanismo de negocio).",
+      "path": "docs/wo-000/02-funcionalidades/AD-FUNC-08_User_Journey_Map_v1.0.md",
+      "confidence_level": 45,
+      "depends_on": [
+        "AD-FUNC-06",
+        "AD-FUNC-01",
+        "AD-FUNC-03",
+        "AD-FUNC-05",
+        "AD-FUNC-07",
+        "AD-000",
+        "AD-004"
+      ]
+    },
+    {
+      "id": "AD-FUNC-09",
+      "name": "Learning Engine",
+      "current_version": "v1.0",
+      "status": "constructed_and_self_audited",
+      "note": "Unifica 4 semillas ya sembradas (AD-FUNC-02 SS2.5 desacuerdos, AD-FUNC-05 SS10 ciclo ROI, AD-FUNC-06 SS10.1 Playbook, AD-FUNC-07 SS5 Score por Estrategia) en 3 loops: recalibracion de Confidence Level, priors del Motor de Estrategias (inactivo sin evidencia agregada), registro en Gemelo Digital (Patron C). Playbook Empresarial especificado (umbral N de evidencia) sin construirse. 6 Salvaguardas permanentes: nunca ejecuta, nunca optimiza engagement, nunca trata empresas como intercambiables, nunca aprende de una sola conversacion, nunca oculta cuantos casos sostienen un patron, nunca presiona al cliente a seguir la recomendacion.",
+      "path": "docs/wo-000/02-funcionalidades/AD-FUNC-09_Learning_Engine_v1.0.md",
+      "confidence_level": 38,
+      "depends_on": [
+        "AD-FUNC-02",
+        "AD-FUNC-05",
+        "AD-FUNC-06",
+        "AD-FUNC-07",
+        "AD-FUNC-08",
+        "AD-CMP-05",
+        "AD-008",
+        "AD-FUNC-04",
+        "AD-001",
+        "AD-004"
       ]
     }
   ],
@@ -750,6 +813,61 @@
       "referenced_in": [
         "AD-FUNC-08"
       ]
+    },
+    {
+      "id": "concept:score-del-responsable",
+      "name": "Score del Responsable (antes Founder Score)",
+      "note": "AD-FUNC-07 SS3: score continuo N:1 con Usuario Principal (no Empresa), track record de ejecucion de la persona. Renombrado desde 'Founder Score' - misma colision que 'Founder' en AD-FUNC-06 (sesgo hacia solo startups, ya corregido por AD-006 al renombrar Fundador a Usuario Principal). Alimenta Probabilidad de exito de Estrategias (AD-FUNC-05 SS6).",
+      "defined_in": "AD-FUNC-07",
+      "referenced_in": [
+        "AD-FUNC-05",
+        "AD-FUNC-06"
+      ]
+    },
+    {
+      "id": "concept:venture-score",
+      "name": "Venture Score",
+      "note": "AD-FUNC-07 SS4: score continuo y agregado N:1 con Empresa, activo desde Nivel 6 (acompanamiento continuo, no secuencial). Sucesor de los 6 scores de diagnostico. Resumen ejecutivo del Dashboard, insumo para AD-FUNC-05.",
+      "defined_in": "AD-FUNC-07",
+      "referenced_in": [
+        "AD-FUNC-05"
+      ]
+    },
+    {
+      "id": "concept:playbook-empresarial",
+      "name": "Playbook Empresarial (mecanismo especificado, no construido)",
+      "note": "AD-FUNC-09 SS5: patron admitido solo con evidencia agregada de >=N Empresas reales (N es Decision de Diseno de AD-ARQ-10). Mide perfil (Etapa/Madurez/sector), combinacion de Estrategias, resultado agregado (Delta Venture Score/Indicador), Confidence Level del patron mismo. Si necesita entidad propia, se decide en futura version de AD-005/006 contra evidencia real.",
+      "defined_in": "AD-FUNC-09",
+      "referenced_in": [
+        "AD-FUNC-06"
+      ]
+    },
+    {
+      "id": "concept:agente-por-tiempo",
+      "term": "Agente por tiempo",
+      "group": "producto",
+      "defined_in": "AD-000",
+      "authoritative_owner": "AD-000",
+      "stability": "nuevo",
+      "note": "Agente de ADÁN contratado por hora, día, semana o mes para tareas específicas de una empresa. Ingreso recurrente de ADÁN; reemplaza la membresía operativa de planes fijos (AD-DEC-0002 §3.2). Se publica y contrata en el Marketplace. Especificación de producto pendiente: WO-109."
+    },
+    {
+      "id": "concept:comunidad",
+      "term": "Comunidad",
+      "group": "producto",
+      "defined_in": "AD-000",
+      "authoritative_owner": "AD-000",
+      "stability": "nuevo",
+      "note": "Componente del Ecosistema Paradixe desde AD-000 v2.0: red de emprendedores y empresas y soporte de la red de comisiones (Ondas Expansivas, Ley 1700 de 2013). Resuelve como concepto el hallazgo H-5 del blueprint consolidado; si además es entidad del dominio sigue diferido (Regla de Entidades, AD-004). Especificación: WO-121."
+    },
+    {
+      "id": "concept:aviso-de-ia",
+      "term": "Aviso de IA",
+      "group": "producto",
+      "defined_in": "AD-000",
+      "authoritative_owner": "AD-000",
+      "stability": "estable",
+      "note": "Texto único visible en interfaz, documentos y API: ADÁN es una IA, no reemplaza la asesoría profesional y Paradixe no responde por los resultados (AD-DEC-0002 decisión 6; implementado en WO-095)."
     }
   ],
   "principles": [
@@ -1371,6 +1489,141 @@
       "from": "AD-FUNC-06",
       "to": "AD-FUNC-09",
       "type": "feeds_future"
+    },
+    {
+      "from": "AD-FUNC-07",
+      "to": "AD-FUNC-01",
+      "type": "depends_on"
+    },
+    {
+      "from": "AD-FUNC-07",
+      "to": "AD-CMP-05",
+      "type": "depends_on"
+    },
+    {
+      "from": "AD-FUNC-07",
+      "to": "AD-006",
+      "type": "depends_on"
+    },
+    {
+      "from": "AD-FUNC-07",
+      "to": "AD-005",
+      "type": "depends_on"
+    },
+    {
+      "from": "AD-FUNC-07",
+      "to": "AD-FUNC-05",
+      "type": "depends_on"
+    },
+    {
+      "from": "AD-FUNC-07",
+      "to": "AD-FUNC-06",
+      "type": "depends_on"
+    },
+    {
+      "from": "AD-FUNC-07",
+      "to": "AD-FUNC-09",
+      "type": "feeds_future"
+    },
+    {
+      "from": "AD-003",
+      "to": "AD-FUNC-07",
+      "type": "motivated_by"
+    },
+    {
+      "from": "AD-006",
+      "to": "AD-FUNC-07",
+      "type": "motivated_by"
+    },
+    {
+      "from": "AD-FUNC-08",
+      "to": "AD-FUNC-06",
+      "type": "depends_on"
+    },
+    {
+      "from": "AD-FUNC-08",
+      "to": "AD-FUNC-01",
+      "type": "depends_on"
+    },
+    {
+      "from": "AD-FUNC-08",
+      "to": "AD-FUNC-03",
+      "type": "depends_on"
+    },
+    {
+      "from": "AD-FUNC-08",
+      "to": "AD-FUNC-05",
+      "type": "depends_on"
+    },
+    {
+      "from": "AD-FUNC-08",
+      "to": "AD-FUNC-07",
+      "type": "depends_on"
+    },
+    {
+      "from": "AD-FUNC-08",
+      "to": "AD-FUNC-09",
+      "type": "feeds_future"
+    },
+    {
+      "from": "AD-FUNC-09",
+      "to": "AD-FUNC-02",
+      "type": "depends_on"
+    },
+    {
+      "from": "AD-FUNC-09",
+      "to": "AD-FUNC-05",
+      "type": "depends_on"
+    },
+    {
+      "from": "AD-FUNC-09",
+      "to": "AD-FUNC-06",
+      "type": "depends_on"
+    },
+    {
+      "from": "AD-FUNC-09",
+      "to": "AD-FUNC-07",
+      "type": "depends_on"
+    },
+    {
+      "from": "AD-FUNC-09",
+      "to": "AD-FUNC-08",
+      "type": "depends_on"
+    },
+    {
+      "from": "AD-FUNC-09",
+      "to": "AD-CMP-05",
+      "type": "depends_on"
+    },
+    {
+      "from": "AD-FUNC-09",
+      "to": "AD-008",
+      "type": "depends_on"
+    },
+    {
+      "from": "AD-000",
+      "to": "AD-DEC-0002",
+      "type": "motivated_by"
+    },
+    {
+      "from": "concept:agente-por-tiempo",
+      "to": "AD-000",
+      "type": "defined_by"
+    },
+    {
+      "from": "concept:comunidad",
+      "to": "AD-000",
+      "type": "defined_by"
+    },
+    {
+      "from": "concept:aviso-de-ia",
+      "to": "AD-000",
+      "type": "defined_by"
+    },
+    {
+      "from": "concept:agente-por-tiempo",
+      "to": "concept:marketplace-ecosistema",
+      "type": "referenced_in"
     }
   ],
   "future_seeds": [
@@ -1378,7 +1631,8 @@
       "id": "SEED-AD-FUNC-09-DISAGREEMENT-LEARNING",
       "target_document": "AD-FUNC-09",
       "note": "El sistema aprende MAS de las decisiones que contradicen la recomendacion del Board que de las que la siguen (planted en AD-FUNC-02 SS2.5). Preguntas futuras que el Learning Engine deberia poder responder, segun el Board: ¿en que tipo de empresas el Board suele equivocarse? ¿que perfiles de empresarios toman mejores decisiones contra la recomendacion? ¿que modelos LLM sobreestiman ciertos riesgos? ¿en que industrias conviene ser mas conservador? ¿cuando un fundador debe ignorar la recomendacion del sistema? Este conocimiento no existe hoy - depende de acumular casos reales de discrepancia + resultado a lo largo del tiempo, via la Ley 2 de AD-005. AMPLIADO en AD-FUNC-05 Revision 2 (2026-07-14): ciclo de aprendizaje completo registrado como dependencia explicita: Brecha -> Capacidad -> Estrategia elegida -> Implementacion -> Resultado -> ROI real -> Desviacion frente al ROI esperado -> Aprendizaje -> Recalibracion del Confidence Level. Compara proyeccion contra resultado real, no solo si se acepto o rechazo una recomendacion. REGISTRO ADICIONAL (AD-FUNC-05 SS10.1, 2026-07-14): el Learning Engine debe eventualmente producir un Playbook Empresarial (patrones de que combinaciones de Estrategias funcionan mejor para que perfil de empresa) como uno de sus outputs de mayor valor - no construido todavia, solo registrado como direccion futura.",
-      "date": "2026-07-14"
+      "date": "2026-07-14",
+      "status": "fulfilled_by_AD-FUNC-09_v1.0"
     },
     {
       "id": "SEED-AD-INT-MARKETPLACE",

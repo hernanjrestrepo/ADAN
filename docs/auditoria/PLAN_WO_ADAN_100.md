@@ -27,7 +27,8 @@
 | WO-091, 092, 093 | Ya definidas en el Canon: PostgreSQL, TypeScript, Producción |
 | **WO-094** | **Hotfix de seguridad: ejecutada y fusionada (hernanjrestrepo/ADAN#1)** |
 | **WO-095** | **Estabilización funcional: ejecutada y fusionada (`docs/wo/WO-095_REPORTE.md`)** |
-| WO-096 → WO-099 | Nuevas |
+| **WO-096** | **Consolidación: hecho todo lo que no depende de la laptop; falta importar Build B (`docs/wo/WO-096_REPORTE.md`)** |
+| WO-097 → WO-099 | Nuevas |
 | WO-100 → WO-106 | Reservadas; no se tocan |
 | WO-107 → WO-122 | Nuevas |
 
@@ -96,7 +97,8 @@ Criterio de cierre común (EPWO-051), además de lo específico de cada ficha:
 - **Cierre específico:** prueba de regresión por cada bug.
 - **Estimación:** 3–5 días.
 
-### WO-096 — Consolidación de builds y documentación
+### WO-096 — Consolidación de builds y documentación 🟡
+- **Estado (2026-09-24):** blueprint, AD-000 v2.0, mapa de reutilización A → C, `launch.json` y `MASTER_ARCHITECTURE` hechos. Falta importar Build B desde la laptop (pasos en `docs/wo/WO-096_REPORTE.md` §4).
 - **Alcance:**
   - Importar Build B con su historial.
   - Llevar a `docs/wo-000/` las versiones más nuevas del blueprint que hoy están en Build A.
@@ -279,5 +281,5 @@ Con un solo frente de trabajo son unos 7–11 meses; con dos frentes en paralelo
 ## 6. Orden de ejecución
 
 1. WO-095 ✅ (`docs/wo/WO-095_REPORTE.md`).
-2. WO-096, en curso en lo que no dependa de la laptop.
+2. WO-096 🟡: solo falta Build B, que depende de la laptop.
 3. H2 en el orden de la ruta crítica.
