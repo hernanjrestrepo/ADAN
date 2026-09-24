@@ -1,0 +1,33 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "adan-backend",
+      "runtimeExecutable": "C:\\Users\\herna\\Documents\\Paradixe\\adan-integration\\repos-active\\adan\\backend\\.venv\\Scripts\\python.exe",
+      "runtimeArgs": [
+        "-m",
+        "uvicorn",
+        "--app-dir",
+        "C:\\Users\\herna\\Documents\\Paradixe\\adan-integration\\repos-active\\adan\\backend",
+        "app.main:app",
+        "--port",
+        "8020"
+      ],
+      "port": 8020
+    },
+    {
+      "name": "adan-frontend",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "--prefix",
+        "C:\\Users\\herna\\Documents\\Paradixe\\adan-integration\\repos-active\\adan\\frontend",
+        "run",
+        "dev",
+        "--",
+        "--port",
+        "5173"
+      ],
+      "port": 5173
+    }
+  ]
+}

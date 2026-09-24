@@ -1,0 +1,47 @@
+# Dependencies
+node_modules/
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Environment
+.env
+.env.local
+
+# Database
+*.db
+*.sqlite
+
+# Build
+dist/
+build/
+*.egg-info/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+backend/data/
+
+.env
+.env.*
+node_modules/
+venv/
+.venv/
+__pycache__/
+*.pyc
+*.log
+
+adan-integration/
+.mimocode/
+/^
+.claude/settings.local.json
+
+adan-platform/
