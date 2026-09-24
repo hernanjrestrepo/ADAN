@@ -6,11 +6,13 @@ Endpoint principal del vertical slice de WO-003.
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from app.core.database import get_db
-from app.core.auth import get_current_user
-from app.models.models import User, Company, Card, Conversation, Project
+from app.schemas.schemas import MAX_MESSAGE_CHARS
+from app.core.authz import get_owned_company
+from app.core.ratelimit import llm_user
+from app.models.models import User, Card, Conversation, Project
 from app.ai.factory import get_llm_adapter
 from app.core.disclaimer import AI_DISCLAIMER
 
@@ -20,7 +22,7 @@ router = APIRouter(prefix="/cognitive", tags=["cognitive"])
 
 
 class CognitiveRequest(BaseModel):
-    message: str
+    message: str = Field(min_length=1, max_length=MAX_MESSAGE_CHARS)
     company_id: str
     conversation_id: str | None = None
 
@@ -58,7 +60,7 @@ class CognitiveResponseSchema(BaseModel):
 async def cognitive_think(
     request: CognitiveRequest,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(llm_user),
 ):
     """
     Endpoint principal del cerebro cognitivo de ADÁN.
@@ -69,13 +71,7 @@ async def cognitive_think(
     Retorna la respuesta con trazabilidad completa.
     """
     # Verificar que la empresa pertenece al usuario
-    company = db.query(Company).filter(
-        Company.id == request.company_id,
-        Company.primary_user_id == current_user.id,
-    ).first()
-
-    if not company:
-        raise HTTPException(status_code=404, detail="Empresa no encontrada")
+    company = get_owned_company(db, request.company_id, current_user)
 
     # Verificar que la conversación pertenece a la empresa
     if request.conversation_id:

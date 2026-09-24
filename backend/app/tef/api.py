@@ -2,13 +2,14 @@
 TEF API — Endpoints para el Tool Execution Framework.
 """
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 
 from app.core.database import get_db
 from app.core.auth import get_current_user
-from app.models.models import User, Company
+from app.core.authz import get_owned_company
+from app.models.models import User
 from app.tef.interfaces import ToolContext
 from app.tef.registry import ToolRegistry
 from app.tef.executor import ToolExecutor
@@ -26,6 +27,8 @@ class ExecuteRequest(BaseModel):
     params: dict
     company_id: str
     dry_run: bool = False
+    # Herramientas con requires_confirmation (p. ej. enviar email): sin esto solo se previsualizan
+    confirm: bool = False
 
 
 class ExecuteResponse(BaseModel):
@@ -79,15 +82,6 @@ def get_executor() -> ToolExecutor:
     return _executor
 
 
-def require_company(db: Session, company_id: str, user: User) -> Company:
-    """Verifica que la empresa pertenece al usuario."""
-    company = db.query(Company).filter(
-        Company.id == company_id,
-        Company.primary_user_id == user.id,
-    ).first()
-    if not company:
-        raise HTTPException(status_code=404, detail="Empresa no encontrada")
-    return company
 
 
 # ============================================================
@@ -139,13 +133,14 @@ async def execute_tool(
     db: Session = Depends(get_db),
 ):
     """Ejecuta una herramienta."""
-    require_company(db, request.company_id, current_user)
+    get_owned_company(db, request.company_id, current_user)
 
     import uuid
     context = ToolContext(
         company_id=request.company_id,
         user_id=str(current_user.id),
         trace_id=f"tef-{uuid.uuid4().hex[:12]}",
+        confirmed=request.confirm,
     )
 
     result = await executor.execute(
@@ -153,6 +148,7 @@ async def execute_tool(
         params=request.params,
         context=context,
         dry_run=request.dry_run,
+        db=db,
     )
 
     return ExecuteResponse(
@@ -173,9 +169,9 @@ async def get_audit_log(
     db: Session = Depends(get_db),
 ):
     """Obtiene el log de auditoría de herramientas."""
-    require_company(db, company_id, current_user)
+    get_owned_company(db, company_id, current_user)
 
-    log = executor.get_audit_log(company_id=company_id)
+    log = executor.get_audit_log(company_id=company_id, db=db)
     return [AuditEntry(**entry) for entry in log]
 
 

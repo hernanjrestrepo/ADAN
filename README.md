@@ -45,6 +45,18 @@ docker compose up --build
 - PostgreSQL 16 + pgvector: `localhost:5432`, base `adan`. La contraseña sale de `POSTGRES_PASSWORD`.
 - Ollama: http://localhost:11434. El modelo por defecto es `qwen2.5:0.5b` (`DEFAULT_MODEL`). Los embeddings del EMS usan `nomic-embed-text`. El servicio `model-pull` descarga los dos.
 
+### Seguridad (WO-097)
+
+| Variable | Para qué |
+|---|---|
+| `ADAN_ENV` | `development` (por defecto), `test` o `production`. En `production` la app no arranca si falta `JWT_SECRET` (mínimo 32 caracteres) o `ENCRYPTION_KEY`, si la base es SQLite o si la clave de PostgreSQL es la de desarrollo. |
+| `JWT_SECRET` | Firma de las sesiones. Si no se define, en desarrollo se genera una al azar en cada arranque y las sesiones se pierden al reiniciar. |
+| `ENCRYPTION_KEY` | Cifra las credenciales de los conectores. Se genera con `python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"`. |
+| `RATE_LIMIT_PER_MINUTE`, `LLM_RATE_LIMIT_PER_MINUTE`, `LOGIN_MAX_FAILURES`, `REGISTER_PER_IP_PER_HOUR`, `MAX_BODY_BYTES` | Límites por IP, por usuario (endpoints que usan el LLM), de intentos de login, de registros y de tamaño de las solicitudes. |
+| `OUTBOUND_ALLOWED_HOSTS` | Hosts a los que pueden llamar las herramientas y conectores. Vacío = cualquier host público. El proxy de salida se configura con `HTTPS_PROXY`. |
+
+La interfaz web guarda la sesión en una cookie httpOnly. Las peticiones que modifican datos llevan la cabecera `X-Requested-With: adan`, que funciona como protección anti-CSRF. Los clientes de la API pueden seguir usando `Authorization: Bearer`.
+
 El backend aplica las migraciones de Alembic al arrancar (`backend/migrations`). Para crear una migración nueva:
 
 ```bash
@@ -68,7 +80,7 @@ pytest                                                                     # SQL
 TEST_DATABASE_URL=postgresql://adan:<clave>@localhost:5432/adan_test pytest  # PostgreSQL + pgvector
 ```
 
-`tests/test_stress.py` necesita el backend levantado en `localhost:8050`.
+`tests/test_stress.py` necesita el backend levantado en `localhost:8050`, con Ollama y con `REGISTER_PER_IP_PER_HOUR` alto, porque simula muchos usuarios desde una sola IP.
 
 Sin Docker, `.claude/launch.json` levanta el backend en `:8020` y el frontend en `:5173`. El proxy de Vite apunta a `:8020`; para otro backend, define `ADAN_API_URL`.
 

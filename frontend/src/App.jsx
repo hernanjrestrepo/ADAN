@@ -11,19 +11,11 @@ function App() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const token = localStorage.getItem('adan_token')
-    if (token) {
-      api.setToken(token)
-      api.getMe()
-        .then(setUser)
-        .catch(() => {
-          api.logout()
-          setUser(null)
-        })
-        .finally(() => setLoading(false))
-    } else {
-      setLoading(false)
-    }
+    // Si hay cookie de sesión válida, /auth/me devuelve el usuario
+    api.getMe()
+      .then(setUser)
+      .catch(() => setUser(null))
+      .finally(() => setLoading(false))
   }, [])
 
   if (loading) {

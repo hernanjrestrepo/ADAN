@@ -1,8 +1,9 @@
 """Companies & Projects endpoints."""
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from app.core.auth import get_current_user
+from app.core.authz import get_owned_company, get_owned_project, owned_companies
 from app.core.database import get_db
 from app.models.models import Company, FoundingNarrative, Level, Project, User
 from app.schemas.schemas import CompanyCreate, CompanyResponse, ProjectResponse
@@ -69,10 +70,7 @@ def list_companies(
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user),
 ):
-    companies = db.query(Company).filter(
-        Company.primary_user_id == user.id,
-        Company.status == "active",
-    ).all()
+    companies = owned_companies(db, user).filter(Company.status == "active").all()
     return [CompanyResponse.model_validate(c) for c in companies]
 
 
@@ -82,12 +80,7 @@ def get_company(
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user),
 ):
-    company = db.query(Company).filter(
-        Company.id == company_id,
-        Company.primary_user_id == user.id,
-    ).first()
-    if not company:
-        raise HTTPException(status_code=404, detail="Company not found")
+    company = get_owned_company(db, company_id, user)
     return CompanyResponse.model_validate(company)
 
 
@@ -97,10 +90,5 @@ def get_project(
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user),
 ):
-    project = db.query(Project).join(Company).filter(
-        Project.company_id == company_id,
-        Company.primary_user_id == user.id,
-    ).first()
-    if not project:
-        raise HTTPException(status_code=404, detail="Project not found")
+    project = get_owned_project(db, company_id, user)
     return ProjectResponse.model_validate(project)

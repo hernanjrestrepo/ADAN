@@ -43,7 +43,7 @@ def test_list_companies(client):
 def test_create_company_unauthorized(client):
     """Company creation without auth is rejected."""
     resp = client.post("/api/v1/companies/", json={"name": "No Auth Corp"})
-    assert resp.status_code == 403
+    assert resp.status_code == 401
 
 
 def test_get_company(client):

@@ -1,58 +1,48 @@
 const API_BASE = '/api/v1'
 
+// La sesión vive en la cookie httpOnly `adan_session` que pone el backend (WO-097):
+// el token nunca pasa por JavaScript, así que un XSS no puede robarlo.
+// `X-Requested-With` es la marca anti-CSRF que el backend exige a toda petición con cookie.
 class ApiClient {
-  constructor() {
-    this.token = localStorage.getItem('adan_token')
-  }
-
-  setToken(token) {
-    this.token = token
-    if (token) {
-      localStorage.setItem('adan_token', token)
-    } else {
-      localStorage.removeItem('adan_token')
-    }
-  }
-
   async request(path, options = {}) {
     const headers = {
       'Content-Type': 'application/json',
+      'X-Requested-With': 'adan',
       ...options.headers,
-    }
-    if (this.token) {
-      headers['Authorization'] = `Bearer ${this.token}`
     }
 
     const response = await fetch(`${API_BASE}${path}`, {
       ...options,
       headers,
+      credentials: 'same-origin',
     })
 
     if (!response.ok) {
       const error = await response.json().catch(() => ({ detail: 'Request failed' }))
-      throw new Error(error.detail || `HTTP ${response.status}`)
+      // Los errores de validación (422) llegan como lista
+      const detail = Array.isArray(error.detail)
+        ? error.detail.map((d) => d.msg).join('. ')
+        : error.detail
+      throw new Error(detail || `HTTP ${response.status}`)
     }
 
+    if (response.status === 204) return null
     return response.json()
   }
 
   // Auth
   async register(email, name, password) {
-    const data = await this.request('/auth/register', {
+    return this.request('/auth/register', {
       method: 'POST',
       body: JSON.stringify({ email, name, password }),
     })
-    this.setToken(data.access_token)
-    return data
   }
 
   async login(email, password) {
-    const data = await this.request('/auth/login', {
+    return this.request('/auth/login', {
       method: 'POST',
       body: JSON.stringify({ email, password }),
     })
-    this.setToken(data.access_token)
-    return data
   }
 
   async getMe() {
@@ -129,8 +119,9 @@ class ApiClient {
     })
   }
 
-  logout() {
-    this.setToken(null)
+  // Cierra la sesión en todos los dispositivos
+  async logout() {
+    await this.request('/auth/logout', { method: 'POST' }).catch(() => {})
   }
 }
 

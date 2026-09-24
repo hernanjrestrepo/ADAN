@@ -92,7 +92,8 @@ def get_db():
 
 def import_all_models() -> None:
     """Registra todos los modelos en `Base.metadata` (Alembic y create_all los necesitan)."""
-    for module in ("app.models.models", "app.ems.models", "app.oos.models"):
+    for module in ("app.models.models", "app.ems.models", "app.oos.models",
+                   "app.integrations.models", "app.tef.models"):
         importlib.import_module(module)
 
 

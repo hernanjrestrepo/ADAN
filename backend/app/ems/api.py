@@ -2,13 +2,15 @@
 EMS API — Endpoints para el Enterprise Memory System.
 """
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from app.core.database import get_db
+from app.schemas.schemas import MAX_DOCUMENT_CHARS, MAX_MESSAGE_CHARS, MAX_TITLE_CHARS
 from app.core.auth import get_current_user
-from app.models.models import User, Company
+from app.core.authz import get_owned_company
+from app.models.models import User
 from app.ems.memory import EnterpriseMemorySystem
 from app.ems.store import describe_providers, embedding_provider, get_vector_store
 
@@ -21,10 +23,10 @@ router = APIRouter(prefix="/ems", tags=["ems"])
 
 class IngestRequest(BaseModel):
     company_id: str
-    text: str
-    title: str
-    source_type: str = "text"
-    source_name: str | None = None
+    text: str = Field(min_length=1, max_length=MAX_DOCUMENT_CHARS)
+    title: str = Field(min_length=1, max_length=MAX_TITLE_CHARS)
+    source_type: str = Field(default="text", max_length=50)
+    source_name: str | None = Field(default=None, max_length=MAX_TITLE_CHARS)
     metadata: dict | None = None
 
 
@@ -40,7 +42,7 @@ class IngestResponse(BaseModel):
 
 class RetrieveRequest(BaseModel):
     company_id: str
-    query: str
+    query: str = Field(min_length=1, max_length=MAX_MESSAGE_CHARS)
     top_k: int = 5
 
 
@@ -75,8 +77,8 @@ class StatsResponse(BaseModel):
 
 class CorrectionRequest(BaseModel):
     company_id: str
-    original_text: str
-    corrected_text: str
+    original_text: str = Field(max_length=MAX_MESSAGE_CHARS)
+    corrected_text: str = Field(max_length=MAX_MESSAGE_CHARS)
     fact_id: str | None = None
     chunk_id: str | None = None
     reason: str | None = None
@@ -103,12 +105,7 @@ async def ingest_document(
     """Ingresa un documento al sistema de memoria empresarial."""
     # Verificar que la empresa pertenece al usuario
     db = ems.db
-    company = db.query(Company).filter(
-        Company.id == request.company_id,
-        Company.primary_user_id == current_user.id,
-    ).first()
-    if not company:
-        raise HTTPException(status_code=404, detail="Empresa no encontrada")
+    get_owned_company(db, request.company_id, current_user)
 
     result = await ems.ingest(
         company_id=request.company_id,
@@ -138,12 +135,7 @@ async def retrieve_knowledge(
 ):
     """Recupera conocimiento relevante para una query."""
     db = ems.db
-    company = db.query(Company).filter(
-        Company.id == request.company_id,
-        Company.primary_user_id == current_user.id,
-    ).first()
-    if not company:
-        raise HTTPException(status_code=404, detail="Empresa no encontrada")
+    get_owned_company(db, request.company_id, current_user)
 
     result = await ems.retrieve(
         company_id=request.company_id,
@@ -170,12 +162,7 @@ async def list_documents(
 ):
     """Lista documentos de una empresa."""
     db = ems.db
-    company = db.query(Company).filter(
-        Company.id == company_id,
-        Company.primary_user_id == current_user.id,
-    ).first()
-    if not company:
-        raise HTTPException(status_code=404, detail="Empresa no encontrada")
+    get_owned_company(db, company_id, current_user)
 
     docs = ems.list_documents(company_id)
     return [
@@ -201,12 +188,7 @@ async def get_stats(
 ):
     """Obtiene estadísticas del EMS para una empresa."""
     db = ems.db
-    company = db.query(Company).filter(
-        Company.id == company_id,
-        Company.primary_user_id == current_user.id,
-    ).first()
-    if not company:
-        raise HTTPException(status_code=404, detail="Empresa no encontrada")
+    get_owned_company(db, company_id, current_user)
 
     stats = ems.get_stats(company_id)
     return StatsResponse(**stats)
@@ -220,12 +202,7 @@ async def record_correction(
 ):
     """Registra una corrección del usuario al conocimiento."""
     db = ems.db
-    company = db.query(Company).filter(
-        Company.id == request.company_id,
-        Company.primary_user_id == current_user.id,
-    ).first()
-    if not company:
-        raise HTTPException(status_code=404, detail="Empresa no encontrada")
+    get_owned_company(db, request.company_id, current_user)
 
     correction = ems.record_correction(
         company_id=request.company_id,

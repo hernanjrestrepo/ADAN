@@ -129,14 +129,25 @@ class BoardRoom:
         )
 
         start = time.monotonic()
-        response = await self.llm.chat(
-            messages=[
-                LLMMessage(role="system", content=agent_config["system"]),
-                LLMMessage(role="user", content=prompt),
-            ],
-            temperature=0.6,
-            max_tokens=512,
-        )
+        try:
+            response = await self.llm.chat(
+                messages=[
+                    LLMMessage(role="system", content=agent_config["system"]),
+                    LLMMessage(role="user", content=prompt),
+                ],
+                temperature=0.6,
+                max_tokens=512,
+            )
+        except Exception as exc:
+            # Timeout o caída del modelo: el agente se abstiene y el Board sigue (antes era un 500)
+            return AgentVote(
+                agent=agent_key,
+                analysis="",
+                justification=f"El modelo no respondió ({type(exc).__name__}): se registra como abstención",
+                vote="ABSTAIN",
+                confidence=0,
+                duration_s=time.monotonic() - start,
+            )
         duration = time.monotonic() - start
 
         # Parse and NORMALIZE response through single layer

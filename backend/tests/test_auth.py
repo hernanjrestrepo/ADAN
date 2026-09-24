@@ -87,4 +87,4 @@ def test_me(client):
 def test_me_no_token(client):
     """GET /me without token is rejected."""
     resp = client.get("/api/v1/auth/me")
-    assert resp.status_code == 403  # HTTPBearer returns 403 when no header
+    assert resp.status_code == 401  # sin credenciales: 401 (antes HTTPBearer devolvía 403)
