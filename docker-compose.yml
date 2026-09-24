@@ -1,0 +1,61 @@
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "8050:8000"
+    environment:
+      - DATABASE_URL=sqlite:///./data/adan.db
+      - JWT_SECRET=${JWT_SECRET:-adan-dev-secret-change-in-production}
+      - OLLAMA_BASE_URL=http://ollama:11434
+      - DEFAULT_MODEL=${DEFAULT_MODEL:-qwen2.5:0.5b}
+      - LLM_PROVIDER=ollama
+      - CORS_ORIGINS=http://localhost:5174,http://localhost:5173,http://localhost:3000
+    volumes:
+      - backend-data:/app/data
+    depends_on:
+      ollama:
+        condition: service_healthy
+      model-pull:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "5174:5173"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+  ollama:
+    image: ollama/ollama:latest
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama-models:/root/.ollama
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c 'echo > /dev/tcp/localhost/11434' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
+    restart: unless-stopped
+
+  model-pull:
+    image: curlimages/curl:latest
+    depends_on:
+      ollama:
+        condition: service_healthy
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        echo "Pulling model: $${DEFAULT_MODEL:-qwen2.5:0.5b}"
+        curl -sf http://ollama:11434/api/pull -d "{\"name\": \"$${DEFAULT_MODEL:-qwen2.5:0.5b}\"}"
+        echo "Model pull complete."
+    environment:
+      - DEFAULT_MODEL=${DEFAULT_MODEL:-qwen2.5:0.5b}
+    restart: "no"
+
+volumes:
+  backend-data:
+  ollama-models:
