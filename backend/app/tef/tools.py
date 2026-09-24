@@ -298,11 +298,12 @@ class PythonSandboxTool(ToolProvider):
             return ToolResult(tool_id="python_sandbox", status="error",
                               error=f"Sandbox respondió {response.status_code}: {response.text[:200]}")
         body = response.json()
+        # De un traceback interesa el final (la excepción), no el comienzo
         return ToolResult(
             tool_id="python_sandbox",
             status="success" if body["status"] == "success" else "error",
             output=body,
-            error=None if body["status"] == "success" else (body.get("stderr") or body["status"])[:2000],
+            error=None if body["status"] == "success" else (body.get("stderr") or body["status"])[-2000:],
         )
 
 

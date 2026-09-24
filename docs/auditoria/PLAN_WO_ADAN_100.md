@@ -40,7 +40,7 @@ WO-094 ✅ ─► WO-095 ✅ ─► WO-096
      ┌───────────┴──────────────────────┐
      ▼                                  ▼
   WO-091 PostgreSQL ✅ ─► WO-097 Seguridad ✅   WO-092 TypeScript + UX base ✅
-     └──────────────► WO-093 Producción ◄──────┘
+     └──────────────► WO-093 Producción ✅ ◄──────┘
                           │
                           ▼
   WO-098 Gemelo y Decisiones ─► WO-099 Motor cognitivo + IA (Ollama/Anthropic)
@@ -141,7 +141,8 @@ Criterio de cierre común (EPWO-051), además de lo específico de cada ficha:
   - Corregir las vulnerabilidades npm.
 - **Estimación:** 5–8 días.
 
-### WO-093 — Producción Enterprise *(Canon)*
+### WO-093 — Producción Enterprise *(Canon)* ✅
+- **Estado:** fusionada (`docs/wo/WO-093_REPORTE.md`). El Gate de Producción (EPWO-054) queda preparado; lo firma Hernán.
 - **Alcance:**
   - Sandbox aislado (contenedor efímero sin red ni secretos) para reactivar `python_sandbox` y `file_reader` (viene de WO-097).
   - Límites de peticiones en Redis cuando haya más de una réplica (WO-097 los dejó en memoria).
@@ -289,4 +290,5 @@ Con un solo frente de trabajo son unos 7–11 meses; con dos frentes en paralelo
 
 1. WO-095 ✅ (`docs/wo/WO-095_REPORTE.md`).
 2. WO-096 🟡: solo falta Build B, que depende de la laptop.
-3. H2 en el orden de la ruta crítica: WO-091 ✅, WO-097 ✅, WO-092 ✅; sigue WO-093.
+3. H2 completo: WO-091 ✅, WO-097 ✅, WO-092 ✅, WO-093 ✅.
+4. H3 en el orden de la ruta crítica: WO-098 → WO-099 → WO-107 → WO-108 → WO-109.

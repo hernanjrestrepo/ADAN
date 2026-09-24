@@ -27,7 +27,7 @@
 FastAPI · React · TypeScript · PostgreSQL · pgvector · Ollama · Docker
 Event Bus · EMS · TEF · Board · DKA · OOS · Voice
 ```
-**Estado de implementación (2026-09-24):** PostgreSQL 16 + pgvector, con migraciones de Alembic, está implementado en Build C desde WO-091; SQLite queda solo para desarrollo y pruebas. El frontend está en TypeScript desde WO-092 (React 19, react-router 8, vite 8). Con eso queda resuelta la nota de consistencia que sigue.
+**Estado de implementación (2026-09-24):** PostgreSQL 16 + pgvector, con migraciones de Alembic, está implementado en Build C desde WO-091; SQLite queda solo para desarrollo y pruebas. El frontend está en TypeScript desde WO-092 (React 19, react-router 8, vite 8). Con eso queda resuelta la nota de consistencia que sigue. Desde WO-093 hay un stack de producción con Docker (`docker-compose.prod.yml`) y CI en GitHub Actions.
 
 **Nota de consistencia (no resuelta silenciosamente):** el frontend actual de Build C está escrito en JavaScript (JSX), no TypeScript. La arquitectura oficial aquí decidida especifica TypeScript. Esto implica que la migración pendiente no es solo SQLite→PostgreSQL (explícita en `AD-DEC-0001 §5.4`) sino también una migración de JSX a TypeScript en el frontend — se deja registrado como parte del alcance en vez de asumir cuál de los dos prevalece.
 
@@ -95,3 +95,4 @@ Independientemente de la decisión anterior: el worktree registrado en `C:\Users
 | 2026-09-24 | WO-096: §5 `docs/wo-000/` con las versiones más nuevas del blueprint y AD-000 v2.0; `ADAN_MASTER_ARCHITECTURE` marcado en su propio texto; §6 mapa de reutilización; nota de `.claude/launch.json` resuelta | Ejecutado por Claude Code con la autorización general de Hernán (2026-09-24) |
 | 2026-09-24 | WO-091: §3 PostgreSQL + pgvector implementado en Build C | Ejecutado por Claude Code con la autorización general de Hernán (2026-09-24) |
 | 2026-09-24 | WO-092: §3 frontend en TypeScript | Ejecutado por Claude Code con la autorización general de Hernán (2026-09-24) |
+| 2026-09-24 | WO-093: §3 Docker de producción, CI y operación (`docs/operacion/RUNBOOK.md`) | Ejecutado por Claude Code con la autorización general de Hernán (2026-09-24) |

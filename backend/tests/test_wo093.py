@@ -201,6 +201,11 @@ async def test_python_runs_in_the_sandbox(sandbox_server):
     assert result.status == "success" and result.output["stdout"] == "4\n"
     failed = await ToolExecutor(registry).execute("python_sandbox", {"code": "1/0"}, context)
     assert failed.status == "error" and "ZeroDivisionError" in failed.error
+    # stderr largo: el error se recorta, pero conserva la excepción final
+    code = "import sys\nsys.stderr.write('x' * 5000)\nraise KeyError('final')"
+    long_error = await ToolExecutor(registry).execute("python_sandbox", {"code": code}, context)
+    assert long_error.status == "error" and len(long_error.error) == 2000
+    assert "KeyError: 'final'" in long_error.error
 
 
 @pytest.mark.asyncio

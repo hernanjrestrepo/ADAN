@@ -98,10 +98,16 @@ def import_all_models() -> None:
 
 
 def init_db() -> None:
-    """Deja el esquema al día: migraciones de Alembic, o create_all si AUTO_MIGRATE=false."""
+    """Deja el esquema al día al arrancar.
+
+    - AUTO_MIGRATE=true: migraciones de Alembic (desarrollo con Docker o local).
+    - Producción: nada. Migra el servicio `migrate` antes del backend, y /health/ready avisa
+      si la base no está en la última migración (crear tablas aquí taparía el problema).
+    - Pruebas: create_all.
+    """
     import_all_models()
     if settings.AUTO_MIGRATE:
         from app.core.migrations import run_migrations
         run_migrations(engine)
-    else:
+    elif settings.ADAN_ENV != "production":
         Base.metadata.create_all(bind=engine)
