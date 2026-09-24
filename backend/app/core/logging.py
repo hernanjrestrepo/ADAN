@@ -4,6 +4,8 @@ import sys
 import json
 from datetime import datetime, timezone
 
+from app.core.observability import request_id_var
+
 
 class JSONFormatter(logging.Formatter):
     """JSON log formatter for structured logging."""
@@ -15,11 +17,14 @@ class JSONFormatter(logging.Formatter):
             "logger": record.name,
             "message": record.getMessage(),
         }
+        request_id = request_id_var.get()
+        if request_id:
+            log_entry["request_id"] = request_id
         if hasattr(record, "extra_data"):
             log_entry.update(record.extra_data)
         if record.exc_info:
             log_entry["exception"] = self.formatException(record.exc_info)
-        return json.dumps(log_entry)
+        return json.dumps(log_entry, ensure_ascii=False)
 
 
 def setup_logging(level: str = "INFO"):

@@ -29,7 +29,7 @@ def _issue_session(user: User, response: Response) -> TokenResponse:
 def register(body: UserRegister, request: Request, response: Response, db: Session = Depends(get_db)):
     wait = limiter.hit(f"register:{client_ip(request)}", settings.REGISTER_PER_IP_PER_HOUR, 3600)
     if wait:
-        raise too_many(wait, "Demasiados registros desde esta dirección; intenta más tarde")
+        raise too_many(wait, "Demasiados registros desde esta dirección; intenta más tarde", scope="register")
 
     existing = db.query(User).filter(User.email == body.email).first()
     if existing:
@@ -55,7 +55,7 @@ def login(body: UserLogin, request: Request, response: Response, db: Session = D
     key = f"login:{client_ip(request)}:{body.email.lower()}"
     wait = limiter.blocked_for(key, settings.LOGIN_MAX_FAILURES, LOGIN_WINDOW_SECONDS)
     if wait:
-        raise too_many(wait, "Demasiados intentos fallidos; intenta más tarde")
+        raise too_many(wait, "Demasiados intentos fallidos; intenta más tarde", scope="login")
 
     user = db.query(User).filter(User.email == body.email).first()
     if not user or not verify_password(body.password, user.hashed_password):

@@ -1,6 +1,9 @@
+# Entorno de desarrollo. Producción: docker-compose.prod.yml (ver docs/operacion/RUNBOOK.md).
 services:
   backend:
-    build: ./backend
+    build:
+      context: ./backend
+      target: development
     ports:
       - "8050:8000"
     environment:
@@ -28,7 +31,9 @@ services:
     restart: unless-stopped
 
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
+      target: development
     ports:
       - "5174:5173"
     environment:

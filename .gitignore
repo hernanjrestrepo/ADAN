@@ -51,3 +51,8 @@ adan-integration/
 # Playwright
 playwright-report/
 test-results/
+!.env.prod.example
+
+# Operación
+backups/
+.deployed_tag

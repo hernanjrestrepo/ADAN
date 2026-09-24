@@ -12,17 +12,16 @@ from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
 
+import bcrypt
+import jwt
 from fastapi import Depends, HTTPException, Request, Response, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from jose import JWTError, jwt
-from passlib.context import CryptContext
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
 from app.core.database import get_db
 from app.models.models import User
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 security = HTTPBearer(auto_error=False)
 
 SESSION_COOKIE = "adan_session"
@@ -31,12 +30,23 @@ CSRF_VALUE = "adan"
 SAFE_METHODS = {"GET", "HEAD", "OPTIONS"}
 
 
+# bcrypt directo (WO-093): passlib está sin mantenimiento. Los hashes `$2b$` que generaba
+# passlib son bcrypt estándar, así que las contraseñas existentes siguen funcionando.
+BCRYPT_MAX_BYTES = 72
+
+
 def hash_password(password: str) -> str:
-    return pwd_context.hash(password)
+    return bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
 
 
 def verify_password(plain: str, hashed: str) -> bool:
-    return pwd_context.verify(plain, hashed)
+    secret = plain.encode()
+    if len(secret) > BCRYPT_MAX_BYTES:
+        return False  # bcrypt 5 rechaza más de 72 bytes; ninguna contraseña válida los tiene
+    try:
+        return bcrypt.checkpw(secret, hashed.encode())
+    except ValueError:
+        return False
 
 
 def create_access_token(user: User) -> str:
@@ -57,20 +67,20 @@ def set_session_cookie(response: Response, token: str) -> None:
         max_age=settings.JWT_EXPIRATION_MINUTES * 60,
         httponly=True,
         samesite="lax",
-        secure=settings.ADAN_ENV == "production",
+        secure=settings.SESSION_COOKIE_SECURE,
         path="/",
     )
 
 
 def clear_session_cookie(response: Response) -> None:
     response.delete_cookie(SESSION_COOKIE, path="/", httponly=True, samesite="lax",
-                           secure=settings.ADAN_ENV == "production")
+                           secure=settings.SESSION_COOKIE_SECURE)
 
 
 def decode_token(token: str) -> dict:
     try:
         return jwt.decode(token, settings.JWT_SECRET, algorithms=[settings.JWT_ALGORITHM])
-    except JWTError:
+    except jwt.PyJWTError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid or expired token",

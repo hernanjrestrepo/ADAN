@@ -21,8 +21,16 @@ from app.tef.interfaces import (
 logger = logging.getLogger(__name__)
 
 # Lo que un usuario puede hacer sobre su propia empresa sin permisos adicionales.
-# Leer archivos, consultar la base o ejecutar código queda fuera hasta tener un sandbox aislado.
+# Leer archivos del servidor o consultar la base quedan fuera. Ejecutar código solo se concede
+# cuando hay un sandbox aislado configurado (SANDBOX_URL, WO-093).
 DEFAULT_GRANTED_PERMISSIONS = frozenset({"read:web", "write:communication"})
+
+
+def default_permissions() -> frozenset[str]:
+    from app.core.config import settings
+    if settings.SANDBOX_URL:
+        return DEFAULT_GRANTED_PERMISSIONS | {"execute:code"}
+    return DEFAULT_GRANTED_PERMISSIONS
 
 # Auditoría en memoria solo cuando no hay base (agentes en pruebas unitarias); acotada
 MEMORY_AUDIT_LIMIT = 1000
@@ -79,7 +87,7 @@ class ToolExecutor(ToolExecutorInterface):
         # 3. Permisos
         granted = context.granted_permissions
         if granted is None:
-            granted = DEFAULT_GRANTED_PERMISSIONS
+            granted = default_permissions()
         missing = sorted(set(meta.permissions) - set(granted))
         if missing:
             return finish(ToolResult(
