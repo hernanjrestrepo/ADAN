@@ -27,7 +27,7 @@
 FastAPI · React · TypeScript · PostgreSQL · pgvector · Ollama · Docker
 Event Bus · EMS · TEF · Board · DKA · OOS · Voice
 ```
-**Estado de implementación (2026-09-24):** PostgreSQL 16 + pgvector, con migraciones de Alembic, está implementado en Build C desde WO-091. SQLite queda solo para desarrollo y pruebas. TypeScript sigue pendiente (WO-092).
+**Estado de implementación (2026-09-24):** PostgreSQL 16 + pgvector, con migraciones de Alembic, está implementado en Build C desde WO-091; SQLite queda solo para desarrollo y pruebas. El frontend está en TypeScript desde WO-092 (React 19, react-router 8, vite 8). Con eso queda resuelta la nota de consistencia que sigue.
 
 **Nota de consistencia (no resuelta silenciosamente):** el frontend actual de Build C está escrito en JavaScript (JSX), no TypeScript. La arquitectura oficial aquí decidida especifica TypeScript. Esto implica que la migración pendiente no es solo SQLite→PostgreSQL (explícita en `AD-DEC-0001 §5.4`) sino también una migración de JSX a TypeScript en el frontend — se deja registrado como parte del alcance en vez de asumir cuál de los dos prevalece.
 
@@ -94,3 +94,4 @@ Independientemente de la decisión anterior: el worktree registrado en `C:\Users
 | 2026-09-24 | §1 repositorio oficial → GitHub `hernanjrestrepo/ADAN`; §2 rama oficial → `main`; §4 WO-094 y rangos WO-095→099 y WO-107→122; insumos de WO-100 (AD-DEC-0002); §6 ubicación de Build A, Build B pendiente y prototipo 2024 | Hernán (CTO) |
 | 2026-09-24 | WO-096: §5 `docs/wo-000/` con las versiones más nuevas del blueprint y AD-000 v2.0; `ADAN_MASTER_ARCHITECTURE` marcado en su propio texto; §6 mapa de reutilización; nota de `.claude/launch.json` resuelta | Ejecutado por Claude Code con la autorización general de Hernán (2026-09-24) |
 | 2026-09-24 | WO-091: §3 PostgreSQL + pgvector implementado en Build C | Ejecutado por Claude Code con la autorización general de Hernán (2026-09-24) |
+| 2026-09-24 | WO-092: §3 frontend en TypeScript | Ejecutado por Claude Code con la autorización general de Hernán (2026-09-24) |
