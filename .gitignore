@@ -44,4 +44,6 @@ adan-integration/
 /^
 .claude/settings.local.json
 
-adan-platform/
+# Tests
+.coverage
+.pytest_cache/
