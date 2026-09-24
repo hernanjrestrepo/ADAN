@@ -441,6 +441,7 @@ def test_simulated_integrations_are_labelled(client, company):
     sent = client.post("/omnichannel/respond", json={"channel": "web", "recipient_id": "r", "content": "hola"},
                        headers=headers).json()
     assert sent["delivered"] is False and sent["mock"] is True
-    gmail = client.post("/integrations/execute", json={"connector_id": "gmail", "action": "list_emails",
-                                                       "params": {}}, headers=headers).json()
+    gmail = client.post("/integrations/execute", json={"company_id": company["id"], "connector_id": "gmail",
+                                                       "action": "list_emails", "params": {}},
+                        headers=headers).json()
     assert gmail["mock"] is True

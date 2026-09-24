@@ -111,6 +111,8 @@ Severidad: 🔴 crítica · 🟠 alta · 🟡 media · ⚪ baja.
 
 ### 5.2 Seguridad — pendientes
 
+*Actualización 2026-09-24:* WO-097 corrigió S12 a S16. S17 quedó parcialmente corregido: la vulnerabilidad alta de `nanoid` está resuelta; las otras (vite/esbuild del servidor de desarrollo y react-router) requieren versiones mayores y pasan a WO-092. S18 queda aceptado. Detalle en `docs/wo/WO-097_REPORTE.md`.
+
 | # | Sev. | Hallazgo | Dónde |
 |---|---|---|---|
 | S12 | 🟠 | Si no se define `JWT_SECRET`, se usa un valor por defecto que ahora es público; con él cualquiera puede falsificar sesiones. La app no se niega a arrancar en producción | `core/config.py:16`, `docker-compose.yml:8` |

@@ -62,9 +62,11 @@ export default function RegisterPage({ onRegister }) {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="w-full px-4 py-3 bg-adan-surface border border-adan-border rounded-lg text-adan-text focus:outline-none focus:border-adan-accent"
-              minLength={6}
+              minLength={10}
+              maxLength={72}
               required
             />
+            <p className="text-xs text-adan-muted mt-1">Mínimo 10 caracteres.</p>
           </div>
 
           {error && (

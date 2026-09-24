@@ -3,13 +3,15 @@ DKA API — Endpoint para Dynamic Knowledge Acquisition.
 """
 
 import uuid
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from app.core.database import get_db
-from app.core.auth import get_current_user
-from app.models.models import User, Company
+from app.schemas.schemas import MAX_MESSAGE_CHARS
+from app.core.authz import get_owned_company
+from app.core.ratelimit import llm_user
+from app.models.models import User
 from app.ems.memory import EnterpriseMemorySystem
 from app.ems.store import embedding_provider, get_vector_store
 from app.dka.pipeline import KnowledgeAcquisitionPipeline
@@ -18,9 +20,9 @@ router = APIRouter(prefix="/dka", tags=["dka"])
 
 
 class AcquireRequest(BaseModel):
-    query: str
+    query: str = Field(min_length=1, max_length=MAX_MESSAGE_CHARS)
     company_id: str
-    urls: list[str] | None = None
+    urls: list[str] | None = Field(default=None, max_length=20)
     max_sources: int = 5
 
 
@@ -42,7 +44,7 @@ class AcquireResponse(BaseModel):
 @router.post("/acquire", response_model=AcquireResponse)
 async def acquire_knowledge(
     request: AcquireRequest,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(llm_user),
     db: Session = Depends(get_db),
 ):
     """
@@ -51,12 +53,7 @@ async def acquire_knowledge(
     Flujo: URL → Scrape → Normalize → Quality → EMS → Knowledge Graph
     """
     # Verificar empresa
-    company = db.query(Company).filter(
-        Company.id == request.company_id,
-        Company.primary_user_id == current_user.id,
-    ).first()
-    if not company:
-        raise HTTPException(status_code=404, detail="Empresa no encontrada")
+    get_owned_company(db, request.company_id, current_user)
 
     ems = EnterpriseMemorySystem(db, embedding_provider, get_vector_store(db))
     pipeline = KnowledgeAcquisitionPipeline(ems)

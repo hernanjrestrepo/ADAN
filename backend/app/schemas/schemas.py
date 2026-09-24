@@ -2,22 +2,46 @@
 from __future__ import annotations
 
 from datetime import datetime
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field, field_validator, model_validator
 
 from app.core.disclaimer import AI_DISCLAIMER
 
 
 # --- Auth ---
 
+# Límites de texto que llega al LLM o a la base (WO-097, S14)
+MAX_MESSAGE_CHARS = 8000
+MAX_TITLE_CHARS = 500
+MAX_DOCUMENT_CHARS = 500_000
+
+PASSWORD_MIN_CHARS = 10
+PASSWORD_MAX_BYTES = 72  # bcrypt ignora lo que pase de 72 bytes
+
+
 class UserRegister(BaseModel):
     email: EmailStr
     name: str = Field(min_length=1, max_length=255)
-    password: str = Field(min_length=6)
+    password: str = Field(min_length=PASSWORD_MIN_CHARS)
+
+    @field_validator("password")
+    @classmethod
+    def password_policy(cls, value: str) -> str:
+        if len(value.encode()) > PASSWORD_MAX_BYTES:
+            raise ValueError(f"La contraseña no puede pasar de {PASSWORD_MAX_BYTES} bytes")
+        if len(set(value)) < 4:
+            raise ValueError("La contraseña es demasiado repetitiva")
+        return value
+
+    @model_validator(mode="after")
+    def password_is_not_email(self):
+        if self.password.lower() in (self.email.lower(), self.email.split("@")[0].lower()):
+            raise ValueError("La contraseña no puede ser el correo")
+        return self
 
 
 class UserLogin(BaseModel):
     email: EmailStr
-    password: str
+    password: str = Field(max_length=256)
 
 
 class TokenResponse(BaseModel):
@@ -39,9 +63,9 @@ class UserResponse(BaseModel):
 
 class CompanyCreate(BaseModel):
     name: str = Field(min_length=1, max_length=255)
-    description: str | None = None
-    industry: str | None = None
-    country: str | None = None
+    description: str | None = Field(default=None, max_length=5000)
+    industry: str | None = Field(default=None, max_length=255)
+    country: str | None = Field(default=None, max_length=100)
 
 
 class CompanyResponse(BaseModel):
@@ -111,7 +135,7 @@ class ConversationResponse(BaseModel):
 
 
 class MessageCreate(BaseModel):
-    content: str = Field(min_length=1)
+    content: str = Field(min_length=1, max_length=MAX_MESSAGE_CHARS)
 
 
 class MessageResponse(BaseModel):
@@ -177,7 +201,7 @@ class DocumentResponse(BaseModel):
 # --- Chat ---
 
 class ChatRequest(BaseModel):
-    message: str = Field(min_length=1)
+    message: str = Field(min_length=1, max_length=MAX_MESSAGE_CHARS)
     conversation_id: str | None = None
 
 

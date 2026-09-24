@@ -1,4 +1,8 @@
-"""Stress tests — concurrent user simulation."""
+"""Stress tests — concurrent user simulation.
+
+Necesitan el backend en localhost:8050 con Ollama. Simulan muchos usuarios desde una sola
+IP, así que el servidor debe levantarse con REGISTER_PER_IP_PER_HOUR alto (p. ej. 1000).
+"""
 import asyncio
 import time
 import aiohttp
@@ -14,7 +18,7 @@ async def register_and_create_company(session, user_id):
     async with session.post(f"{BASE_URL}/api/v1/auth/register", json={
         "email": f"stress{unique_id}@adan.ai",
         "name": f"Stress User {user_id}",
-        "password": "test123",
+        "password": "stress-pass-2026",
     }) as resp:
         data = await resp.json()
         token = data["access_token"]
@@ -29,11 +33,20 @@ async def register_and_create_company(session, user_id):
         return token, company["id"]
 
 
+async def start_conversation(session, token, company_id):
+    """El Board Room delibera sobre la conversación del Nivel 1: sin ella responde 400."""
+    async with session.post(f"{BASE_URL}/api/v1/nivel1/{company_id}/chat",
+        headers={"Authorization": f"Bearer {token}"},
+        json={"message": "Las panaderías de barrio pierden entre 15% y 20% del pan porque no saben cuánto hornear."},
+    ) as resp:
+        assert resp.status == 200, await resp.text()
+
+
 async def run_board_room(session, token, company_id):
     """Run Board Room for a company."""
     start = time.monotonic()
     async with session.post(f"{BASE_URL}/api/v1/nivel1/{company_id}/board-room",
-        headers={"Authorization": f"Bearer $token"},
+        headers={"Authorization": f"Bearer {token}"},
         json={},
     ) as resp:
         duration = time.monotonic() - start
@@ -58,18 +71,23 @@ async def test_concurrent_registrations():
 @pytest.mark.asyncio
 async def test_concurrent_board_room():
     """Test 5 concurrent Board Rooms."""
-    async with aiohttp.ClientSession() as session:
+    async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=900)) as session:
         # Create users and companies first
         pairs = []
         for i in range(5):
             token, company_id = await register_and_create_company(session, i)
             pairs.append((token, company_id))
 
+        for token, company_id in pairs:
+            await start_conversation(session, token, company_id)
+
         # Run Board Rooms concurrently
         tasks = [run_board_room(session, t, c) for t, c in pairs]
         results = await asyncio.gather(*tasks, return_exceptions=True)
 
-        durations = [r["duration"] for r in results if not isinstance(r, Exception) and "duration" in r]
+        # Antes no se verificaba el código: con el token mal formado todo era 401 en 0 s
+        assert all(not isinstance(r, Exception) and r["status"] == 200 for r in results), results
+        durations = [r["duration"] for r in results]
         if durations:
             avg_duration = sum(durations) / len(durations)
             max_duration = max(durations)

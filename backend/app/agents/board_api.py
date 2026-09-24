@@ -3,13 +3,15 @@ Board API — Endpoint para el Executive Board con deliberación real.
 """
 
 import uuid
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from app.core.database import get_db
-from app.core.auth import get_current_user
-from app.models.models import User, Company
+from app.schemas.schemas import MAX_MESSAGE_CHARS
+from app.core.authz import get_owned_company
+from app.core.ratelimit import llm_user
+from app.models.models import User
 from app.ai.factory import get_llm_adapter
 from app.core.disclaimer import AI_DISCLAIMER
 from app.ems.memory import EnterpriseMemorySystem
@@ -27,7 +29,7 @@ router = APIRouter(prefix="/board", tags=["board"])
 # ============================================================
 
 class BoardRequest(BaseModel):
-    message: str
+    message: str = Field(min_length=1, max_length=MAX_MESSAGE_CHARS)
     company_id: str
 
 
@@ -92,7 +94,7 @@ def get_board(db: Session = Depends(get_db)) -> ExecutiveBoard:
 @router.post("/run", response_model=BoardResponseSchema)
 async def run_board(
     request: BoardRequest,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(llm_user),
     db: Session = Depends(get_db),
 ):
     """
@@ -105,12 +107,7 @@ async def run_board(
     Se produce un Decision Record persistente.
     """
     # Verificar que la empresa pertenece al usuario
-    company = db.query(Company).filter(
-        Company.id == request.company_id,
-        Company.primary_user_id == current_user.id,
-    ).first()
-    if not company:
-        raise HTTPException(status_code=404, detail="Empresa no encontrada")
+    get_owned_company(db, request.company_id, current_user)
 
     board = get_board(db)
 

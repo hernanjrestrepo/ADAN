@@ -4,7 +4,8 @@ from __future__ import annotations
 import logging
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.v1.router import router as v1_router
@@ -17,9 +18,10 @@ from app.dka.api import router as dka_router
 from app.integrations.api import router as integrations_router
 from app.voice.api import router as voice_router
 from app.omnichannel.api import router as omnichannel_router
-from app.core.config import settings
+from app.core.config import check_settings, settings
 from app.core.database import init_db, engine
 from app.core.logging import setup_logging
+from app.core.ratelimit import client_ip, limiter
 
 logger = setup_logging()
 
@@ -27,7 +29,8 @@ logger = setup_logging()
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Startup/shutdown lifecycle."""
-    logger.info("ADÁN backend starting up")
+    logger.info("ADÁN backend starting up (%s)", settings.ADAN_ENV)
+    check_settings(settings)
     init_db()
     logger.info("Database initialized (%s)", engine.dialect.name)
     yield
@@ -39,6 +42,23 @@ app = FastAPI(
     version=settings.APP_VERSION,
     lifespan=lifespan,
 )
+
+@app.middleware("http")
+async def security_guards(request: Request, call_next):
+    """Límite de tamaño del cuerpo, límite de peticiones por IP y cabeceras de seguridad (WO-097)."""
+    length = request.headers.get("content-length")
+    if length and length.isdigit() and int(length) > settings.MAX_BODY_BYTES:
+        return JSONResponse(status_code=413, content={"detail": "La solicitud es demasiado grande"})
+    wait = limiter.hit(f"ip:{client_ip(request)}", settings.RATE_LIMIT_PER_MINUTE, 60)
+    if wait:
+        return JSONResponse(status_code=429, content={"detail": "Demasiadas solicitudes; intenta más tarde"},
+                            headers={"Retry-After": str(int(wait) + 1)})
+    response = await call_next(request)
+    response.headers.setdefault("X-Content-Type-Options", "nosniff")
+    response.headers.setdefault("X-Frame-Options", "DENY")
+    response.headers.setdefault("Referrer-Policy", "same-origin")
+    return response
+
 
 # CORS
 app.add_middleware(

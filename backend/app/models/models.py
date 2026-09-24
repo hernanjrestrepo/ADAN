@@ -80,6 +80,8 @@ class User(Base):
     email = Column(String(255), unique=True, nullable=False, index=True)
     name = Column(String(255), nullable=False)
     hashed_password = Column(String(255), nullable=False)
+    # Se incrementa al cerrar sesión: invalida todos los tokens emitidos antes (WO-097)
+    token_version = Column(Integer, default=0, server_default="0", nullable=False)
     role = Column(Enum(UserRole, native_enum=False, length=50), default=UserRole.USER, nullable=False)
     status = Column(Enum(EntityStatus, native_enum=False, length=50), default=EntityStatus.ACTIVE, nullable=False)
     version = Column(Integer, default=1, nullable=False)

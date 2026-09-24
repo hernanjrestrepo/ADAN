@@ -8,18 +8,10 @@ Flujo: Registrar → Crear empresa → Ejecutar cognición → Validar evidencia
 import time
 import uuid
 import pytest
-from fastapi.testclient import TestClient
-
-from app.main import app
-from app.core.database import init_db
 
 
-@pytest.fixture(scope="module")
-def client():
-    """Initialize DB and create test client."""
-    init_db()
-    with TestClient(app) as c:
-        yield c
+
+# `client` viene de conftest.py: base de pruebas aislada, no data/adan.db
 
 
 class TestWO003Acceptance:
@@ -45,7 +37,7 @@ class TestWO003Acceptance:
         resp = client.post("/api/v1/auth/register", json={
             "email": f"acceptance_{unique_id}@test.com",
             "name": "Acceptance Tester",
-            "password": "test123",
+            "password": "acceptance-pass-2026",
         })
         assert resp.status_code == 201, f"Register failed: {resp.text}"
         token = resp.json()["access_token"]

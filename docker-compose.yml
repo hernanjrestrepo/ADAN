@@ -5,7 +5,11 @@ services:
       - "8050:8000"
     environment:
       - DATABASE_URL=postgresql://adan:${POSTGRES_PASSWORD:-adan-dev}@postgres:5432/adan
-      - JWT_SECRET=${JWT_SECRET:-adan-dev-secret-change-in-production}
+      # Sin JWT_SECRET, en desarrollo se usa uno aleatorio por proceso. Con ADAN_ENV=production
+      # la app no arranca si falta JWT_SECRET, ENCRYPTION_KEY o si la clave de Postgres es la de desarrollo.
+      - ADAN_ENV=${ADAN_ENV:-development}
+      - JWT_SECRET=${JWT_SECRET:-}
+      - ENCRYPTION_KEY=${ENCRYPTION_KEY:-}
       - OLLAMA_BASE_URL=http://ollama:11434
       - DEFAULT_MODEL=${DEFAULT_MODEL:-qwen2.5:0.5b}
       - EMBEDDING_PROVIDER=ollama

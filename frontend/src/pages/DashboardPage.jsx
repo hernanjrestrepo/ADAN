@@ -40,7 +40,7 @@ export default function DashboardPage({ user }) {
           <div className="flex items-center gap-4">
             <span className="text-adan-muted">{user.name}</span>
             <button
-              onClick={() => { api.logout(); window.location.href = '/login' }}
+              onClick={async () => { await api.logout(); window.location.href = '/login' }}
               className="text-sm text-adan-muted hover:text-adan-text"
             >
               Salir

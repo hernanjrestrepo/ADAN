@@ -8,6 +8,7 @@ import os
 
 # La app no corre migraciones al arrancar en pruebas: el esquema lo crea este archivo
 os.environ.setdefault("AUTO_MIGRATE", "false")
+os.environ.setdefault("ADAN_ENV", "test")
 
 import pytest
 from fastapi.testclient import TestClient
@@ -17,6 +18,7 @@ from sqlalchemy.pool import StaticPool
 
 from app.core.config import normalize_database_url
 from app.core.database import Base, get_db, import_all_models, make_engine
+from app.core.ratelimit import limiter
 from app.main import app
 
 TEST_DATABASE_URL = os.getenv("TEST_DATABASE_URL")
@@ -45,6 +47,13 @@ if _test_engine.dialect.name == "postgresql":
     Base.metadata.drop_all(bind=_test_engine)
 Base.metadata.create_all(bind=_test_engine)
 _TestSession = sessionmaker(autocommit=False, autoflush=False, bind=_test_engine)
+
+
+@pytest.fixture(autouse=True)
+def _reset_rate_limits():
+    """Cada prueba empieza sin intentos acumulados."""
+    limiter.reset()
+    yield
 
 
 @pytest.fixture(scope="function")

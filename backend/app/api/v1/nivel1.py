@@ -8,10 +8,12 @@ from sqlalchemy.orm import Session
 from app.ai.base import LLMAdapter
 from app.ai.factory import get_llm_adapter
 from app.core.auth import get_current_user
+from app.core.authz import get_owned_company, get_owned_project
+from app.core.ratelimit import llm_user
 from app.core.database import get_db
 from app.core.disclaimer import AI_DISCLAIMER
 from app.models.models import (
-    Card, Company, Conversation, Decision, Document, Level, Message, Project, Score, User,
+    Card, Conversation, Decision, Document, Level, Message, Project, Score, User,
 )
 from app.nivel1.service import Nivel1Service
 from app.services.gemelo_digital import GemeloDigitalService
@@ -25,17 +27,6 @@ router = APIRouter(prefix="/nivel1", tags=["nivel1"])
 
 def get_llm() -> LLMAdapter:
     return get_llm_adapter()
-
-
-def get_owned_project(db: Session, company_id: str, user: User) -> Project:
-    """Proyecto de una empresa del usuario."""
-    project = db.query(Project).join(Company).filter(
-        Project.company_id == company_id,
-        Company.primary_user_id == user.id,
-    ).first()
-    if not project:
-        raise HTTPException(status_code=404, detail="Project not found")
-    return project
 
 
 def get_latest_diagnosis(db: Session, project: Project) -> Document:
@@ -67,12 +58,7 @@ def get_nivel1_status(
     user: User = Depends(get_current_user),
 ):
     """Get the complete Nivel 1 status including Gemelo Digital state."""
-    company = db.query(Company).filter(
-        Company.id == company_id,
-        Company.primary_user_id == user.id,
-    ).first()
-    if not company:
-        raise HTTPException(status_code=404, detail="Company not found")
+    company = get_owned_company(db, company_id, user)
 
     project = db.query(Project).filter(Project.company_id == company_id).first()
     if not project:
@@ -119,16 +105,11 @@ async def chat(
     company_id: str,
     body: ChatRequest,
     db: Session = Depends(get_db),
-    user: User = Depends(get_current_user),
+    user: User = Depends(llm_user),
     llm: LLMAdapter = Depends(get_llm),
 ):
     """Send a message in the Level 1 conversation."""
-    company = db.query(Company).filter(
-        Company.id == company_id,
-        Company.primary_user_id == user.id,
-    ).first()
-    if not company:
-        raise HTTPException(status_code=404, detail="Company not found")
+    get_owned_company(db, company_id, user)
 
     project = db.query(Project).filter(Project.company_id == company_id).first()
     level = db.query(Level).filter(
@@ -156,16 +137,11 @@ async def chat_stream(
     company_id: str,
     body: ChatRequest,
     db: Session = Depends(get_db),
-    user: User = Depends(get_current_user),
+    user: User = Depends(llm_user),
     llm: LLMAdapter = Depends(get_llm),
 ):
     """Stream chat response token by token via SSE."""
-    company = db.query(Company).filter(
-        Company.id == company_id,
-        Company.primary_user_id == user.id,
-    ).first()
-    if not company:
-        raise HTTPException(status_code=404, detail="Company not found")
+    get_owned_company(db, company_id, user)
 
     project = db.query(Project).filter(Project.company_id == company_id).first()
     level = db.query(Level).filter(
@@ -221,16 +197,11 @@ async def chat_stream(
 async def run_board_room(
     company_id: str,
     db: Session = Depends(get_db),
-    user: User = Depends(get_current_user),
+    user: User = Depends(llm_user),
     llm: LLMAdapter = Depends(get_llm),
 ):
     """Run the real Board Room with 4 independent agents."""
-    company = db.query(Company).filter(
-        Company.id == company_id,
-        Company.primary_user_id == user.id,
-    ).first()
-    if not company:
-        raise HTTPException(status_code=404, detail="Company not found")
+    company = get_owned_company(db, company_id, user)
 
     project = db.query(Project).filter(Project.company_id == company_id).first()
 
@@ -273,16 +244,11 @@ async def run_board_room(
 async def generate_diagnosis(
     company_id: str,
     db: Session = Depends(get_db),
-    user: User = Depends(get_current_user),
+    user: User = Depends(llm_user),
     llm: LLMAdapter = Depends(get_llm),
 ):
     """Generate the Level 1 diagnosis document."""
-    company = db.query(Company).filter(
-        Company.id == company_id,
-        Company.primary_user_id == user.id,
-    ).first()
-    if not company:
-        raise HTTPException(status_code=404, detail="Company not found")
+    company = get_owned_company(db, company_id, user)
 
     project = db.query(Project).filter(Project.company_id == company_id).first()
 
@@ -307,16 +273,11 @@ async def generate_diagnosis(
 async def generate_recommendations(
     company_id: str,
     db: Session = Depends(get_db),
-    user: User = Depends(get_current_user),
+    user: User = Depends(llm_user),
     llm: LLMAdapter = Depends(get_llm),
 ):
     """Generate recommendations based on diagnosis."""
-    company = db.query(Company).filter(
-        Company.id == company_id,
-        Company.primary_user_id == user.id,
-    ).first()
-    if not company:
-        raise HTTPException(status_code=404, detail="Company not found")
+    get_owned_company(db, company_id, user)
 
     project = db.query(Project).filter(Project.company_id == company_id).first()
     diagnosis_doc = get_latest_diagnosis(db, project)
@@ -343,12 +304,7 @@ async def gate_review(
     llm: LLMAdapter = Depends(get_llm),
 ):
     """Run Gate Review with 80/100 minimum threshold."""
-    company = db.query(Company).filter(
-        Company.id == company_id,
-        Company.primary_user_id == user.id,
-    ).first()
-    if not company:
-        raise HTTPException(status_code=404, detail="Company not found")
+    get_owned_company(db, company_id, user)
 
     project = db.query(Project).filter(Project.company_id == company_id).first()
     diagnosis_doc = get_latest_diagnosis(db, project)

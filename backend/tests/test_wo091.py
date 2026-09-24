@@ -8,6 +8,7 @@ import os
 import uuid
 
 import pytest
+from alembic import command
 from alembic.autogenerate import compare_metadata
 from alembic.runtime.migration import MigrationContext
 from sqlalchemy import inspect, select, text
@@ -15,7 +16,7 @@ from sqlalchemy.orm import Session
 
 from app.core.config import normalize_database_url
 from app.core.database import Base, import_all_models, make_engine
-from app.core.migrations import INITIAL_REVISION, include_object_for, run_migrations
+from app.core.migrations import INITIAL_REVISION, alembic_config, include_object_for, run_migrations
 from app.core.sqlite_to_postgres import migrate
 from app.ems.memory import EnterpriseMemorySystem
 from app.ems.models import EMSChunk, EMSChunkEmbedding, EMSDocument
@@ -26,6 +27,7 @@ from app.models.models import Company, Event, Project, User
 from app.oos.models import DecisionRecord, Organization, WorkOrder
 
 PG_URL = os.getenv("TEST_DATABASE_URL", "")
+HEAD_REVISION = "0002"
 requires_pg = pytest.mark.skipif(
     not PG_URL.startswith("postgres"), reason="requiere TEST_DATABASE_URL de PostgreSQL"
 )
@@ -66,8 +68,9 @@ def fresh_pg_url():
 def test_single_declarative_base():
     import_all_models()
     tables = set(Base.metadata.tables)
-    assert {"users", "companies", "ems_documents", "ems_chunk_embeddings", "oos_work_orders"} <= tables
-    assert len(tables) == 33
+    assert {"users", "companies", "ems_documents", "ems_chunk_embeddings", "oos_work_orders",
+            "integration_connections", "tef_audit_log"} <= tables
+    assert len(tables) == 35
     assert EMSDocument.metadata is Base.metadata and WorkOrder.metadata is Base.metadata
 
 
@@ -84,7 +87,7 @@ def test_database_url_is_normalized_to_psycopg():
 def test_migrations_build_the_model_schema_on_sqlite(tmp_path):
     engine = make_engine(f"sqlite:///{tmp_path}/adan.db")
     run_migrations(engine)
-    assert _version(engine) == INITIAL_REVISION
+    assert _version(engine) == HEAD_REVISION
     assert _schema_diff(engine) == []
     run_migrations(engine)  # idempotente
     engine.dispose()
@@ -94,7 +97,7 @@ def test_migrations_build_the_model_schema_on_sqlite(tmp_path):
 def test_migrations_build_the_model_schema_on_postgres(fresh_pg_url):
     engine = make_engine(normalize_database_url(fresh_pg_url))
     run_migrations(engine)
-    assert _version(engine) == INITIAL_REVISION
+    assert _version(engine) == HEAD_REVISION
     assert _schema_diff(engine) == []
     with engine.connect() as conn:
         assert conn.execute(text("SELECT 1 FROM pg_extension WHERE extname = 'vector'")).scalar() == 1
@@ -109,18 +112,20 @@ def test_migrations_build_the_model_schema_on_postgres(fresh_pg_url):
 def test_legacy_database_is_adopted_without_losing_data(tmp_path):
     """Una base creada con create_all antes de WO-091 se adopta como 0001."""
     engine = make_engine(f"sqlite:///{tmp_path}/legacy.db")
-    import_all_models()
-    Base.metadata.create_all(bind=engine)
     with engine.begin() as conn:
-        conn.execute(text("DROP TABLE ems_chunk_embeddings"))  # no existía antes de WO-091
-    with Session(engine) as db:
-        db.add(User(email="antes@example.com", name="Antes", hashed_password="x"))
-        db.commit()
+        command.upgrade(alembic_config(conn), INITIAL_REVISION)
+        # Así quedaba una base de antes de WO-091: sin Alembic y sin embeddings
+        conn.execute(text("DROP TABLE alembic_version"))
+        conn.execute(text("DROP TABLE ems_chunk_embeddings"))
+        conn.execute(text("INSERT INTO users (id, email, name, hashed_password, role, status, version, "
+                          "created_at, updated_at) VALUES ('u1', 'antes@example.com', 'Antes', 'x', "
+                          "'USER', 'ACTIVE', 1, '2026-01-01 00:00:00', '2026-01-01 00:00:00')"))
 
     run_migrations(engine)
 
-    assert _version(engine) == INITIAL_REVISION
+    assert _version(engine) == HEAD_REVISION
     assert "ems_chunk_embeddings" in inspect(engine).get_table_names()
+    assert _schema_diff(engine) == []
     with Session(engine) as db:
         assert db.query(User).filter_by(email="antes@example.com").count() == 1
     engine.dispose()

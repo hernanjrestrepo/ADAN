@@ -39,7 +39,7 @@ WO-094 ✅ ─► WO-095 ✅ ─► WO-096
                  │
      ┌───────────┴──────────────────────┐
      ▼                                  ▼
-  WO-091 PostgreSQL ✅ ─► WO-097 Seguridad   WO-092 TypeScript + UX base
+  WO-091 PostgreSQL ✅ ─► WO-097 Seguridad ✅   WO-092 TypeScript + UX base
      └──────────────► WO-093 Producción ◄──────┘
                           │
                           ▼
@@ -116,7 +116,8 @@ Criterio de cierre común (EPWO-051), además de lo específico de cada ficha:
   - Migración de datos desde SQLite.
 - **Estimación:** 5–8 días.
 
-### WO-097 — Seguridad y aislamiento por empresa
+### WO-097 — Seguridad y aislamiento por empresa ✅
+- **Estado:** fusionada (`docs/wo/WO-097_REPORTE.md`). El sandbox aislado pasa a WO-093 y las actualizaciones mayores del frontend, a WO-092.
 - **Alcance:**
   - Autorización centralizada.
   - La app no arranca con `JWT_SECRET` por defecto.
@@ -131,6 +132,7 @@ Criterio de cierre común (EPWO-051), además de lo específico de cada ficha:
 
 ### WO-092 — Frontend TypeScript y base de UX *(Canon)*
 - **Alcance:**
+  - Vite y react-router en sus versiones mayores actuales: cierra lo que queda de S17 (viene de WO-097).
   - TypeScript, tomando como base el frontend de Build A.
   - Design system, workspace y navegación (AD-UX-01/02/04).
   - Cliente API tipado.
@@ -140,6 +142,8 @@ Criterio de cierre común (EPWO-051), además de lo específico de cada ficha:
 
 ### WO-093 — Producción Enterprise *(Canon)*
 - **Alcance:**
+  - Sandbox aislado (contenedor efímero sin red ni secretos) para reactivar `python_sandbox` y `file_reader` (viene de WO-097).
+  - Límites de peticiones en Redis cuando haya más de una réplica (WO-097 los dejó en memoria).
   - GitHub Actions.
   - Imágenes de producción.
   - Healthchecks.
@@ -283,4 +287,4 @@ Con un solo frente de trabajo son unos 7–11 meses; con dos frentes en paralelo
 
 1. WO-095 ✅ (`docs/wo/WO-095_REPORTE.md`).
 2. WO-096 🟡: solo falta Build B, que depende de la laptop.
-3. H2 en el orden de la ruta crítica: WO-091 ✅; siguen WO-097, WO-092 y WO-093.
+3. H2 en el orden de la ruta crítica: WO-091 ✅, WO-097 ✅; siguen WO-092 y WO-093.

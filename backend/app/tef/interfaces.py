@@ -48,6 +48,10 @@ class ToolContext:
     conversation_id: str | None = None
     project_id: str | None = None
     metadata: dict = field(default_factory=dict)
+    # Permisos concedidos a quien ejecuta; None = los permisos por defecto del ejecutor
+    granted_permissions: frozenset[str] | None = None
+    # El usuario confirmó la acción (herramientas con requires_confirmation)
+    confirmed: bool = False
 
 
 # ============================================================
@@ -156,6 +160,7 @@ class ToolExecutorInterface(abc.ABC):
         params: dict,
         context: ToolContext,
         dry_run: bool = False,
+        db=None,
     ) -> ToolResult:
-        """Ejecuta una herramienta con retry y fallback."""
+        """Ejecuta una herramienta con permisos, confirmación, timeout, retry y auditoría."""
         ...
