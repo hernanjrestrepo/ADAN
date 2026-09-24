@@ -25,9 +25,11 @@ Los historiales importados se reescribieron para vivir bajo su carpeta, con auto
    `AD-DEC-0002_Modelo_de_Negocio_y_Ecosistema.md`: qué hace ADÁN dentro de Paradixe, cómo se monetiza y qué decidió Hernán el 2026-09-24.
 3. `AD-GOV-0001_Reglas_de_Desarrollo.md`: reglas de proceso.
 4. `REPORTE_CONSOLIDACION_WO090.md`: estado de Build C al 2026-07-31 (WO-090 abierta).
-5. `docs/auditoria/AUDITORIA_ADAN_2026-09.md`: auditoría completa del código, avance (~22 %), bugs y brechas frente al blueprint.
-6. `docs/auditoria/PLAN_WO_ADAN_100.md`: plan de Work Orders propuesto para llegar al 100 %.
-7. `docs/wo/`: reportes de cierre de cada Work Order, con su evidencia.
+5. `docs/wo-000/BLUEPRINT_ADAN_v1.1.md`: mapa del blueprint (qué versión de cada documento está vigente y qué está implementado).
+   `docs/wo-000/00-fundamentos/AD-000_Paradixe_Ecosystem_Vision_v2.0.md`: el ecosistema Paradixe según AD-DEC-0002.
+6. `docs/auditoria/AUDITORIA_ADAN_2026-09.md`: auditoría completa del código, avance (~22 %), bugs y brechas frente al blueprint.
+7. `docs/auditoria/PLAN_WO_ADAN_100.md`: plan de Work Orders propuesto para llegar al 100 %.
+8. `docs/wo/`: reportes de cierre de cada Work Order, con su evidencia, y el mapa de reutilización de Build A (`WO-096_MAPA_REUTILIZACION.md`).
 
 Este repositorio y su rama `main` son los oficiales desde el 2026-09-24 (`AD-ROOT-0001 §1-2`).
 
@@ -51,6 +53,8 @@ pytest
 ```
 
 `tests/test_stress.py` necesita el backend levantado en `localhost:8050`.
+
+Sin Docker, `.claude/launch.json` levanta el backend en `:8020` y el frontend en `:5173`. El proxy de Vite apunta a `:8020`; para otro backend, define `ADAN_API_URL`.
 
 ## Despliegue de `autonomous/`
 

@@ -2,7 +2,7 @@
 
 **Fecha de redacción:** 2026-07-31
 **Estado:** ✅ VIGENTE — 2026-07-31, por Hernán (CTO ADÁN), en cumplimiento de `AD-DEC-0001 §5`.
-**Actualizado:** 2026-09-24 — repositorio y rama oficiales (§1, §2), WO-094 (§4) y ubicación de las líneas (§6), por decisión de Hernán. Ver historial al final.
+**Actualizado:** 2026-09-24 — repositorio y rama oficiales (§1, §2), WO-094 (§4) y ubicación de las líneas (§6), por decisión de Hernán; documentación canónica (§5) y `.claude/launch.json` en WO-096. Ver historial al final.
 **Deriva de:** `AD-DEC-0001` (Historia Oficial de ADÁN) — la línea oficial decidida es Build C.
 **Propósito:** este es el documento que un agente o desarrollador nuevo debe leer antes de escribir una sola línea de código para ADÁN — sin tener que reconstruir la genealogía por auditoría forense, como fue necesario esta vez (Regla 1 de `AD-GOV-0001`).
 
@@ -64,15 +64,15 @@ WO-101 → WO-106   RESERVADO — cadena SaaS (multi-tenant, billing, administra
 ## 5. Documentación canónica
 
 ✅
-- `docs/wo-000/*` (fuente compartida, idéntica en las tres líneas — canónica independientemente de la decisión de línea oficial).
+- `docs/wo-000/*`: el blueprint. Era idéntico en las tres líneas. Desde WO-096 (2026-09-24) incluye las versiones más nuevas, que antes solo estaban en Build A (AD-003 v1.2, AD-006 v1.2, AD-FUNC-07/08/09 y `kg.json`), además de AD-000 v2.0 (según AD-DEC-0002) y el mapa de lectura `BLUEPRINT_ADAN_v1.1.md`.
 - `AD-DEC-0001`, `AD-DEC-0002` (modelo de negocio y ecosistema, 2026-09-24), `AD-ROOT-0001` (este documento), `AD-GOV-0001` — canónicos de gobierno.
-- `ADAN_MASTER_ARCHITECTURE_v1.0.md` (Build C) — **reclasificado**: deja de ser "Single Source of Truth" autodeclarada y pasa a ser documentación de arquitectura subordinada a este Canon. Esta misma sección cumple la función de la nueva Regla 6 de `AD-GOV-0001`: revoca explícitamente esa autodeclaración.
+- `ADAN_MASTER_ARCHITECTURE_v1.0.md` (Build C) — **reclasificado**: deja de ser "Single Source of Truth" autodeclarada y pasa a ser documentación de arquitectura subordinada a este Canon. Esta misma sección cumple la función de la nueva Regla 6 de `AD-GOV-0001`: revoca explícitamente esa autodeclaración. *(WO-096: el documento ya lo dice en su propio texto.)*
 - `CHAIN_CLOSURE.md` (Build B) — permanece como documento de cierre histórico de la línea experimental, con valor de referencia técnica.
 
 ## 6. Estado de las líneas no elegidas
 
 ✅
-- **Build A** (`adan-platform/`) → **Archivo histórico.** Sin más desarrollo. Desde el 2026-09-24 vive en `adan-platform/` de este repositorio, con su historial completo. Su `docs/blueprint/` contiene la versión más completa del blueprint (AD-003 v1.2, AD-006 v1.2, AD-FUNC-07/08/09), que `docs/wo-000/` de Build C no tiene.
+- **Build A** (`adan-platform/`) → **Archivo histórico.** Sin más desarrollo. Desde el 2026-09-24 vive en `adan-platform/` de este repositorio, con su historial completo. Su `docs/blueprint/` tenía la versión más completa del blueprint (AD-003 v1.2, AD-006 v1.2, AD-FUNC-07/08/09); desde WO-096 esas versiones están también en `docs/wo-000/`. Lo que se puede reutilizar de su código está en `docs/wo/WO-096_MAPA_REUTILIZACION.md`.
 - **Build B** (rama `adan/platform-integration`) → **Referencia técnica.** Se preserva como repositorio de reutilización (PostgreSQL, pgvector, arquitectura enterprise, implementaciones ya probadas). No compite con Build C ni recibe desarrollo bajo el rol de línea oficial. *Pendiente (aprobado 2026-09-24):* importarlo a este repositorio desde el monorepo local, solo la carpeta de ADÁN y con su historial.
 - **Prototipo 2024** (`autonomous/`) → **Histórico.** Lambda de AWS que se clona a sí misma y pipeline CodePipeline/CodeBuild; sin relación de código con A, B o C.
 
@@ -80,7 +80,7 @@ WO-101 → WO-106   RESERVADO — cadena SaaS (multi-tenant, billing, administra
 
 ## Nota sobre `adan-integration/` (worktree)
 
-Independientemente de la decisión anterior: el worktree registrado en `C:\Users\herna\Documents\Paradixe\adan-integration` (rama `adan/platform-integration`) y el archivo `.claude/launch.json` de esta sesión ya apuntan a Build B como el entorno de ejecución activo. *(2026-09-24: `.claude/launch.json` sigue apuntando a rutas de Build B en la laptop; debe actualizarse a Build C.)* Si la decisión de la sección 1-2 cambia el repositorio o rama oficial, este archivo de configuración debe actualizarse en consecuencia — no queda automáticamente sincronizado con lo que este documento declare.
+Independientemente de la decisión anterior: el worktree registrado en `C:\Users\herna\Documents\Paradixe\adan-integration` (rama `adan/platform-integration`) y el archivo `.claude/launch.json` de esta sesión ya apuntan a Build B como el entorno de ejecución activo. *(2026-09-24, WO-096: `.claude/launch.json` ya apunta a Build C, con rutas relativas a la raíz de este repositorio: backend en `:8020` y frontend en `:5173`.)* Si la decisión de la sección 1-2 cambia el repositorio o rama oficial, este archivo de configuración debe actualizarse en consecuencia — no queda automáticamente sincronizado con lo que este documento declare.
 
 ---
 
@@ -90,3 +90,4 @@ Independientemente de la decisión anterior: el worktree registrado en `C:\Users
 |---|---|---|
 | 2026-07-31 | Creación: Build C como línea oficial, numeración WO-090+, documentación canónica | Hernán (CTO) |
 | 2026-09-24 | §1 repositorio oficial → GitHub `hernanjrestrepo/ADAN`; §2 rama oficial → `main`; §4 WO-094 y rangos WO-095→099 y WO-107→122; insumos de WO-100 (AD-DEC-0002); §6 ubicación de Build A, Build B pendiente y prototipo 2024 | Hernán (CTO) |
+| 2026-09-24 | WO-096: §5 `docs/wo-000/` con las versiones más nuevas del blueprint y AD-000 v2.0; `ADAN_MASTER_ARCHITECTURE` marcado en su propio texto; §6 mapa de reutilización; nota de `.claude/launch.json` resuelta | Ejecutado por Claude Code con la autorización general de Hernán (2026-09-24) |

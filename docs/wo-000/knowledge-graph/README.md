@@ -24,4 +24,6 @@ No existe todavía un motor de consultas sobre este grafo — hoy es un archivo 
 
 ## Estado actual
 
-4 documentos (`AD-000` a `AD-003`), 21 conceptos, 16 principios, con sus relaciones. Dos riesgos ya registrados en el grafo desde su primera versión: la colisión de nombre "Decisión" / "Decisión de Diseño", y la lista de conceptos que todavía esperan su especificación completa en un documento que aún no existe (`awaits_full_spec`).
+Al 2026-09-24 (WO-096): 9 fundamentos (`AD-000` v2.0 a `AD-008`), 6 comportamientos, 9 funcionalidades (`AD-FUNC-01` a `AD-FUNC-09`), 39 conceptos, 26 principios y 106 relaciones. Las rutas apuntan a `docs/wo-000/`: los documentos que solo existían en Build A (`AD-003` v1.2, `AD-006` v1.2, `AD-FUNC-07/08/09`) se trajeron aquí en WO-096.
+
+*Estado original (2026-07-14):* 4 documentos (`AD-000` a `AD-003`), 21 conceptos, 16 principios. Dos riesgos ya registrados en el grafo desde su primera versión: la colisión de nombre "Decisión" / "Decisión de Diseño", y la lista de conceptos que todavía esperan su especificación completa en un documento que aún no existe (`awaits_full_spec`).

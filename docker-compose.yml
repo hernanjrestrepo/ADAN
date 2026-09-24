@@ -23,6 +23,8 @@ services:
     build: ./frontend
     ports:
       - "5174:5173"
+    environment:
+      - ADAN_API_URL=http://backend:8000
     depends_on:
       - backend
     restart: unless-stopped

@@ -2,18 +2,20 @@
 
 **Fecha:** 2026-07-24  
 **WO de Origen:** WO-002.3  
-**Estado:** CONSTITUCIÓN TÉCNICA — Documento Oficial  
+**Estado:** ~~CONSTITUCIÓN TÉCNICA — Documento Oficial~~ → **Documentación de arquitectura subordinada al Canon** (`AD-ROOT-0001 §5`, 2026-07-31; aplicado en el texto por WO-096, 2026-09-24)  
 **Reemplaza:** Todos los documentos de arquitectura previos (BASELINE_NIVEL1, COGNITIVE_ARCHITECTURE, AGENT_ORCHESTRATION, KNOWLEDGE_GRAPH, MEMORY_LIFECYCLE, TOOL_ARCHITECTURE, DECISION_ENGINE, EVENT_BUS)
 
 ---
 
 ## Reglas de Este Documento
 
-1. **Este es el Single Source of Truth.** Toda decisión futura debe alinearse con este documento.
-2. **Ninguna Work Order posterior puede contradecirlo** sin una revisión formal de arquitectura.
+> **Nota de WO-096 (2026-09-24).** `AD-ROOT-0001 §5` revocó la autodeclaración de "Single Source of Truth" de este documento (Regla 6 de `AD-GOV-0001`: ningún documento puede declararse fuente única de verdad por sí mismo). Por eso las reglas 1 y 5 quedan tachadas; el texto original se conserva por trazabilidad. Si este documento y el Canon, un AD-DEC o el blueprint (`docs/wo-000/`) dicen cosas distintas, prevalecen estos últimos.
+
+1. ~~**Este es el Single Source of Truth.** Toda decisión futura debe alinearse con este documento.~~ *Revocada por `AD-ROOT-0001 §5`.*
+2. **Ninguna Work Order posterior puede contradecirlo** sin una revisión formal de arquitectura, salvo que lo haga el Canon o un AD-DEC.
 3. **Las secciones marcadas como CONGELADAS** no pueden modificarse sin Work Order específica.
 4. **Las secciones marcadas como DISEÑO** son especificaciones para implementación futura.
-5. **Si hay conflicto con documentos anteriores,** este documento tiene prioridad.
+5. ~~**Si hay conflicto con documentos anteriores,** este documento tiene prioridad.~~ *Revocada por `AD-ROOT-0001 §5`.*
 
 ---
 
