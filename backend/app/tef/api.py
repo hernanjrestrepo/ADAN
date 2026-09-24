@@ -12,10 +12,7 @@ from app.models.models import User, Company
 from app.tef.interfaces import ToolContext
 from app.tef.registry import ToolRegistry
 from app.tef.executor import ToolExecutor
-from app.tef.tools import (
-    CalculatorTool, FileReaderTool, HttpRequestTool,
-    SqlQueryTool, PythonSandboxTool, EmailSenderTool,
-)
+from app.tef.tools import CalculatorTool, HttpRequestTool, EmailSenderTool
 
 router = APIRouter(prefix="/tef", tags=["tef"])
 
@@ -71,20 +68,26 @@ class AuditEntry(BaseModel):
 _registry = ToolRegistry()
 _executor = ToolExecutor(_registry)
 
-# Registrar herramientas iniciales
+# Registrar herramientas iniciales.
+# file_reader, python_sandbox y sql_query quedan fuera hasta tener aislamiento real.
 _registry.register(CalculatorTool())
-_registry.register(FileReaderTool())
 _registry.register(HttpRequestTool())
-_registry.register(PythonSandboxTool())
 _registry.register(EmailSenderTool())
 
 
-def get_executor(db: Session = Depends(get_db)) -> ToolExecutor:
-    # Inyectar DB en SQL Tool
-    sql_tool = _registry.get("sql_query")
-    if sql_tool and hasattr(sql_tool, "set_db"):
-        sql_tool.set_db(db)
+def get_executor() -> ToolExecutor:
     return _executor
+
+
+def require_company(db: Session, company_id: str, user: User) -> Company:
+    """Verifica que la empresa pertenece al usuario."""
+    company = db.query(Company).filter(
+        Company.id == company_id,
+        Company.primary_user_id == user.id,
+    ).first()
+    if not company:
+        raise HTTPException(status_code=404, detail="Empresa no encontrada")
+    return company
 
 
 # ============================================================
@@ -133,17 +136,10 @@ async def execute_tool(
     request: ExecuteRequest,
     current_user: User = Depends(get_current_user),
     executor: ToolExecutor = Depends(get_executor),
+    db: Session = Depends(get_db),
 ):
     """Ejecuta una herramienta."""
-    # Verificar que la empresa pertenece al usuario
-    db = executor.db
-    if db:
-        company = db.query(Company).filter(
-            Company.id == request.company_id,
-            Company.primary_user_id == current_user.id,
-        ).first()
-        if not company:
-            raise HTTPException(status_code=404, detail="Empresa no encontrada")
+    require_company(db, request.company_id, current_user)
 
     import uuid
     context = ToolContext(
@@ -174,16 +170,10 @@ async def get_audit_log(
     company_id: str,
     current_user: User = Depends(get_current_user),
     executor: ToolExecutor = Depends(get_executor),
+    db: Session = Depends(get_db),
 ):
     """Obtiene el log de auditoría de herramientas."""
-    db = executor.db
-    if db:
-        company = db.query(Company).filter(
-            Company.id == company_id,
-            Company.primary_user_id == current_user.id,
-        ).first()
-        if not company:
-            raise HTTPException(status_code=404, detail="Empresa no encontrada")
+    require_company(db, company_id, current_user)
 
     log = executor.get_audit_log(company_id=company_id)
     return [AuditEntry(**entry) for entry in log]

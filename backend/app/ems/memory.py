@@ -237,7 +237,8 @@ class EnterpriseMemorySystem:
         # Ajustar confianza del hecho original
         if fact_id:
             fact = self.db.query(KnowledgeFact).filter(
-                KnowledgeFact.id == fact_id
+                KnowledgeFact.id == fact_id,
+                KnowledgeFact.company_id == company_id,
             ).first()
             if fact:
                 fact.confidence = max(0.1, fact.confidence - 0.1)

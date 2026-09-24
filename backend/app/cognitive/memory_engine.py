@@ -10,7 +10,7 @@ from datetime import datetime, timezone
 from dataclasses import dataclass, field
 from sqlalchemy.orm import Session
 
-from app.models.models import Conversation, Message, Project
+from app.models.models import Card, Conversation, Message, Project
 
 
 @dataclass
@@ -85,11 +85,14 @@ class MemoryEngine:
 
     def get_short_term_memory(self, company_id: str, user_id: str) -> ShortTermMemory:
         """Carga Short-Term Memory (resúmenes de sesiones recientes)."""
-        # Obtener las últimas 5 conversaciones con resumen
+        # Obtener las últimas 5 conversaciones con resumen, solo de esta empresa
         conversations = (
             self.db.query(Conversation)
             .join(Message)
             .filter(Message.conversation_id == Conversation.id)
+            .join(Card, Conversation.card_id == Card.id)
+            .join(Project, Card.project_id == Project.id)
+            .filter(Project.company_id == company_id)
             .distinct()
             .order_by(Conversation.created_at.desc())
             .limit(5)

@@ -2,20 +2,82 @@
 TEF Tools — Herramientas iniciales para demostrar el framework.
 """
 
+import ast
 import json
 import math
 import hashlib
+import operator
 from datetime import datetime, timezone
 from typing import Any
 
-import httpx
-
+from app.core.net import public_http_client
 from app.tef.interfaces import ToolProvider, ToolMetadata, ToolContext, ToolResult
+
+
+def _disabled_result(tool_id: str, reason: str) -> ToolResult:
+    """Resultado de una herramienta deshabilitada por seguridad hasta tener aislamiento real."""
+    return ToolResult(
+        tool_id=tool_id,
+        status="permission_denied",
+        error=f"Tool disabled for security: {reason}",
+    )
 
 
 # ============================================================
 # Calculator
 # ============================================================
+
+_CALC_MAX_LENGTH = 500
+_CALC_MAX_EXPONENT = 1000
+_CALC_MAX_BITS = 10_000
+
+
+def _checked_pow(base, exponent):
+    """pow() con límite de tamaño para evitar agotar CPU/memoria."""
+    if abs(exponent) > _CALC_MAX_EXPONENT or (
+        isinstance(base, int) and base.bit_length() * abs(exponent) > _CALC_MAX_BITS
+    ):
+        raise ValueError("Result too large")
+    return pow(base, exponent)
+
+
+_CALC_BINOPS = {
+    ast.Add: operator.add, ast.Sub: operator.sub, ast.Mult: operator.mul,
+    ast.Div: operator.truediv, ast.FloorDiv: operator.floordiv,
+    ast.Mod: operator.mod, ast.Pow: _checked_pow,
+}
+_CALC_UNARYOPS = {ast.UAdd: operator.pos, ast.USub: operator.neg}
+_CALC_FUNCTIONS = {
+    "abs": abs, "round": round, "min": min, "max": max,
+    "sum": sum, "pow": _checked_pow, "sqrt": math.sqrt,
+    "sin": math.sin, "cos": math.cos, "tan": math.tan, "log": math.log,
+}
+_CALC_CONSTANTS = {"pi": math.pi, "e": math.e}
+
+
+def _safe_eval(node):
+    """Evalúa un AST aritmético; rechaza cualquier otra construcción (sin eval)."""
+    if isinstance(node, ast.Expression):
+        return _safe_eval(node.body)
+    if isinstance(node, ast.Constant) and type(node.value) in (int, float):
+        return node.value
+    if isinstance(node, ast.Name) and node.id in _CALC_CONSTANTS:
+        return _CALC_CONSTANTS[node.id]
+    if isinstance(node, ast.UnaryOp) and type(node.op) in _CALC_UNARYOPS:
+        return _CALC_UNARYOPS[type(node.op)](_safe_eval(node.operand))
+    if isinstance(node, ast.BinOp) and type(node.op) in _CALC_BINOPS:
+        return _CALC_BINOPS[type(node.op)](_safe_eval(node.left), _safe_eval(node.right))
+    if isinstance(node, (ast.List, ast.Tuple)):
+        return [_safe_eval(elt) for elt in node.elts]
+    if (
+        isinstance(node, ast.Call)
+        and isinstance(node.func, ast.Name)
+        and node.func.id in _CALC_FUNCTIONS
+        and not node.keywords
+    ):
+        return _CALC_FUNCTIONS[node.func.id](*[_safe_eval(arg) for arg in node.args])
+    raise ValueError(f"Unsupported expression element: {type(node).__name__}")
+
 
 class CalculatorTool(ToolProvider):
     """Herramienta de cálculo matemático."""
@@ -41,14 +103,9 @@ class CalculatorTool(ToolProvider):
     async def execute(self, params: dict, context: ToolContext) -> ToolResult:
         try:
             expression = params["expression"]
-            # Sandbox: solo permitir operaciones matemáticas seguras
-            allowed_names = {
-                "abs": abs, "round": round, "min": min, "max": max,
-                "sum": sum, "pow": pow, "sqrt": math.sqrt,
-                "sin": math.sin, "cos": math.cos, "tan": math.tan,
-                "log": math.log, "pi": math.pi, "e": math.e,
-            }
-            result = eval(expression, {"__builtins__": {}}, allowed_names)
+            if len(expression) > _CALC_MAX_LENGTH:
+                raise ValueError("Expression too long")
+            result = _safe_eval(ast.parse(expression, mode="eval"))
             return ToolResult(
                 tool_id="calculator",
                 status="success",
@@ -73,7 +130,7 @@ class FileReaderTool(ToolProvider):
         return ToolMetadata(
             id="file_reader",
             name="File Reader",
-            description="Lee archivos de texto",
+            description="Deshabilitada: leía cualquier archivo del servidor",
             category="file",
             permissions=["read:files"],
             inputs={
@@ -89,37 +146,8 @@ class FileReaderTool(ToolProvider):
         )
 
     async def execute(self, params: dict, context: ToolContext) -> ToolResult:
-        try:
-            path = params["path"]
-            encoding = params.get("encoding", "utf-8")
-
-            # Sandbox: no leer fuera del directorio de trabajo
-            import os
-            if not os.path.exists(path):
-                return ToolResult(
-                    tool_id="file_reader",
-                    status="error",
-                    error=f"File not found: {path}",
-                )
-
-            with open(path, "r", encoding=encoding) as f:
-                content = f.read()
-
-            return ToolResult(
-                tool_id="file_reader",
-                status="success",
-                output={
-                    "content": content[:10000],  # Limitar a 10K chars
-                    "size": len(content),
-                    "path": path,
-                },
-            )
-        except Exception as e:
-            return ToolResult(
-                tool_id="file_reader",
-                status="error",
-                error=str(e),
-            )
+        # Leía cualquier ruta (.env, /proc, la BD). Vuelve con un almacenamiento por empresa.
+        return _disabled_result("file_reader", "reads arbitrary files on the server")
 
 
 # ============================================================
@@ -160,7 +188,7 @@ class HttpRequestTool(ToolProvider):
             body = params.get("body")
             timeout = params.get("timeout", 30)
 
-            async with httpx.AsyncClient(timeout=timeout) as client:
+            async with public_http_client(timeout=min(float(timeout), 30)) as client:
                 response = await client.request(
                     method=method,
                     url=url,
@@ -202,7 +230,7 @@ class SqlQueryTool(ToolProvider):
         return ToolMetadata(
             id="sql_query",
             name="SQL Query",
-            description="Ejecuta consultas SQL de solo lectura",
+            description="Deshabilitada: SQL libre sobre la base de datos compartida",
             category="database",
             permissions=["read:database"],
             inputs={
@@ -217,51 +245,9 @@ class SqlQueryTool(ToolProvider):
         )
 
     async def execute(self, params: dict, context: ToolContext) -> ToolResult:
-        if not self._db:
-            return ToolResult(
-                tool_id="sql_query",
-                status="error",
-                error="Database not available",
-            )
-
-        try:
-            query = params["query"].strip()
-
-            # Sandbox: solo permitir SELECT
-            if not query.upper().startswith("SELECT"):
-                return ToolResult(
-                    tool_id="sql_query",
-                    status="error",
-                    error="Only SELECT queries are allowed",
-                )
-
-            # Bloquear palabras peligrosas
-            dangerous = ["DROP", "DELETE", "UPDATE", "INSERT", "ALTER", "CREATE", "TRUNCATE"]
-            for word in dangerous:
-                if word in query.upper():
-                    return ToolResult(
-                        tool_id="sql_query",
-                        status="error",
-                        error=f"Forbidden keyword: {word}",
-                    )
-
-            result = self._db.execute(query)
-            rows = [dict(row) for row in result.mappings()]
-
-            return ToolResult(
-                tool_id="sql_query",
-                status="success",
-                output={
-                    "rows": rows[:100],  # Limitar a 100 filas
-                    "count": len(rows),
-                },
-            )
-        except Exception as e:
-            return ToolResult(
-                tool_id="sql_query",
-                status="error",
-                error=str(e),
-            )
+        # SQL libre sobre la BD compartida puede leer datos de otras empresas
+        # (ej. users.hashed_password). Vuelve con vistas limitadas por empresa.
+        return _disabled_result("sql_query", "raw SQL on the shared database cannot be scoped to one company")
 
 
 # ============================================================
@@ -269,13 +255,13 @@ class SqlQueryTool(ToolProvider):
 # ============================================================
 
 class PythonSandboxTool(ToolProvider):
-    """Herramienta de ejecución segura de código Python."""
+    """Herramienta de ejecución de código Python (deshabilitada: no tiene aislamiento)."""
 
     def metadata(self) -> ToolMetadata:
         return ToolMetadata(
             id="python_sandbox",
             name="Python Sandbox",
-            description="Ejecuta código Python en sandbox seguro",
+            description="Deshabilitada: ejecutaba código Python sin aislamiento",
             category="sandbox",
             permissions=["tool:execute"],
             inputs={
@@ -292,56 +278,9 @@ class PythonSandboxTool(ToolProvider):
         )
 
     async def execute(self, params: dict, context: ToolContext) -> ToolResult:
-        import subprocess
-        import tempfile
-        import os
-
-        try:
-            code = params["code"]
-            timeout = params.get("timeout", 10)
-
-            # Crear archivo temporal
-            with tempfile.NamedTemporaryFile(
-                mode="w", suffix=".py", delete=False, encoding="utf-8"
-            ) as f:
-                f.write(code)
-                tmp_path = f.name
-
-            try:
-                # Ejecutar con timeout
-                result = subprocess.run(
-                    ["python", tmp_path],
-                    capture_output=True,
-                    text=True,
-                    timeout=timeout,
-                    cwd=tempfile.gettempdir(),
-                )
-
-                return ToolResult(
-                    tool_id="python_sandbox",
-                    status="success" if result.returncode == 0 else "error",
-                    output={
-                        "result": result.stdout[:5000] if result.stdout else result.stderr[:5000],
-                        "stdout": result.stdout[:5000],
-                        "error": result.stderr[:5000] if result.returncode != 0 else None,
-                        "return_code": result.returncode,
-                    },
-                )
-            finally:
-                os.unlink(tmp_path)
-
-        except subprocess.TimeoutExpired:
-            return ToolResult(
-                tool_id="python_sandbox",
-                status="timeout",
-                error=f"Execution timed out after {timeout}s",
-            )
-        except Exception as e:
-            return ToolResult(
-                tool_id="python_sandbox",
-                status="error",
-                error=str(e),
-            )
+        # Ejecutaba el código con los permisos del backend (red, archivos, variables
+        # de entorno como JWT_SECRET). Vuelve cuando exista un sandbox aislado real.
+        return _disabled_result("python_sandbox", "runs arbitrary code on the server without isolation")
 
 
 # ============================================================

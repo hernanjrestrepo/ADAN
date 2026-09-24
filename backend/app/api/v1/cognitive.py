@@ -10,7 +10,7 @@ from pydantic import BaseModel
 
 from app.core.database import get_db
 from app.core.auth import get_current_user
-from app.models.models import User, Company
+from app.models.models import User, Company, Card, Conversation, Project
 from app.ai.factory import get_llm_adapter
 
 from app.cognitive.orchestrator import CognitiveOrchestrator, CognitiveResponse
@@ -74,6 +74,18 @@ async def cognitive_think(
 
     if not company:
         raise HTTPException(status_code=404, detail="Empresa no encontrada")
+
+    # Verificar que la conversación pertenece a la empresa
+    if request.conversation_id:
+        conversation = (
+            db.query(Conversation)
+            .join(Card, Conversation.card_id == Card.id)
+            .join(Project, Card.project_id == Project.id)
+            .filter(Conversation.id == request.conversation_id, Project.company_id == company.id)
+            .first()
+        )
+        if not conversation:
+            raise HTTPException(status_code=404, detail="Conversación no encontrada")
 
     # Crear orquestador cognitivo
     llm = get_llm_adapter()

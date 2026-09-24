@@ -11,6 +11,8 @@ from dataclasses import dataclass, field
 from typing import Any
 from datetime import datetime, timezone
 
+from app.core.net import public_http_client
+
 
 @dataclass
 class ConnectorMetadata:
@@ -303,7 +305,6 @@ class RESTAPIConnector(BaseConnector):
         return {"status": "healthy" if self._connected else "disconnected", "service": "rest_api", "base_url": self._base_url}
 
     async def execute(self, action: str, params: dict) -> ConnectorResult:
-        import httpx
         start = time.time()
         try:
             url = params.get("url", self._base_url)
@@ -311,7 +312,7 @@ class RESTAPIConnector(BaseConnector):
             headers = params.get("headers", {})
             body = params.get("body")
 
-            async with httpx.AsyncClient(timeout=30) as client:
+            async with public_http_client(timeout=30) as client:
                 response = await client.request(method, url, headers=headers, content=body)
 
             result = {
