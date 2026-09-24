@@ -7,11 +7,7 @@ Event Bus → Memory → Knowledge → Planner → Tools → Board Room → Deci
 
 import pytest
 from unittest.mock import AsyncMock, MagicMock
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.pool import StaticPool
 
-from app.core.database import Base
 from app.models.models import User, Company, Project, Level, Card, Conversation, Message
 from app.cognitive.event_bus import EventBus, CognitiveEvent, create_trace_id
 from app.cognitive.memory_engine import MemoryEngine, WorkingMemory, ShortTermMemory, LongTermMemory
@@ -24,21 +20,6 @@ from app.cognitive.decision_engine import DecisionEngine
 # ============================================================
 # Fixtures
 # ============================================================
-
-@pytest.fixture(scope="function")
-def db_session():
-    """Create in-memory SQLite session for testing."""
-    engine = create_engine(
-        "sqlite:///:memory:",
-        connect_args={"check_same_thread": False},
-        poolclass=StaticPool,
-    )
-    Base.metadata.create_all(bind=engine)
-    TestSession = sessionmaker(bind=engine)
-    session = TestSession()
-    yield session
-    session.close()
-
 
 @pytest.fixture
 def test_user(db_session):

@@ -5,15 +5,12 @@ OOS Models — Entidades del dominio organizacional.
 import uuid
 from datetime import datetime, timezone
 from sqlalchemy import (
-    Column, String, Text, Float, Integer, DateTime, JSON, Boolean,
+    Column, String, Text, Float, Integer, DateTime, Boolean,
     ForeignKey, Index
 )
-from sqlalchemy.orm import relationship, DeclarativeBase
+from sqlalchemy.orm import relationship
 
-
-class OOSBase(DeclarativeBase):
-    """Base separada para modelos OOS."""
-    pass
+from app.core.database import Base, JSONType
 
 
 def gen_uuid():
@@ -28,7 +25,7 @@ def utcnow():
 # Organization Structure
 # ============================================================
 
-class Organization(OOSBase):
+class Organization(Base):
     """Organización empresarial."""
     __tablename__ = "oos_organizations"
 
@@ -40,7 +37,7 @@ class Organization(OOSBase):
     country = Column(String(100), nullable=True)
     maturity_level = Column(Float, default=0.0)
     status = Column(String(20), default="active")
-    metadata_json = Column(JSON, default=dict)
+    metadata_json = Column(JSONType, default=dict)
     created_at = Column(DateTime, default=utcnow)
     updated_at = Column(DateTime, default=utcnow, onupdate=utcnow)
     created_by = Column(String(36), nullable=True)
@@ -55,7 +52,7 @@ class Organization(OOSBase):
     meetings = relationship("Meeting", back_populates="organization", cascade="all, delete-orphan")
 
 
-class BusinessUnit(OOSBase):
+class BusinessUnit(Base):
     """Unidad de negocio."""
     __tablename__ = "oos_business_units"
 
@@ -65,7 +62,7 @@ class BusinessUnit(OOSBase):
     description = Column(Text, nullable=True)
     head_id = Column(String(36), nullable=True)
     status = Column(String(20), default="active")
-    metadata_json = Column(JSON, default=dict)
+    metadata_json = Column(JSONType, default=dict)
     created_at = Column(DateTime, default=utcnow)
     updated_at = Column(DateTime, default=utcnow, onupdate=utcnow)
 
@@ -73,7 +70,7 @@ class BusinessUnit(OOSBase):
     departments = relationship("Department", back_populates="business_unit", cascade="all, delete-orphan")
 
 
-class Department(OOSBase):
+class Department(Base):
     """Departamento."""
     __tablename__ = "oos_departments"
 
@@ -84,7 +81,7 @@ class Department(OOSBase):
     description = Column(Text, nullable=True)
     head_id = Column(String(36), nullable=True)
     status = Column(String(20), default="active")
-    metadata_json = Column(JSON, default=dict)
+    metadata_json = Column(JSONType, default=dict)
     created_at = Column(DateTime, default=utcnow)
     updated_at = Column(DateTime, default=utcnow, onupdate=utcnow)
 
@@ -93,7 +90,7 @@ class Department(OOSBase):
     roles = relationship("Role", back_populates="department", cascade="all, delete-orphan")
 
 
-class Role(OOSBase):
+class Role(Base):
     """Rol organizacional."""
     __tablename__ = "oos_roles"
 
@@ -103,9 +100,9 @@ class Role(OOSBase):
     description = Column(Text, nullable=True)
     level = Column(Integer, default=1)
     agent_type = Column(String(50), nullable=True)  # CEO, CFO, COO, etc.
-    permissions = Column(JSON, default=list)
+    permissions = Column(JSONType, default=list)
     status = Column(String(20), default="active")
-    metadata_json = Column(JSON, default=dict)
+    metadata_json = Column(JSONType, default=dict)
     created_at = Column(DateTime, default=utcnow)
     updated_at = Column(DateTime, default=utcnow, onupdate=utcnow)
 
@@ -116,7 +113,7 @@ class Role(OOSBase):
 # Strategy & Objectives
 # ============================================================
 
-class Objective(OOSBase):
+class Objective(Base):
     """Objetivo estratégico."""
     __tablename__ = "oos_objectives"
 
@@ -130,7 +127,7 @@ class Objective(OOSBase):
     target_date = Column(DateTime, nullable=True)
     owner_id = Column(String(36), nullable=True)
     progress = Column(Float, default=0.0)
-    metadata_json = Column(JSON, default=dict)
+    metadata_json = Column(JSONType, default=dict)
     created_at = Column(DateTime, default=utcnow)
     updated_at = Column(DateTime, default=utcnow, onupdate=utcnow)
     version = Column(Integer, default=1)
@@ -140,7 +137,7 @@ class Objective(OOSBase):
     initiatives = relationship("Initiative", back_populates="objective", cascade="all, delete-orphan")
 
 
-class KPI(OOSBase):
+class KPI(Base):
     """Key Performance Indicator."""
     __tablename__ = "oos_kpis"
 
@@ -156,8 +153,8 @@ class KPI(OOSBase):
     unit = Column(String(50), nullable=True)
     direction = Column(String(20), default="higher_better")  # higher_better, lower_better
     status = Column(String(20), default="active")  # active, achieved, missed
-    history = Column(JSON, default=list)  # [{date, value}]
-    metadata_json = Column(JSON, default=dict)
+    history = Column(JSONType, default=list)  # [{date, value}]
+    metadata_json = Column(JSONType, default=dict)
     created_at = Column(DateTime, default=utcnow)
     updated_at = Column(DateTime, default=utcnow, onupdate=utcnow)
 
@@ -165,7 +162,7 @@ class KPI(OOSBase):
     objective = relationship("Objective", back_populates="kpis")
 
 
-class Initiative(OOSBase):
+class Initiative(Base):
     """Iniciativa para lograr un objetivo."""
     __tablename__ = "oos_initiatives"
 
@@ -178,7 +175,7 @@ class Initiative(OOSBase):
     start_date = Column(DateTime, nullable=True)
     end_date = Column(DateTime, nullable=True)
     progress = Column(Float, default=0.0)
-    metadata_json = Column(JSON, default=dict)
+    metadata_json = Column(JSONType, default=dict)
     created_at = Column(DateTime, default=utcnow)
     updated_at = Column(DateTime, default=utcnow, onupdate=utcnow)
 
@@ -189,26 +186,26 @@ class Initiative(OOSBase):
 # Decisions & Work Orders
 # ============================================================
 
-class DecisionRecord(OOSBase):
+class DecisionRecord(Base):
     """Registro de decisión del Board."""
     __tablename__ = "oos_decisions"
 
     id = Column(String(36), primary_key=True, default=gen_uuid)
     organization_id = Column(String(36), ForeignKey("oos_organizations.id"), nullable=False)
     topic = Column(String(500), nullable=False)
-    participants = Column(JSON, default=list)
-    votes = Column(JSON, default=dict)
+    participants = Column(JSONType, default=list)
+    votes = Column(JSONType, default=dict)
     deliberation_summary = Column(Text, nullable=True)
     final_decision = Column(String(20), nullable=False)  # PROCEED, PIVOT, STOP
     final_score = Column(Float, default=0.0)
     final_confidence = Column(Float, default=0.0)
-    key_objections = Column(JSON, default=list)
-    key_agreements = Column(JSON, default=list)
+    key_objections = Column(JSONType, default=list)
+    key_agreements = Column(JSONType, default=list)
     dissent_details = Column(Text, nullable=True)
-    actions = Column(JSON, default=list)
-    follow_up = Column(JSON, default=list)
+    actions = Column(JSONType, default=list)
+    follow_up = Column(JSONType, default=list)
     status = Column(String(20), default="active")  # active, executed, archived
-    metadata_json = Column(JSON, default=dict)
+    metadata_json = Column(JSONType, default=dict)
     created_at = Column(DateTime, default=utcnow)
     updated_at = Column(DateTime, default=utcnow, onupdate=utcnow)
     version = Column(Integer, default=1)
@@ -217,7 +214,7 @@ class DecisionRecord(OOSBase):
     work_orders = relationship("WorkOrder", back_populates="decision", cascade="all, delete-orphan")
 
 
-class WorkOrder(OOSBase):
+class WorkOrder(Base):
     """Orden de trabajo generada desde una decisión."""
     __tablename__ = "oos_work_orders"
 
@@ -234,10 +231,10 @@ class WorkOrder(OOSBase):
     started_at = Column(DateTime, nullable=True)
     completed_at = Column(DateTime, nullable=True)
     progress = Column(Float, default=0.0)
-    dependencies = Column(JSON, default=list)  # [work_order_id]
+    dependencies = Column(JSONType, default=list)  # [work_order_id]
     blocking_reason = Column(Text, nullable=True)
     result = Column(Text, nullable=True)
-    metadata_json = Column(JSON, default=dict)
+    metadata_json = Column(JSONType, default=dict)
     created_at = Column(DateTime, default=utcnow)
     updated_at = Column(DateTime, default=utcnow, onupdate=utcnow)
     version = Column(Integer, default=1)
@@ -249,7 +246,7 @@ class WorkOrder(OOSBase):
     progress_reports = relationship("ProgressReport", back_populates="work_order", cascade="all, delete-orphan")
 
 
-class Task(OOSBase):
+class Task(Base):
     """Tarea dentro de una Work Order."""
     __tablename__ = "oos_tasks"
 
@@ -263,14 +260,14 @@ class Task(OOSBase):
     due_date = Column(DateTime, nullable=True)
     completed_at = Column(DateTime, nullable=True)
     result = Column(Text, nullable=True)
-    metadata_json = Column(JSON, default=dict)
+    metadata_json = Column(JSONType, default=dict)
     created_at = Column(DateTime, default=utcnow)
     updated_at = Column(DateTime, default=utcnow, onupdate=utcnow)
 
     work_order = relationship("WorkOrder", back_populates="tasks")
 
 
-class Assignment(OOSBase):
+class Assignment(Base):
     """Asignación de Work Order a un agente/rol."""
     __tablename__ = "oos_assignments"
 
@@ -282,13 +279,13 @@ class Assignment(OOSBase):
     status = Column(String(20), default="active")
     accepted_at = Column(DateTime, nullable=True)
     completed_at = Column(DateTime, nullable=True)
-    metadata_json = Column(JSON, default=dict)
+    metadata_json = Column(JSONType, default=dict)
     created_at = Column(DateTime, default=utcnow)
 
     work_order = relationship("WorkOrder", back_populates="assignments")
 
 
-class ProgressReport(OOSBase):
+class ProgressReport(Base):
     """Reporte de progreso de una Work Order."""
     __tablename__ = "oos_progress_reports"
 
@@ -298,10 +295,10 @@ class ProgressReport(OOSBase):
     reporter_name = Column(String(200), nullable=False)
     progress = Column(Float, default=0.0)
     status_update = Column(String(200), nullable=True)
-    problems = Column(JSON, default=list)
-    evidence = Column(JSON, default=list)
-    next_steps = Column(JSON, default=list)
-    metadata_json = Column(JSON, default=dict)
+    problems = Column(JSONType, default=list)
+    evidence = Column(JSONType, default=list)
+    next_steps = Column(JSONType, default=list)
+    metadata_json = Column(JSONType, default=dict)
     created_at = Column(DateTime, default=utcnow)
 
     work_order = relationship("WorkOrder", back_populates="progress_reports")
@@ -311,7 +308,7 @@ class ProgressReport(OOSBase):
 # Risk Management
 # ============================================================
 
-class Risk(OOSBase):
+class Risk(Base):
     """Riesgo identificado."""
     __tablename__ = "oos_risks"
 
@@ -328,7 +325,7 @@ class Risk(OOSBase):
     mitigation = Column(Text, nullable=True)
     owner_id = Column(String(36), nullable=True)
     owner_name = Column(String(200), nullable=True)
-    metadata_json = Column(JSON, default=dict)
+    metadata_json = Column(JSONType, default=dict)
     created_at = Column(DateTime, default=utcnow)
     updated_at = Column(DateTime, default=utcnow, onupdate=utcnow)
 
@@ -339,7 +336,7 @@ class Risk(OOSBase):
 # Meetings
 # ============================================================
 
-class Meeting(OOSBase):
+class Meeting(Base):
     """Reunión del Board."""
     __tablename__ = "oos_meetings"
 
@@ -348,15 +345,15 @@ class Meeting(OOSBase):
     title = Column(String(500), nullable=False)
     description = Column(Text, nullable=True)
     meeting_type = Column(String(50), default="board")  # board, department, ad_hoc
-    participants = Column(JSON, default=list)
+    participants = Column(JSONType, default=list)
     status = Column(String(20), default="scheduled")  # scheduled, in_progress, completed, cancelled
     scheduled_at = Column(DateTime, nullable=True)
     started_at = Column(DateTime, nullable=True)
     completed_at = Column(DateTime, nullable=True)
-    agenda = Column(JSON, default=list)
-    decisions = Column(JSON, default=list)
-    action_items = Column(JSON, default=list)
-    metadata_json = Column(JSON, default=dict)
+    agenda = Column(JSONType, default=list)
+    decisions = Column(JSONType, default=list)
+    action_items = Column(JSONType, default=list)
+    metadata_json = Column(JSONType, default=dict)
     created_at = Column(DateTime, default=utcnow)
     updated_at = Column(DateTime, default=utcnow, onupdate=utcnow)
 
@@ -364,7 +361,7 @@ class Meeting(OOSBase):
     minutes = relationship("MeetingMinute", back_populates="meeting", cascade="all, delete-orphan")
 
 
-class MeetingMinute(OOSBase):
+class MeetingMinute(Base):
     """Minuta de reunión."""
     __tablename__ = "oos_meeting_minutes"
 
@@ -376,7 +373,7 @@ class MeetingMinute(OOSBase):
     action_item = Column(Text, nullable=True)
     owner = Column(String(200), nullable=True)
     due_date = Column(DateTime, nullable=True)
-    metadata_json = Column(JSON, default=dict)
+    metadata_json = Column(JSONType, default=dict)
     created_at = Column(DateTime, default=utcnow)
 
     meeting = relationship("Meeting", back_populates="minutes")

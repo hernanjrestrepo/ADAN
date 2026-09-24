@@ -4,14 +4,9 @@ Tests para el Organizational Operating System — WO-008.
 
 import pytest
 from datetime import datetime, timezone, timedelta
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.pool import StaticPool
 
-from app.core.database import Base
 from app.models.models import User, Company
-from app.ems.models import EMSBase
-from app.oos.models import OOSBase, Organization, WorkOrder, DecisionRecord, KPI, Risk
+from app.oos.models import Organization, WorkOrder, DecisionRecord, KPI, Risk
 from app.oos.services import (
     OrganizationService, WorkOrderService, ProgressService,
     KPIService, RiskService, MeetingService,
@@ -24,22 +19,6 @@ from app.oos.kpi import KPIEngine
 # ============================================================
 # Fixtures
 # ============================================================
-
-@pytest.fixture(scope="function")
-def db_session():
-    engine = create_engine(
-        "sqlite:///:memory:",
-        connect_args={"check_same_thread": False},
-        poolclass=StaticPool,
-    )
-    Base.metadata.create_all(bind=engine)
-    EMSBase.metadata.create_all(bind=engine)
-    OOSBase.metadata.create_all(bind=engine)
-    TestSession = sessionmaker(bind=engine)
-    session = TestSession()
-    yield session
-    session.close()
-
 
 @pytest.fixture
 def test_org(db_session):
@@ -104,7 +83,11 @@ class TestOrganizationService:
 # ============================================================
 
 class TestWorkOrderService:
-    def test_create_from_decision(self, wo_service, test_org):
+    def test_create_from_decision(self, db_session, wo_service, test_org):
+        # La decisión debe existir: oos_work_orders.decision_id es clave foránea
+        db_session.add(DecisionRecord(id="decision-1", organization_id=test_org.id,
+                                      topic="Decisión", final_decision="PROCEED"))
+        db_session.commit()
         wo = wo_service.create_from_decision(
             organization_id=test_org.id,
             decision_id="decision-1",
@@ -222,6 +205,9 @@ class TestWorkOrderEngine:
 
     def test_create_from_actions(self, db_session, test_org):
         engine = WorkOrderEngine(db_session)
+        db_session.add(DecisionRecord(id="dec-002", organization_id=test_org.id,
+                                      topic="Decisión", final_decision="PROCEED"))
+        db_session.commit()
         actions = [
             {"title": "Action 1", "priority": "critical"},
             {"title": "Action 2", "priority": "low"},

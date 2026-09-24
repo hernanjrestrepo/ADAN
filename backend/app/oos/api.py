@@ -10,7 +10,7 @@ from pydantic import BaseModel
 from app.core.database import get_db
 from app.core.auth import get_current_user
 from app.models.models import User, Company
-from app.oos.models import OOSBase, WorkOrder, DecisionRecord, KPI, Risk, Organization
+from app.oos.models import WorkOrder, DecisionRecord, KPI, Risk, Organization
 from app.oos.services import (
     OrganizationService, WorkOrderService, ProgressService,
     KPIService, RiskService, MeetingService,

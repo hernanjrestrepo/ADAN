@@ -3,7 +3,7 @@ import pytest
 
 from app.core.net import BlockedURLError, ensure_public_url
 from app.models.models import Card, Conversation, Level, Project
-from app.oos.models import OOSBase, Organization
+from app.oos.models import Organization
 from app.tef.interfaces import ToolContext
 from app.tef.tools import (
     CalculatorTool, FileReaderTool, HttpRequestTool, PythonSandboxTool, SqlQueryTool,
@@ -175,14 +175,10 @@ def test_tef_does_not_expose_disabled_tools(client, two_tenants):
 
 @pytest.fixture
 def victim_org(db_session, two_tenants):
-    OOSBase.metadata.create_all(bind=db_session.get_bind())
     org = Organization(company_id=two_tenants["company_id"], name="Victim Org")
     db_session.add(org)
     db_session.commit()
-    yield org.id
-    for table in reversed(OOSBase.metadata.sorted_tables):
-        db_session.execute(table.delete())
-    db_session.commit()
+    return org.id
 
 
 def test_oos_organization_is_private(client, two_tenants, victim_org):

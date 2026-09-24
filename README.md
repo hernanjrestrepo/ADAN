@@ -8,7 +8,7 @@ Este repositorio reúne en un solo lugar todo el código de ADAN que existía po
 
 | Ubicación | Qué es | Estado | Origen |
 |---|---|---|---|
-| Raíz: `backend/`, `frontend/`, `docs/`, `scripts/`, `docker-compose.yml` | **Build C**, "Vertical Nivel 1". FastAPI + SQLite + React (JSX) + Ollama. | **Línea oficial** (`AD-DEC-0001 §5.1`) | Carpeta `repos-active/adan` de la laptop. No tenía historial de git; su primer commit es `abc6b6c`. |
+| Raíz: `backend/`, `frontend/`, `docs/`, `scripts/`, `docker-compose.yml` | **Build C**, "Vertical Nivel 1". FastAPI + PostgreSQL/pgvector (SQLite en desarrollo y pruebas) + React (JSX) + Ollama. | **Línea oficial** (`AD-DEC-0001 §5.1`) | Carpeta `repos-active/adan` de la laptop. No tenía historial de git; su primer commit es `abc6b6c`. |
 | `adan-platform/` | **Build A**. Monorepo FastAPI + PostgreSQL/pgvector + React/TypeScript, WO-000 → WO-003. | Archivo histórico, sin más desarrollo (`AD-DEC-0001 §5.2`) | Repo local sin remote. Sus 25 commits se conservan. |
 | `autonomous/` | Prototipo de 2024: Lambda que crea clones de sí misma, código autogenerado y despliegue con CodePipeline/CodeBuild. | Histórico | `hernanjrestrepo/adan_autonomous`. Sus 14 commits se conservan (último original: `2fab0bc`). |
 
@@ -42,14 +42,30 @@ docker compose up --build
 
 - API: http://localhost:8050 (`/health`, `/docs`)
 - Web: http://localhost:5174
-- Ollama: http://localhost:11434. El modelo por defecto es `qwen2.5:0.5b` (`DEFAULT_MODEL`) y lo descarga el servicio `model-pull`.
+- PostgreSQL 16 + pgvector: `localhost:5432`, base `adan`. La contraseña sale de `POSTGRES_PASSWORD`.
+- Ollama: http://localhost:11434. El modelo por defecto es `qwen2.5:0.5b` (`DEFAULT_MODEL`). Los embeddings del EMS usan `nomic-embed-text`. El servicio `model-pull` descarga los dos.
+
+El backend aplica las migraciones de Alembic al arrancar (`backend/migrations`). Para crear una migración nueva:
+
+```bash
+cd backend
+alembic revision --autogenerate -m "qué cambia"
+```
+
+Para pasar los datos de una base SQLite anterior a PostgreSQL:
+
+```bash
+cd backend
+python -m app.core.sqlite_to_postgres --from sqlite:///data/adan.db --to postgresql://adan:<clave>@localhost:5432/adan
+```
 
 Pruebas del backend:
 
 ```bash
 cd backend
 pip install -r requirements-dev.txt
-pytest
+pytest                                                                     # SQLite en memoria
+TEST_DATABASE_URL=postgresql://adan:<clave>@localhost:5432/adan_test pytest  # PostgreSQL + pgvector
 ```
 
 `tests/test_stress.py` necesita el backend levantado en `localhost:8050`.

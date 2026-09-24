@@ -321,6 +321,8 @@ def test_b9_stream_events_are_json_and_response_is_saved(client, db_session, com
 # ============================================================
 
 def test_b11_shared_store_rebuilds_from_database(db_session, company, monkeypatch):
+    if db_session.get_bind().dialect.name != "sqlite":
+        pytest.skip("índice en memoria: solo con SQLite (en PostgreSQL es pgvector, ver test_wo091)")
     doc = EMSDocument(company_id=company["id"], title="Doc", source_type="text", status="processed")
     db_session.add(doc)
     db_session.flush()

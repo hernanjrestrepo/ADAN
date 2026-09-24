@@ -31,6 +31,11 @@ class EmbeddingProvider(abc.ABC):
         """Retorna la dimensión de los embeddings."""
         ...
 
+    @property
+    def model_name(self) -> str:
+        """Modelo que generó los vectores: vectores de modelos distintos no se comparan."""
+        return type(self).__name__
+
 
 # ============================================================
 # Vector Store Provider Interface
@@ -78,8 +83,8 @@ class VectorStoreProvider(abc.ABC):
         ...
 
     @abc.abstractmethod
-    def count(self) -> int:
-        """Retorna la cantidad de registros."""
+    def count(self, filter_metadata: dict | None = None) -> int:
+        """Retorna la cantidad de registros (opcionalmente, solo los que cumplen el filtro)."""
         ...
 
 
@@ -106,6 +111,10 @@ class LocalEmbeddingProvider(EmbeddingProvider):
     def dimension(self) -> int:
         return self._dim
 
+    @property
+    def model_name(self) -> str:
+        return f"local-hash-{self._dim}"
+
     def _text_to_vector(self, text: str) -> list[float]:
         """Convierte texto a vector usando hashing simplificado."""
         import hashlib
@@ -123,6 +132,44 @@ class LocalEmbeddingProvider(EmbeddingProvider):
             vector = [x / norm for x in vector]
 
         return vector
+
+
+class OllamaEmbeddingProvider(EmbeddingProvider):
+    """Embeddings reales con Ollama (`/api/embed`), por defecto `nomic-embed-text` (768)."""
+
+    def __init__(self, base_url: str, model: str, dim: int, timeout_s: float = 60.0):
+        self._base_url = base_url.rstrip("/")
+        self._model = model
+        self._dim = dim
+        self._timeout = timeout_s
+
+    def embed(self, texts: list[str]) -> list[list[float]]:
+        if not texts:
+            return []
+        import httpx
+        resp = httpx.post(
+            f"{self._base_url}/api/embed",
+            json={"model": self._model, "input": texts},
+            timeout=self._timeout,
+        )
+        resp.raise_for_status()
+        vectors = resp.json().get("embeddings", [])
+        if len(vectors) != len(texts) or any(len(v) != self._dim for v in vectors):
+            raise ValueError(
+                f"{self._model} devolvió {len(vectors)} embeddings de dimensión "
+                f"{len(vectors[0]) if vectors else 0}; se esperaban {len(texts)} de {self._dim}"
+            )
+        return vectors
+
+    def embed_query(self, query: str) -> list[float]:
+        return self.embed([query])[0]
+
+    def dimension(self) -> int:
+        return self._dim
+
+    @property
+    def model_name(self) -> str:
+        return self._model
 
 
 class LocalVectorStoreProvider(VectorStoreProvider):
@@ -177,8 +224,13 @@ class LocalVectorStoreProvider(VectorStoreProvider):
                 count += 1
         return count
 
-    def count(self) -> int:
-        return len(self._records)
+    def count(self, filter_metadata: dict | None = None) -> int:
+        if not filter_metadata:
+            return len(self._records)
+        return sum(
+            all(record.metadata.get(k) == v for k, v in filter_metadata.items())
+            for record in self._records.values()
+        )
 
     def _cosine_similarity(self, a: list[float], b: list[float]) -> float:
         """Calcula similitud coseno entre dos vectores."""

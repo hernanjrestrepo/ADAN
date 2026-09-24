@@ -4,13 +4,8 @@ Tests para el CEO Agent — WO-006 (rebuild con razonamiento ejecutivo).
 
 import pytest
 from unittest.mock import AsyncMock, MagicMock
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.pool import StaticPool
 
-from app.core.database import Base
 from app.models.models import User, Company, Project, Level
-from app.ems.models import EMSBase
 from app.agents.base import ExecutiveAgent, AgentMessage, AgentPlan, AgentResponse
 from app.agents.ceo import CEOAgent, CEO_SYSTEM_PROMPT, ExecutiveReasoning, ExecutiveStep
 from app.tef.interfaces import ToolContext, ToolResult
@@ -22,21 +17,6 @@ from app.tef.tools import CalculatorTool
 # ============================================================
 # Fixtures
 # ============================================================
-
-@pytest.fixture(scope="function")
-def db_session():
-    engine = create_engine(
-        "sqlite:///:memory:",
-        connect_args={"check_same_thread": False},
-        poolclass=StaticPool,
-    )
-    Base.metadata.create_all(bind=engine)
-    EMSBase.metadata.create_all(bind=engine)
-    TestSession = sessionmaker(bind=engine)
-    session = TestSession()
-    yield session
-    session.close()
-
 
 @pytest.fixture
 def test_company(db_session):

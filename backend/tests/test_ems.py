@@ -4,11 +4,7 @@ Tests para el Enterprise Memory System — WO-004.
 
 import pytest
 from unittest.mock import MagicMock
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.pool import StaticPool
 
-from app.core.database import Base
 from app.models.models import User, Company, Project, Level
 from app.ems.providers import (
     LocalEmbeddingProvider, LocalVectorStoreProvider, VectorRecord
@@ -22,22 +18,6 @@ from app.ems.memory import EnterpriseMemorySystem
 # ============================================================
 # Fixtures
 # ============================================================
-
-@pytest.fixture(scope="function")
-def db_session():
-    from app.ems.models import EMSBase
-    engine = create_engine(
-        "sqlite:///:memory:",
-        connect_args={"check_same_thread": False},
-        poolclass=StaticPool,
-    )
-    Base.metadata.create_all(bind=engine)
-    EMSBase.metadata.create_all(bind=engine)
-    TestSession = sessionmaker(bind=engine)
-    session = TestSession()
-    yield session
-    session.close()
-
 
 @pytest.fixture
 def embedding_provider():
