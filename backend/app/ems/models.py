@@ -1,21 +1,20 @@
 """
 EMS Models — Modelos de persistencia para el Enterprise Memory System.
 
-Usa EMSBase separado para evitar conflictos con los modelos principales.
+Comparten la base declarativa única de `app.core.database` (WO-091).
 """
 
 import uuid
 from datetime import datetime, timezone
 from sqlalchemy import (
-    Column, String, Text, Float, Integer, DateTime, JSON, Boolean,
+    JSON, Column, String, Text, Float, Integer, DateTime, Boolean,
     ForeignKey, Index
 )
-from sqlalchemy.orm import relationship, DeclarativeBase
+from pgvector.sqlalchemy import Vector
+from sqlalchemy.orm import relationship
 
-
-class EMSBase(DeclarativeBase):
-    """Base separada para modelos EMS."""
-    pass
+from app.core.config import EMBEDDING_DIM
+from app.core.database import Base, JSONType
 
 
 def gen_uuid():
@@ -26,7 +25,7 @@ def utcnow():
     return datetime.now(timezone.utc)
 
 
-class EMSDocument(EMSBase):
+class EMSDocument(Base):
     """Documento almacenado en el EMS."""
     __tablename__ = "ems_documents"
 
@@ -44,7 +43,7 @@ class EMSDocument(EMSBase):
     is_latest = Column(Boolean, default=True)
     parent_version_id = Column(String(36), nullable=True)
     confidence = Column(Float, default=1.0)
-    metadata_json = Column(JSON, default=dict)
+    metadata_json = Column(JSONType, default=dict)
     created_at = Column(DateTime, default=utcnow)
     updated_at = Column(DateTime, default=utcnow, onupdate=utcnow)
     processed_at = Column(DateTime, nullable=True)
@@ -59,7 +58,7 @@ class EMSDocument(EMSBase):
     )
 
 
-class EMSChunk(EMSBase):
+class EMSChunk(Base):
     """Chunk de un documento para búsqueda semántica."""
     __tablename__ = "ems_chunks"
 
@@ -70,7 +69,7 @@ class EMSChunk(EMSBase):
     content = Column(Text, nullable=False)
     content_hash = Column(String(64), nullable=True)
     token_count = Column(Integer, default=0)
-    metadata_json = Column(JSON, default=dict)
+    metadata_json = Column(JSONType, default=dict)
     embedding_id = Column(String(36), nullable=True)
     created_at = Column(DateTime, default=utcnow)
 
@@ -82,7 +81,7 @@ class EMSChunk(EMSBase):
     )
 
 
-class EMSVersion(EMSBase):
+class EMSVersion(Base):
     """Historial de versiones de un documento."""
     __tablename__ = "ems_versions"
 
@@ -98,7 +97,7 @@ class EMSVersion(EMSBase):
     document = relationship("EMSDocument", back_populates="versions")
 
 
-class KnowledgeFact(EMSBase):
+class KnowledgeFact(Base):
     """Hecho extraído del conocimiento."""
     __tablename__ = "ems_facts"
 
@@ -112,7 +111,7 @@ class KnowledgeFact(EMSBase):
     object_value = Column(Text, nullable=True)
     confidence = Column(Float, default=1.0)
     source = Column(String(500), nullable=True)
-    metadata_json = Column(JSON, default=dict)
+    metadata_json = Column(JSONType, default=dict)
     is_active = Column(Boolean, default=True)
     superseded_by = Column(String(36), nullable=True)
     created_at = Column(DateTime, default=utcnow)
@@ -125,7 +124,7 @@ class KnowledgeFact(EMSBase):
     )
 
 
-class Correction(EMSBase):
+class Correction(Base):
     """Corrección del usuario al conocimiento."""
     __tablename__ = "ems_corrections"
 
@@ -139,3 +138,28 @@ class Correction(EMSBase):
     confidence_adjustment = Column(Float, default=0.0)
     created_at = Column(DateTime, default=utcnow)
     created_by = Column(String(36), nullable=True)
+
+
+class EMSChunkEmbedding(Base):
+    """Embedding de un chunk. En PostgreSQL es `vector(768)` de pgvector; en SQLite, JSON.
+
+    Solo lo usa `PgVectorStoreProvider`. Con SQLite el índice vive en memoria (`ems/store.py`).
+    """
+    __tablename__ = "ems_chunk_embeddings"
+
+    chunk_id = Column(String(36), ForeignKey("ems_chunks.id"), primary_key=True)
+    document_id = Column(String(36), ForeignKey("ems_documents.id"), nullable=False)
+    company_id = Column(String(36), nullable=False)
+    embedding = Column(Vector(EMBEDDING_DIM).with_variant(JSON(), "sqlite"), nullable=False)
+    embedding_model = Column(String(100), nullable=False)
+    created_at = Column(DateTime, default=utcnow)
+
+    __table_args__ = (
+        Index("idx_ems_embedding_company", "company_id"),
+        Index("idx_ems_embedding_document", "document_id"),
+        # Búsqueda aproximada por coseno; solo existe en PostgreSQL
+        Index(
+            "idx_ems_embedding_hnsw", "embedding",
+            postgresql_using="hnsw", postgresql_ops={"embedding": "vector_cosine_ops"},
+        ).ddl_if(dialect="postgresql"),
+    )

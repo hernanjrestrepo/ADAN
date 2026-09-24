@@ -4,15 +4,19 @@ services:
     ports:
       - "8050:8000"
     environment:
-      - DATABASE_URL=sqlite:///./data/adan.db
+      - DATABASE_URL=postgresql://adan:${POSTGRES_PASSWORD:-adan-dev}@postgres:5432/adan
       - JWT_SECRET=${JWT_SECRET:-adan-dev-secret-change-in-production}
       - OLLAMA_BASE_URL=http://ollama:11434
       - DEFAULT_MODEL=${DEFAULT_MODEL:-qwen2.5:0.5b}
+      - EMBEDDING_PROVIDER=ollama
+      - EMBEDDING_MODEL=nomic-embed-text
       - LLM_PROVIDER=ollama
       - CORS_ORIGINS=http://localhost:5174,http://localhost:5173,http://localhost:3000
     volumes:
       - backend-data:/app/data
     depends_on:
+      postgres:
+        condition: service_healthy
       ollama:
         condition: service_healthy
       model-pull:
@@ -27,6 +31,23 @@ services:
       - ADAN_API_URL=http://backend:8000
     depends_on:
       - backend
+    restart: unless-stopped
+
+  postgres:
+    image: pgvector/pgvector:pg16
+    environment:
+      - POSTGRES_USER=adan
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-adan-dev}
+      - POSTGRES_DB=adan
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U adan -d adan"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
     restart: unless-stopped
 
   ollama:
@@ -53,6 +74,8 @@ services:
       - |
         echo "Pulling model: $${DEFAULT_MODEL:-qwen2.5:0.5b}"
         curl -sf http://ollama:11434/api/pull -d "{\"name\": \"$${DEFAULT_MODEL:-qwen2.5:0.5b}\"}"
+        echo "Pulling embedding model: nomic-embed-text"
+        curl -sf http://ollama:11434/api/pull -d "{\"name\": \"nomic-embed-text\"}"
         echo "Model pull complete."
     environment:
       - DEFAULT_MODEL=${DEFAULT_MODEL:-qwen2.5:0.5b}
@@ -60,4 +83,5 @@ services:
 
 volumes:
   backend-data:
+  postgres-data:
   ollama-models:

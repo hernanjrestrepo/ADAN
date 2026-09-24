@@ -8,7 +8,7 @@ import uuid
 from datetime import datetime, timezone
 from sqlalchemy.orm import Session
 
-from app.oos.models import Organization, DecisionRecord, WorkOrder, OOSBase
+from app.oos.models import Organization, DecisionRecord, WorkOrder
 from app.oos.services import WorkOrderService, OrganizationService
 
 

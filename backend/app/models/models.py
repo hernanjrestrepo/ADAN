@@ -16,11 +16,11 @@ from enum import Enum as PyEnum
 
 from sqlalchemy import (
     Column, DateTime, Enum, Float, ForeignKey, Integer, String, Text, Boolean,
-    JSON, UniqueConstraint,
+    UniqueConstraint,
 )
 from sqlalchemy.orm import relationship
 
-from app.core.database import Base
+from app.core.database import Base, JSONType
 
 
 def utcnow():
@@ -80,8 +80,8 @@ class User(Base):
     email = Column(String(255), unique=True, nullable=False, index=True)
     name = Column(String(255), nullable=False)
     hashed_password = Column(String(255), nullable=False)
-    role = Column(Enum(UserRole), default=UserRole.USER, nullable=False)
-    status = Column(Enum(EntityStatus), default=EntityStatus.ACTIVE, nullable=False)
+    role = Column(Enum(UserRole, native_enum=False, length=50), default=UserRole.USER, nullable=False)
+    status = Column(Enum(EntityStatus, native_enum=False, length=50), default=EntityStatus.ACTIVE, nullable=False)
     version = Column(Integer, default=1, nullable=False)
     created_at = Column(DateTime, default=utcnow, nullable=False)
     updated_at = Column(DateTime, default=utcnow, onupdate=utcnow, nullable=False)
@@ -104,7 +104,7 @@ class Company(Base):
     legal_structure = Column(String(100), nullable=True)
     founding_narrative = Column(Text, nullable=True)  # Narrativa Fundacional
     maturity = Column(Float, default=0.0, nullable=False)  # Madurez Organizacional (0-1)
-    status = Column(Enum(EntityStatus), default=EntityStatus.ACTIVE, nullable=False)
+    status = Column(Enum(EntityStatus, native_enum=False, length=50), default=EntityStatus.ACTIVE, nullable=False)
     version = Column(Integer, default=1, nullable=False)
     confidence_level = Column(Float, default=0.0, nullable=False)
     created_at = Column(DateTime, default=utcnow, nullable=False)
@@ -126,7 +126,7 @@ class FoundingNarrative(Base):
     origin_story = Column(Text, nullable=True)
     founding_motivation = Column(Text, nullable=True)
     irreversible_commitment = Column(Text, nullable=True)
-    status = Column(Enum(EntityStatus), default=EntityStatus.ACTIVE, nullable=False)
+    status = Column(Enum(EntityStatus, native_enum=False, length=50), default=EntityStatus.ACTIVE, nullable=False)
     created_at = Column(DateTime, default=utcnow, nullable=False)
     updated_at = Column(DateTime, default=utcnow, onupdate=utcnow, nullable=False)
 
@@ -141,7 +141,7 @@ class Project(Base):
     id = Column(String(36), primary_key=True, default=gen_uuid)
     company_id = Column(String(36), ForeignKey("companies.id"), nullable=False)
     name = Column(String(255), nullable=False)
-    status = Column(Enum(EntityStatus), default=EntityStatus.ACTIVE, nullable=False)
+    status = Column(Enum(EntityStatus, native_enum=False, length=50), default=EntityStatus.ACTIVE, nullable=False)
     version = Column(Integer, default=1, nullable=False)
     created_at = Column(DateTime, default=utcnow, nullable=False)
     updated_at = Column(DateTime, default=utcnow, onupdate=utcnow, nullable=False)
@@ -164,7 +164,7 @@ class Level(Base):
     project_id = Column(String(36), ForeignKey("projects.id"), nullable=False)
     number = Column(Integer, nullable=False)  # 1-7
     name = Column(String(255), nullable=False)
-    status = Column(Enum(NivelStatus), default=NivelStatus.BLOCKED, nullable=False)
+    status = Column(Enum(NivelStatus, native_enum=False, length=50), default=NivelStatus.BLOCKED, nullable=False)
     completed_at = Column(DateTime, nullable=True)
     version = Column(Integer, default=1, nullable=False)
     created_at = Column(DateTime, default=utcnow, nullable=False)
@@ -187,7 +187,7 @@ class Card(Base):
     title = Column(String(255), nullable=False)
     description = Column(Text, nullable=True)
     card_type = Column(String(100), nullable=False)  # e.g., "pain_discovery", "diagnosis"
-    status = Column(Enum(CardStatus), default=CardStatus.BLOCKED, nullable=False)
+    status = Column(Enum(CardStatus, native_enum=False, length=50), default=CardStatus.BLOCKED, nullable=False)
     version = Column(Integer, default=1, nullable=False)
     created_at = Column(DateTime, default=utcnow, nullable=False)
     updated_at = Column(DateTime, default=utcnow, onupdate=utcnow, nullable=False)
@@ -205,7 +205,7 @@ class Conversation(Base):
     id = Column(String(36), primary_key=True, default=gen_uuid)
     card_id = Column(String(36), ForeignKey("cards.id"), nullable=False)
     title = Column(String(255), nullable=True)
-    status = Column(Enum(EntityStatus), default=EntityStatus.ACTIVE, nullable=False)
+    status = Column(Enum(EntityStatus, native_enum=False, length=50), default=EntityStatus.ACTIVE, nullable=False)
     summary = Column(Text, nullable=True)  # Generated when conversation completes
     version = Column(Integer, default=1, nullable=False)
     created_at = Column(DateTime, default=utcnow, nullable=False)
@@ -225,7 +225,7 @@ class Message(Base):
     role = Column(String(50), nullable=False)  # "user", "assistant", "system", "agent"
     agent_name = Column(String(100), nullable=True)  # e.g., "CEO", "CTO", "CFO"
     content = Column(Text, nullable=False)
-    metadata_json = Column(JSON, nullable=True)  # tokens, model used, etc.
+    metadata_json = Column(JSONType, nullable=True)  # tokens, model used, etc.
     created_at = Column(DateTime, default=utcnow, nullable=False)
 
     conversation = relationship("Conversation", back_populates="messages")
@@ -238,11 +238,11 @@ class Score(Base):
 
     id = Column(String(36), primary_key=True, default=gen_uuid)
     project_id = Column(String(36), ForeignKey("projects.id"), nullable=False)
-    score_type = Column(Enum(ScoreType), nullable=False)
+    score_type = Column(Enum(ScoreType, native_enum=False, length=50), nullable=False)
     value = Column(Float, nullable=False)  # 0-100
     confidence_level = Column(Float, nullable=False)  # 0-100
     reasoning = Column(Text, nullable=True)  # Why this score
-    evidence = Column(JSON, nullable=True)  # Supporting evidence
+    evidence = Column(JSONType, nullable=True)  # Supporting evidence
     version = Column(Integer, default=1, nullable=False)
     created_at = Column(DateTime, default=utcnow, nullable=False)
 
@@ -260,7 +260,7 @@ class Decision(Base):
     description = Column(Text, nullable=True)
     proposed_by = Column(String(100), nullable=True)  # Agent name or "user"
     approved_by = Column(String(36), ForeignKey("users.id"), nullable=True)
-    status = Column(Enum(DecisionStatus), default=DecisionStatus.PROPOSED, nullable=False)
+    status = Column(Enum(DecisionStatus, native_enum=False, length=50), default=DecisionStatus.PROPOSED, nullable=False)
     reasoning = Column(Text, nullable=True)
     disagreement = Column(Text, nullable=True)  # From AD-CMP-03 §3
     confidence_level = Column(Float, nullable=True)
@@ -299,7 +299,7 @@ class Event(Base):
     event_type = Column(String(100), nullable=False)  # "level_completed", "card_completed", etc.
     entity_type = Column(String(100), nullable=False)  # "level", "card", "score", etc.
     entity_id = Column(String(36), nullable=False)
-    data = Column(JSON, nullable=True)  # Event payload
+    data = Column(JSONType, nullable=True)  # Event payload
     created_at = Column(DateTime, default=utcnow, nullable=False)
 
     project = relationship("Project", back_populates="events")

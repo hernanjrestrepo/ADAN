@@ -4,13 +4,8 @@ Tests para Dynamic Knowledge Acquisition — WO-009.
 
 import pytest
 from unittest.mock import AsyncMock, MagicMock
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.pool import StaticPool
 
-from app.core.database import Base
 from app.models.models import User, Company
-from app.ems.models import EMSBase
 from app.dka.engines import (
     Crawl4AIEngine, ScrapeGraphAIEngine, FirecrawlEngine,
     EngineSelector, ScrapedContent,
@@ -23,21 +18,6 @@ from app.ems.providers import LocalEmbeddingProvider, LocalVectorStoreProvider
 # ============================================================
 # Fixtures
 # ============================================================
-
-@pytest.fixture(scope="function")
-def db_session():
-    engine = create_engine(
-        "sqlite:///:memory:",
-        connect_args={"check_same_thread": False},
-        poolclass=StaticPool,
-    )
-    Base.metadata.create_all(bind=engine)
-    EMSBase.metadata.create_all(bind=engine)
-    TestSession = sessionmaker(bind=engine)
-    session = TestSession()
-    yield session
-    session.close()
-
 
 @pytest.fixture
 def embedding_provider():

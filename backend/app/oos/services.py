@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 from app.oos.models import (
     Organization, WorkOrder, Task, Assignment, DecisionRecord,
     KPI, Risk, ProgressReport, Meeting, MeetingMinute, Objective,
-    Initiative, OOSBase,
+    Initiative,
 )
 
 

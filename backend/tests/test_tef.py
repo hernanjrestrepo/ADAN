@@ -5,13 +5,8 @@ Tests para el Tool Execution Framework — WO-005.
 import pytest
 import asyncio
 from unittest.mock import MagicMock
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.pool import StaticPool
 
-from app.core.database import Base
 from app.models.models import User, Company, Project, Level
-from app.ems.models import EMSBase
 from app.tef.interfaces import ToolMetadata, ToolContext, ToolResult
 from app.tef.registry import ToolRegistry
 from app.tef.executor import ToolExecutor
@@ -24,21 +19,6 @@ from app.tef.tools import (
 # ============================================================
 # Fixtures
 # ============================================================
-
-@pytest.fixture(scope="function")
-def db_session():
-    engine = create_engine(
-        "sqlite:///:memory:",
-        connect_args={"check_same_thread": False},
-        poolclass=StaticPool,
-    )
-    Base.metadata.create_all(bind=engine)
-    EMSBase.metadata.create_all(bind=engine)
-    TestSession = sessionmaker(bind=engine)
-    session = TestSession()
-    yield session
-    session.close()
-
 
 @pytest.fixture
 def test_company(db_session):

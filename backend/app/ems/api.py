@@ -10,7 +10,7 @@ from app.core.database import get_db
 from app.core.auth import get_current_user
 from app.models.models import User, Company
 from app.ems.memory import EnterpriseMemorySystem
-from app.ems.store import embedding_provider, get_vector_store
+from app.ems.store import describe_providers, embedding_provider, get_vector_store
 
 router = APIRouter(prefix="/ems", tags=["ems"])
 
@@ -244,11 +244,10 @@ async def record_correction(
 
 
 @router.get("/health")
-async def ems_health():
-    """Health check del EMS."""
+async def ems_health(db: Session = Depends(get_db)):
+    """Health check del EMS: dice qué embeddings y qué índice vectorial están activos."""
     return {
         "status": "healthy",
-        "embedding_provider": "LocalEmbeddingProvider",
-        "vector_store": "LocalVectorStoreProvider",
-        "version": "0.1.0-wo004",
+        **describe_providers(db),
+        "version": "0.2.0-wo091",
     }

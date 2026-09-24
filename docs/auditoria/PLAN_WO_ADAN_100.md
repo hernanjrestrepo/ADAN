@@ -24,7 +24,7 @@
 | Rango | Uso |
 |---|---|
 | WO-090 | Consolidación (abierta: falta el tag de baseline y la revisión humana) |
-| WO-091, 092, 093 | Ya definidas en el Canon: PostgreSQL, TypeScript, Producción |
+| WO-091, 092, 093 | Ya definidas en el Canon: PostgreSQL (✅ `docs/wo/WO-091_REPORTE.md`), TypeScript, Producción |
 | **WO-094** | **Hotfix de seguridad: ejecutada y fusionada (hernanjrestrepo/ADAN#1)** |
 | **WO-095** | **Estabilización funcional: ejecutada y fusionada (`docs/wo/WO-095_REPORTE.md`)** |
 | **WO-096** | **Consolidación: hecho todo lo que no depende de la laptop; falta importar Build B (`docs/wo/WO-096_REPORTE.md`)** |
@@ -39,7 +39,7 @@ WO-094 ✅ ─► WO-095 ✅ ─► WO-096
                  │
      ┌───────────┴──────────────────────┐
      ▼                                  ▼
-  WO-091 PostgreSQL ─► WO-097 Seguridad   WO-092 TypeScript + UX base
+  WO-091 PostgreSQL ✅ ─► WO-097 Seguridad   WO-092 TypeScript + UX base
      └──────────────► WO-093 Producción ◄──────┘
                           │
                           ▼
@@ -107,11 +107,11 @@ Criterio de cierre común (EPWO-051), además de lo específico de cada ficha:
   - Actualizar `.claude/launch.json` y `ADAN_MASTER_ARCHITECTURE_v1.0.md`.
 - **Estimación:** 2–3 días.
 
-### WO-091 — PostgreSQL + pgvector *(Canon)*
+### WO-091 — PostgreSQL + pgvector *(Canon)* ✅
 - **Alcance:**
   - PostgreSQL 16, pgvector y Alembic.
   - Una sola base declarativa.
-  - Las 38 entidades de AD-006 v1.2, partiendo de la migración de Build A.
+  - ~~Las 38 entidades de AD-006 v1.2, partiendo de la migración de Build A.~~ Movido a WO-098 (ver `docs/wo/WO-091_REPORTE.md` §2).
   - Embeddings reales (`nomic-embed-text`) en pgvector.
   - Migración de datos desde SQLite.
 - **Estimación:** 5–8 días.
@@ -151,6 +151,7 @@ Criterio de cierre común (EPWO-051), además de lo específico de cada ficha:
 
 ### WO-098 — Gemelo Digital y Decisiones
 - **Alcance:**
+  - Las 38 entidades de AD-006 v1.2, partiendo de la migración de Build A (y de Build B, si ya está importado). Viene de WO-091.
   - Los 4 Patrones de AD-008.
   - Versionado real.
   - Event store append-only.
@@ -282,4 +283,4 @@ Con un solo frente de trabajo son unos 7–11 meses; con dos frentes en paralelo
 
 1. WO-095 ✅ (`docs/wo/WO-095_REPORTE.md`).
 2. WO-096 🟡: solo falta Build B, que depende de la laptop.
-3. H2 en el orden de la ruta crítica.
+3. H2 en el orden de la ruta crítica: WO-091 ✅; siguen WO-097, WO-092 y WO-093.

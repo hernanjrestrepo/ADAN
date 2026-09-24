@@ -4,13 +4,8 @@ Tests para el Executive Board con deliberación real — WO-007 (rebuild).
 
 import pytest
 from unittest.mock import AsyncMock, MagicMock
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.pool import StaticPool
 
-from app.core.database import Base
 from app.models.models import User, Company
-from app.ems.models import EMSBase
 from app.agents.board import (
     ExecutiveBoard, BOARD_AGENTS, DEBATE_ORDER,
     DebateRound, DeliberationResult, DecisionRecord, BoardResult,
@@ -20,21 +15,6 @@ from app.agents.board import (
 # ============================================================
 # Fixtures
 # ============================================================
-
-@pytest.fixture(scope="function")
-def db_session():
-    engine = create_engine(
-        "sqlite:///:memory:",
-        connect_args={"check_same_thread": False},
-        poolclass=StaticPool,
-    )
-    Base.metadata.create_all(bind=engine)
-    EMSBase.metadata.create_all(bind=engine)
-    TestSession = sessionmaker(bind=engine)
-    session = TestSession()
-    yield session
-    session.close()
-
 
 @pytest.fixture
 def mock_llm():

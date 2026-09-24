@@ -29,13 +29,7 @@ async def lifespan(app: FastAPI):
     """Startup/shutdown lifecycle."""
     logger.info("ADÁN backend starting up")
     init_db()
-    # Create EMS tables (separate Base)
-    from app.ems.models import EMSBase
-    EMSBase.metadata.create_all(bind=engine)
-    # Create OOS tables (separate Base)
-    from app.oos.models import OOSBase
-    OOSBase.metadata.create_all(bind=engine)
-    logger.info("Database initialized")
+    logger.info("Database initialized (%s)", engine.dialect.name)
     yield
     logger.info("ADÁN backend shutting down")
 
