@@ -108,26 +108,24 @@ class TestExecutiveBoard:
         )
 
         assert isinstance(result, BoardResult)
-        assert len(result.deliberation.rounds) == 7
+        assert len(result.deliberation.rounds) == 6  # votan los seis especialistas
         assert result.decision_record is not None
 
     @pytest.mark.asyncio
-    async def test_board_sequential_debate(self, board):
-        """Verifica que el debate es secuencial, no paralelo."""
+    async def test_board_is_the_single_board_with_ceo_presiding(self, board):
+        """Un solo Board Room (WO-099): los mismos 7 roles que en los Niveles; el CEO preside."""
         result = await board.run(
             message="¿Deberíamos expandirnos?",
             company_id="test",
             user_id="test",
         )
 
-        # Los rounds deben estar en orden (CEO=1, CFO=2, ..., CHRO=7)
-        for i, rnd in enumerate(result.deliberation.rounds):
-            assert rnd.round_number == i + 1
-
-        # CHRO debería haber resumido el debate
-        chro_round = result.deliberation.rounds[6]
-        assert chro_round.agent == "CHRO"
-        assert len(chro_round.analysis) > 0
+        assert [r.round_number for r in result.deliberation.rounds] == [1, 2, 3, 4, 5, 6]
+        assert [r.agent for r in result.deliberation.rounds] == DEBATE_ORDER[1:]
+        assert DEBATE_ORDER == ["CEO", "CTO", "CFO", "CMO", "Legal", "Producto", "Operaciones"]
+        assert "CEO" not in result.decision_record.votes  # preside, no vota
+        assert result.deliberation.minutes.startswith("# Acta del Board Room")
+        assert result.decision_record.deliberation_summary.startswith("Preside: CEO Agent")
 
     @pytest.mark.asyncio
     async def test_board_has_objections(self, board):
@@ -160,7 +158,7 @@ class TestExecutiveBoard:
         assert record.topic == "Test decision"
         assert record.final_decision in ["PROCEED", "PIVOT", "STOP"]
         assert 0 <= record.final_score <= 100
-        assert len(record.votes) == 7
+        assert len(record.votes) == 6
         assert record.participants == list(BOARD_AGENTS.keys())
 
     @pytest.mark.asyncio
@@ -235,7 +233,7 @@ class TestBoardIntegration:
         )
 
         # Verificar deliberación
-        assert len(result.deliberation.rounds) == 7
+        assert len(result.deliberation.rounds) == 6
 
         # Verificar que cada agente respondió al anterior
         for i in range(1, len(result.deliberation.rounds)):
@@ -245,7 +243,7 @@ class TestBoardIntegration:
         # Verificar Decision Record
         record = result.decision_record
         assert record.final_decision in ["PROCEED", "PIVOT", "STOP"]
-        assert len(record.votes) == 7
+        assert len(record.votes) == 6
         assert record.participants == list(BOARD_AGENTS.keys())
 
         # Verificar persistencia
@@ -277,5 +275,5 @@ class TestBoardIntegration:
                 company_id="test",
                 user_id="test",
             )
-            assert len(result.deliberation.rounds) == 7
+            assert len(result.deliberation.rounds) == 6
             assert result.decision_record is not None
