@@ -10,6 +10,8 @@ import operator
 from datetime import datetime, timezone
 from typing import Any
 
+import httpx
+
 from app.core.net import public_http_client
 from app.tef.interfaces import ToolProvider, ToolMetadata, ToolContext, ToolResult
 
@@ -255,32 +257,54 @@ class SqlQueryTool(ToolProvider):
 # ============================================================
 
 class PythonSandboxTool(ToolProvider):
-    """Herramienta de ejecución de código Python (deshabilitada: no tiene aislamiento)."""
+    """Ejecuta código Python en el sandbox aislado (servicio sandbox/, WO-093).
+
+    Sin SANDBOX_URL sigue apagada: nunca ejecuta código dentro del backend.
+    """
 
     def metadata(self) -> ToolMetadata:
         return ToolMetadata(
             id="python_sandbox",
             name="Python Sandbox",
-            description="Deshabilitada: ejecutaba código Python sin aislamiento",
+            description="Ejecuta código Python en un sandbox aislado, sin red ni secretos",
             category="sandbox",
-            permissions=["tool:execute"],
+            permissions=["execute:code"],
             inputs={
                 "code": {"type": "string", "description": "Código Python a ejecutar", "required": True},
-                "timeout": {"type": "integer", "description": "Timeout en segundos", "required": False},
+                "timeout": {"type": "integer", "description": "Timeout en segundos (máx. 10)", "required": False},
             },
             outputs={
-                "result": {"type": "string", "description": "Resultado de la ejecución"},
                 "stdout": {"type": "string", "description": "Salida estándar"},
-                "error": {"type": "string", "description": "Error si lo hay"},
+                "stderr": {"type": "string", "description": "Errores"},
+                "exit_code": {"type": "integer", "description": "Código de salida"},
             },
-            timeout_seconds=30,
+            timeout_seconds=15,
+            retries=0,
             tags=["python", "code", "sandbox", "ejecutar", "código"],
         )
 
     async def execute(self, params: dict, context: ToolContext) -> ToolResult:
-        # Ejecutaba el código con los permisos del backend (red, archivos, variables
-        # de entorno como JWT_SECRET). Vuelve cuando exista un sandbox aislado real.
-        return _disabled_result("python_sandbox", "runs arbitrary code on the server without isolation")
+        from app.core.config import settings
+        if not settings.SANDBOX_URL:
+            return _disabled_result("python_sandbox", "no sandbox configured (SANDBOX_URL)")
+        # Servicio interno configurado por el operador: sin proxy de salida
+        async with httpx.AsyncClient(timeout=15, trust_env=False) as client:
+            response = await client.post(
+                f"{settings.SANDBOX_URL.rstrip('/')}/run",
+                json={"code": params["code"], "timeout": int(params.get("timeout", 5))},
+                headers={"X-Sandbox-Token": settings.SANDBOX_TOKEN},
+            )
+        if response.status_code != 200:
+            return ToolResult(tool_id="python_sandbox", status="error",
+                              error=f"Sandbox respondió {response.status_code}: {response.text[:200]}")
+        body = response.json()
+        # De un traceback interesa el final (la excepción), no el comienzo
+        return ToolResult(
+            tool_id="python_sandbox",
+            status="success" if body["status"] == "success" else "error",
+            output=body,
+            error=None if body["status"] == "success" else (body.get("stderr") or body["status"])[-2000:],
+        )
 
 
 # ============================================================

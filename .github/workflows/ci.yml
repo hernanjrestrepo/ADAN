@@ -1,0 +1,165 @@
+name: CI
+
+on:
+  push:
+    branches: [main, "claude/**"]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    name: Backend (SQLite, PostgreSQL, Redis)
+    runs-on: ubuntu-24.04
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: adan
+          POSTGRES_PASSWORD: ci-password
+          POSTGRES_DB: adan_test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U adan -d adan_test"
+          --health-interval 5s --health-timeout 5s --health-retries 20
+      redis:
+        image: redis:7-alpine
+        ports: ["6379:6379"]
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s --health-timeout 3s --health-retries 20
+    env:
+      PGHOST: localhost
+      PGUSER: adan
+      PGPASSWORD: ci-password
+      REDIS_TEST_URL: redis://localhost:6379/15
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: backend/requirements*.txt
+      - name: Dependencias
+        run: pip install -r requirements-dev.txt pip-audit
+      - name: Vulnerabilidades en dependencias
+        run: pip-audit -r requirements.txt
+      - name: Pruebas con SQLite
+        run: pytest -q --deselect tests/test_stress.py
+      - name: Pruebas con PostgreSQL + pgvector
+        env:
+          TEST_DATABASE_URL: postgresql://adan:ci-password@localhost:5432/adan_test
+        run: pytest -q --deselect tests/test_stress.py
+      - name: Pruebas del sandbox
+        working-directory: sandbox
+        run: pytest -q test_sandbox.py
+      - name: Migraciones (subir, verificar, bajar, subir)
+        env:
+          DATABASE_URL: postgresql://adan:ci-password@localhost:5432/adan_migrations
+        run: |
+          createdb adan_migrations
+          alembic upgrade head
+          alembic check
+          alembic downgrade base
+          alembic upgrade head
+      - name: Backup y restauración
+        working-directory: .
+        env:
+          BACKUP_DATABASE_URL: postgresql://adan:ci-password@localhost:5432/adan_migrations
+          RESTORE_DATABASE_URL: postgresql://adan:ci-password@localhost:5432/adan_restore
+        run: |
+          psql -d adan_migrations -c "INSERT INTO users (id, email, name, hashed_password, role, status, version, token_version, created_at, updated_at) VALUES ('u1', 'ci@example.com', 'CI', 'x', 'USER', 'ACTIVE', 1, 0, now(), now())"
+          file=$(scripts/backup.sh /tmp/backups)
+          createdb adan_restore
+          CONFIRM=si scripts/restore.sh "$file"
+          test "$(psql -d adan_restore -Atc 'select count(*) from users')" = "1"
+          test "$(psql -d adan_restore -Atc 'select version_num from alembic_version')" = "$(psql -d adan_migrations -Atc 'select version_num from alembic_version')"
+
+  frontend:
+    name: Frontend (tipos, lint, build, E2E)
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm run build
+      - name: Vulnerabilidades en dependencias
+        run: npm audit --audit-level=high
+      - name: Navegador para Playwright
+        run: npx playwright install --with-deps chromium
+      - name: Pruebas E2E (API simulado)
+        env:
+          CI: "true"
+        run: npm run test:e2e
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: frontend/playwright-report
+          retention-days: 7
+
+  production:
+    name: Stack de producción (Docker)
+    runs-on: ubuntu-24.04
+    needs: [backend, frontend]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configuración de producción de prueba
+        run: |
+          gen() { python3 -c "import secrets; print(secrets.token_urlsafe(48))"; }
+          {
+            echo "PUBLIC_URL=http://127.0.0.1:8080"
+            echo "POSTGRES_PASSWORD=$(gen)"
+            echo "JWT_SECRET=$(gen)"
+            echo "ENCRYPTION_KEY=$(python3 -c 'import base64, os; print(base64.urlsafe_b64encode(os.urandom(32)).decode())')"
+            echo "SANDBOX_TOKEN=$(gen)"
+            echo "METRICS_TOKEN=$(gen)"
+            echo "HTTP_PORT=8080"
+            # Sin TLS en CI: la cookie Secure no viajaría por HTTP
+            echo "SESSION_COOKIE_SECURE=false"
+          } > .env.prod
+      - name: Compose válido (desarrollo y producción)
+        run: |
+          docker compose config --quiet
+          docker compose -f docker-compose.prod.yml --env-file .env.prod config --quiet
+      - name: Despliegue con scripts/deploy.sh
+        env:
+          ENV_FILE: .env.prod
+          DEPLOY_SERVICES: postgres redis sandbox backend frontend
+        run: scripts/deploy.sh "ci-${GITHUB_SHA::7}"
+      - name: Prueba de humo (incluye aislamiento de red del sandbox)
+        run: python3 scripts/smoke_prod.py http://127.0.0.1:8080 --sandbox-offline
+      - name: Backup, rollback y restauración con Docker
+        env:
+          ENV_FILE: .env.prod
+        run: |
+          file=$(scripts/backup.sh backups)
+          scripts/rollback.sh "ci-${GITHUB_SHA::7}"
+          CONFIRM=si scripts/restore.sh "$file"
+          scripts/wait_ready.sh "docker compose -f docker-compose.prod.yml --env-file .env.prod"
+          python3 scripts/smoke_prod.py http://127.0.0.1:8080 --sandbox
+      - name: Logs
+        if: failure()
+        run: docker compose -f docker-compose.prod.yml --env-file .env.prod logs --tail 200
+      - name: Limpieza
+        if: always()
+        run: docker compose -f docker-compose.prod.yml --env-file .env.prod down -v

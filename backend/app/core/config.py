@@ -46,6 +46,12 @@ class Settings:
     EMBEDDING_PROVIDER: str = os.getenv("EMBEDDING_PROVIDER", "local")
     EMBEDDING_MODEL: str = os.getenv("EMBEDDING_MODEL", "nomic-embed-text")
 
+    # Cookie de sesión solo por HTTPS. Por defecto, en producción. Desactivarla solo para
+    # pruebas locales del stack de producción sin TLS (p. ej. la prueba de humo de CI).
+    SESSION_COOKIE_SECURE: bool = os.getenv(
+        "SESSION_COOKIE_SECURE", "true" if os.getenv("ADAN_ENV", "development").lower() == "production" else "false"
+    ).lower() in ("1", "true", "yes")
+
     # Cifrado de credenciales de conectores (Fernet, 32 bytes en base64 url-safe)
     ENCRYPTION_KEY: str = os.getenv("ENCRYPTION_KEY", "")
 
@@ -55,6 +61,16 @@ class Settings:
     MAX_BODY_BYTES: int = int(os.getenv("MAX_BODY_BYTES", str(1024 * 1024)))
     LOGIN_MAX_FAILURES: int = int(os.getenv("LOGIN_MAX_FAILURES", "5"))  # por IP + email, en 15 min
     REGISTER_PER_IP_PER_HOUR: int = int(os.getenv("REGISTER_PER_IP_PER_HOUR", "20"))
+
+    # Sandbox aislado para ejecutar código (servicio sandbox/). Vacío: python_sandbox apagada.
+    SANDBOX_URL: str = os.getenv("SANDBOX_URL", "")
+    SANDBOX_TOKEN: str = os.getenv("SANDBOX_TOKEN", "")
+
+    # Redis para los límites compartidos entre réplicas (vacío: límites en memoria del proceso)
+    REDIS_URL: str = os.getenv("REDIS_URL", "")
+    # Protege /metrics con `Authorization: Bearer <METRICS_TOKEN>` (vacío: abierto a la red interna)
+    METRICS_TOKEN: str = os.getenv("METRICS_TOKEN", "")
+    LOG_LEVEL: str = os.getenv("LOG_LEVEL", "INFO")
 
     # Hosts permitidos para las llamadas salientes de herramientas y conectores
     # (vacío: cualquier host público). El proxy de salida se configura con HTTPS_PROXY.
@@ -83,6 +99,8 @@ def production_problems(cfg: "Settings") -> list[str]:
         problems.append("La contraseña de PostgreSQL no puede ser la de desarrollo (POSTGRES_PASSWORD)")
     if "*" in cfg.CORS_ORIGINS:
         problems.append("CORS_ORIGINS no puede ser '*'")
+    if cfg.SANDBOX_URL and len(cfg.SANDBOX_TOKEN) < 32:
+        problems.append("Con SANDBOX_URL, SANDBOX_TOKEN debe tener al menos 32 caracteres")
     return problems
 
 

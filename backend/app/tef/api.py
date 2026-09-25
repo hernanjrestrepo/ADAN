@@ -13,7 +13,8 @@ from app.models.models import User
 from app.tef.interfaces import ToolContext
 from app.tef.registry import ToolRegistry
 from app.tef.executor import ToolExecutor
-from app.tef.tools import CalculatorTool, HttpRequestTool, EmailSenderTool
+from app.core.config import settings
+from app.tef.tools import CalculatorTool, EmailSenderTool, HttpRequestTool, PythonSandboxTool
 
 router = APIRouter(prefix="/tef", tags=["tef"])
 
@@ -72,10 +73,13 @@ _registry = ToolRegistry()
 _executor = ToolExecutor(_registry)
 
 # Registrar herramientas iniciales.
-# file_reader, python_sandbox y sql_query quedan fuera hasta tener aislamiento real.
+# file_reader y sql_query quedan fuera: leen el servidor y la base sin aislamiento.
+# python_sandbox solo existe si hay un sandbox aislado configurado (WO-093).
 _registry.register(CalculatorTool())
 _registry.register(HttpRequestTool())
 _registry.register(EmailSenderTool())
+if settings.SANDBOX_URL:
+    _registry.register(PythonSandboxTool())
 
 
 def get_executor() -> ToolExecutor:
