@@ -44,11 +44,19 @@
 | Métricas con 2 workers | 30 peticiones → contador en 30 (suma multiproceso) | `/metrics` |
 | Backup y restauración | 36 tablas con los mismos conteos, extensión `vector` y migración `0002` restauradas. Un backup alterado se rechaza. | `backup.sh` y `restore.sh` contra PostgreSQL 16 |
 | Scripts de shell | Sin avisos | `shellcheck` |
-| CI en GitHub | *(ver §4)* | GitHub Actions |
+| CI en GitHub | Los 3 jobs en verde (§4) | GitHub Actions |
 
 ## 4. CI en GitHub
 
-*(Se completa con el resultado de la corrida.)*
+Corrida [36075187078](https://github.com/hernanjrestrepo/ADAN/actions/runs/36075187078) sobre `45fd0ae`:
+
+| Job | Resultado |
+|---|---|
+| **Backend** | `pip-audit` sin vulnerabilidades. SQLite: **313 passed**, 5 omitidas. PostgreSQL 16 + pgvector con Redis: **317 passed**, 1 omitida. Sandbox: 9 passed. Migraciones: `alembic check` sin diferencias, bajada a `base` y subida otra vez. Backup y restauración en otra base con los mismos datos y la misma revisión. |
+| **Frontend** | Tipos, lint, build, `npm audit` y E2E con Chromium. |
+| **Stack de producción (Docker)** | `deploy.sh` con las imágenes `production`. Prueba de humo: **18 verificaciones**, entre ellas que el sandbox no sale a internet y no ve la base de datos. Backup, `rollback.sh`, `restore.sh` y readiness (`migrations: ok (0002)`). Prueba de humo otra vez: 16 verificaciones. |
+
+La primera corrida ([36074569327](https://github.com/hernanjrestrepo/ADAN/actions/runs/36074569327)) falló en la prueba de aislamiento del sandbox, aunque el aislamiento sí funcionaba. `python_sandbox` guardaba solo los primeros 2000 caracteres del traceback, y el nombre de la excepción (`URLError`) está al final. Se corrigió para guardar el final, y hay una prueba que lo cubre (`test_python_runs_in_the_sandbox`).
 
 ## 5. Deuda y riesgos
 
