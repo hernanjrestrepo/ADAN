@@ -42,6 +42,13 @@ class Settings:
     DEFAULT_MODEL: str = os.getenv("DEFAULT_MODEL", "qwen2.5:0.5b")
     AI_TIMEOUT_SECONDS: int = int(os.getenv("AI_TIMEOUT_SECONDS", "120"))
 
+    # Enrutamiento de modelos (WO-099, AD-DEC-0002 decisión 3): Ollama para lo simple,
+    # Anthropic según la complejidad. Sin ANTHROPIC_API_KEY todo va a Ollama (degradado).
+    ANTHROPIC_API_KEY: str = os.getenv("ANTHROPIC_API_KEY", "")
+    LLM_MODEL_STANDARD: str = os.getenv("LLM_MODEL_STANDARD", "claude-sonnet-5")
+    LLM_MODEL_COMPLEX: str = os.getenv("LLM_MODEL_COMPLEX", "claude-opus-5")
+    LLM_MODEL_FAST: str = os.getenv("LLM_MODEL_FAST", "claude-haiku-4-5")
+
     # Embeddings del EMS: "local" (hash, sin red) u "ollama" (EMBEDDING_MODEL real)
     EMBEDDING_PROVIDER: str = os.getenv("EMBEDDING_PROVIDER", "local")
     EMBEDDING_MODEL: str = os.getenv("EMBEDDING_MODEL", "nomic-embed-text")

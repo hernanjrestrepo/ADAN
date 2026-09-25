@@ -17,6 +17,8 @@ from app.models.models import (
 )
 from app.nivel1.service import Nivel1Service
 from app.services.gemelo_digital import GemeloDigitalService
+from app.ai.router import for_tier
+from app.ai.usage import usage_scope
 from app.schemas.schemas import (
     ChatRequest, ChatResponse, CompanyResponse, DecisionAction, DecisionResponse,
     DocumentResponse, GateReviewResponse, LevelResponse, MessageResponse, ScoreResponse,
@@ -27,6 +29,12 @@ router = APIRouter(prefix="/nivel1", tags=["nivel1"])
 
 def get_llm() -> LLMAdapter:
     return get_llm_adapter()
+
+
+async def track_llm_usage(company_id: str, db: Session = Depends(get_db)):
+    """Registra el costo de las llamadas al modelo de la petición en `llm_usage` (WO-099)."""
+    with usage_scope(db, company_id, level=1):
+        yield
 
 
 def get_latest_diagnosis(db: Session, project: Project) -> Document:
@@ -107,6 +115,7 @@ async def chat(
     db: Session = Depends(get_db),
     user: User = Depends(llm_user),
     llm: LLMAdapter = Depends(get_llm),
+    _usage: None = Depends(track_llm_usage),
 ):
     """Send a message in the Level 1 conversation."""
     get_owned_company(db, company_id, user)
@@ -139,6 +148,7 @@ async def chat_stream(
     db: Session = Depends(get_db),
     user: User = Depends(llm_user),
     llm: LLMAdapter = Depends(get_llm),
+    _usage: None = Depends(track_llm_usage),
 ):
     """Stream chat response token by token via SSE."""
     get_owned_company(db, company_id, user)
@@ -175,9 +185,11 @@ async def chat_stream(
     async def generate():
         full_content = []
         try:
-            async for token in llm.chat_stream(messages, temperature=0.7, max_tokens=512):
-                full_content.append(token)
-                yield f"data: {json.dumps({'token': token}, ensure_ascii=False)}\n\n"
+            with usage_scope(db, company_id, level=1):
+                async for token in for_tier(llm, "standard").chat_stream(messages, temperature=0.7,
+                                                                         max_tokens=512):
+                    full_content.append(token)
+                    yield f"data: {json.dumps({'token': token}, ensure_ascii=False)}\n\n"
             yield f"data: {json.dumps({'done': True, 'disclaimer': AI_DISCLAIMER}, ensure_ascii=False)}\n\n"
         finally:
             # Save what was generated, even if the client disconnected mid-stream
@@ -199,6 +211,7 @@ async def run_board_room(
     db: Session = Depends(get_db),
     user: User = Depends(llm_user),
     llm: LLMAdapter = Depends(get_llm),
+    _usage: None = Depends(track_llm_usage),
 ):
     """Run the real Board Room with 4 independent agents."""
     company = get_owned_company(db, company_id, user)
@@ -246,6 +259,7 @@ async def generate_diagnosis(
     db: Session = Depends(get_db),
     user: User = Depends(llm_user),
     llm: LLMAdapter = Depends(get_llm),
+    _usage: None = Depends(track_llm_usage),
 ):
     """Generate the Level 1 diagnosis document."""
     company = get_owned_company(db, company_id, user)
@@ -275,6 +289,7 @@ async def generate_recommendations(
     db: Session = Depends(get_db),
     user: User = Depends(llm_user),
     llm: LLMAdapter = Depends(get_llm),
+    _usage: None = Depends(track_llm_usage),
 ):
     """Generate recommendations based on diagnosis."""
     get_owned_company(db, company_id, user)
@@ -302,6 +317,7 @@ async def gate_review(
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user),
     llm: LLMAdapter = Depends(get_llm),
+    _usage: None = Depends(track_llm_usage),
 ):
     """Run Gate Review with 80/100 minimum threshold."""
     get_owned_company(db, company_id, user)

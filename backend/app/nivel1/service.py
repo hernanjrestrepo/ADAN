@@ -17,6 +17,7 @@ from datetime import datetime, timezone
 
 from sqlalchemy.orm import Session
 
+from app.ai.router import for_tier
 from app.ai.base import LLMAdapter, LLMMessage
 from app.ai.normalize import normalize_string, normalize_list
 from app.core.disclaimer import strip_disclaimer
@@ -37,7 +38,8 @@ class Nivel1Service:
     """Orchestrates the complete Level 1 flow with real intelligence."""
 
     def __init__(self, llm: LLMAdapter, db: Session):
-        self.llm = llm
+        # Conversación, diagnóstico y recomendaciones: nivel "standard" (WO-099)
+        self.llm = for_tier(llm, "standard")
         self.db = db
         self.gemelo = GemeloDigitalService(db)
         self.board_room = BoardRoom(llm)

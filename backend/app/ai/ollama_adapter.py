@@ -7,7 +7,7 @@ from typing import AsyncGenerator
 
 import httpx
 
-from app.ai.base import LLMAdapter, LLMMessage, LLMResponse
+from app.ai.base import LLMAdapter, LLMMessage, LLMResponse, extract_json
 from app.core.config import settings
 
 
@@ -24,6 +24,7 @@ class OllamaAdapter(LLMAdapter):
         model: str | None = None,
         temperature: float = 0.7,
         max_tokens: int = 2048,
+        json_schema: dict | None = None,
     ) -> LLMResponse:
         model = model or self._default_model
         payload = {
@@ -35,6 +36,8 @@ class OllamaAdapter(LLMAdapter):
                 "num_predict": max_tokens,
             },
         }
+        if json_schema is not None:
+            payload["format"] = json_schema  # Ollama restringe la salida al esquema
         start = time.monotonic()
         async with httpx.AsyncClient(timeout=settings.AI_TIMEOUT_SECONDS) as client:
             resp = await client.post(f"{self._base_url}/api/chat", json=payload)
@@ -51,7 +54,14 @@ class OllamaAdapter(LLMAdapter):
             duration_s=duration,
             done=data.get("done", True),
             metadata={"eval_duration_ns": data.get("eval_duration", 0)},
+            provider="ollama",
         )
+
+    async def chat_json(self, messages, schema, model=None, temperature=0.3, max_tokens=2048) -> LLMResponse:
+        response = await self.chat(messages, model=model, temperature=temperature, max_tokens=max_tokens,
+                                   json_schema=schema)
+        response.parsed = extract_json(response.content)
+        return response
 
     async def chat_stream(
         self,

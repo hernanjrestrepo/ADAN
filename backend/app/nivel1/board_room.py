@@ -12,6 +12,7 @@ import time
 from dataclasses import asdict, dataclass, field
 
 from app.ai.base import LLMAdapter, LLMMessage
+from app.ai.router import for_tier
 from app.ai.normalize import normalize_analysis_response
 
 
@@ -88,11 +89,30 @@ AGENT_PROMPTS = {
 }
 
 
+# Esquema del voto: con salidas estructuradas el modelo no puede devolver JSON cortado o
+# mal formado (WO-099; con qwen2.5:0.5b y 512 tokens todos los agentes se abstenían).
+VOTE_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "analysis": {"type": "string"},
+        "justification": {"type": "string"},
+        "vote": {"type": "string", "enum": ["PROCEED", "PIVOT", "STOP"]},
+        "confidence": {"type": "integer", "minimum": 0, "maximum": 100},
+        "key_strengths": {"type": "array", "items": {"type": "string"}},
+        "key_concerns": {"type": "array", "items": {"type": "string"}},
+        "questions": {"type": "array", "items": {"type": "string"}},
+    },
+    "required": ["analysis", "justification", "vote", "confidence", "key_strengths", "key_concerns", "questions"],
+    "additionalProperties": False,
+}
+
+
 class BoardRoom:
     """Orchestrates 4 independent agents and builds real consensus."""
 
     def __init__(self, llm: LLMAdapter):
-        self.llm = llm
+        # Los votos del Board son decisiones de peso: nivel "complex" (Claude Opus si hay clave)
+        self.llm = for_tier(llm, "complex")
 
     async def run(self, pain_description: str, conversation_context: str = "") -> BoardConsensus:
         """Run the complete Board Room cycle: concurrent analysis → consensus."""
@@ -130,14 +150,14 @@ class BoardRoom:
 
         start = time.monotonic()
         try:
-            response = await self.llm.chat(
-                messages=[
-                    LLMMessage(role="system", content=agent_config["system"]),
-                    LLMMessage(role="user", content=prompt),
-                ],
-                temperature=0.6,
-                max_tokens=512,
-            )
+            messages = [
+                LLMMessage(role="system", content=agent_config["system"]),
+                LLMMessage(role="user", content=prompt),
+            ]
+            if isinstance(self.llm, LLMAdapter):
+                response = await self.llm.chat_json(messages, VOTE_SCHEMA, temperature=0.6, max_tokens=1500)
+            else:
+                response = await self.llm.chat(messages=messages, temperature=0.6, max_tokens=1500)
         except Exception as exc:
             # Timeout o caída del modelo: el agente se abstiene y el Board sigue (antes era un 500)
             return AgentVote(
@@ -152,13 +172,14 @@ class BoardRoom:
 
         # Parse and NORMALIZE response through single layer
         try:
-            content = response.content.strip()
-            if "```json" in content:
-                content = content.split("```json")[1].split("```")[0].strip()
-            elif "```" in content:
-                content = content.split("```")[1].split("```")[0].strip()
-
-            raw_data = json.loads(content)
+            raw_data = getattr(response, "parsed", None)
+            if not isinstance(raw_data, dict):
+                content = response.content.strip()
+                if "```json" in content:
+                    content = content.split("```json")[1].split("```")[0].strip()
+                elif "```" in content:
+                    content = content.split("```")[1].split("```")[0].strip()
+                raw_data = json.loads(content)
 
             # SINGLE NORMALIZATION POINT — all data passes through here
             normalized = normalize_analysis_response(raw_data)
