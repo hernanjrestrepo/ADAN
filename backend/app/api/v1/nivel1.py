@@ -20,7 +20,7 @@ from app.services.gemelo_digital import GemeloDigitalService
 from app.ai.router import for_tier
 from app.ai.usage import usage_scope
 from app.schemas.schemas import (
-    ChatRequest, ChatResponse, CompanyResponse, DecisionAction, DecisionResponse,
+    BoardRoomRequest, ChatRequest, ChatResponse, CompanyResponse, DecisionAction, DecisionResponse,
     DocumentResponse, GateReviewResponse, LevelResponse, MessageResponse, ScoreResponse,
 )
 
@@ -208,12 +208,13 @@ async def chat_stream(
 @router.post("/{company_id}/board-room")
 async def run_board_room(
     company_id: str,
+    body: BoardRoomRequest | None = None,
     db: Session = Depends(get_db),
     user: User = Depends(llm_user),
     llm: LLMAdapter = Depends(get_llm),
     _usage: None = Depends(track_llm_usage),
 ):
-    """Run the real Board Room with 4 independent agents."""
+    """Board Room de 7 roles: el CEO abre y cierra, seis especialistas votan (AD-FUNC-02)."""
     company = get_owned_company(db, company_id, user)
 
     project = db.query(Project).filter(Project.company_id == company_id).first()
@@ -221,11 +222,20 @@ async def run_board_room(
     service = Nivel1Service(llm, db)
 
     try:
-        consensus = await service.run_board_room(project, company)
+        consensus = await service.run_board_room(project, company, client_question=body.question if body else "",
+                                                 client_position=body.position if body else "")
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
     return {
+        "objective": consensus.objective,
+        "decision_at_stake": consensus.decision_at_stake,
+        "synthesis": consensus.synthesis,
+        "evidence_requests": consensus.evidence_requests,
+        "next_steps": consensus.next_steps,
+        "client_question": consensus.client_question,
+        "client_position": consensus.client_position,
+        "minutes": consensus.minutes,
         "decision": consensus.decision,
         "score": consensus.score,
         "confidence": consensus.confidence,

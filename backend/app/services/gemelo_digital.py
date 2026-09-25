@@ -217,6 +217,22 @@ class GemeloDigitalService:
         self.db.refresh(doc)
         return doc
 
+    def save_board_minutes(self, project: Project, minutes: str) -> Document:
+        """Acta del Board Room (AD-FUNC-02): documento generado por ADÁN, con aviso de IA."""
+        doc = Document(
+            project_id=project.id,
+            title="Acta del Board Room",
+            content=with_disclaimer(minutes),
+            doc_type="board_minutes",
+            origin="generated_by_adan",
+        )
+        self.db.add(doc)
+        self.db.flush()
+        self._record_event(project.id, "board_minutes_saved", "document", doc.id, {"title": doc.title})
+        self.db.commit()
+        self.db.refresh(doc)
+        return doc
+
     def get_last_board_consensus(self, project: Project) -> dict | None:
         """Último resultado completo del Board Room, para no volver a ejecutarlo."""
         events = self.db.query(Event).filter(

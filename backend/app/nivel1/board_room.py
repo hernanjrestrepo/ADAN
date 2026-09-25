@@ -1,8 +1,13 @@
-"""Board Room — 4 independent agents with analysis, justification, vote, and real consensus.
+"""Board Room (AD-FUNC-02, WO-099): siete roles y el Flujo Maestro de Orquestación.
 
-Each agent (CEO, CTO, CFO, CMO) analyzes independently.
-Then a consensus round builds a unified position.
-No simulation — real analysis from real LLM calls.
+- **CEO**: preside. Abre la sesión con el objetivo y la decisión en juego, y la cierra con la
+  síntesis que el cliente escucha como "ADÁN". No es una voz más: no vota (AD-FUNC-02 §2.3).
+- **Seis especialistas** (CTO, CFO, CMO, Legal, Producto, Operaciones): analizan en paralelo,
+  cada uno desde su especialidad, y votan PROCEED, PIVOT o STOP con su confianza.
+- **El cliente** participa desde el inicio: puede plantear la pregunta y su posición.
+- **Consenso** por mayoría, con quórum; el disenso nunca se oculta.
+- **Acta**: apertura, votos, síntesis, disenso y evidencia pedida quedan registrados.
+Es una recomendación: la decisión es del cliente (Patrón A).
 """
 from __future__ import annotations
 
@@ -13,7 +18,7 @@ from dataclasses import asdict, dataclass, field
 
 from app.ai.base import LLMAdapter, LLMMessage
 from app.ai.router import for_tier
-from app.ai.normalize import normalize_analysis_response
+from app.ai.normalize import normalize_analysis_response, normalize_list, normalize_string
 
 
 @dataclass
@@ -32,7 +37,7 @@ class AgentVote:
 
 @dataclass
 class BoardConsensus:
-    decision: str  # PROCEED, PIVOT, STOP, or NO_CONSENSUS when no agent gave a valid vote
+    decision: str  # PROCEED, PIVOT, STOP, or NO_CONSENSUS when there is no quorum
     score: float  # 0-100 aggregate
     confidence: float  # 0-100
     summary: str
@@ -42,6 +47,14 @@ class BoardConsensus:
     strengths_unanimous: list[str] = field(default_factory=list)
     next_steps: list[str] = field(default_factory=list)
     dissent: str = ""  # Every agent that disagrees with the decision, one per line
+    # Flujo Maestro (AD-FUNC-02 §3)
+    objective: str = ""            # apertura del CEO: objetivo de la sesión
+    decision_at_stake: str = ""    # apertura del CEO: qué se decide
+    synthesis: str = ""            # cierre del CEO: la voz de ADÁN
+    evidence_requests: list[str] = field(default_factory=list)  # evidencia que el Board pide al cliente
+    client_question: str = ""
+    client_position: str = ""
+    minutes: str = ""              # acta de la sesión
 
     def to_dict(self) -> dict:
         return asdict(self)
@@ -49,45 +62,38 @@ class BoardConsensus:
     @classmethod
     def from_dict(cls, data: dict) -> "BoardConsensus":
         votes = [AgentVote(**v) for v in data.get("votes", [])]
-        return cls(**{**data, "votes": votes})
+        known = set(cls.__dataclass_fields__)
+        return cls(**{**{k: v for k, v in data.items() if k in known}, "votes": votes})
 
 
-# Agent system prompts — CONCISE for faster inference
-AGENT_PROMPTS = {
-    "CEO": {
-        "name": "CEO",
-        "system": (
-            "CEO de ADÁN. Evalúa viabilidad GENERAL: visión, liderazgo, oportunidad. "
-            "JSON: {analysis, justification, vote(PROCEED/PIVOT/STOP), confidence(0-100), "
-            "key_strengths[], key_concerns[], questions[]}"
-        ),
-    },
-    "CTO": {
-        "name": "CTO",
-        "system": (
-            "CTO de ADÁN. Evalúa viabilidad TÉCNICA: factibilidad, riesgos, tecnología. "
-            "JSON: {analysis, justification, vote(PROCEED/PIVOT/STOP), confidence(0-100), "
-            "key_strengths[], key_concerns[], questions[]}"
-        ),
-    },
-    "CFO": {
-        "name": "CFO",
-        "system": (
-            "CFO de ADÁN. Evalúa viabilidad FINANCIERA: costos, ingresos, sostenibilidad. "
-            "JSON: {analysis, justification, vote(PROCEED/PIVOT/STOP), confidence(0-100), "
-            "key_strengths[], key_concerns[], questions[]}"
-        ),
-    },
-    "CMO": {
-        "name": "CMO",
-        "system": (
-            "CMO de ADÁN. Evalúa PROPUESTA DE VALOR: dolor real, demanda, diferenciación. "
-            "JSON: {analysis, justification, vote(PROCEED/PIVOT/STOP), confidence(0-100), "
-            "key_strengths[], key_concerns[], questions[]}"
-        ),
-    },
+# El CEO preside; estos seis votan (AD-FUNC-02 §1)
+SPECIALISTS = {
+    "CTO": "viabilidad TÉCNICA: factibilidad, arquitectura, riesgos tecnológicos",
+    "CFO": "viabilidad FINANCIERA: costos, ingresos, caja, sostenibilidad",
+    "CMO": "MERCADO: dolor real, demanda, diferenciación, canales",
+    "Legal": "riesgos LEGALES: regulación, contratos, propiedad intelectual, datos personales",
+    "Producto": "PRODUCTO: problema-solución, usuario, alcance del MVP, experiencia",
+    "Operaciones": "OPERACIÓN: procesos, recursos, proveedores, capacidad de ejecutar",
 }
 
+# Compatibilidad: quien importe AGENT_PROMPTS ve los roles que votan
+AGENT_PROMPTS = {
+    role: {
+        "name": role,
+        "system": (
+            f"Eres el {role} del Board Room de ADÁN. Evalúas la {focus}. Decides con evidencia, no por "
+            "preferencia: si falta evidencia, dilo y baja tu confianza. Responde en español con JSON: "
+            "{analysis, justification, vote(PROCEED/PIVOT/STOP), confidence(0-100), key_strengths[], "
+            "key_concerns[], questions[]}"
+        ),
+    }
+    for role, focus in SPECIALISTS.items()
+}
+
+CEO_SYSTEM = (
+    "Eres el CEO Agent de ADÁN y presides el Board Room (CEO, CTO, CFO, CMO, Legal, Producto, "
+    "Operaciones). No votas: das la voz de ADÁN al cliente. Hablas en español, claro y breve."
+)
 
 # Esquema del voto: con salidas estructuradas el modelo no puede devolver JSON cortado o
 # mal formado (WO-099; con qwen2.5:0.5b y 512 tokens todos los agentes se abstenían).
@@ -106,28 +112,155 @@ VOTE_SCHEMA = {
     "additionalProperties": False,
 }
 
+OPENING_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "objective": {"type": "string"},
+        "decision_at_stake": {"type": "string"},
+    },
+    "required": ["objective", "decision_at_stake"],
+    "additionalProperties": False,
+}
+
+CLOSING_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "synthesis": {"type": "string"},
+        "evidence_requests": {"type": "array", "items": {"type": "string"}},
+        "next_steps": {"type": "array", "items": {"type": "string"}},
+    },
+    "required": ["synthesis", "evidence_requests", "next_steps"],
+    "additionalProperties": False,
+}
+
 
 class BoardRoom:
-    """Orchestrates 4 independent agents and builds real consensus."""
+    """Una sesión de Board Room según el Flujo Maestro de Orquestación (AD-FUNC-02 §3)."""
 
     def __init__(self, llm: LLMAdapter):
-        # Los votos del Board son decisiones de peso: nivel "complex" (Claude Opus si hay clave)
+        # Votos: nivel "complex" (Claude Opus si hay clave). Apertura y cierre: "standard".
         self.llm = for_tier(llm, "complex")
+        self.chair_llm = for_tier(llm, "standard")
 
-    async def run(self, pain_description: str, conversation_context: str = "") -> BoardConsensus:
-        """Run the complete Board Room cycle: concurrent analysis → consensus."""
+    async def run(self, pain_description: str, conversation_context: str = "",
+                  client_question: str = "", client_position: str = "") -> BoardConsensus:
+        # 1. Habla primero el CEO: objetivo y decisión en juego
+        opening = await self._open(pain_description, client_question, client_position)
 
-        # Phase 1: Independent analysis by each agent — CONCURRENTLY
-        tasks = [
-            self._analyze_agent(agent_key, agent_config, pain_description, conversation_context)
-            for agent_key, agent_config in AGENT_PROMPTS.items()
-        ]
-        votes = await asyncio.gather(*tasks)
+        # 2. Los especialistas deliberan en paralelo, con la apertura y la posición del cliente
+        briefing = self._briefing(opening, client_question, client_position)
+        votes = await asyncio.gather(*[
+            self._analyze_agent(role, config, pain_description, conversation_context + briefing)
+            for role, config in AGENT_PROMPTS.items()
+        ])
 
-        # Phase 2: Build consensus
-        consensus = self._build_consensus(votes)
+        # 3. Consenso por mayoría, con quórum y disenso visible
+        consensus = self._build_consensus(list(votes))
+        consensus.objective = opening["objective"]
+        consensus.decision_at_stake = opening["decision_at_stake"]
+        consensus.client_question = client_question
+        consensus.client_position = client_position
 
+        # 4. El CEO cierra: síntesis y evidencia que falta (antes de presentar la decisión)
+        if consensus.decision != "NO_CONSENSUS":
+            closing = await self._close(consensus, pain_description)
+            consensus.synthesis = closing["synthesis"]
+            consensus.evidence_requests = closing["evidence_requests"]
+            consensus.next_steps = closing["next_steps"]
+        consensus.minutes = self._minutes(consensus)
         return consensus
+
+    async def _ask_json(self, llm, system: str, prompt: str, schema: dict, max_tokens: int) -> dict | None:
+        messages = [LLMMessage(role="system", content=system), LLMMessage(role="user", content=prompt)]
+        try:
+            if isinstance(llm, LLMAdapter):
+                response = await llm.chat_json(messages, schema, temperature=0.4, max_tokens=max_tokens)
+                data = response.parsed
+            else:
+                response = await llm.chat(messages=messages, temperature=0.4, max_tokens=max_tokens)
+                data = json.loads(response.content)
+        except Exception:
+            return None
+        return data if isinstance(data, dict) else None
+
+    async def _open(self, pain: str, question: str, position: str) -> dict:
+        prompt = (
+            f"Abre la sesión del Board Room.\n\nDolor o propuesta del cliente:\n{pain}\n\n"
+            + (f"Pregunta del cliente: {question}\n" if question else "")
+            + (f"Posición del cliente: {position}\n" if position else "")
+            + "\nDeclara el objetivo de la sesión y la decisión concreta que está en juego. "
+            "JSON: {objective, decision_at_stake}"
+        )
+        data = await self._ask_json(self.chair_llm, CEO_SYSTEM, prompt, OPENING_SCHEMA, 800) or {}
+        return {
+            "objective": normalize_string(data.get("objective"))
+            or "Evaluar si el dolor planteado justifica avanzar con la empresa",
+            "decision_at_stake": normalize_string(data.get("decision_at_stake"))
+            or (question or "¿Avanzar (PROCEED), ajustar el rumbo (PIVOT) o detenerse (STOP)?"),
+        }
+
+    @staticmethod
+    def _briefing(opening: dict, question: str, position: str) -> str:
+        parts = [f"\n\nApertura del CEO — objetivo: {opening['objective']}. "
+                 f"Decisión en juego: {opening['decision_at_stake']}"]
+        if question:
+            parts.append(f"Pregunta del cliente: {question}")
+        if position:
+            parts.append(f"Posición del cliente (tenla en cuenta, pero vota según la evidencia): {position}")
+        return "\n".join(parts)
+
+    async def _close(self, consensus: BoardConsensus, pain: str) -> dict:
+        votes = "\n".join(f"- {v.agent}: {v.vote} ({v.confidence:.0f}%): {v.justification}"
+                          for v in consensus.votes if v.vote != "ABSTAIN")
+        prompt = (
+            f"Cierra la sesión del Board Room.\n\nDolor del cliente:\n{pain}\n\n"
+            f"Decisión del Board: {consensus.decision} (confianza promedio {consensus.confidence:.0f}%).\n"
+            f"Votos:\n{votes}\n"
+            + (f"\nDisenso:\n{consensus.dissent}\n" if consensus.dissent else "")
+            + "\nEscribe la síntesis para el cliente: qué recomienda el Board y por qué, sin ocultar el "
+            "disenso. Di qué evidencia falta pedirle al cliente para decidir mejor (datos verificables, "
+            "no opiniones) y los próximos pasos. Recuerda que la decisión es del cliente. "
+            "JSON: {synthesis, evidence_requests[], next_steps[]}"
+        )
+        data = await self._ask_json(self.chair_llm, CEO_SYSTEM, prompt, CLOSING_SCHEMA, 1500) or {}
+        return {
+            "synthesis": normalize_string(data.get("synthesis")),
+            "evidence_requests": normalize_list(data.get("evidence_requests")),
+            "next_steps": normalize_list(data.get("next_steps")),
+        }
+
+    @staticmethod
+    def _minutes(c: BoardConsensus) -> str:
+        """Acta de la sesión (AD-FUNC-02): queda en el Gemelo Digital como documento."""
+        lines = [
+            "# Acta del Board Room",
+            "",
+            "**Preside:** CEO Agent · **Votan:** " + ", ".join(SPECIALISTS) + " · **Participa:** el cliente",
+            "",
+            f"**Objetivo:** {c.objective}",
+            f"**Decisión en juego:** {c.decision_at_stake}",
+        ]
+        if c.client_question or c.client_position:
+            lines += ["", "## Cliente"]
+            if c.client_question:
+                lines.append(f"- Pregunta: {c.client_question}")
+            if c.client_position:
+                lines.append(f"- Posición: {c.client_position}")
+        lines += ["", "## Votos"]
+        for v in c.votes:
+            lines.append(f"- **{v.agent}**: {v.vote} ({v.confidence:.0f}%). {v.justification}")
+        lines += ["", f"## Resultado: {c.decision}",
+                  f"Score {c.score:.0f}/100 · confianza promedio {c.confidence:.0f}%"]
+        if c.dissent:
+            lines += ["", "## Disenso", c.dissent]
+        if c.synthesis:
+            lines += ["", "## Síntesis del CEO", c.synthesis]
+        if c.evidence_requests:
+            lines += ["", "## Evidencia que el Board pide"] + [f"- {e}" for e in c.evidence_requests]
+        if c.next_steps:
+            lines += ["", "## Próximos pasos"] + [f"- {n}" for n in c.next_steps]
+        lines += ["", "La decisión es del cliente: esto es una recomendación del Board (Patrón A)."]
+        return "\n".join(lines)
 
     async def _analyze_agent(
         self,

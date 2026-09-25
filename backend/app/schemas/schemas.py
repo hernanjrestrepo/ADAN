@@ -198,6 +198,14 @@ class DocumentResponse(BaseModel):
     model_config = {"from_attributes": True}
 
 
+# --- Board Room ---
+
+class BoardRoomRequest(BaseModel):
+    """Participación del cliente en el Board Room (AD-FUNC-02 §3, pregunta 4). Todo opcional."""
+    question: str = Field(default="", max_length=1000)
+    position: str = Field(default="", max_length=2000)
+
+
 # --- Chat ---
 
 class ChatRequest(BaseModel):

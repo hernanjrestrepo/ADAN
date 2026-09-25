@@ -184,8 +184,9 @@ class Nivel1Service:
 
     # --- Step 3: Board Room ---
 
-    async def run_board_room(self, project: Project, company: Company) -> BoardConsensus:
-        """Run the real Board Room with 4 independent agents."""
+    async def run_board_room(self, project: Project, company: Company,
+                             client_question: str = "", client_position: str = "") -> BoardConsensus:
+        """Board Room de 7 roles (AD-FUNC-02): el CEO preside y seis especialistas votan."""
         # Get conversation context
         card = self.db.query(Card).filter(
             Card.project_id == project.id,
@@ -216,7 +217,8 @@ class Nivel1Service:
             raise ValueError("No hay descripción del dolor. Inicia una conversación primero.")
 
         # Run real Board Room
-        consensus = await self.board_room.run(pain_description, conversation_context)
+        consensus = await self.board_room.run(pain_description, conversation_context,
+                                              client_question=client_question, client_position=client_position)
 
         # Persist result in Gemelo Digital
         votes_data = [
@@ -237,6 +239,7 @@ class Nivel1Service:
             votes_data,
             consensus=consensus.to_dict(),
         )
+        self.gemelo.save_board_minutes(project, consensus.minutes)
 
         return consensus
 

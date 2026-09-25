@@ -139,6 +139,20 @@ export interface BoardConsensus {
   strengths_unanimous: string[]
   dissent: string  // vacío si nadie discrepa
   disclaimer: string
+  // Flujo Maestro (AD-FUNC-02): el CEO abre y cierra; el cliente participa
+  objective: string
+  decision_at_stake: string
+  synthesis: string
+  evidence_requests: string[]
+  next_steps: string[]
+  client_question: string
+  client_position: string
+  minutes: string
+}
+
+export interface BoardRoomInput {
+  question: string
+  position: string
 }
 
 export interface GateReviewResult {

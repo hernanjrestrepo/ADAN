@@ -158,7 +158,9 @@ async def test_board_uses_structured_output_on_complex_tier():
     router, made = router_with_claude()
     consensus = await BoardRoom(router).run("Los restaurantes pierden inventario")
     assert {v.vote for v in consensus.votes} == {"PIVOT"} and consensus.decision == "PIVOT"
-    assert len(made["complex"].calls) == 4 and all(c[0] == "chat_json" for c in made["complex"].calls)
+    assert len(made["complex"].calls) == 6 and all(c[0] == "chat_json" for c in made["complex"].calls)
+    # El CEO abre y cierra en el nivel "standard"
+    assert [c[0] for c in made["standard"].calls] == ["chat_json", "chat_json"]
 
 
 @pytest.mark.asyncio
@@ -182,7 +184,7 @@ def test_usage_scope_persists_calls_for_the_company(db_session, client):
     assert all(r.level_number == 1 for r in rows)
 
     summary = client.get(f"/api/v1/companies/{company_id}/llm-usage", headers=headers).json()
-    assert summary["calls"] == len(rows) == 5  # 1 conversación + 4 votos del Board
+    assert summary["calls"] == len(rows) == 9  # conversación + apertura + 6 votos + cierre
     assert summary["cost_usd"] == pytest.approx(sum(r.cost_usd for r in rows), abs=1e-6)
     assert set(summary["by_model"]) == {f"anthropic:{settings.LLM_MODEL_STANDARD}",
                                         f"anthropic:{settings.LLM_MODEL_COMPLEX}"}
@@ -202,3 +204,54 @@ def test_usage_scope_saves_records_even_if_the_request_fails(db_session, client)
             raise RuntimeError("falló después de llamar al modelo")
     row = db_session.query(LLMUsage).filter(LLMUsage.company_id == company_id).one()
     assert row.cost_usd == 0.5 and row.level_number == 2
+
+
+# ============================================================
+# Board de 7 roles: Flujo Maestro, participación del cliente y acta (AD-FUNC-02)
+# ============================================================
+
+def test_board_session_with_client_participation_and_minutes(db_session, client):
+    from app.models.models import Document
+
+    headers = _headers(client, "acta@example.com")
+    company_id = client.post("/api/v1/companies/", json={"name": "Acta SAS"}, headers=headers).json()["id"]
+    router, made = router_with_claude()
+    client.app.dependency_overrides[nivel1_api.get_llm] = lambda: router
+    client.post(f"/api/v1/nivel1/{company_id}/chat", json={"message": "Los talleres pierden clientes"},
+                headers=headers)
+
+    resp = client.post(f"/api/v1/nivel1/{company_id}/board-room",
+                       json={"question": "¿Lanzo en Medellín primero?", "position": "Quiero lanzar ya"},
+                       headers=headers)
+    body = resp.json()
+    assert resp.status_code == 200
+    assert body["client_question"] == "¿Lanzo en Medellín primero?" and body["client_position"] == "Quiero lanzar ya"
+    assert len(body["votes"]) == 6 and {v["agent"] for v in body["votes"]} >= {"Legal", "Producto", "Operaciones"}
+    assert "Quiero lanzar ya" in body["minutes"] and "## Votos" in body["minutes"]
+
+    acta = db_session.query(Document).filter(Document.doc_type == "board_minutes").one()
+    assert acta.title == "Acta del Board Room" and "Pregunta: ¿Lanzo en Medellín primero?" in acta.content
+
+
+@pytest.mark.asyncio
+async def test_client_position_reaches_every_specialist_and_ceo_closes():
+    seen = []
+
+    class Recorder(FakeLLM):
+        async def chat(self, messages, model=None, temperature=0.7, max_tokens=2048):
+            seen.append(messages[-1].content)
+            return await super().chat(messages, model, temperature, max_tokens)
+
+    consensus = await BoardRoom(Recorder(chat_replies=[VALID_VOTE])).run(
+        "Dolor", client_question="¿Cobro suscripción?", client_position="Prefiero pago único")
+    votes_prompts = seen[1:7]
+    assert all("Prefiero pago único" in p for p in votes_prompts)
+    assert seen[-1].startswith("Cierra la sesión")  # el CEO cierra después de los votos
+    assert consensus.decision == "PROCEED"
+
+
+@pytest.mark.asyncio
+async def test_no_quorum_skips_the_closing_and_still_writes_minutes():
+    consensus = await BoardRoom(FakeLLM(chat_replies=["no es JSON"])).run("Dolor")
+    assert consensus.decision == "NO_CONSENSUS" and consensus.synthesis == ""
+    assert "## Resultado: NO_CONSENSUS" in consensus.minutes
