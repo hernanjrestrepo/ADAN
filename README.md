@@ -18,8 +18,15 @@ Este repositorio reúne en un solo lugar todo el código de ADAN que existía po
 
 Los historiales importados se reescribieron para vivir bajo su carpeta, con autores y fechas intactos: `git log -- adan-platform/` y `git log -- autonomous/`.
 
+## Estado actual (2026-09-25)
+
+**Avance: ~35 %** hacia ADÁN Enterprise v1 (era ~22 % en la auditoría). Están cerrados H1 (base segura) y H2 (plataforma enterprise: PostgreSQL, seguridad por empresa, frontend TypeScript, CI y producción). Lo siguiente es H3: WO-098 Gemelo Digital, WO-099 IA de calidad, WO-107, WO-108 y WO-109.
+
+Qué se hizo, qué falta, cuándo se puede ver la plataforma y qué le toca a Hernán: **`docs/ESTADO_ADAN_2026-09-25.md`**.
+
 ## Por dónde empezar
 
+0. `docs/ESTADO_ADAN_2026-09-25.md`: resumen del estado y de lo pendiente.
 1. `AD-ROOT-0001_Canon_del_Proyecto.md`: repositorio, rama, arquitectura y numeración oficiales. Leer antes de escribir código.
 2. `AD-DEC-0001_Historia_Oficial_de_ADAN.md`: por qué existen tres builds y cuál es la oficial.
    `AD-DEC-0002_Modelo_de_Negocio_y_Ecosistema.md`: qué hace ADÁN dentro de Paradixe, cómo se monetiza y qué decidió Hernán el 2026-09-24.
@@ -27,7 +34,7 @@ Los historiales importados se reescribieron para vivir bajo su carpeta, con auto
 4. `REPORTE_CONSOLIDACION_WO090.md`: estado de Build C al 2026-07-31 (WO-090 abierta).
 5. `docs/wo-000/BLUEPRINT_ADAN_v1.1.md`: mapa del blueprint (qué versión de cada documento está vigente y qué está implementado).
    `docs/wo-000/00-fundamentos/AD-000_Paradixe_Ecosystem_Vision_v2.0.md`: el ecosistema Paradixe según AD-DEC-0002.
-6. `docs/auditoria/AUDITORIA_ADAN_2026-09.md`: auditoría completa del código, avance (~22 %), bugs y brechas frente al blueprint.
+6. `docs/auditoria/AUDITORIA_ADAN_2026-09.md`: auditoría completa del código, avance de partida (~22 %), bugs y brechas frente al blueprint.
 7. `docs/auditoria/PLAN_WO_ADAN_100.md`: plan de Work Orders propuesto para llegar al 100 %.
 8. `docs/wo/`: reportes de cierre de cada Work Order, con su evidencia, y el mapa de reutilización de Build A (`WO-096_MAPA_REUTILIZACION.md`).
 9. `docs/operacion/RUNBOOK.md`: cómo desplegar, revertir, respaldar y observar ADÁN en producción.
