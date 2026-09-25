@@ -166,7 +166,8 @@ Criterio de cierre común (EPWO-051), además de lo específico de cada ficha:
   - Vistas de Decisiones y Timeline.
 - **Estimación:** 8–12 días.
 
-### WO-099 — Motor cognitivo único e IA
+### WO-099 — Motor cognitivo único e IA ✅
+- **Estado:** fusionada (`docs/wo/WO-099_REPORTE.md`). Se adelantó a WO-098 por decisión de Hernán (2026-09-25): es lo que más cambia la experiencia visible. Falta verificarla con la clave real de Anthropic (`scripts/check_claude.py`).
 - **Alcance:**
   - Un solo Board Room con los 7 roles de AD-FUNC-02 y el Master Orchestration Flow.
   - Participación del cliente, disenso visible y actas.
@@ -291,4 +292,4 @@ Con un solo frente de trabajo son unos 7–11 meses; con dos frentes en paralelo
 1. WO-095 ✅ (`docs/wo/WO-095_REPORTE.md`).
 2. WO-096 🟡: solo falta Build B, que depende de la laptop.
 3. H2 completo: WO-091 ✅, WO-097 ✅, WO-092 ✅, WO-093 ✅.
-4. H3 en el orden de la ruta crítica: WO-098 → WO-099 → WO-107 → WO-108 → WO-109.
+4. H3: WO-099 ✅ (adelantada el 2026-09-25) → WO-098 → WO-107 → WO-108 → WO-109.
