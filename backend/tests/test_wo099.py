@@ -255,3 +255,75 @@ async def test_no_quorum_skips_the_closing_and_still_writes_minutes():
     consensus = await BoardRoom(FakeLLM(chat_replies=["no es JSON"])).run("Dolor")
     assert consensus.decision == "NO_CONSENSUS" and consensus.synthesis == ""
     assert "## Resultado: NO_CONSENSUS" in consensus.minutes
+
+
+# ============================================================
+# Memoria en cinco capas (AD-CMP-04)
+# ============================================================
+
+def _company_with_chat(client, email, **company):
+    headers = _headers(client, email)
+    company_id = client.post("/api/v1/companies/", json={"name": "Capas SAS", **company}, headers=headers).json()["id"]
+    return headers, company_id
+
+
+def test_chat_context_has_the_five_layers_and_no_repetition_rule(db_session, client):
+    from app.models.models import Decision, DecisionStatus, Project
+
+    headers, company_id = _company_with_chat(client, "capas@example.com", industry="Panaderías", country="Colombia")
+    project = db_session.query(Project).filter(Project.company_id == company_id).one()
+    db_session.add(Decision(project_id=project.id, title="Validar con 10 panaderías",
+                            status=DecisionStatus.APPROVED, proposed_by="Board Room"))
+    db_session.commit()
+    llm = FakeLLM(chat_replies=["¿Cuánto pan se pierde?"])
+    client.app.dependency_overrides[nivel1_api.get_llm] = lambda: llm
+
+    client.post(f"/api/v1/nivel1/{company_id}/chat", json={"message": "Pierdo pan"}, headers=headers)
+
+    system = llm.last_messages[0].content
+    for layer in ("[Global]", "[Proyecto]", "[Nivel]", "[Card]"):
+        assert layer in system
+    assert "Industria: Panaderías" in system and "País: Colombia" in system
+    assert "Validar con 10 panaderías" in system  # decisión aprobada: no contradecirla
+    assert "Nivel 1 — El Dolor" in system and "Card: Descubrimiento del Dolor" in system
+    assert "Regla de no repetición" in system
+    assert llm.last_messages[-1].content == "Pierdo pan"  # capa Conversación
+
+
+def test_board_minutes_reach_the_level_layer(db_session, client):
+    from app.models.models import Project
+    from app.nivel1.context import ContextLayers
+    from app.services.gemelo_digital import GemeloDigitalService
+
+    headers, company_id = _company_with_chat(client, "capas2@example.com")
+    project = db_session.query(Project).filter(Project.company_id == company_id).one()
+    minutes = ("# Acta del Board Room\n\n## Resultado: PIVOT\nScore 50/100\n\n## Síntesis del CEO\nAjustar el segmento"
+               "\n\n## Evidencia que el Board pide\n- Ventas de 3 meses")
+    GemeloDigitalService(db_session).save_board_minutes(project, minutes)
+    level = GemeloDigitalService(db_session).get_or_create_level(project, 1)
+    text = ContextLayers(db_session).level_layer(level)
+    assert "Resultado: PIVOT" in text and "Ajustar el segmento" in text and "Ventas de 3 meses" in text
+
+
+def test_closing_a_level_rolls_its_summary_up_to_the_project(db_session, client):
+    from app.models.models import Card, CardStatus, Conversation, Document, Project
+    from app.nivel1.context import ContextLayers
+    from app.services.gemelo_digital import GemeloDigitalService
+
+    headers, company_id = _company_with_chat(client, "capas3@example.com")
+    client.app.dependency_overrides[nivel1_api.get_llm] = lambda: FakeLLM(chat_replies=["ok"])
+    client.post(f"/api/v1/nivel1/{company_id}/chat", json={"message": "Las panaderías botan pan"}, headers=headers)
+    project = db_session.query(Project).filter(Project.company_id == company_id).one()
+    service = GemeloDigitalService(db_session)
+    decision = service.propose_level_completion(project, 1, 90, "Listo para cerrar")
+    from app.models.models import Company
+    owner = db_session.get(Company, company_id).primary_user_id
+    service.decide(project, decision, approve=True, user_id=owner)
+
+    summary = db_session.query(Document).filter(Document.doc_type == "level_summary").one()
+    assert "Resumen del Nivel 1" in summary.content and "Cerrar Nivel 1" in summary.content
+    card = db_session.query(Card).filter(Card.project_id == project.id).one()
+    assert card.status == CardStatus.COMPLETED
+    conv = db_session.query(Conversation).filter(Conversation.card_id == card.id).one()
+    assert "Las panaderías botan pan" in conv.summary
+    assert "Resumen del Nivel 1" in ContextLayers(db_session).project_layer(project)

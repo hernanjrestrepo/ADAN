@@ -18,6 +18,7 @@ from datetime import datetime, timezone
 from sqlalchemy.orm import Session
 
 from app.ai.router import for_tier
+from app.nivel1.context import ContextLayers
 from app.ai.base import LLMAdapter, LLMMessage
 from app.ai.normalize import normalize_string, normalize_list
 from app.core.disclaimer import strip_disclaimer
@@ -149,6 +150,8 @@ class Nivel1Service:
             self.db.commit()
 
         system_prompt = self._build_chat_system_prompt(message_count, conversation.summary)
+        # Capas Global, Proyecto, Nivel y Card (AD-CMP-04); la Conversación son los mensajes
+        system_prompt += "\n\n" + ContextLayers(self.db).for_conversation(conversation)
         messages = [LLMMessage(role="system", content=system_prompt)]
         for msg in recent:
             messages.append(LLMMessage(role=msg.role, content=msg.content))
@@ -216,7 +219,9 @@ class Nivel1Service:
         if not pain_description.strip():
             raise ValueError("No hay descripción del dolor. Inicia una conversación primero.")
 
-        # Run real Board Room
+        # El Board también ve lo que ya se sabe de la empresa (capa Proyecto, AD-CMP-04)
+        conversation_context += "\n\nLo que ya se sabe de la empresa:\n" + ContextLayers(self.db).project_layer(project)
+
         consensus = await self.board_room.run(pain_description, conversation_context,
                                               client_question=client_question, client_position=client_position)
 
