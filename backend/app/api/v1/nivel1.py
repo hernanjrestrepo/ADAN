@@ -17,8 +17,10 @@ from app.models.models import (
 )
 from app.nivel1.service import Nivel1Service
 from app.services.gemelo_digital import GemeloDigitalService
+from app.ai.router import for_tier
+from app.ai.usage import usage_scope
 from app.schemas.schemas import (
-    ChatRequest, ChatResponse, CompanyResponse, DecisionAction, DecisionResponse,
+    BoardRoomRequest, ChatRequest, ChatResponse, CompanyResponse, DecisionAction, DecisionResponse,
     DocumentResponse, GateReviewResponse, LevelResponse, MessageResponse, ScoreResponse,
 )
 
@@ -27,6 +29,12 @@ router = APIRouter(prefix="/nivel1", tags=["nivel1"])
 
 def get_llm() -> LLMAdapter:
     return get_llm_adapter()
+
+
+async def track_llm_usage(company_id: str, db: Session = Depends(get_db)):
+    """Registra el costo de las llamadas al modelo de la petición en `llm_usage` (WO-099)."""
+    with usage_scope(db, company_id, level=1):
+        yield
 
 
 def get_latest_diagnosis(db: Session, project: Project) -> Document:
@@ -107,6 +115,7 @@ async def chat(
     db: Session = Depends(get_db),
     user: User = Depends(llm_user),
     llm: LLMAdapter = Depends(get_llm),
+    _usage: None = Depends(track_llm_usage),
 ):
     """Send a message in the Level 1 conversation."""
     get_owned_company(db, company_id, user)
@@ -139,6 +148,7 @@ async def chat_stream(
     db: Session = Depends(get_db),
     user: User = Depends(llm_user),
     llm: LLMAdapter = Depends(get_llm),
+    _usage: None = Depends(track_llm_usage),
 ):
     """Stream chat response token by token via SSE."""
     get_owned_company(db, company_id, user)
@@ -175,9 +185,11 @@ async def chat_stream(
     async def generate():
         full_content = []
         try:
-            async for token in llm.chat_stream(messages, temperature=0.7, max_tokens=512):
-                full_content.append(token)
-                yield f"data: {json.dumps({'token': token}, ensure_ascii=False)}\n\n"
+            with usage_scope(db, company_id, level=1):
+                async for token in for_tier(llm, "standard").chat_stream(messages, temperature=0.7,
+                                                                         max_tokens=512):
+                    full_content.append(token)
+                    yield f"data: {json.dumps({'token': token}, ensure_ascii=False)}\n\n"
             yield f"data: {json.dumps({'done': True, 'disclaimer': AI_DISCLAIMER}, ensure_ascii=False)}\n\n"
         finally:
             # Save what was generated, even if the client disconnected mid-stream
@@ -196,11 +208,13 @@ async def chat_stream(
 @router.post("/{company_id}/board-room")
 async def run_board_room(
     company_id: str,
+    body: BoardRoomRequest | None = None,
     db: Session = Depends(get_db),
     user: User = Depends(llm_user),
     llm: LLMAdapter = Depends(get_llm),
+    _usage: None = Depends(track_llm_usage),
 ):
-    """Run the real Board Room with 4 independent agents."""
+    """Board Room de 7 roles: el CEO abre y cierra, seis especialistas votan (AD-FUNC-02)."""
     company = get_owned_company(db, company_id, user)
 
     project = db.query(Project).filter(Project.company_id == company_id).first()
@@ -208,11 +222,20 @@ async def run_board_room(
     service = Nivel1Service(llm, db)
 
     try:
-        consensus = await service.run_board_room(project, company)
+        consensus = await service.run_board_room(project, company, client_question=body.question if body else "",
+                                                 client_position=body.position if body else "")
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
     return {
+        "objective": consensus.objective,
+        "decision_at_stake": consensus.decision_at_stake,
+        "synthesis": consensus.synthesis,
+        "evidence_requests": consensus.evidence_requests,
+        "next_steps": consensus.next_steps,
+        "client_question": consensus.client_question,
+        "client_position": consensus.client_position,
+        "minutes": consensus.minutes,
         "decision": consensus.decision,
         "score": consensus.score,
         "confidence": consensus.confidence,
@@ -246,6 +269,7 @@ async def generate_diagnosis(
     db: Session = Depends(get_db),
     user: User = Depends(llm_user),
     llm: LLMAdapter = Depends(get_llm),
+    _usage: None = Depends(track_llm_usage),
 ):
     """Generate the Level 1 diagnosis document."""
     company = get_owned_company(db, company_id, user)
@@ -275,6 +299,7 @@ async def generate_recommendations(
     db: Session = Depends(get_db),
     user: User = Depends(llm_user),
     llm: LLMAdapter = Depends(get_llm),
+    _usage: None = Depends(track_llm_usage),
 ):
     """Generate recommendations based on diagnosis."""
     get_owned_company(db, company_id, user)
@@ -302,6 +327,7 @@ async def gate_review(
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user),
     llm: LLMAdapter = Depends(get_llm),
+    _usage: None = Depends(track_llm_usage),
 ):
     """Run Gate Review with 80/100 minimum threshold."""
     get_owned_company(db, company_id, user)

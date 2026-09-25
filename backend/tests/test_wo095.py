@@ -137,9 +137,10 @@ async def test_b3_invalid_responses_abstain_and_do_not_approve():
 
 @pytest.mark.asyncio
 async def test_b3_abstentions_do_not_count():
+    # Respuestas alternadas: la apertura del CEO toma la primera, luego 3 votos válidos y 3 inválidos
     llm = FakeLLM(chat_replies=[VALID_VOTE, "no es JSON"])
     consensus = await BoardRoom(llm).run("Problema")
-    assert sum(v.vote == "ABSTAIN" for v in consensus.votes) == 2
+    assert sum(v.vote == "ABSTAIN" for v in consensus.votes) == 3
     assert consensus.decision == "PROCEED"
     assert consensus.confidence == 80
     assert "Abstenciones" in consensus.summary

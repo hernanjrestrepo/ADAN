@@ -96,3 +96,4 @@ Independientemente de la decisión anterior: el worktree registrado en `C:\Users
 | 2026-09-24 | WO-091: §3 PostgreSQL + pgvector implementado en Build C | Ejecutado por Claude Code con la autorización general de Hernán (2026-09-24) |
 | 2026-09-24 | WO-092: §3 frontend en TypeScript | Ejecutado por Claude Code con la autorización general de Hernán (2026-09-24) |
 | 2026-09-24 | WO-093: §3 Docker de producción, CI y operación (`docs/operacion/RUNBOOK.md`) | Ejecutado por Claude Code con la autorización general de Hernán (2026-09-24) |
+| 2026-09-25 | WO-099: §3 enrutamiento de modelos Ollama/Claude (AD-DEC-0002 decisión 3), un solo Board Room de 7 roles, memoria en cinco capas | Ejecutado por Claude Code; Hernán aprobó adelantarla a WO-098 ("sigue con lo que propones", 2026-09-25) |

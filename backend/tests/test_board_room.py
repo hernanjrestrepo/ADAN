@@ -3,7 +3,7 @@ import asyncio
 import time
 import pytest
 from unittest.mock import AsyncMock, MagicMock
-from app.nivel1.board_room import BoardRoom, AGENT_PROMPTS, BoardConsensus
+from app.nivel1.board_room import BoardRoom, AGENT_PROMPTS, SPECIALISTS, BoardConsensus
 
 
 class MockLLMAdapter:
@@ -27,15 +27,17 @@ def board_room(mock_llm):
     return BoardRoom(mock_llm)
 
 
-def test_board_room_runs_all_four_agents(board_room):
-    """Board Room must run all 4 agents."""
+def test_board_room_runs_the_six_voting_roles(board_room):
+    """AD-FUNC-02: el CEO preside y no vota; votan CTO, CFO, CMO, Legal, Producto y Operaciones."""
     result = asyncio.run(
         board_room.run("Test problem")
     )
     assert isinstance(result, BoardConsensus)
-    assert len(result.votes) == 4
+    assert len(result.votes) == 6
     agent_names = {v.agent for v in result.votes}
-    assert agent_names == {"CEO", "CTO", "CFO", "CMO"}
+    assert agent_names == {"CTO", "CFO", "CMO", "Legal", "Producto", "Operaciones"} == set(SPECIALISTS)
+    assert result.objective and result.decision_at_stake  # apertura del CEO
+    assert result.minutes.startswith("# Acta del Board Room")
 
 
 def test_board_room_has_consensus(board_room):
@@ -55,7 +57,7 @@ def test_board_room_votes_have_required_fields(board_room):
         board_room.run("Test problem")
     )
     for vote in result.votes:
-        assert vote.agent in ["CEO", "CTO", "CFO", "CMO"]
+        assert vote.agent in SPECIALISTS
         assert vote.vote in ["PROCEED", "PIVOT", "STOP"]
         assert 0 <= vote.confidence <= 100
         assert vote.analysis is not None
@@ -85,9 +87,9 @@ def test_board_room_concurrent_execution(mock_llm):
     )
     total_time = time.monotonic() - start
 
-    # If concurrent, total time should be ~0.1s (one sleep), not ~0.4s (four sleeps)
-    assert total_time < 0.3, f"Board Room took {total_time:.2f}s, expected <0.3s for concurrent"
-    assert len(call_times) == 8  # 4 starts + 4 ends
+    # Apertura, votos en paralelo y cierre: ~0.3 s (tres esperas), no ~0.8 s (ocho)
+    assert total_time < 0.6, f"Board Room took {total_time:.2f}s, expected <0.6s for concurrent votes"
+    assert len(call_times) == 16  # 8 llamadas: apertura + 6 votos + cierre
 
 
 def test_consensus_majority_rule(board_room):

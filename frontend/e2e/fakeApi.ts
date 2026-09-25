@@ -20,6 +20,21 @@ export const BOARD_NO_CONSENSUS = {
   ],
   concerns_unanimous: [], concerns_majority: [], strengths_unanimous: [],
   dissent: 'CFO: STOP — El margen es bajo', disclaimer: 'aviso',
+  objective: 'Evaluar el dolor de las panaderías', decision_at_stake: '¿Avanzar, ajustar o detenerse?',
+  synthesis: '', evidence_requests: [], next_steps: [], client_question: '', client_position: '', minutes: '# Acta',
+}
+
+export const BOARD_PROCEED = {
+  ...BOARD_NO_CONSENSUS,
+  decision: 'PROCEED', score: 72, confidence: 78, summary: 'Avanzar',
+  votes: ['CTO', 'CFO', 'CMO', 'Legal', 'Producto', 'Operaciones'].map((agent) => ({
+    agent, analysis: `Análisis de ${agent}`, justification: 'x', vote: agent === 'CFO' ? 'PIVOT' : 'PROCEED',
+    confidence: 78, key_strengths: [], key_concerns: [], questions: [], model: 'claude-opus-5', duration_s: 3,
+  })),
+  dissent: 'CFO votó PIVOT: el margen es bajo',
+  synthesis: 'El Board recomienda avanzar, con el disenso del CFO sobre el margen.',
+  evidence_requests: ['Ventas de pan de los últimos 3 meses'], next_steps: ['Entrevistar 5 panaderías'],
+  client_question: '¿Empiezo en Medellín?', client_position: 'Quiero lanzar ya',
 }
 
 export interface Call {

@@ -7,7 +7,7 @@ import Tabs from '../../components/ui/Tabs'
 import { LoadingState } from '../../components/ui/States'
 import { api, errorMessage } from '../../lib/api'
 import type {
-  BoardConsensus, Decision, DocumentRecord, GateReviewResult, LevelStatus, Message, Nivel1Status,
+  BoardConsensus, BoardRoomInput, Decision, DocumentRecord, GateReviewResult, LevelStatus, Message, Nivel1Status,
 } from '../../types'
 import BoardRoomPanel from './BoardRoomPanel'
 import ChatPanel from './ChatPanel'
@@ -85,12 +85,12 @@ export default function Nivel1Page() {
     }
   }
 
-  const handleBoardRoom = async () => {
+  const handleBoardRoom = async (input?: BoardRoomInput) => {
     setActiveTab('boardroom')
     setBoard(null)
     setBoardRunning(true)
     try {
-      setBoard(await api.runBoardRoom(companyId))
+      setBoard(await api.runBoardRoom(companyId, input))
     } catch (err) {
       setError(errorMessage(err))
     } finally {
@@ -166,7 +166,7 @@ export default function Nivel1Page() {
         <>
           {activeTab === 'chat' && (
             <ChatPanel messages={messages} sending={sending} onSend={handleSend}
-              onBoardRoom={handleBoardRoom} onDiagnosis={handleDiagnosis} onGateReview={handleGateReview} />
+              onBoardRoom={() => handleBoardRoom()} onDiagnosis={handleDiagnosis} onGateReview={handleGateReview} />
           )}
           {activeTab === 'boardroom' && <BoardRoomPanel result={board} running={boardRunning} onRun={handleBoardRoom} />}
           {activeTab === 'diagnosis' && (

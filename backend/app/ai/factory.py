@@ -37,6 +37,16 @@ class InstrumentedLLM(LLMAdapter):
                                                       max_tokens=max_tokens):
                 yield token
 
+    async def chat_json(self, messages, schema, model=None, temperature=0.3, max_tokens=2048):
+        with LLMTimer("chat_json"):
+            return await self.inner.chat_json(messages, schema, model=model, temperature=temperature,
+                                              max_tokens=max_tokens)
+
+    def for_tier(self, tier: str) -> "InstrumentedLLM":
+        """Vista del enrutador en un nivel de complejidad (WO-099), también medida."""
+        from app.ai.router import for_tier
+        return InstrumentedLLM(for_tier(self.inner, tier))
+
     async def generate(self, prompt, model=None, system=None, temperature=0.7, max_tokens=2048):
         with LLMTimer("generate"):
             return await self.inner.generate(prompt, model=model, system=system, temperature=temperature,
@@ -65,4 +75,9 @@ def get_llm_adapter() -> LLMAdapter:
     import importlib
     module = importlib.import_module(module_path)
     adapter_class = getattr(module, class_name)
-    return InstrumentedLLM(adapter_class())
+    adapter = adapter_class()
+    if provider == "ollama":
+        # Ollama para lo simple y Claude según la complejidad (WO-099)
+        from app.ai.router import ModelRouter
+        adapter = ModelRouter(adapter)
+    return InstrumentedLLM(adapter)

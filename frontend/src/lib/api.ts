@@ -1,5 +1,5 @@
 import type {
-  BoardConsensus, ChatResponse, Company, CompanyInput, Decision, DocumentRecord, GateReviewResult,
+  BoardConsensus, BoardRoomInput, ChatResponse, Company, CompanyInput, Decision, DocumentRecord, GateReviewResult,
   Nivel1Status, Score, TokenResponse, User,
 } from '../types'
 
@@ -65,7 +65,8 @@ export const api = {
   getNivel1Status: (companyId: string) => request<Nivel1Status>(`/nivel1/${companyId}/status`),
   chat: (companyId: string, message: string, conversationId?: string) =>
     post<ChatResponse>(`/nivel1/${companyId}/chat`, { message, conversation_id: conversationId }),
-  runBoardRoom: (companyId: string) => post<BoardConsensus>(`/nivel1/${companyId}/board-room`),
+  runBoardRoom: (companyId: string, input?: BoardRoomInput) =>
+    post<BoardConsensus>(`/nivel1/${companyId}/board-room`, input ?? {}),
   generateDiagnosis: (companyId: string) => post<DocumentRecord>(`/nivel1/${companyId}/diagnosis`),
   gateReview: (companyId: string) => post<GateReviewResult>(`/nivel1/${companyId}/gate-review`),
   getScores: (companyId: string) => request<Score[]>(`/nivel1/${companyId}/scores`),

@@ -18,6 +18,11 @@ x-backend-env: &backend-env
   REDIS_URL: redis://redis:6379/0
   OLLAMA_BASE_URL: http://ollama:11434
   DEFAULT_MODEL: ${DEFAULT_MODEL:-qwen2.5:0.5b}
+  # Enrutamiento de modelos (WO-099): sin clave todo corre en Ollama, marcado como degradado
+  ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+  LLM_MODEL_STANDARD: ${LLM_MODEL_STANDARD:-claude-sonnet-5}
+  LLM_MODEL_COMPLEX: ${LLM_MODEL_COMPLEX:-claude-opus-5}
+  LLM_MODEL_FAST: ${LLM_MODEL_FAST:-claude-haiku-4-5}
   EMBEDDING_PROVIDER: ollama
   EMBEDDING_MODEL: nomic-embed-text
   SANDBOX_URL: http://sandbox:8100

@@ -27,7 +27,7 @@ from app.models.models import Company, Event, Project, User
 from app.oos.models import DecisionRecord, Organization, WorkOrder
 
 PG_URL = os.getenv("TEST_DATABASE_URL", "")
-HEAD_REVISION = "0002"
+HEAD_REVISION = "0003"
 requires_pg = pytest.mark.skipif(
     not PG_URL.startswith("postgres"), reason="requiere TEST_DATABASE_URL de PostgreSQL"
 )
@@ -70,7 +70,7 @@ def test_single_declarative_base():
     tables = set(Base.metadata.tables)
     assert {"users", "companies", "ems_documents", "ems_chunk_embeddings", "oos_work_orders",
             "integration_connections", "tef_audit_log"} <= tables
-    assert len(tables) == 35
+    assert len(tables) == 36  # + llm_usage (WO-099)
     assert EMSDocument.metadata is Base.metadata and WorkOrder.metadata is Base.metadata
 
 

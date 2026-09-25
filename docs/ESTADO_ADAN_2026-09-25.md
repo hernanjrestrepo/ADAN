@@ -1,6 +1,8 @@
 # Estado de ADÁN — 2026-09-25
 
 **Para:** Hernán · **Preparado por:** Claude Code, al pausar el trabajo antes de WO-098
+> **Actualización (2026-09-25, después):** WO-099 quedó cerrada (`docs/wo/WO-099_REPORTE.md`), así que el avance sube a **~40 %**. Hay IA por complejidad: Claude Sonnet para la conversación, Claude Opus para los votos y Ollama para lo simple. El Board Room tiene los 7 roles con el Flujo Maestro, participación del cliente y acta, y hay un solo Board. La memoria tiene cinco capas y se mide el costo por empresa. **Para la demo solo falta poner `ANTHROPIC_API_KEY`** y correr `python scripts/check_claude.py`.
+
 **En una línea:** ADÁN pasó de **~22 % a ~35 %** del camino a ADÁN Enterprise v1. Quedaron cerradas la **base segura (H1)** y la **plataforma enterprise (H2)**. Lo que sigue es el producto: Gemelo Digital, la IA de calidad y los Niveles 2 a 7.
 
 ---
@@ -56,7 +58,7 @@ Todo está verificado en CI:
 |---|---|---|
 | **La plataforma en un computador** | Docker. Correr `docker compose up --build` y abrir http://localhost:5174 (ver `README.md`, "Arranque rápido"). | **Hoy mismo** |
 | **La plataforma en internet** | Elegir servidor, dominio con TLS, backups externos y monitoreo (criterios 16 a 19 del Gate). El despliegue ya es un comando: `scripts/deploy.sh`. | Pocos días después de elegir la infraestructura |
-| **Una demo con calidad para mostrar** | Respuestas buenas del Board y del chat: WO-099, con una API key de Anthropic. | ~2–3 semanas si se adelanta WO-099 |
+| **Una demo con calidad para mostrar** | WO-099 ya está hecha. Solo falta la API key de Anthropic. | **Apenas se configure la clave** |
 | **Piloto real con una empresa de Paradixe** | Cerrar H3 (WO-098, 099, 107, 108) | ~36–55 días de trabajo (2–3 meses) |
 | **ADÁN completo, 7 Niveles (100 %)** | H3 a H6 | ~130–200 días de trabajo: 6–10 meses con un frente, 4–7 meses con dos |
 

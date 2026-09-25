@@ -20,7 +20,7 @@ Los historiales importados se reescribieron para vivir bajo su carpeta, con auto
 
 ## Estado actual (2026-09-25)
 
-**Avance: ~35 %** hacia ADÁN Enterprise v1 (era ~22 % en la auditoría). Están cerrados H1 (base segura) y H2 (plataforma enterprise: PostgreSQL, seguridad por empresa, frontend TypeScript, CI y producción). Lo siguiente es H3: WO-098 Gemelo Digital, WO-099 IA de calidad, WO-107, WO-108 y WO-109.
+**Avance: ~40 %** hacia ADÁN Enterprise v1 (era ~22 % en la auditoría). Están cerrados H1 (base segura), H2 (plataforma enterprise: PostgreSQL, seguridad por empresa, frontend TypeScript, CI y producción) y WO-099 (IA por complejidad con Claude, Board Room de 7 roles y memoria en cinco capas). Lo siguiente en H3: WO-098 Gemelo Digital, WO-107, WO-108 y WO-109.
 
 Qué se hizo, qué falta, cuándo se puede ver la plataforma y qué le toca a Hernán: **`docs/ESTADO_ADAN_2026-09-25.md`**.
 
@@ -64,6 +64,7 @@ docker compose up --build
 | `REDIS_URL` | Límites compartidos entre workers y réplicas. Sin Redis, los límites viven en la memoria de cada proceso. |
 | `SANDBOX_URL`, `SANDBOX_TOKEN` | Sandbox aislado (`sandbox/`) para ejecutar Python. Sin ellos, `python_sandbox` no existe. |
 | `METRICS_TOKEN` | Protege `/metrics` (Prometheus). |
+| `ANTHROPIC_API_KEY`, `LLM_MODEL_STANDARD`, `LLM_MODEL_COMPLEX`, `LLM_MODEL_FAST` | IA por complejidad (WO-099). Ollama hace lo simple; Claude Sonnet, la conversación y el diagnóstico; Claude Opus, los votos del Board. Sin clave, todo corre en Ollama marcado como degradado. `python scripts/check_claude.py` verifica la clave. El costo por empresa y Nivel está en `GET /api/v1/companies/{id}/llm-usage`. |
 | `OUTBOUND_ALLOWED_HOSTS` | Hosts a los que pueden llamar las herramientas y conectores. Vacío = cualquier host público. El proxy de salida se configura con `HTTPS_PROXY`. |
 
 La interfaz web guarda la sesión en una cookie httpOnly. Las peticiones que modifican datos llevan la cabecera `X-Requested-With: adan`, que funciona como protección anti-CSRF. Los clientes de la API pueden seguir usando `Authorization: Bearer`.

@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { FakeApi } from './fakeApi'
+import { BOARD_PROCEED, FakeApi } from './fakeApi'
 
 async function openNivel1(page: import('@playwright/test').Page) {
   const api = new FakeApi().withCompany()
@@ -38,6 +38,22 @@ test('el Nivel se cierra solo cuando el cliente lo aprueba', async ({ page }) =>
   await expect(page.getByText('Aprobaste el cierre del Nivel 1. El Nivel 2 quedó activo.')).toBeVisible()
   await expect(page.getByText('Completado')).toBeVisible()
   expect(api.callsTo('POST', '/nivel1/c1/decisions/d1')[0]?.body).toEqual({ action: 'approve' })
+})
+
+test('el cliente participa en el Board: pregunta, posición, síntesis y evidencia pedida', async ({ page }) => {
+  const api = await openNivel1(page)
+  api.overrides.set('POST /nivel1/c1/board-room', [200, BOARD_PROCEED])
+  await page.getByRole('tab', { name: 'Board Room' }).click()
+  await page.getByLabel('Tu pregunta para el Board').fill('¿Empiezo en Medellín?')
+  await page.getByLabel('Tu posición').fill('Quiero lanzar ya')
+  await page.getByRole('button', { name: 'Ejecutar Board Room' }).click()
+
+  await expect(page.getByTestId('agent-vote')).toHaveCount(6)
+  await expect(page.getByTestId('board-opening')).toContainText('Tu posición: Quiero lanzar ya')
+  await expect(page.getByTestId('board-synthesis')).toContainText('El Board recomienda avanzar')
+  await expect(page.getByText('Ventas de pan de los últimos 3 meses')).toBeVisible()
+  expect(api.callsTo('POST', '/nivel1/c1/board-room')[0]?.body)
+    .toEqual({ question: '¿Empiezo en Medellín?', position: 'Quiero lanzar ya' })
 })
 
 test('un error del backend se muestra en la página, sin diálogos del navegador', async ({ page }) => {

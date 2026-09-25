@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 
 from app.core.auth import get_current_user
 from app.core.authz import get_owned_company, get_owned_project, owned_companies
+from app.ai.usage import LLMUsage
 from app.core.database import get_db
 from app.models.models import Company, FoundingNarrative, Level, Project, User
 from app.schemas.schemas import CompanyCreate, CompanyResponse, ProjectResponse
@@ -92,3 +93,32 @@ def get_project(
 ):
     project = get_owned_project(db, company_id, user)
     return ProjectResponse.model_validate(project)
+
+
+@router.get("/{company_id}/llm-usage")
+def get_llm_usage(
+    company_id: str,
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    """Costo de IA de la empresa: total, por Nivel y por modelo (WO-099, AD-IA-03)."""
+    get_owned_company(db, company_id, user)
+    rows = db.query(LLMUsage).filter(LLMUsage.company_id == company_id).all()
+
+    def summarize(key):
+        groups: dict = {}
+        for r in rows:
+            g = groups.setdefault(str(key(r)), {"calls": 0, "input_tokens": 0, "output_tokens": 0, "cost_usd": 0.0})
+            g["calls"] += 1
+            g["input_tokens"] += r.input_tokens
+            g["output_tokens"] += r.output_tokens
+            g["cost_usd"] = round(g["cost_usd"] + r.cost_usd, 6)
+        return groups
+
+    return {
+        "calls": len(rows),
+        "cost_usd": round(sum(r.cost_usd for r in rows), 6),
+        "degraded_calls": sum(1 for r in rows if r.degraded),
+        "by_level": summarize(lambda r: r.level_number),
+        "by_model": summarize(lambda r: f"{r.provider}:{r.model}"),
+    }

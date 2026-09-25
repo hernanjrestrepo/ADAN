@@ -97,14 +97,10 @@ async def run_board(
     current_user: User = Depends(llm_user),
     db: Session = Depends(get_db),
 ):
-    """
-    Ejecuta el Executive Board con deliberación secuencial.
-    
-    7 agentes debaten en orden:
-    CEO → CFO → COO → CMO → CTO → CLO → CHRO
-    
-    Cada agente escucha a los anteriores y responde.
-    Se produce un Decision Record persistente.
+    """Board ejecutivo (operación continua): el mismo Board Room de 7 roles de los Niveles.
+
+    El CEO preside; CTO, CFO, CMO, Legal, Producto y Operaciones votan con la memoria de la
+    empresa y sus decisiones pasadas como contexto. Se produce un Decision Record persistente.
     """
     # Verificar que la empresa pertenece al usuario
     get_owned_company(db, request.company_id, current_user)
@@ -164,5 +160,5 @@ async def board_health():
     return {
         "status": "healthy",
         "agents": list(BOARD_AGENTS.keys()),
-        "version": "0.1.0-wo007-deliberation",
+        "version": "wo099-board-unico",
     }

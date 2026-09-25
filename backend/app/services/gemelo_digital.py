@@ -83,6 +83,9 @@ class GemeloDigitalService:
             next_level = self.get_or_create_level(project, level_number + 1)
             next_level.status = NivelStatus.ACTIVE
 
+        # Lo que asciende al Proyecto es el resumen, no las conversaciones (AD-CMP-04 §3)
+        self._close_level_memory(project, level)
+
         # Record event
         self._record_event(
             project.id,
@@ -95,6 +98,23 @@ class GemeloDigitalService:
         self.db.commit()
         self.db.refresh(level)
         return level
+
+    def _close_level_memory(self, project: Project, level: Level) -> None:
+        from app.nivel1.context import ContextLayers
+
+        for card in self.db.query(Card).filter(Card.level_id == level.id).all():
+            if card.status != CardStatus.COMPLETED:
+                card.status = CardStatus.COMPLETED
+            for conv in self.db.query(Conversation).filter(Conversation.card_id == card.id).all():
+                if not conv.summary:
+                    said = [m.content[:200] for m in conv.messages if m.role == "user"]
+                    conv.summary = " | ".join(said)[:2000] or None
+        summary = ContextLayers(self.db).level_summary(project, level)
+        doc = Document(project_id=project.id, title=f"Resumen del Nivel {level.number}",
+                       content=with_disclaimer(summary), doc_type="level_summary", origin="generated_by_adan")
+        self.db.add(doc)
+        self.db.flush()
+        self._record_event(project.id, "level_summary_saved", "document", doc.id, {"level_number": level.number})
 
     def save_diagnosis(self, project: Project, title: str, content: str) -> Document:
         """Save a diagnosis document."""
@@ -213,6 +233,22 @@ class GemeloDigitalService:
             {"title": title},
         )
 
+        self.db.commit()
+        self.db.refresh(doc)
+        return doc
+
+    def save_board_minutes(self, project: Project, minutes: str) -> Document:
+        """Acta del Board Room (AD-FUNC-02): documento generado por ADÁN, con aviso de IA."""
+        doc = Document(
+            project_id=project.id,
+            title="Acta del Board Room",
+            content=with_disclaimer(minutes),
+            doc_type="board_minutes",
+            origin="generated_by_adan",
+        )
+        self.db.add(doc)
+        self.db.flush()
+        self._record_event(project.id, "board_minutes_saved", "document", doc.id, {"title": doc.title})
         self.db.commit()
         self.db.refresh(doc)
         return doc
