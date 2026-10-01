@@ -1,14 +1,19 @@
-import { useState } from 'react'
-import { Link } from 'react-router-dom'
-import { api } from '../lib/api'
+import { useState, type FormEvent } from 'react'
+import { Link } from 'react-router'
+import { api, errorMessage } from '../lib/api'
+import type { User } from '../lib/types'
 
-export default function LoginPage({ onLogin }) {
+interface LoginPageProps {
+  onLogin: (user: User) => void
+}
+
+export default function LoginPage({ onLogin }: LoginPageProps) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setError('')
     setLoading(true)
@@ -16,7 +21,7 @@ export default function LoginPage({ onLogin }) {
       const data = await api.login(email, password)
       onLogin(data.user)
     } catch (err) {
-      setError(err.message)
+      setError(errorMessage(err))
     } finally {
       setLoading(false)
     }
@@ -32,8 +37,9 @@ export default function LoginPage({ onLogin }) {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm text-adan-muted mb-1">Email</label>
+            <label htmlFor="login-email" className="block text-sm text-adan-muted mb-1">Email</label>
             <input
+              id="login-email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -43,8 +49,9 @@ export default function LoginPage({ onLogin }) {
           </div>
 
           <div>
-            <label className="block text-sm text-adan-muted mb-1">Contraseña</label>
+            <label htmlFor="login-password" className="block text-sm text-adan-muted mb-1">Contraseña</label>
             <input
+              id="login-password"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}

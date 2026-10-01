@@ -1,32 +1,48 @@
-import { useState, useEffect, useRef } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useState, useEffect, useRef, useCallback, type FormEvent } from 'react'
+import { useParams, useNavigate } from 'react-router'
 import ReactMarkdown from 'react-markdown'
-import { api } from '../lib/api'
+import { api, errorMessage } from '../lib/api'
+import type {
+  BoardRoomResult,
+  DocumentRecord,
+  GateReviewResult,
+  Message,
+  Nivel1Status,
+  Score,
+} from '../lib/types'
 
-export default function Nivel1Page({ user }) {
-  const { companyId } = useParams()
+type Tab = 'chat' | 'boardroom' | 'diagnosis' | 'scores'
+
+const TABS: { id: Tab; label: string }[] = [
+  { id: 'chat', label: 'Conversación' },
+  { id: 'boardroom', label: 'Board Room' },
+  { id: 'diagnosis', label: 'Diagnóstico' },
+  { id: 'scores', label: 'Scores' },
+]
+
+const DECISION_LABELS: Record<string, string> = {
+  PROCEED: 'Avanzar',
+  PIVOT: 'Pivotar',
+  STOP: 'Detener',
+}
+
+export default function Nivel1Page() {
+  const { companyId = '' } = useParams<{ companyId: string }>()
   const navigate = useNavigate()
-  const [status, setStatus] = useState(null)
-  const [messages, setMessages] = useState([])
+  const [status, setStatus] = useState<Nivel1Status | null>(null)
+  const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(true)
   const [sending, setSending] = useState(false)
-  const [boardResults, setBoardResults] = useState(null)
-  const [diagnosis, setDiagnosis] = useState(null)
-  const [scores, setScores] = useState([])
-  const [gateResult, setGateResult] = useState(null)
-  const [activeTab, setActiveTab] = useState('chat')
-  const messagesEndRef = useRef(null)
+  const [boardResults, setBoardResults] = useState<BoardRoomResult | null>(null)
+  const [boardRunning, setBoardRunning] = useState(false)
+  const [diagnosis, setDiagnosis] = useState<DocumentRecord | null>(null)
+  const [scores, setScores] = useState<Score[]>([])
+  const [gateResult, setGateResult] = useState<GateReviewResult | null>(null)
+  const [activeTab, setActiveTab] = useState<Tab>('chat')
+  const messagesEndRef = useRef<HTMLDivElement>(null)
 
-  useEffect(() => {
-    loadStatus()
-  }, [companyId])
-
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages])
-
-  const loadStatus = async () => {
+  const loadStatus = useCallback(async () => {
     try {
       const data = await api.getNivel1Status(companyId)
       setStatus(data)
@@ -37,9 +53,17 @@ export default function Nivel1Page({ user }) {
     } finally {
       setLoading(false)
     }
-  }
+  }, [companyId])
 
-  const handleSend = async (e) => {
+  useEffect(() => {
+    void loadStatus()
+  }, [loadStatus])
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [messages])
+
+  const handleSend = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     if (!input.trim() || sending) return
 
@@ -48,9 +72,11 @@ export default function Nivel1Page({ user }) {
     setSending(true)
 
     // Add user message optimistically
-    const userMsg = {
+    const userMsg: Message = {
       id: 'temp-' + Date.now(),
+      conversation_id: status?.conversation?.id ?? '',
       role: 'user',
+      agent_name: null,
       content: msg,
       created_at: new Date().toISOString(),
     }
@@ -64,9 +90,9 @@ export default function Nivel1Page({ user }) {
         return [...withoutTemp, data.message]
       })
       // Reload to get full state
-      loadStatus()
+      void loadStatus()
     } catch (err) {
-      alert(err.message)
+      alert(errorMessage(err))
       setMessages((prev) => prev.filter((m) => !m.id.startsWith('temp-')))
     } finally {
       setSending(false)
@@ -76,11 +102,13 @@ export default function Nivel1Page({ user }) {
   const handleBoardRoom = async () => {
     setActiveTab('boardroom')
     setBoardResults(null)
+    setBoardRunning(true)
     try {
-      const data = await api.runBoardRoom(companyId)
-      setBoardResults(data.board_results)
+      setBoardResults(await api.runBoardRoom(companyId))
     } catch (err) {
-      alert(err.message)
+      alert(errorMessage(err))
+    } finally {
+      setBoardRunning(false)
     }
   }
 
@@ -90,9 +118,9 @@ export default function Nivel1Page({ user }) {
     try {
       const data = await api.generateDiagnosis(companyId)
       setDiagnosis(data)
-      loadStatus()
+      void loadStatus()
     } catch (err) {
-      alert(err.message)
+      alert(errorMessage(err))
     }
   }
 
@@ -100,9 +128,9 @@ export default function Nivel1Page({ user }) {
     try {
       const data = await api.gateReview(companyId)
       setGateResult(data)
-      loadStatus()
+      void loadStatus()
     } catch (err) {
-      alert(err.message)
+      alert(errorMessage(err))
     }
   }
 
@@ -150,19 +178,17 @@ export default function Nivel1Page({ user }) {
       {/* Tabs */}
       <div className="border-b border-adan-border px-6">
         <div className="max-w-7xl mx-auto flex gap-1">
-          {['chat', 'boardroom', 'diagnosis', 'scores'].map((tab) => (
+          {TABS.map((tab) => (
             <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
               className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
-                activeTab === tab
+                activeTab === tab.id
                   ? 'border-adan-accent text-adan-accent'
                   : 'border-transparent text-adan-muted hover:text-adan-text'
               }`}
             >
-              {tab === 'chat' ? 'Conversación' :
-               tab === 'boardroom' ? 'Board Room' :
-               tab === 'diagnosis' ? 'Diagnóstico' : 'Scores'}
+              {tab.label}
             </button>
           ))}
         </div>
@@ -261,7 +287,11 @@ export default function Nivel1Page({ user }) {
         {activeTab === 'boardroom' && (
           <div className="max-w-4xl mx-auto p-6">
             <h2 className="text-2xl font-bold mb-6">Board Room</h2>
-            {!boardResults ? (
+            {boardRunning ? (
+              <div className="text-center py-12 text-adan-muted animate-pulse">
+                Los agentes del Board Room están deliberando...
+              </div>
+            ) : !boardResults ? (
               <div className="text-center py-12">
                 <p className="text-adan-muted mb-4">
                   Ejecuta el Board Room para que cada agente analice tu problema.
@@ -275,20 +305,41 @@ export default function Nivel1Page({ user }) {
               </div>
             ) : (
               <div className="space-y-6">
-                {boardResults.map((result) => (
-                  <div key={result.agent} className="bg-adan-surface border border-adan-border rounded-xl p-6">
+                <div className="bg-adan-surface border border-adan-accent/50 rounded-xl p-6" data-testid="board-consensus">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-lg font-bold">
+                      Decisión: {DECISION_LABELS[boardResults.decision] ?? boardResults.decision}
+                    </h3>
+                    <span className="text-sm text-adan-muted">
+                      Score {boardResults.score.toFixed(0)} · Confianza {boardResults.confidence.toFixed(0)}%
+                    </span>
+                  </div>
+                  <p className="text-sm whitespace-pre-wrap text-adan-text/90">{boardResults.summary}</p>
+                  {boardResults.dissent && (
+                    <p className="text-xs text-adan-warning mt-3">Disenso: {boardResults.dissent}</p>
+                  )}
+                </div>
+                {boardResults.votes.map((vote) => (
+                  <div key={vote.agent} className="bg-adan-surface border border-adan-border rounded-xl p-6">
                     <div className="flex items-center gap-3 mb-4">
                       <div className="w-10 h-10 rounded-full bg-adan-accent/20 flex items-center justify-center text-adan-accent font-bold">
-                        {result.agent[0]}
+                        {vote.agent[0]}
                       </div>
-                      <div>
-                        <h3 className="font-bold">{result.agent}</h3>
-                        <p className="text-xs text-adan-muted">Agente del Board Room</p>
+                      <div className="flex-1">
+                        <h3 className="font-bold">{vote.agent}</h3>
+                        <p className="text-xs text-adan-muted">
+                          Vota {DECISION_LABELS[vote.vote] ?? vote.vote} · confianza {vote.confidence.toFixed(0)}%
+                        </p>
                       </div>
                     </div>
                     <div className="text-sm whitespace-pre-wrap text-adan-text/90">
-                      {result.analysis}
+                      {vote.analysis}
                     </div>
+                    {vote.key_concerns.length > 0 && (
+                      <ul className="mt-3 text-xs text-adan-muted list-disc pl-5">
+                        {vote.key_concerns.map((c) => <li key={c}>{c}</li>)}
+                      </ul>
+                    )}
                   </div>
                 ))}
               </div>
@@ -320,7 +371,7 @@ export default function Nivel1Page({ user }) {
                   </span>
                 </div>
                 <div className="prose prose-invert max-w-none">
-                  <ReactMarkdown>{diagnosis.content}</ReactMarkdown>
+                  <ReactMarkdown>{diagnosis.content ?? ''}</ReactMarkdown>
                 </div>
               </div>
             )}

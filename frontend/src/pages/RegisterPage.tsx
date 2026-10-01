@@ -1,15 +1,20 @@
-import { useState } from 'react'
-import { Link } from 'react-router-dom'
-import { api } from '../lib/api'
+import { useState, type FormEvent } from 'react'
+import { Link } from 'react-router'
+import { api, errorMessage } from '../lib/api'
+import type { User } from '../lib/types'
 
-export default function RegisterPage({ onRegister }) {
+interface RegisterPageProps {
+  onRegister: (user: User) => void
+}
+
+export default function RegisterPage({ onRegister }: RegisterPageProps) {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setError('')
     setLoading(true)
@@ -17,7 +22,7 @@ export default function RegisterPage({ onRegister }) {
       const data = await api.register(email, name, password)
       onRegister(data.user)
     } catch (err) {
-      setError(err.message)
+      setError(errorMessage(err))
     } finally {
       setLoading(false)
     }
@@ -33,8 +38,9 @@ export default function RegisterPage({ onRegister }) {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm text-adan-muted mb-1">Nombre</label>
+            <label htmlFor="register-name" className="block text-sm text-adan-muted mb-1">Nombre</label>
             <input
+              id="register-name"
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -44,8 +50,9 @@ export default function RegisterPage({ onRegister }) {
           </div>
 
           <div>
-            <label className="block text-sm text-adan-muted mb-1">Email</label>
+            <label htmlFor="register-email" className="block text-sm text-adan-muted mb-1">Email</label>
             <input
+              id="register-email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -55,8 +62,9 @@ export default function RegisterPage({ onRegister }) {
           </div>
 
           <div>
-            <label className="block text-sm text-adan-muted mb-1">Contraseña</label>
+            <label htmlFor="register-password" className="block text-sm text-adan-muted mb-1">Contraseña</label>
             <input
+              id="register-password"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}

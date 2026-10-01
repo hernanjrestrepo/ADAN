@@ -1,9 +1,14 @@
-import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { api } from '../lib/api'
+import { useState, useEffect, type FormEvent } from 'react'
+import { useNavigate } from 'react-router'
+import { api, errorMessage } from '../lib/api'
+import type { Company, User } from '../lib/types'
 
-export default function DashboardPage({ user }) {
-  const [companies, setCompanies] = useState([])
+interface DashboardPageProps {
+  user: User
+}
+
+export default function DashboardPage({ user }: DashboardPageProps) {
+  const [companies, setCompanies] = useState<Company[]>([])
   const [showCreate, setShowCreate] = useState(false)
   const [form, setForm] = useState({ name: '', description: '', industry: '', country: '' })
   const [loading, setLoading] = useState(true)
@@ -17,14 +22,14 @@ export default function DashboardPage({ user }) {
       .finally(() => setLoading(false))
   }, [])
 
-  const handleCreate = async (e) => {
+  const handleCreate = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setCreating(true)
     try {
       const company = await api.createCompany(form.name, form.description, form.industry, form.country)
       navigate(`/nivel1/${company.id}`)
     } catch (err) {
-      alert(err.message)
+      alert(errorMessage(err))
     } finally {
       setCreating(false)
     }

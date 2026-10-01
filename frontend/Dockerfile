@@ -1,10 +1,10 @@
-FROM node:20-slim
+FROM node:22-slim
 
 WORKDIR /app
 
-# Install dependencies
-COPY package.json ./
-RUN npm install
+# Install dependencies (reproducible: respeta package-lock.json)
+COPY package.json package-lock.json ./
+RUN npm ci
 
 # Copy source
 COPY . .

@@ -1,13 +1,14 @@
-import { Routes, Route, Navigate } from 'react-router-dom'
+import { Routes, Route, Navigate } from 'react-router'
 import { useState, useEffect } from 'react'
 import { api } from './lib/api'
+import type { User } from './lib/types'
 import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
 import DashboardPage from './pages/DashboardPage'
 import Nivel1Page from './pages/Nivel1Page'
 
 function App() {
-  const [user, setUser] = useState(null)
+  const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -46,7 +47,7 @@ function App() {
         user ? <DashboardPage user={user} /> : <Navigate to="/login" />
       } />
       <Route path="/nivel1/:companyId" element={
-        user ? <Nivel1Page user={user} /> : <Navigate to="/login" />
+        user ? <Nivel1Page /> : <Navigate to="/login" />
       } />
       <Route path="*" element={<Navigate to={user ? "/dashboard" : "/login"} />} />
     </Routes>
