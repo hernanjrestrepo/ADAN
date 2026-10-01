@@ -7,6 +7,8 @@ Cada motor implementa la misma interfaz para ser usado como herramienta del TEF.
 import abc
 import hashlib
 import httpx
+
+from app.core.net import safe_async_client
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -58,7 +60,7 @@ class Crawl4AIEngine(ScraperEngine):
         start = time.time()
 
         try:
-            async with httpx.AsyncClient(timeout=30, follow_redirects=True) as client:
+            async with safe_async_client(timeout=30, follow_redirects=True) as client:
                 response = await client.get(url, headers={
                     "User-Agent": "Mozilla/5.0 (compatible; ADAN/1.0)"
                 })
@@ -233,7 +235,7 @@ class FirecrawlEngine(ScraperEngine):
                 "Accept-Language": "es-ES,es;q=0.9,en;q=0.8",
             }
 
-            async with httpx.AsyncClient(timeout=30, follow_redirects=True) as client:
+            async with safe_async_client(timeout=30, follow_redirects=True) as client:
                 response = await client.get(url, headers=headers)
                 response.raise_for_status()
 

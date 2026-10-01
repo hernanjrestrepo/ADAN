@@ -121,15 +121,24 @@ class TestSlackConnector:
 
 class TestRESTAPIConnector:
     @pytest.mark.asyncio
-    async def test_execute_get(self):
+    async def test_execute_get(self, local_site):
         connector = RESTAPIConnector()
-        await connector.connect({"base_url": "https://httpbin.org"})
+        await connector.connect({"base_url": local_site})
         result = await connector.execute("get", {
-            "url": "https://httpbin.org/get",
+            "url": f"{local_site}/get",
             "method": "GET",
         })
         assert result.status == "success"
         assert result.output["status_code"] == 200
+
+    @pytest.mark.asyncio
+    async def test_execute_blocks_internal_network(self, local_http_server, monkeypatch):
+        monkeypatch.delenv("ALLOW_PRIVATE_HTTP", raising=False)
+        connector = RESTAPIConnector()
+        await connector.connect({})
+        result = await connector.execute("get", {"url": f"{local_http_server}/get"})
+        assert result.status == "error"
+        assert "blocked" in result.error.lower()
 
     @pytest.mark.asyncio
     async def test_execute_invalid_url(self):

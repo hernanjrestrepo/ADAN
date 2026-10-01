@@ -318,7 +318,7 @@ class TestTEFSecurity:
 
     @pytest.mark.asyncio
     async def test_http_request_blocks_internal_hosts(self, context, monkeypatch):
-        monkeypatch.delenv("TEF_ALLOW_PRIVATE_HTTP", raising=False)
+        monkeypatch.delenv("ALLOW_PRIVATE_HTTP", raising=False)
         tool = HttpRequestTool()
         for url in ("http://127.0.0.1:8000/", "http://localhost:11434/api/tags",
                     "http://169.254.169.254/latest/meta-data/", "file:///etc/passwd"):

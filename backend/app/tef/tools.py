@@ -3,14 +3,12 @@ TEF Tools — Herramientas iniciales para demostrar el framework.
 """
 
 import ast
-import ipaddress
 import json
 import math
 import hashlib
 import operator
 import os
 import re
-import socket
 import sys
 from pathlib import Path
 from datetime import datetime, timezone
@@ -19,6 +17,7 @@ from typing import Any
 import httpx
 from sqlalchemy import text
 
+from app.core.net import safe_async_client, ssrf_block_reason
 from app.tef.interfaces import ToolProvider, ToolMetadata, ToolContext, ToolResult
 
 
@@ -181,31 +180,6 @@ class FileReaderTool(ToolProvider):
 # HTTP Request
 # ============================================================
 
-def _ssrf_block_reason(url: str) -> str | None:
-    """Rechaza URLs no http(s) o que resuelvan a direcciones internas.
-
-    TEF_ALLOW_PRIVATE_HTTP=true desactiva el bloqueo de red interna.
-    """
-    parsed = httpx.URL(url)
-    if parsed.scheme not in ("http", "https"):
-        return "only http/https URLs are allowed"
-    if os.getenv("TEF_ALLOW_PRIVATE_HTTP", "false").lower() == "true":
-        return None
-    host = parsed.host
-    if not host:
-        return "missing host"
-    try:
-        infos = socket.getaddrinfo(host, None)
-    except socket.gaierror:
-        return None  # no resuelve: httpx devolverá el error de conexión
-    for info in infos:
-        ip = ipaddress.ip_address(info[4][0].split("%")[0])
-        if (ip.is_private or ip.is_loopback or ip.is_link_local
-                or ip.is_reserved or ip.is_multicast or ip.is_unspecified):
-            return "internal network addresses are not allowed"
-    return None
-
-
 class HttpRequestTool(ToolProvider):
     """Herramienta de requests HTTP."""
 
@@ -240,7 +214,7 @@ class HttpRequestTool(ToolProvider):
             body = params.get("body")
             timeout = params.get("timeout", 30)
 
-            blocked = _ssrf_block_reason(url)
+            blocked = ssrf_block_reason(url)
             if blocked:
                 return ToolResult(
                     tool_id="http_request",
@@ -248,7 +222,7 @@ class HttpRequestTool(ToolProvider):
                     error=f"Request blocked: {blocked}",
                 )
 
-            async with httpx.AsyncClient(timeout=timeout, follow_redirects=False) as client:
+            async with safe_async_client(timeout=timeout, follow_redirects=False) as client:
                 response = await client.request(
                     method=method,
                     url=url,

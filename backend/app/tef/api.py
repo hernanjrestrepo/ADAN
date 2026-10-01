@@ -10,6 +10,7 @@ from app.core.database import get_db
 from app.core.auth import get_current_user
 from app.models.models import User, Company
 from app.tef.interfaces import ToolContext
+from app.dka.tools import Crawl4AITool, FirecrawlTool, ScrapeGraphTool
 from app.tef.registry import ToolRegistry
 from app.tef.executor import ToolExecutor
 from app.tef.tools import (
@@ -77,6 +78,10 @@ _registry.register(FileReaderTool())
 _registry.register(HttpRequestTool())
 _registry.register(PythonSandboxTool())
 _registry.register(EmailSenderTool())
+# Navegación web (DKA) — protegidas contra SSRF por app.core.net
+_registry.register(Crawl4AITool())
+_registry.register(ScrapeGraphTool())
+_registry.register(FirecrawlTool())
 
 
 def get_executor(db: Session = Depends(get_db)) -> ToolExecutor:

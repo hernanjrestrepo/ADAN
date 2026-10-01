@@ -54,12 +54,14 @@ def mock_llm():
 
 class TestCrawl4AIEngine:
     @pytest.mark.asyncio
-    async def test_scrape_httpbin(self):
+    async def test_scrape_local_page(self, local_site):
         engine = Crawl4AIEngine()
-        result = await engine.scrape("https://httpbin.org/html")
+        result = await engine.scrape(f"{local_site}/html")
         assert result.content_type == "text"
         assert result.word_count > 0
         assert result.engine_used == "crawl4ai"
+        assert result.title == "Café Andino — Informe de mercado"
+        assert "tracking" not in result.content  # scripts eliminados
 
     @pytest.mark.asyncio
     async def test_scrape_invalid_url(self):
@@ -71,27 +73,36 @@ class TestCrawl4AIEngine:
         engine = Crawl4AIEngine()
         assert engine.name() == "crawl4ai"
 
+    @pytest.mark.asyncio
+    async def test_scrape_blocks_internal_network(self, local_http_server, monkeypatch):
+        """SSRF: sin ALLOW_PRIVATE_HTTP no se puede leer la red interna."""
+        monkeypatch.delenv("ALLOW_PRIVATE_HTTP", raising=False)
+        for url in (f"{local_http_server}/html", "http://169.254.169.254/latest/meta-data/"):
+            result = await Crawl4AIEngine().scrape(url)
+            assert result.content_type == "error"
+            assert "blocked" in result.content.lower()
+
 
 class TestScrapeGraphAIEngine:
     @pytest.mark.asyncio
-    async def test_scrape_with_llm(self, mock_llm):
+    async def test_scrape_with_llm(self, mock_llm, local_site):
         engine = ScrapeGraphAIEngine(llm=mock_llm)
-        result = await engine.scrape("https://httpbin.org/html", "extraer texto")
+        result = await engine.scrape(f"{local_site}/html", "extraer texto")
         assert result.content_type in ["structured", "text"]
         assert result.engine_used == "scrapegraph"
 
     @pytest.mark.asyncio
-    async def test_scrape_without_llm(self):
+    async def test_scrape_without_llm(self, local_site):
         engine = ScrapeGraphAIEngine(llm=None)
-        result = await engine.scrape("https://httpbin.org/html")
+        result = await engine.scrape(f"{local_site}/html")
         assert result.content_type == "text"
 
 
 class TestFirecrawlEngine:
     @pytest.mark.asyncio
-    async def test_scrape(self):
+    async def test_scrape(self, local_site):
         engine = FirecrawlEngine()
-        result = await engine.scrape("https://httpbin.org/html")
+        result = await engine.scrape(f"{local_site}/html")
         assert result.content_type == "text"
         assert result.engine_used == "firecrawl"
 
@@ -117,35 +128,36 @@ class TestEngineSelector:
 
 class TestKnowledgeAcquisitionPipeline:
     @pytest.mark.asyncio
-    async def test_acquire_with_urls(self, ems):
+    async def test_acquire_with_urls(self, ems, local_site):
         pipeline = KnowledgeAcquisitionPipeline(ems)
         result = await pipeline.acquire(
             query="test",
             company_id="test-company",
-            urls=["https://httpbin.org/html"],
+            urls=[f"{local_site}/html"],
             max_sources=1,
         )
         assert result.sources_scraped == 1
         assert result.total_duration_ms > 0
 
     @pytest.mark.asyncio
-    async def test_acquire_quality_filter(self, ems):
+    async def test_acquire_quality_filter(self, ems, local_site):
         pipeline = KnowledgeAcquisitionPipeline(ems)
         result = await pipeline.acquire(
             query="test",
             company_id="test-company",
-            urls=["https://httpbin.org/html"],
+            urls=[f"{local_site}/html"],
         )
-        # httpbin.org/html tiene contenido suficiente
-        assert result.sources_succeeded >= 0
+        # la página local tiene contenido suficiente para pasar el filtro
+        assert result.sources_succeeded == 1
+        assert result.quality_scores and result.quality_scores[0] > 0.3
 
     @pytest.mark.asyncio
-    async def test_acquire_with_mock_urls(self, ems):
+    async def test_acquire_with_mock_urls(self, ems, local_site):
         pipeline = KnowledgeAcquisitionPipeline(ems)
         result = await pipeline.acquire(
             query="bpo colombia",
             company_id="test-company",
-            urls=["https://httpbin.org/html"],
+            urls=[f"{local_site}/html"],
         )
         assert result.query == "bpo colombia"
 
@@ -167,7 +179,7 @@ class TestKnowledgeAcquisitionPipeline:
 
 class TestDKAIntegration:
     @pytest.mark.asyncio
-    async def test_full_flow(self, ems):
+    async def test_full_flow(self, ems, local_site):
         """Test completo: acquire → EMS → retrieve."""
         pipeline = KnowledgeAcquisitionPipeline(ems)
 
@@ -175,30 +187,83 @@ class TestDKAIntegration:
         result = await pipeline.acquire(
             query="información de prueba",
             company_id="test-company",
-            urls=["https://httpbin.org/html"],
+            urls=[f"{local_site}/html"],
         )
 
         # 2. Verificar que se almacenó
-        if result.sources_succeeded > 0:
-            # 3. Recuperar conocimiento
-            retrieval = await ems.retrieve(
-                company_id="test-company",
-                query="información de prueba",
-            )
-            assert retrieval.total_results >= 0
+        assert result.sources_succeeded == 1
+
+        # 3. Recuperar conocimiento
+        retrieval = await ems.retrieve(
+            company_id="test-company",
+            query="mercado café especial Colombia",
+        )
+        assert any("café" in c["text"] for c in retrieval.chunks)
 
     @pytest.mark.asyncio
-    async def test_acquire_stores_in_ems(self, ems):
+    async def test_acquire_stores_in_ems(self, ems, local_site):
         """Verifica que el conocimiento adquirido se almacena en EMS."""
         pipeline = KnowledgeAcquisitionPipeline(ems)
 
         result = await pipeline.acquire(
             query="datos de prueba",
             company_id="test-company",
-            urls=["https://httpbin.org/html"],
+            urls=[f"{local_site}/html"],
         )
 
         # Verificar stats del EMS
         stats = ems.get_stats("test-company")
-        if result.sources_succeeded > 0:
-            assert stats["documents"] >= 1
+        assert result.sources_succeeded == 1
+        assert stats["documents"] >= 1
+
+
+# ============================================================
+# Tests: DKA como herramientas TEF
+# ============================================================
+
+class TestDKATools:
+    @pytest.fixture
+    def tool_context(self):
+        from app.tef.interfaces import ToolContext
+        return ToolContext(company_id="c1", user_id="u1", trace_id="t1")
+
+    @pytest.mark.asyncio
+    async def test_crawl4ai_tool(self, local_site, tool_context):
+        from app.dka.tools import Crawl4AITool
+        tool = Crawl4AITool()
+        assert tool.metadata().id == "crawl4ai"
+        result = await tool.execute({"url": f"{local_site}/html"}, tool_context)
+        assert result.status == "success"
+        assert result.output["title"] == "Café Andino — Informe de mercado"
+        assert result.output["word_count"] > 100
+
+    @pytest.mark.asyncio
+    async def test_scrapegraph_tool_with_llm(self, local_site, tool_context, mock_llm):
+        from app.dka.tools import ScrapeGraphTool
+        tool = ScrapeGraphTool(llm=mock_llm)
+        assert tool.metadata().id == "scrapegraph"
+        result = await tool.execute({"url": f"{local_site}/html", "query": "precios"}, tool_context)
+        assert result.status == "success"
+        assert result.output["extracted_content"]
+
+    @pytest.mark.asyncio
+    async def test_firecrawl_tool(self, local_site, tool_context):
+        from app.dka.tools import FirecrawlTool
+        tool = FirecrawlTool()
+        assert tool.metadata().id == "firecrawl"
+        result = await tool.execute({"url": f"{local_site}/html"}, tool_context)
+        assert result.status == "success"
+        assert "café" in result.output["content"].lower()
+
+    @pytest.mark.asyncio
+    async def test_tools_report_errors(self, tool_context, monkeypatch):
+        from app.dka.tools import Crawl4AITool, FirecrawlTool
+        monkeypatch.delenv("ALLOW_PRIVATE_HTTP", raising=False)
+        for tool in (Crawl4AITool(), FirecrawlTool()):
+            result = await tool.execute({"url": "http://127.0.0.1:9/"}, tool_context)
+            assert result.status == "error"
+
+    def test_registered_in_tef(self):
+        from app.tef.api import _registry
+        ids = {t.id for t in _registry.list_all()}
+        assert {"crawl4ai", "scrapegraph", "firecrawl"} <= ids

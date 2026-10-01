@@ -86,3 +86,112 @@ def client(db_session):
     with TestClient(app) as c:
         yield c
     app.dependency_overrides.clear()
+
+
+# ============================================================
+# Servidor HTTP local (sustituye a httpbin.org: tests herméticos)
+# ============================================================
+
+_SAMPLE_HTML = """<!DOCTYPE html>
+<html><head><title>Café Andino — Informe de mercado</title>
+<style>body { color: #333 }</style><script>var tracking = true;</script></head>
+<body><h1>Café Andino</h1>
+""" + "\n".join(
+    f"<p>Párrafo {i}: el mercado de café especial en Colombia crece por la demanda de "
+    "hoteles boutique, cafeterías de especialidad y exportación a Europa. Los productores "
+    "pequeños mejoran márgenes con trazabilidad, certificación orgánica y venta directa.</p>"
+    for i in range(1, 9)
+) + "\n</body></html>"
+
+
+class _LocalHandler(__import__("http.server").server.BaseHTTPRequestHandler):
+    def do_GET(self):  # noqa: N802
+        if self.path.startswith("/html"):
+            body, ctype = _SAMPLE_HTML.encode(), "text/html; charset=utf-8"
+        elif self.path.startswith("/get"):
+            import json
+            body, ctype = json.dumps({"url": self.path, "ok": True}).encode(), "application/json"
+        else:
+            self.send_response(404)
+            self.end_headers()
+            return
+        self.send_response(200)
+        self.send_header("Content-Type", ctype)
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
+    def log_message(self, *args):
+        pass
+
+
+@pytest.fixture(scope="session")
+def local_http_server():
+    """URL base de un servidor HTTP local con /html y /get."""
+    import threading
+    from http.server import ThreadingHTTPServer
+
+    server = ThreadingHTTPServer(("127.0.0.1", 0), _LocalHandler)
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    yield f"http://127.0.0.1:{server.server_address[1]}"
+    server.shutdown()
+
+
+@pytest.fixture
+def local_site(local_http_server, monkeypatch):
+    """Servidor local + permiso de red privada (la protección SSRF lo bloquearía)."""
+    monkeypatch.setenv("ALLOW_PRIVATE_HTTP", "true")
+    return local_http_server
+
+
+# ============================================================
+# Servidor ADÁN real (uvicorn) para tests de carga/concurrencia
+# ============================================================
+
+@pytest.fixture(scope="module")
+def live_server(tmp_path_factory):
+    """Levanta la app en un puerto libre con su propia BD de pruebas."""
+    import socket
+    import threading
+    import time
+
+    import uvicorn
+
+    from app.core.migrations import upgrade_database
+
+    if IS_SQLITE:
+        engine = create_db_engine(f"sqlite:///{tmp_path_factory.mktemp('live') / 'live.db'}")
+        upgrade_database(engine)
+    else:
+        engine = _test_engine
+        _clean_all_tables()
+    LiveSession = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+    def override_get_db():
+        db = LiveSession()
+        try:
+            yield db
+        finally:
+            db.close()
+
+    with socket.socket() as sock:
+        sock.bind(("127.0.0.1", 0))
+        port = sock.getsockname()[1]
+
+    app.dependency_overrides[get_db] = override_get_db
+    server = uvicorn.Server(uvicorn.Config(app, host="127.0.0.1", port=port, log_level="warning", lifespan="off"))
+    thread = threading.Thread(target=server.run, daemon=True)
+    thread.start()
+    deadline = time.time() + 15
+    while not server.started and time.time() < deadline:
+        time.sleep(0.05)
+    assert server.started, "el servidor de pruebas no arrancó"
+
+    yield f"http://127.0.0.1:{port}"
+
+    server.should_exit = True
+    thread.join(timeout=10)
+    app.dependency_overrides.pop(get_db, None)
+    if IS_SQLITE:
+        engine.dispose()
