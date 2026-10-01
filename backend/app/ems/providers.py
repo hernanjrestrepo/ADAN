@@ -78,8 +78,8 @@ class VectorStoreProvider(abc.ABC):
         ...
 
     @abc.abstractmethod
-    def count(self) -> int:
-        """Retorna la cantidad de registros."""
+    def count(self, company_id: str | None = None) -> int:
+        """Retorna la cantidad de registros (opcionalmente de una empresa)."""
         ...
 
 
@@ -123,6 +123,43 @@ class LocalEmbeddingProvider(EmbeddingProvider):
             vector = [x / norm for x in vector]
 
         return vector
+
+
+class OllamaEmbeddingProvider(EmbeddingProvider):
+    """Embeddings semánticos reales vía Ollama (`/api/embed`).
+
+    Requiere el modelo descargado en Ollama, p. ej. `ollama pull nomic-embed-text`.
+    """
+
+    def __init__(self, base_url: str, model: str, timeout: float = 60.0):
+        self._base_url = base_url.rstrip("/")
+        self._model = model
+        self._timeout = timeout
+        self._dim: int | None = None
+
+    def embed(self, texts: list[str]) -> list[list[float]]:
+        if not texts:
+            return []
+        import httpx
+
+        response = httpx.post(
+            f"{self._base_url}/api/embed",
+            json={"model": self._model, "input": texts},
+            timeout=self._timeout,
+        )
+        response.raise_for_status()
+        vectors = response.json()["embeddings"]
+        if vectors:
+            self._dim = len(vectors[0])
+        return vectors
+
+    def embed_query(self, query: str) -> list[float]:
+        return self.embed([query])[0]
+
+    def dimension(self) -> int:
+        if self._dim is None:
+            self._dim = len(self.embed_query("dimension"))
+        return self._dim
 
 
 class LocalVectorStoreProvider(VectorStoreProvider):
@@ -177,8 +214,10 @@ class LocalVectorStoreProvider(VectorStoreProvider):
                 count += 1
         return count
 
-    def count(self) -> int:
-        return len(self._records)
+    def count(self, company_id: str | None = None) -> int:
+        if company_id is None:
+            return len(self._records)
+        return sum(1 for r in self._records.values() if r.metadata.get("company_id") == company_id)
 
     def _cosine_similarity(self, a: list[float], b: list[float]) -> float:
         """Calcula similitud coseno entre dos vectores."""

@@ -18,7 +18,7 @@ from app.integrations.api import router as integrations_router
 from app.voice.api import router as voice_router
 from app.omnichannel.api import router as omnichannel_router
 from app.core.config import settings
-from app.core.database import init_db, engine
+from app.core.database import init_db
 from app.core.logging import setup_logging
 
 logger = setup_logging()
@@ -29,12 +29,6 @@ async def lifespan(app: FastAPI):
     """Startup/shutdown lifecycle."""
     logger.info("ADÁN backend starting up")
     init_db()
-    # Create EMS tables (separate Base)
-    from app.ems.models import EMSBase
-    EMSBase.metadata.create_all(bind=engine)
-    # Create OOS tables (separate Base)
-    from app.oos.models import OOSBase
-    OOSBase.metadata.create_all(bind=engine)
     logger.info("Database initialized")
     yield
     logger.info("ADÁN backend shutting down")

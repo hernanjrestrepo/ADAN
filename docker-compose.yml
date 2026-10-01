@@ -1,10 +1,28 @@
 services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER:-adan}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-adan-dev-password}
+      - POSTGRES_DB=${POSTGRES_DB:-adan}
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+
   backend:
     build: ./backend
     ports:
       - "8050:8000"
     environment:
-      - DATABASE_URL=sqlite:///./data/adan.db
+      - DATABASE_URL=postgresql+psycopg://${POSTGRES_USER:-adan}:${POSTGRES_PASSWORD:-adan-dev-password}@postgres:5432/${POSTGRES_DB:-adan}
+      - EMBEDDING_PROVIDER=${EMBEDDING_PROVIDER:-local}
       - JWT_SECRET=${JWT_SECRET:-adan-dev-secret-change-in-production}
       - OLLAMA_BASE_URL=http://ollama:11434
       - DEFAULT_MODEL=${DEFAULT_MODEL:-qwen2.5:0.5b}
@@ -13,6 +31,8 @@ services:
     volumes:
       - backend-data:/app/data
     depends_on:
+      postgres:
+        condition: service_healthy
       ollama:
         condition: service_healthy
       model-pull:
@@ -57,5 +77,6 @@ services:
     restart: "no"
 
 volumes:
+  postgres-data:
   backend-data:
   ollama-models:

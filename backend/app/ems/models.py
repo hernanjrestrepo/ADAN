@@ -1,7 +1,7 @@
 """
 EMS Models — Modelos de persistencia para el Enterprise Memory System.
 
-Usa EMSBase separado para evitar conflictos con los modelos principales.
+Comparte la base declarativa única `Base` (WO-091).
 """
 
 import uuid
@@ -10,12 +10,14 @@ from sqlalchemy import (
     Column, String, Text, Float, Integer, DateTime, JSON, Boolean,
     ForeignKey, Index
 )
-from sqlalchemy.orm import relationship, DeclarativeBase
+from sqlalchemy.orm import relationship
+
+from app.core.database import Base
+from app.core.types import EmbeddingVector
 
 
-class EMSBase(DeclarativeBase):
-    """Base separada para modelos EMS."""
-    pass
+# WO-091: todos los módulos comparten la base declarativa única.
+EMSBase = Base
 
 
 def gen_uuid():
@@ -139,3 +141,26 @@ class Correction(EMSBase):
     confidence_adjustment = Column(Float, default=0.0)
     created_at = Column(DateTime, default=utcnow)
     created_by = Column(String(36), nullable=True)
+
+
+class EMSEmbedding(Base):
+    """Embedding persistente de un chunk (vector store del EMS, WO-091).
+
+    En PostgreSQL la columna `embedding` es `vector` (pgvector) y la búsqueda
+    usa el operador de distancia coseno `<=>`; en SQLite se guarda como JSON.
+    """
+    __tablename__ = "ems_embeddings"
+
+    id = Column(String(36), primary_key=True)  # = EMSChunk.id
+    company_id = Column(String(36), nullable=False)
+    document_id = Column(String(36), nullable=True)
+    content = Column(Text, nullable=False, default="")
+    metadata_json = Column(JSON, default=dict)
+    dim = Column(Integer, nullable=False)
+    embedding = Column(EmbeddingVector(), nullable=False)
+    created_at = Column(DateTime, default=utcnow)
+
+    __table_args__ = (
+        Index("idx_ems_emb_company_dim", "company_id", "dim"),
+        Index("idx_ems_emb_document", "document_id"),
+    )

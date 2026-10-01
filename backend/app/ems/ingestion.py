@@ -164,6 +164,8 @@ class IngestionPipeline:
             )
 
         except Exception as e:
+            # Dejar la sesión usable (PostgreSQL aborta la transacción ante un error)
+            self.db.rollback()
             duration_ms = int((datetime.now(timezone.utc) - start_time).total_seconds() * 1000)
             return IngestionResult(
                 document_id="",

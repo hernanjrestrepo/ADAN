@@ -11,8 +11,7 @@ from app.core.database import get_db
 from app.core.auth import get_current_user
 from app.models.models import User, Company
 from app.ai.factory import get_llm_adapter
-from app.ems.memory import EnterpriseMemorySystem
-from app.ems.providers import LocalEmbeddingProvider, LocalVectorStoreProvider
+from app.ems.factory import build_ems
 from app.tef.executor import ToolExecutor
 from app.tef.registry import ToolRegistry
 from app.tef.tools import (
@@ -60,8 +59,6 @@ class AgentResponseSchema(BaseModel):
 # Singletons
 # ============================================================
 
-_embedding_provider = LocalEmbeddingProvider(dim=128)
-_vector_store = LocalVectorStoreProvider()
 _tef_registry = ToolRegistry()
 _tef_executor = ToolExecutor(_tef_registry)
 
@@ -103,7 +100,7 @@ async def ceo_analyze(
 
     # Crear componentes
     llm = get_llm_adapter()
-    ems = EnterpriseMemorySystem(db, _embedding_provider, _vector_store)
+    ems = build_ems(db)
 
     # Inyectar DB en SQL Tool
     sql_tool = _tef_registry.get("sql_query")

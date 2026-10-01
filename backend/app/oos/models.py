@@ -8,12 +8,13 @@ from sqlalchemy import (
     Column, String, Text, Float, Integer, DateTime, JSON, Boolean,
     ForeignKey, Index
 )
-from sqlalchemy.orm import relationship, DeclarativeBase
+from sqlalchemy.orm import relationship
+
+from app.core.database import Base
 
 
-class OOSBase(DeclarativeBase):
-    """Base separada para modelos OOS."""
-    pass
+# WO-091: todos los módulos comparten la base declarativa única.
+OOSBase = Base
 
 
 def gen_uuid():

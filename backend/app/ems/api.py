@@ -10,7 +10,7 @@ from app.core.database import get_db
 from app.core.auth import get_current_user
 from app.models.models import User, Company
 from app.ems.memory import EnterpriseMemorySystem
-from app.ems.providers import LocalEmbeddingProvider, LocalVectorStoreProvider
+from app.ems.factory import build_ems, get_embedding_provider
 
 router = APIRouter(prefix="/ems", tags=["ems"])
 
@@ -86,13 +86,9 @@ class CorrectionRequest(BaseModel):
 # Dependency: EMS instance
 # ============================================================
 
-# Providers globales (singleton pattern)
-_embedding_provider = LocalEmbeddingProvider(dim=128)
-_vector_store = LocalVectorStoreProvider()
-
 
 def get_ems(db: Session = Depends(get_db)) -> EnterpriseMemorySystem:
-    return EnterpriseMemorySystem(db, _embedding_provider, _vector_store)
+    return build_ems(db)
 
 
 # ============================================================
@@ -253,7 +249,7 @@ async def ems_health():
     """Health check del EMS."""
     return {
         "status": "healthy",
-        "embedding_provider": "LocalEmbeddingProvider",
-        "vector_store": "LocalVectorStoreProvider",
+        "embedding_provider": type(get_embedding_provider()).__name__,
+        "vector_store": "SQLVectorStoreProvider",
         "version": "0.1.0-wo004",
     }

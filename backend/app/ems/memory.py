@@ -293,5 +293,5 @@ class EnterpriseMemorySystem:
             "chunks": chunk_count,
             "facts": fact_count,
             "corrections": correction_count,
-            "vector_store_size": self.vector_store.count(),
+            "vector_store_size": self.vector_store.count(company_id),
         }

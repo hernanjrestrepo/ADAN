@@ -10,8 +10,7 @@ from pydantic import BaseModel
 from app.core.database import get_db
 from app.core.auth import get_current_user
 from app.models.models import User, Company
-from app.ems.memory import EnterpriseMemorySystem
-from app.ems.providers import LocalEmbeddingProvider, LocalVectorStoreProvider
+from app.ems.factory import build_ems
 from app.dka.pipeline import KnowledgeAcquisitionPipeline
 
 router = APIRouter(prefix="/dka", tags=["dka"])
@@ -37,9 +36,6 @@ class AcquireResponse(BaseModel):
     errors: list[str]
 
 
-_embedding_provider = LocalEmbeddingProvider(dim=128)
-_vector_store = LocalVectorStoreProvider()
-
 
 @router.post("/acquire", response_model=AcquireResponse)
 async def acquire_knowledge(
@@ -60,7 +56,7 @@ async def acquire_knowledge(
     if not company:
         raise HTTPException(status_code=404, detail="Empresa no encontrada")
 
-    ems = EnterpriseMemorySystem(db, _embedding_provider, _vector_store)
+    ems = build_ems(db)
     pipeline = KnowledgeAcquisitionPipeline(ems)
 
     result = await pipeline.acquire(

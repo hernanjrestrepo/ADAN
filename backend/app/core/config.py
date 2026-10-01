@@ -25,6 +25,15 @@ class Settings:
     # CORS
     CORS_ORIGINS: list[str] = os.getenv("CORS_ORIGINS", "http://localhost:5173").split(",")
 
+    # Database pool (solo PostgreSQL)
+    DB_POOL_SIZE: int = int(os.getenv("DB_POOL_SIZE", "5"))
+    DB_MAX_OVERFLOW: int = int(os.getenv("DB_MAX_OVERFLOW", "10"))
+
+    # EMS embeddings: "local" (hashing, sin dependencias) u "ollama" (semántico real)
+    EMBEDDING_PROVIDER: str = os.getenv("EMBEDDING_PROVIDER", "local")
+    EMBEDDING_MODEL: str = os.getenv("EMBEDDING_MODEL", "nomic-embed-text")
+    EMBEDDING_DIM: int = int(os.getenv("EMBEDDING_DIM", "128"))
+
     # App
     APP_NAME: str = "ADÁN"
     APP_VERSION: str = "0.1.0"

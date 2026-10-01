@@ -8,14 +8,9 @@ Board → Decision → Work Orders → Assignment → Execution → Progress →
 import pytest
 import time
 from datetime import datetime, timezone, timedelta
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.pool import StaticPool
 
-from app.core.database import Base
 from app.models.models import User, Company
-from app.ems.models import EMSBase
-from app.oos.models import OOSBase, Organization, WorkOrder, DecisionRecord, KPI, Risk
+from app.oos.models import Organization, WorkOrder, DecisionRecord, KPI, Risk
 from app.oos.services import (
     OrganizationService, WorkOrderService, ProgressService,
     KPIService, RiskService, MeetingService,
@@ -23,22 +18,6 @@ from app.oos.services import (
 from app.oos.workflow import WorkOrderEngine
 from app.oos.scheduler import SchedulerEngine
 from app.oos.kpi import KPIEngine
-
-
-@pytest.fixture(scope="function")
-def db_session():
-    engine = create_engine(
-        "sqlite:///:memory:",
-        connect_args={"check_same_thread": False},
-        poolclass=StaticPool,
-    )
-    Base.metadata.create_all(bind=engine)
-    EMSBase.metadata.create_all(bind=engine)
-    OOSBase.metadata.create_all(bind=engine)
-    TestSession = sessionmaker(bind=engine)
-    session = TestSession()
-    yield session
-    session.close()
 
 
 class TestWO008Acceptance:

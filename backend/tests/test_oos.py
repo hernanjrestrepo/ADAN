@@ -4,14 +4,9 @@ Tests para el Organizational Operating System — WO-008.
 
 import pytest
 from datetime import datetime, timezone, timedelta
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.pool import StaticPool
 
-from app.core.database import Base
 from app.models.models import User, Company
-from app.ems.models import EMSBase
-from app.oos.models import OOSBase, Organization, WorkOrder, DecisionRecord, KPI, Risk
+from app.oos.models import Organization, WorkOrder, DecisionRecord, KPI, Risk
 from app.oos.services import (
     OrganizationService, WorkOrderService, ProgressService,
     KPIService, RiskService, MeetingService,
@@ -25,21 +20,6 @@ from app.oos.kpi import KPIEngine
 # Fixtures
 # ============================================================
 
-@pytest.fixture(scope="function")
-def db_session():
-    engine = create_engine(
-        "sqlite:///:memory:",
-        connect_args={"check_same_thread": False},
-        poolclass=StaticPool,
-    )
-    Base.metadata.create_all(bind=engine)
-    EMSBase.metadata.create_all(bind=engine)
-    OOSBase.metadata.create_all(bind=engine)
-    TestSession = sessionmaker(bind=engine)
-    session = TestSession()
-    yield session
-    session.close()
-
 
 @pytest.fixture
 def test_org(db_session):
@@ -52,6 +32,20 @@ def test_org(db_session):
     db_session.add(org)
     db_session.commit()
     return org
+
+
+@pytest.fixture
+def test_decision(db_session, test_org):
+    """Decisión real: `oos_work_orders.decision_id` es FK a `oos_decisions`."""
+    decision = DecisionRecord(
+        id="decision-1",
+        organization_id=test_org.id,
+        topic="Decisión de prueba",
+        final_decision="PROCEED",
+    )
+    db_session.add(decision)
+    db_session.commit()
+    return decision
 
 
 @pytest.fixture
@@ -104,10 +98,10 @@ class TestOrganizationService:
 # ============================================================
 
 class TestWorkOrderService:
-    def test_create_from_decision(self, wo_service, test_org):
+    def test_create_from_decision(self, wo_service, test_org, test_decision):
         wo = wo_service.create_from_decision(
             organization_id=test_org.id,
-            decision_id="decision-1",
+            decision_id=test_decision.id,
             title="Test Work Order",
             description="Test description",
             priority="high",
@@ -220,13 +214,13 @@ class TestWorkOrderEngine:
         assert wos[1].title == "Launch marketing campaign"
         assert "budget" in wos[2].title.lower()
 
-    def test_create_from_actions(self, db_session, test_org):
+    def test_create_from_actions(self, db_session, test_org, test_decision):
         engine = WorkOrderEngine(db_session)
         actions = [
             {"title": "Action 1", "priority": "critical"},
             {"title": "Action 2", "priority": "low"},
         ]
-        wos = engine.create_work_orders_from_actions(test_org.id, "dec-002", actions)
+        wos = engine.create_work_orders_from_actions(test_org.id, test_decision.id, actions)
         assert len(wos) == 2
         assert wos[0].priority == "critical"
         assert wos[1].priority == "low"
