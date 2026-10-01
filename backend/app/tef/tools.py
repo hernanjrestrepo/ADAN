@@ -2,13 +2,22 @@
 TEF Tools — Herramientas iniciales para demostrar el framework.
 """
 
+import ast
+import ipaddress
 import json
 import math
 import hashlib
+import operator
+import os
+import re
+import socket
+import sys
+from pathlib import Path
 from datetime import datetime, timezone
 from typing import Any
 
 import httpx
+from sqlalchemy import text
 
 from app.tef.interfaces import ToolProvider, ToolMetadata, ToolContext, ToolResult
 
@@ -16,6 +25,41 @@ from app.tef.interfaces import ToolProvider, ToolMetadata, ToolContext, ToolResu
 # ============================================================
 # Calculator
 # ============================================================
+
+_BIN_OPS = {
+    ast.Add: operator.add, ast.Sub: operator.sub, ast.Mult: operator.mul,
+    ast.Div: operator.truediv, ast.FloorDiv: operator.floordiv,
+    ast.Mod: operator.mod, ast.Pow: operator.pow,
+}
+_UNARY_OPS = {ast.UAdd: operator.pos, ast.USub: operator.neg}
+
+
+def _safe_eval(expression: str, names: dict) -> Any:
+    """Evalúa una expresión aritmética recorriendo el AST (sin eval)."""
+
+    def _eval(node: ast.AST) -> Any:
+        if isinstance(node, ast.Expression):
+            return _eval(node.body)
+        if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)):
+            return node.value
+        if isinstance(node, ast.BinOp) and type(node.op) in _BIN_OPS:
+            left, right = _eval(node.left), _eval(node.right)
+            if isinstance(node.op, ast.Pow) and abs(right) > 1000:
+                raise ValueError("Exponent too large")
+            return _BIN_OPS[type(node.op)](left, right)
+        if isinstance(node, ast.UnaryOp) and type(node.op) in _UNARY_OPS:
+            return _UNARY_OPS[type(node.op)](_eval(node.operand))
+        if isinstance(node, ast.Name) and node.id in names and not callable(names[node.id]):
+            return names[node.id]
+        if (isinstance(node, ast.Call) and isinstance(node.func, ast.Name)
+                and node.func.id in names and callable(names[node.func.id])
+                and not node.keywords):
+            return names[node.func.id](*[_eval(a) for a in node.args])
+        if isinstance(node, (ast.List, ast.Tuple)):
+            return [_eval(e) for e in node.elts]
+        raise ValueError(f"Unsupported expression element: {type(node).__name__}")
+
+    return _eval(ast.parse(expression, mode="eval"))
 
 class CalculatorTool(ToolProvider):
     """Herramienta de cálculo matemático."""
@@ -48,7 +92,7 @@ class CalculatorTool(ToolProvider):
                 "sin": math.sin, "cos": math.cos, "tan": math.tan,
                 "log": math.log, "pi": math.pi, "e": math.e,
             }
-            result = eval(expression, {"__builtins__": {}}, allowed_names)
+            result = _safe_eval(expression, allowed_names)
             return ToolResult(
                 tool_id="calculator",
                 status="success",
@@ -65,6 +109,9 @@ class CalculatorTool(ToolProvider):
 # ============================================================
 # File Reader
 # ============================================================
+
+_DEFAULT_FILES_DIR = str(Path(__file__).resolve().parent.parent.parent / "data" / "files")
+
 
 class FileReaderTool(ToolProvider):
     """Herramienta de lectura de archivos."""
@@ -93,8 +140,16 @@ class FileReaderTool(ToolProvider):
             path = params["path"]
             encoding = params.get("encoding", "utf-8")
 
-            # Sandbox: no leer fuera del directorio de trabajo
-            import os
+            # Sandbox: no leer fuera del directorio base (TEF_FILES_DIR)
+            base = Path(os.getenv("TEF_FILES_DIR", _DEFAULT_FILES_DIR)).resolve()
+            target = (base / path).resolve()
+            if not target.is_relative_to(base):
+                return ToolResult(
+                    tool_id="file_reader",
+                    status="error",
+                    error="Access denied: path outside allowed directory",
+                )
+            path = str(target)
             if not os.path.exists(path):
                 return ToolResult(
                     tool_id="file_reader",
@@ -125,6 +180,31 @@ class FileReaderTool(ToolProvider):
 # ============================================================
 # HTTP Request
 # ============================================================
+
+def _ssrf_block_reason(url: str) -> str | None:
+    """Rechaza URLs no http(s) o que resuelvan a direcciones internas.
+
+    TEF_ALLOW_PRIVATE_HTTP=true desactiva el bloqueo de red interna.
+    """
+    parsed = httpx.URL(url)
+    if parsed.scheme not in ("http", "https"):
+        return "only http/https URLs are allowed"
+    if os.getenv("TEF_ALLOW_PRIVATE_HTTP", "false").lower() == "true":
+        return None
+    host = parsed.host
+    if not host:
+        return "missing host"
+    try:
+        infos = socket.getaddrinfo(host, None)
+    except socket.gaierror:
+        return None  # no resuelve: httpx devolverá el error de conexión
+    for info in infos:
+        ip = ipaddress.ip_address(info[4][0].split("%")[0])
+        if (ip.is_private or ip.is_loopback or ip.is_link_local
+                or ip.is_reserved or ip.is_multicast or ip.is_unspecified):
+            return "internal network addresses are not allowed"
+    return None
+
 
 class HttpRequestTool(ToolProvider):
     """Herramienta de requests HTTP."""
@@ -160,7 +240,15 @@ class HttpRequestTool(ToolProvider):
             body = params.get("body")
             timeout = params.get("timeout", 30)
 
-            async with httpx.AsyncClient(timeout=timeout) as client:
+            blocked = _ssrf_block_reason(url)
+            if blocked:
+                return ToolResult(
+                    tool_id="http_request",
+                    status="error",
+                    error=f"Request blocked: {blocked}",
+                )
+
+            async with httpx.AsyncClient(timeout=timeout, follow_redirects=False) as client:
                 response = await client.request(
                     method=method,
                     url=url,
@@ -235,17 +323,25 @@ class SqlQueryTool(ToolProvider):
                     error="Only SELECT queries are allowed",
                 )
 
-            # Bloquear palabras peligrosas
-            dangerous = ["DROP", "DELETE", "UPDATE", "INSERT", "ALTER", "CREATE", "TRUNCATE"]
+            # Bloquear palabras peligrosas y tablas sensibles (palabra completa)
+            if ";" in query.rstrip(";"):
+                return ToolResult(
+                    tool_id="sql_query",
+                    status="error",
+                    error="Multiple statements are not allowed",
+                )
+            dangerous = ["DROP", "DELETE", "UPDATE", "INSERT", "ALTER", "CREATE",
+                         "TRUNCATE", "ATTACH", "DETACH", "PRAGMA", "REPLACE", "VACUUM",
+                         "USERS", "HASHED_PASSWORD"]
             for word in dangerous:
-                if word in query.upper():
+                if re.search(rf"(?<![A-Z0-9]){word}(?![A-Z0-9])", query.upper()):
                     return ToolResult(
                         tool_id="sql_query",
                         status="error",
                         error=f"Forbidden keyword: {word}",
                     )
 
-            result = self._db.execute(query)
+            result = self._db.execute(text(query))
             rows = [dict(row) for row in result.mappings()]
 
             return ToolResult(
@@ -269,7 +365,17 @@ class SqlQueryTool(ToolProvider):
 # ============================================================
 
 class PythonSandboxTool(ToolProvider):
-    """Herramienta de ejecución segura de código Python."""
+    """Herramienta de ejecución de código Python.
+
+    No es un sandbox real (corre como el proceso del backend), por eso está
+    desactivada salvo que se habilite explícitamente con
+    TEF_ENABLE_PYTHON_SANDBOX=true o enabled=True.
+    """
+
+    def __init__(self, enabled: bool | None = None):
+        if enabled is None:
+            enabled = os.getenv("TEF_ENABLE_PYTHON_SANDBOX", "false").lower() == "true"
+        self.enabled = enabled
 
     def metadata(self) -> ToolMetadata:
         return ToolMetadata(
@@ -294,11 +400,18 @@ class PythonSandboxTool(ToolProvider):
     async def execute(self, params: dict, context: ToolContext) -> ToolResult:
         import subprocess
         import tempfile
-        import os
 
+        if not self.enabled:
+            return ToolResult(
+                tool_id="python_sandbox",
+                status="error",
+                error="Python sandbox is disabled (set TEF_ENABLE_PYTHON_SANDBOX=true)",
+            )
+
+        timeout = 10
         try:
             code = params["code"]
-            timeout = params.get("timeout", 10)
+            timeout = min(int(params.get("timeout", 10)), 30)
 
             # Crear archivo temporal
             with tempfile.NamedTemporaryFile(
@@ -310,7 +423,7 @@ class PythonSandboxTool(ToolProvider):
             try:
                 # Ejecutar con timeout
                 result = subprocess.run(
-                    ["python", tmp_path],
+                    [sys.executable, "-I", tmp_path],
                     capture_output=True,
                     text=True,
                     timeout=timeout,

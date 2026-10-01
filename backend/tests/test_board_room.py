@@ -29,7 +29,7 @@ def board_room(mock_llm):
 
 def test_board_room_runs_all_four_agents(board_room):
     """Board Room must run all 4 agents."""
-    result = asyncio.get_event_loop().run_until_complete(
+    result = asyncio.run(
         board_room.run("Test problem")
     )
     assert isinstance(result, BoardConsensus)
@@ -40,7 +40,7 @@ def test_board_room_runs_all_four_agents(board_room):
 
 def test_board_room_has_consensus(board_room):
     """Board Room must produce a consensus decision."""
-    result = asyncio.get_event_loop().run_until_complete(
+    result = asyncio.run(
         board_room.run("Test problem")
     )
     assert result.decision in ["PROCEED", "PIVOT", "STOP"]
@@ -51,7 +51,7 @@ def test_board_room_has_consensus(board_room):
 
 def test_board_room_votes_have_required_fields(board_room):
     """Each vote must have required fields."""
-    result = asyncio.get_event_loop().run_until_complete(
+    result = asyncio.run(
         board_room.run("Test problem")
     )
     for vote in result.votes:
@@ -80,7 +80,7 @@ def test_board_room_concurrent_execution(mock_llm):
     board_room = BoardRoom(mock_llm)
 
     start = time.monotonic()
-    result = asyncio.get_event_loop().run_until_complete(
+    result = asyncio.run(
         board_room.run("Test problem")
     )
     total_time = time.monotonic() - start
@@ -92,7 +92,7 @@ def test_board_room_concurrent_execution(mock_llm):
 
 def test_consensus_majority_rule(board_room):
     """Consensus follows majority vote."""
-    result = asyncio.get_event_loop().run_until_complete(
+    result = asyncio.run(
         board_room.run("Test problem")
     )
     # With mock returning PROCEED for all, consensus should be PROCEED

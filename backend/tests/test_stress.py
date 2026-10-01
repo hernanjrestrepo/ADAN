@@ -33,7 +33,7 @@ async def run_board_room(session, token, company_id):
     """Run Board Room for a company."""
     start = time.monotonic()
     async with session.post(f"{BASE_URL}/api/v1/nivel1/{company_id}/board-room",
-        headers={"Authorization": f"Bearer $token"},
+        headers={"Authorization": f"Bearer {token}"},
         json={},
     ) as resp:
         duration = time.monotonic() - start

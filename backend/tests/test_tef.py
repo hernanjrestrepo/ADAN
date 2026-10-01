@@ -166,14 +166,14 @@ class TestCalculatorTool:
 class TestPythonSandboxTool:
     @pytest.mark.asyncio
     async def test_execute_simple(self, context):
-        tool = PythonSandboxTool()
+        tool = PythonSandboxTool(enabled=True)
         result = await tool.execute({"code": "print(42)"}, context)
         assert result.status == "success"
         assert "42" in result.output["result"]
 
     @pytest.mark.asyncio
     async def test_execute_with_result(self, context):
-        tool = PythonSandboxTool()
+        tool = PythonSandboxTool(enabled=True)
         result = await tool.execute({"code": "import math; print(math.sqrt(16))"}, context)
         assert result.status == "success"
         assert "4.0" in result.output["result"]
@@ -289,3 +289,77 @@ class TestTEFIntegration:
         # Verificar auditoría
         log = executor.get_audit_log()
         assert any(e["status"] == "failed" for e in log)
+
+
+# ============================================================
+# Tests: Seguridad TEF (WO-090 §3.7/§3.8)
+# ============================================================
+
+class TestTEFSecurity:
+    @pytest.mark.asyncio
+    async def test_calculator_blocks_dunder_escape(self, context):
+        tool = CalculatorTool()
+        result = await tool.execute(
+            {"expression": "().__class__.__bases__[0].__subclasses__()"}, context
+        )
+        assert result.status == "error"
+
+    @pytest.mark.asyncio
+    async def test_calculator_blocks_huge_exponent(self, context):
+        tool = CalculatorTool()
+        result = await tool.execute({"expression": "9**9**9"}, context)
+        assert result.status == "error"
+
+    @pytest.mark.asyncio
+    async def test_python_sandbox_disabled_by_default(self, context, monkeypatch):
+        monkeypatch.delenv("TEF_ENABLE_PYTHON_SANDBOX", raising=False)
+        tool = PythonSandboxTool()
+        result = await tool.execute({"code": "print(42)"}, context)
+        assert result.status == "error"
+        assert "disabled" in result.error
+
+    @pytest.mark.asyncio
+    async def test_file_reader_blocks_path_traversal(self, context, tmp_path, monkeypatch):
+        monkeypatch.setenv("TEF_FILES_DIR", str(tmp_path))
+        tool = FileReaderTool()
+        for path in ("/etc/passwd", "../../etc/passwd"):
+            result = await tool.execute({"path": path}, context)
+            assert result.status == "error"
+            assert "denied" in result.error
+
+    @pytest.mark.asyncio
+    async def test_file_reader_reads_inside_base_dir(self, context, tmp_path, monkeypatch):
+        monkeypatch.setenv("TEF_FILES_DIR", str(tmp_path))
+        (tmp_path / "nota.txt").write_text("hola", encoding="utf-8")
+        result = await FileReaderTool().execute({"path": "nota.txt"}, context)
+        assert result.status == "success"
+        assert result.output["content"] == "hola"
+
+    @pytest.mark.asyncio
+    async def test_http_request_blocks_internal_hosts(self, context, monkeypatch):
+        monkeypatch.delenv("TEF_ALLOW_PRIVATE_HTTP", raising=False)
+        tool = HttpRequestTool()
+        for url in ("http://127.0.0.1:8000/", "http://localhost:11434/api/tags",
+                    "http://169.254.169.254/latest/meta-data/", "file:///etc/passwd"):
+            result = await tool.execute({"url": url}, context)
+            assert result.status == "error"
+            assert "blocked" in result.error
+
+    @pytest.mark.asyncio
+    async def test_sql_query_blocks_sensitive_and_stacked(self, context, db_session):
+        tool = SqlQueryTool(db_session)
+        for query in (
+            "SELECT email, hashed_password FROM users",
+            "SELECT 1; DROP TABLE companies",
+            "SELECT * FROM pragma_table_info('companies')",
+        ):
+            result = await tool.execute({"query": query}, context)
+            assert result.status == "error", query
+
+    @pytest.mark.asyncio
+    async def test_sql_query_allows_plain_select(self, context, db_session):
+        result = await SqlQueryTool(db_session).execute(
+            {"query": "SELECT name FROM companies"}, context
+        )
+        assert result.status == "success"
+        assert result.output["count"] == 1

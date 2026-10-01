@@ -80,3 +80,29 @@ Ver lista completa en §3 "No bloqueantes" — las 10 quedan registradas ahí, n
 Una vez cerrado Sprint 1 (congelación) de WO-090 con tu aprobación, la secuencia ya acordada en `AD-ROOT-0001 §4` es:
 - **WO-091 — Migración Enterprise** (PostgreSQL + pgvector), que además debería absorber la unificación de las tres bases declarativas SQLAlchemy (hallazgo §3.3) como parte de su propio alcance, no como WO adicional.
 - Antes de WO-091, considerar una WO corta (o un ítem de Sprint 1) que cierre los hallazgos de seguridad no concluyentes de §3.7/§3.8 — tocan autenticación y ejecución de código, están dentro del criterio de EPWO-047, y son más baratos de cerrar ahora que después de migrar la base de datos.
+
+---
+
+## 9. Actualización 2026-10-01 — cierre de hallazgos técnicos (sesión Claude Code, rama `claude/amazing-allen-ta66ry`)
+
+Verificado ejecutando, no por inspección (Linux, Python 3.11):
+
+| Hallazgo §3 | Acción | Evidencia |
+|---|---|---|
+| 1. 5 fallos `test_board_room.py` | **Corregido.** No era exclusivo de Windows: `asyncio.get_event_loop()` falla sin loop activo en Python ≥3.10 en cualquier SO. Reemplazado por `asyncio.run()`. | 5/5 pasan |
+| — (nuevo) `test_stress.py` enviaba `"Bearer $token"` literal (sintaxis JS) | **Corregido** a f-string. | 2/2 pasan contra backend real en :8050 |
+| 2. Dependencias de test no declaradas | **Corregido:** `backend/requirements-dev.txt` (`pip install -r requirements-dev.txt`). | Suite corre con solo ese archivo |
+| 4. 0% cobertura `dka/tools.py`, `services/memory.py` | Abierto. | — |
+| 6. Vulnerabilidades npm | **Parcial:** `npm audit fix` aplicado (nanoid). Quedan 4 (esbuild/vite dev-server, react-router <7) que exigen subir versión mayor — requieren prueba de UI, no se forzaron. | `npm run build` OK |
+| 7/8. Seguridad TEF | **Corregido.** Ver abajo. | 8 tests nuevos en `TestTEFSecurity` |
+
+**Endurecimiento TEF (`backend/app/tef/tools.py`):**
+- `calculator`: `eval` reemplazado por evaluador AST (bloquea escapes tipo `().__class__...` y exponentes gigantes).
+- `python_sandbox`: no era un sandbox (ejecución remota de código para cualquier usuario autenticado). **Desactivado por defecto**; se habilita con `TEF_ENABLE_PYTHON_SANDBOX=true`. Usa intérprete aislado (`-I`) y timeout máximo 30s.
+- `file_reader`: confinado a `TEF_FILES_DIR` (default `backend/data/files`); bloquea `/etc/passwd`, `../`.
+- `http_request`: bloquea esquemas no http(s) y destinos loopback/privados/link-local (SSRF a Ollama, metadatos cloud). `TEF_ALLOW_PRIVATE_HTTP=true` lo desactiva. Riesgo residual: DNS rebinding.
+- `sql_query`: **nunca funcionó** con SQLAlchemy 2 (faltaba `text()`) — corregido. Bloquea sentencias múltiples, `PRAGMA`/`ATTACH`/etc. y la tabla `users`/`hashed_password`.
+
+**Resultado de la suite:** 209 passed, 7 failed de 216. Los 7 fallos son de entorno: 5 requieren acceso a `httpbin.org` (bloqueado en el contenedor de verificación) y 2 de `test_stress.py` requieren el backend levantado en :8050 (pasan cuando lo está). En la laptop con internet y backend activo se espera 216/216.
+
+**Siguen pendientes (requieren decisión de Hernán, no técnicas):** commit de congelación en rama oficial, usuario `wo090-verify@example.com` (§3.9), reconciliación EPWO-029 (§3.10), y las WO-091/092/093, que por Regla 7 de `AD-GOV-0001` necesitan Fase -1 y aprobación explícita antes de iniciar.
