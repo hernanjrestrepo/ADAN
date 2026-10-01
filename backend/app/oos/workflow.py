@@ -4,11 +4,10 @@ OOS Workflow — Motor de Work Orders.
 Convierte decisiones del Board en Work Orders ejecutables.
 """
 
-import uuid
-from datetime import datetime, timezone
+from datetime import datetime
 from sqlalchemy.orm import Session
 
-from app.oos.models import Organization, DecisionRecord, WorkOrder, OOSBase
+from app.oos.models import DecisionRecord, WorkOrder
 from app.oos.services import WorkOrderService, OrganizationService
 
 

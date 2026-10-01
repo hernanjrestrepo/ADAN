@@ -5,7 +5,6 @@ Guarantees a single data contract for the entire application.
 """
 from __future__ import annotations
 
-from dataclasses import dataclass, field
 from typing import Any
 
 

@@ -5,8 +5,7 @@ OOS Models — Entidades del dominio organizacional.
 import uuid
 from datetime import datetime, timezone
 from sqlalchemy import (
-    Column, String, Text, Float, Integer, DateTime, JSON, Boolean,
-    ForeignKey, Index
+    Column, String, Text, Float, Integer, DateTime, JSON, ForeignKey
 )
 from sqlalchemy.orm import relationship
 

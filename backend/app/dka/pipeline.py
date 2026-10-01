@@ -4,13 +4,11 @@ DKA Pipeline — Pipeline completo de adquisición de conocimiento.
 Internet → Crawler → Extractor → Normalizer → Quality Score → EMS → Knowledge Graph
 """
 
-import uuid
-import hashlib
 import time
 from datetime import datetime, timezone
 from dataclasses import dataclass, field
 
-from app.dka.engines import ScraperEngine, ScrapedContent, EngineSelector
+from app.dka.engines import ScrapedContent, EngineSelector
 from app.ems.memory import EnterpriseMemorySystem
 
 

@@ -15,8 +15,7 @@ from datetime import datetime, timezone
 from enum import Enum as PyEnum
 
 from sqlalchemy import (
-    Column, DateTime, Enum, Float, ForeignKey, Integer, String, Text, Boolean,
-    JSON, UniqueConstraint,
+    Column, DateTime, Enum, Float, ForeignKey, Integer, String, Text, JSON, UniqueConstraint,
 )
 from sqlalchemy.orm import relationship
 

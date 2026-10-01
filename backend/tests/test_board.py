@@ -5,10 +5,8 @@ Tests para el Executive Board con deliberación real — WO-007 (rebuild).
 import pytest
 from unittest.mock import AsyncMock, MagicMock
 
-from app.models.models import User, Company
 from app.agents.board import (
-    ExecutiveBoard, BOARD_AGENTS, DEBATE_ORDER,
-    DebateRound, DeliberationResult, DecisionRecord, BoardResult,
+    ExecutiveBoard, BOARD_AGENTS, DebateRound, BoardResult,
 )
 
 
@@ -167,7 +165,7 @@ class TestExecutiveBoard:
     @pytest.mark.asyncio
     async def test_board_persists_decision(self, board, mock_ems):
         """Verifica que la decisión se persiste en memoria."""
-        result = await board.run(
+        await board.run(
             message="Test persistencia",
             company_id="test-company",
             user_id="test",

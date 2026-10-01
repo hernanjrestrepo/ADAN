@@ -16,8 +16,8 @@ from app.models.models import User, Company, Project, Level, Card, Conversation,
 from app.cognitive.event_bus import EventBus, CognitiveEvent, create_trace_id
 from app.cognitive.memory_engine import MemoryEngine, WorkingMemory, ShortTermMemory, LongTermMemory
 from app.cognitive.knowledge_engine import KnowledgeEngine, KnowledgeContext
-from app.cognitive.planner import Planner, Plan
-from app.cognitive.tool_manager import ToolManager, ToolDef, ToolResult
+from app.cognitive.planner import Planner
+from app.cognitive.tool_manager import ToolManager, ToolDef
 from app.cognitive.decision_engine import DecisionEngine
 
 

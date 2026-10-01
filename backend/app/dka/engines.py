@@ -5,12 +5,9 @@ Cada motor implementa la misma interfaz para ser usado como herramienta del TEF.
 """
 
 import abc
-import hashlib
-import httpx
 
 from app.core.net import safe_async_client
 from dataclasses import dataclass, field
-from typing import Any
 
 
 @dataclass

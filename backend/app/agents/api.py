@@ -2,7 +2,6 @@
 Agent API — Endpoints para agentes ejecutivos.
 """
 
-import uuid
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
@@ -16,7 +15,7 @@ from app.tef.executor import ToolExecutor
 from app.tef.registry import ToolRegistry
 from app.tef.tools import (
     CalculatorTool, FileReaderTool, HttpRequestTool,
-    SqlQueryTool, PythonSandboxTool, EmailSenderTool,
+    PythonSandboxTool, EmailSenderTool,
 )
 from app.agents.ceo import CEOAgent
 from app.agents.base import AgentResponse

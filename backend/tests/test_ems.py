@@ -3,15 +3,14 @@ Tests para el Enterprise Memory System — WO-004.
 """
 
 import pytest
-from unittest.mock import MagicMock
 
 from app.models.models import User, Company, Project, Level
 from app.ems.providers import (
     LocalEmbeddingProvider, LocalVectorStoreProvider, VectorRecord
 )
-from app.ems.chunking import TextChunker, Chunk
-from app.ems.ingestion import IngestionPipeline, IngestionResult
-from app.ems.retrieval import HybridRetriever, RetrievalResult
+from app.ems.chunking import TextChunker
+from app.ems.ingestion import IngestionPipeline
+from app.ems.retrieval import HybridRetriever
 from app.ems.memory import EnterpriseMemorySystem
 
 

@@ -4,11 +4,9 @@ Agent Factory — Construye agentes mediante configuración.
 Sin escribir código nuevo. Solo definir: name, personality, tools, permissions, goals.
 """
 
-import uuid
 from dataclasses import dataclass, field
-from typing import Any
 
-from app.ai.base import LLMAdapter, LLMMessage
+from app.ai.base import LLMAdapter
 from app.ems.memory import EnterpriseMemorySystem
 from app.tef.executor import ToolExecutor
 from app.agents.base import ExecutiveAgent, AgentMessage, AgentPlan, AgentResponse

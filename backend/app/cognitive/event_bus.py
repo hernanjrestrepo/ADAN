@@ -6,10 +6,9 @@ Todo se persiste en la tabla events (append-only).
 """
 
 import uuid
-import time
 from datetime import datetime, timezone
 from dataclasses import dataclass, field
-from typing import Any, Callable
+from typing import Callable
 from sqlalchemy.orm import Session
 
 from app.models.models import Event, Project

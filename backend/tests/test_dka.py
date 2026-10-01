@@ -5,10 +5,9 @@ Tests para Dynamic Knowledge Acquisition — WO-009.
 import pytest
 from unittest.mock import AsyncMock, MagicMock
 
-from app.models.models import User, Company
 from app.dka.engines import (
     Crawl4AIEngine, ScrapeGraphAIEngine, FirecrawlEngine,
-    EngineSelector, ScrapedContent,
+    EngineSelector,
 )
 from app.dka.pipeline import KnowledgeAcquisitionPipeline
 from app.ems.memory import EnterpriseMemorySystem

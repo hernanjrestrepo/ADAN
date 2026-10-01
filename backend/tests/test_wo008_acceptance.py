@@ -6,14 +6,11 @@ Board → Decision → Work Orders → Assignment → Execution → Progress →
 """
 
 import pytest
-import time
-from datetime import datetime, timezone, timedelta
 
-from app.models.models import User, Company
-from app.oos.models import Organization, WorkOrder, DecisionRecord, KPI, Risk
+from app.oos.models import DecisionRecord
 from app.oos.services import (
     OrganizationService, WorkOrderService, ProgressService,
-    KPIService, RiskService, MeetingService,
+    KPIService, RiskService,
 )
 from app.oos.workflow import WorkOrderEngine
 from app.oos.scheduler import SchedulerEngine
@@ -191,7 +188,7 @@ class TestWO008Acceptance:
         )
         db_session.commit()
         evidence["risks_count"] = 2
-        print(f"    Riesgos registrados: 2")
+        print("    Riesgos registrados: 2")
         print(f"      - {risk1.title} (severidad: {risk1.severity})")
         print(f"      - {risk2.title} (severidad: {risk2.severity})")
         print("    ✓ Riesgos registrados")

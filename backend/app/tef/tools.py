@@ -3,7 +3,6 @@ TEF Tools — Herramientas iniciales para demostrar el framework.
 """
 
 import ast
-import json
 import math
 import hashlib
 import operator
@@ -11,10 +10,9 @@ import os
 import re
 import sys
 from pathlib import Path
-from datetime import datetime, timezone
+from datetime import datetime
 from typing import Any
 
-import httpx
 from sqlalchemy import text
 
 from app.core.net import safe_async_client, ssrf_block_reason

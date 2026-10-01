@@ -10,11 +10,11 @@ from dataclasses import dataclass, field
 from sqlalchemy.orm import Session
 
 from app.ai.base import LLMAdapter, LLMMessage
-from app.models.models import Company, Project, Card, Conversation, Message
+from app.models.models import Project
 from app.services.gemelo_digital import GemeloDigitalService
 
 from app.cognitive.event_bus import EventBus, CognitiveEvent, create_trace_id
-from app.cognitive.memory_engine import MemoryEngine, WorkingMemory, ShortTermMemory, LongTermMemory
+from app.cognitive.memory_engine import MemoryEngine, WorkingMemory
 from app.cognitive.knowledge_engine import KnowledgeEngine, KnowledgeContext
 from app.cognitive.planner import Planner, Plan
 from app.cognitive.tool_manager import ToolManager

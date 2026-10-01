@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session
 
 from app.ems.models import EMSDocument, EMSChunk, KnowledgeFact
 from app.ems.providers import (
-    EmbeddingProvider, VectorStoreProvider, SearchResult
+    EmbeddingProvider, VectorStoreProvider
 )
 
 
@@ -157,7 +157,7 @@ class HybridRetriever:
         facts = (
             self.db.query(KnowledgeFact)
             .filter(KnowledgeFact.company_id == company_id)
-            .filter(KnowledgeFact.is_active == True)
+            .filter(KnowledgeFact.is_active.is_(True))
             .filter(or_(*conditions))
             .limit(10)
             .all()

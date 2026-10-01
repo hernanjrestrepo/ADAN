@@ -5,10 +5,8 @@ Tests para el CEO Agent — WO-006 (rebuild con razonamiento ejecutivo).
 import pytest
 from unittest.mock import AsyncMock, MagicMock
 
-from app.models.models import User, Company, Project, Level
-from app.agents.base import ExecutiveAgent, AgentMessage, AgentPlan, AgentResponse
-from app.agents.ceo import CEOAgent, CEO_SYSTEM_PROMPT, ExecutiveReasoning, ExecutiveStep
-from app.tef.interfaces import ToolContext, ToolResult
+from app.models.models import User, Company
+from app.agents.ceo import CEOAgent, ExecutiveReasoning, ExecutiveStep
 from app.tef.registry import ToolRegistry
 from app.tef.executor import ToolExecutor
 from app.tef.tools import CalculatorTool

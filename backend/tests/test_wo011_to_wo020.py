@@ -3,33 +3,30 @@ Tests consolidados para WO-011 a WO-020.
 """
 
 import pytest
-from datetime import datetime, timezone
 
 # WO-011: Voice
-from app.voice.adapter import ClaroVoiceAdapter, VoiceResult
-from app.voice.tools import STTTool, TTSTool
+from app.voice.adapter import ClaroVoiceAdapter
 
 # WO-012: Omnichannel
 from app.omnichannel.channels import (
     ChannelManager, WebChatChannel, WhatsAppChannel,
-    TelegramChannel, EmailChannel, ChannelMessage,
 )
 
 # WO-016: Knowledge Quality
-from app.quality.engine import KnowledgeQualityEngine, KnowledgeQualityReport
+from app.quality.engine import KnowledgeQualityEngine
 
 # WO-017: Learning
-from app.learning.engine import LearningEngine, LearningRecord
+from app.learning.engine import LearningEngine
 
 # WO-018: Agent Factory
-from app.agent_factory.factory import AgentFactory, AgentConfig, ConfigurableAgent
+from app.agent_factory.factory import AgentFactory, AgentConfig
 from unittest.mock import AsyncMock, MagicMock
 
 # WO-019: Plugin Marketplace
 from app.plugins.marketplace import PluginMarketplace, PluginManifest
 
 # WO-020: Autonomous Organization
-from app.autonomous.engine import AutonomousEngine, AutonomousCycle
+from app.autonomous.engine import AutonomousEngine
 
 
 # ============================================================

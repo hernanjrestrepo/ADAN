@@ -5,11 +5,10 @@ Tests para el Organizational Operating System — WO-008.
 import pytest
 from datetime import datetime, timezone, timedelta
 
-from app.models.models import User, Company
-from app.oos.models import Organization, WorkOrder, DecisionRecord, KPI, Risk
+from app.oos.models import Organization, DecisionRecord
 from app.oos.services import (
     OrganizationService, WorkOrderService, ProgressService,
-    KPIService, RiskService, MeetingService,
+    KPIService, RiskService,
 )
 from app.oos.workflow import WorkOrderEngine
 from app.oos.scheduler import SchedulerEngine
@@ -233,7 +232,7 @@ class TestWorkOrderEngine:
 class TestScheduler:
     def test_check_overdue(self, db_session, test_org):
         wo_service = WorkOrderService(db_session)
-        wo = wo_service.create_from_decision(
+        wo_service.create_from_decision(
             organization_id=test_org.id,
             decision_id=None,
             title="Overdue WO",
@@ -262,7 +261,7 @@ class TestScheduler:
 
     def test_get_reminders(self, db_session, test_org):
         wo_service = WorkOrderService(db_session)
-        wo = wo_service.create_from_decision(
+        wo_service.create_from_decision(
             organization_id=test_org.id,
             decision_id=None,
             title="Due Soon",
@@ -276,7 +275,7 @@ class TestScheduler:
 
     def test_escalation_candidates(self, db_session, test_org):
         wo_service = WorkOrderService(db_session)
-        wo = wo_service.create_from_decision(
+        wo_service.create_from_decision(
             organization_id=test_org.id,
             decision_id=None,
             title="Critical Overdue",

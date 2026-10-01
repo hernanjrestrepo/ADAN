@@ -6,7 +6,7 @@ from sqlalchemy.pool import StaticPool
 
 from app.core.database import Base
 from app.models.models import (
-    Company, Document, Event, Level, Project, Score, ScoreType, User, UserRole,
+    Company, Event, User, UserRole,
 )
 from app.services.gemelo_digital import GemeloDigitalService
 

@@ -12,6 +12,8 @@ import os
 TEST_DATABASE_URL = os.getenv("TEST_DATABASE_URL", "sqlite://")
 # La app no debe tocar la base de desarrollo durante los tests
 os.environ["DATABASE_URL"] = TEST_DATABASE_URL
+# Muchos tests registran usuarios desde la misma IP; el rate limit se prueba aparte
+os.environ.setdefault("AUTH_RATE_LIMIT_PER_MINUTE", "0")
 
 import pytest  # noqa: E402
 from fastapi.testclient import TestClient  # noqa: E402
@@ -20,6 +22,7 @@ from sqlalchemy.orm import sessionmaker  # noqa: E402
 from sqlalchemy.pool import StaticPool  # noqa: E402
 
 from app.core.database import Base, create_db_engine, get_db, import_all_models  # noqa: E402
+from app.core.migrations import upgrade_database  # noqa: E402
 from app.main import app  # noqa: E402
 
 import_all_models()
@@ -40,15 +43,14 @@ if IS_SQLITE:
         cursor.execute("PRAGMA foreign_keys=ON")
         cursor.close()
 
-    Base.metadata.create_all(bind=_test_engine)
 else:
-    from app.core.migrations import upgrade_database
-
     _test_engine = create_db_engine(TEST_DATABASE_URL)
     with _test_engine.begin() as conn:
         conn.execute(text("DROP SCHEMA public CASCADE"))
         conn.execute(text("CREATE SCHEMA public"))
-    upgrade_database(_test_engine)
+
+# El esquema de pruebas se crea con las migraciones reales (no con create_all)
+upgrade_database(_test_engine)
 
 _TestSession = sessionmaker(autocommit=False, autoflush=False, bind=_test_engine)
 
@@ -157,8 +159,6 @@ def live_server(tmp_path_factory):
     import time
 
     import uvicorn
-
-    from app.core.migrations import upgrade_database
 
     if IS_SQLITE:
         engine = create_db_engine(f"sqlite:///{tmp_path_factory.mktemp('live') / 'live.db'}")

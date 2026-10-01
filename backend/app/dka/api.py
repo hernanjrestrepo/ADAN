@@ -2,7 +2,6 @@
 DKA API — Endpoint para Dynamic Knowledge Acquisition.
 """
 
-import uuid
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from pydantic import BaseModel

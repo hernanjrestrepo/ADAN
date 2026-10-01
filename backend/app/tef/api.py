@@ -15,7 +15,7 @@ from app.tef.registry import ToolRegistry
 from app.tef.executor import ToolExecutor
 from app.tef.tools import (
     CalculatorTool, FileReaderTool, HttpRequestTool,
-    SqlQueryTool, PythonSandboxTool, EmailSenderTool,
+    PythonSandboxTool, EmailSenderTool,
 )
 
 router = APIRouter(prefix="/tef", tags=["tef"])

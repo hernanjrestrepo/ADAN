@@ -8,7 +8,7 @@ from datetime import datetime, timezone
 from sqlalchemy.orm import Session
 
 from app.tef.interfaces import (
-    ToolProvider, ToolMetadata, ToolContext, ToolResult,
+    ToolContext, ToolResult,
     ToolRegistryInterface, ToolExecutorInterface,
 )
 

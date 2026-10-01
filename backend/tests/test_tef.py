@@ -3,11 +3,9 @@ Tests para el Tool Execution Framework — WO-005.
 """
 
 import pytest
-import asyncio
-from unittest.mock import MagicMock
 
-from app.models.models import User, Company, Project, Level
-from app.tef.interfaces import ToolMetadata, ToolContext, ToolResult
+from app.models.models import User, Company
+from app.tef.interfaces import ToolMetadata, ToolContext
 from app.tef.registry import ToolRegistry
 from app.tef.executor import ToolExecutor
 from app.tef.tools import (

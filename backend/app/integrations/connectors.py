@@ -5,11 +5,10 @@ Todos implementan la misma interfaz: connect, disconnect, health, execute, metad
 """
 
 import abc
+import uuid
 import time
-import asyncio
 from dataclasses import dataclass, field
 from typing import Any
-from datetime import datetime, timezone
 
 from app.core.net import safe_async_client
 
@@ -128,9 +127,6 @@ class GmailConnector(BaseConnector):
             auth_type="oauth2",
             capabilities=["send_email", "list_emails", "read_email"],
         )
-
-
-import uuid
 
 
 # ============================================================

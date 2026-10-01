@@ -12,10 +12,8 @@ Es un debate donde cada agente:
 import json
 import uuid
 import time
-import asyncio
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
-from typing import Any
 
 from app.ai.base import LLMAdapter, LLMMessage
 from app.ems.memory import EnterpriseMemorySystem
@@ -545,7 +543,6 @@ class ExecutiveBoard:
             votes[rnd.agent] = rnd.vote
 
         # Contar votos
-        proceed_count = sum(1 for v in votes.values() if v == "PROCEED")
         pivot_count = sum(1 for v in votes.values() if v == "PIVOT")
         stop_count = sum(1 for v in votes.values() if v == "STOP")
         total = len(votes)
@@ -678,32 +675,32 @@ class ExecutiveBoard:
         """Formatea el Decision Record como texto persistente."""
         parts = [
             f"DECISIÓN DEL BOARD — {record.timestamp.strftime('%Y-%m-%d %H:%M')}",
-            f"",
+            "",
             f"TEMa: {record.topic}",
             f"DECISIÓN: {record.final_decision}",
             f"SCORE: {record.final_score}/100",
             f"CONFIANZA: {record.final_confidence:.0%}",
-            f"",
+            "",
             f"PARTICIPANTES: {', '.join(record.participants)}",
-            f"",
-            f"VOTOS:",
+            "",
+            "VOTOS:",
         ]
         for agent, vote in record.votes.items():
             parts.append(f"  {agent}: {vote}")
 
-        parts.append(f"")
-        parts.append(f"RESUMEN DE DELIBERACIÓN:")
+        parts.append("")
+        parts.append("RESUMEN DE DELIBERACIÓN:")
         parts.append(record.deliberation_summary)
 
         if record.key_objections:
-            parts.append(f"")
-            parts.append(f"OBJECIONES CLAVE:")
+            parts.append("")
+            parts.append("OBJECIONES CLAVE:")
             for obj in record.key_objections:
                 parts.append(f"  - {obj}")
 
         if record.actions:
-            parts.append(f"")
-            parts.append(f"ACCIONES:")
+            parts.append("")
+            parts.append("ACCIONES:")
             for action in record.actions:
                 parts.append(f"  - {action.get('action', '')}")
 

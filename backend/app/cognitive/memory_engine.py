@@ -5,12 +5,11 @@ Implementa Working Memory, Short-Term Memory y Long-Term Memory
 para el vertical slice de WO-003.
 """
 
-import json
 from datetime import datetime, timezone
 from dataclasses import dataclass, field
 from sqlalchemy.orm import Session
 
-from app.models.models import Conversation, Message, Project
+from app.models.models import Conversation, Message
 
 
 @dataclass

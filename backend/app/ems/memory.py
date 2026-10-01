@@ -191,7 +191,7 @@ class EnterpriseMemorySystem:
         query = (
             self.db.query(KnowledgeFact)
             .filter(KnowledgeFact.company_id == company_id)
-            .filter(KnowledgeFact.is_active == True)
+            .filter(KnowledgeFact.is_active.is_(True))
         )
         if fact_type:
             query = query.filter(KnowledgeFact.fact_type == fact_type)
@@ -279,7 +279,7 @@ class EnterpriseMemorySystem:
         fact_count = (
             self.db.query(KnowledgeFact)
             .filter(KnowledgeFact.company_id == company_id)
-            .filter(KnowledgeFact.is_active == True)
+            .filter(KnowledgeFact.is_active.is_(True))
             .count()
         )
         correction_count = (

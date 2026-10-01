@@ -2,15 +2,14 @@
 OOS API — Endpoints del Organizational Operating System.
 """
 
-import uuid
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 
 from app.core.database import get_db
+from app.core.access import require_organization, require_work_order
 from app.core.auth import get_current_user
-from app.models.models import User, Company
-from app.oos.models import OOSBase, WorkOrder, DecisionRecord, KPI, Risk, Organization
+from app.models.models import User
 from app.oos.services import (
     OrganizationService, WorkOrderService, ProgressService,
     KPIService, RiskService, MeetingService,
@@ -146,6 +145,7 @@ async def create_work_order(
     db: Session = Depends(get_db),
 ):
     """Crea una Work Order."""
+    require_organization(db, current_user, request.organization_id)
     service = get_wo_service(db)
     wo = service.create_from_decision(
         organization_id=request.organization_id,
@@ -177,6 +177,7 @@ async def list_work_orders(
     db: Session = Depends(get_db),
 ):
     """Lista Work Orders de una organización."""
+    require_organization(db, current_user, organization_id)
     service = get_wo_service(db)
     if status:
         wos = service.list_by_org(organization_id, status)
@@ -206,6 +207,7 @@ async def update_work_order(
     db: Session = Depends(get_db),
 ):
     """Actualiza una Work Order."""
+    require_work_order(db, current_user, work_order_id)
     service = get_wo_service(db)
     wo = service.get(work_order_id)
     if not wo:
@@ -231,6 +233,7 @@ async def start_work_order(
     db: Session = Depends(get_db),
 ):
     """Marca una Work Order como en progreso."""
+    require_work_order(db, current_user, work_order_id)
     service = get_wo_service(db)
     service.start(work_order_id)
     db.commit()
@@ -245,6 +248,7 @@ async def complete_work_order(
     db: Session = Depends(get_db),
 ):
     """Marca una Work Order como completada."""
+    require_work_order(db, current_user, work_order_id)
     service = get_wo_service(db)
     service.complete(work_order_id, result)
     db.commit()
@@ -259,6 +263,7 @@ async def report_progress(
     db: Session = Depends(get_db),
 ):
     """Reporta progreso de una Work Order."""
+    require_work_order(db, current_user, work_order_id)
     service = get_progress_service(db)
     report = service.report(
         work_order_id=work_order_id,
@@ -285,6 +290,7 @@ async def get_dashboard(
     db: Session = Depends(get_db),
 ):
     """Dashboard ejecutivo completo."""
+    require_organization(db, current_user, organization_id)
     org_service = get_org_service(db)
     wo_service = get_wo_service(db)
     kpi_engine = get_kpi_engine(db)
@@ -360,6 +366,7 @@ async def get_kpis(
     db: Session = Depends(get_db),
 ):
     """Obtiene todos los KPIs de una organización."""
+    require_organization(db, current_user, organization_id)
     service = get_kpi_service(db)
     kpis = service.get_all(organization_id)
     return [
@@ -384,6 +391,7 @@ async def create_kpi(
     db: Session = Depends(get_db),
 ):
     """Crea un KPI."""
+    require_organization(db, current_user, request.organization_id)
     service = get_kpi_service(db)
     kpi = service.create(
         organization_id=request.organization_id,
@@ -408,6 +416,7 @@ async def get_risks(
     db: Session = Depends(get_db),
 ):
     """Obtiene todos los riesgos de una organización."""
+    require_organization(db, current_user, organization_id)
     service = get_risk_service(db)
     risks = service.get_all(organization_id)
     return [
@@ -432,6 +441,7 @@ async def create_risk(
     db: Session = Depends(get_db),
 ):
     """Crea un riesgo."""
+    require_organization(db, current_user, request.organization_id)
     service = get_risk_service(db)
     risk = service.create(
         organization_id=request.organization_id,
@@ -459,8 +469,8 @@ async def board_review(
     Revisión ejecutiva — responde preguntas del Board
     usando información persistida.
     """
+    require_organization(db, current_user, request.organization_id)
     wo_service = get_wo_service(db)
-    scheduler = get_scheduler(db)
     kpi_engine = get_kpi_engine(db)
     kpi_svc = get_kpi_service(db)
     risk_svc = get_risk_service(db)
@@ -527,6 +537,7 @@ async def create_meeting(
     db: Session = Depends(get_db),
 ):
     """Crea una reunión."""
+    require_organization(db, current_user, request.organization_id)
     service = get_meeting_service(db)
     meeting = service.create(
         organization_id=request.organization_id,

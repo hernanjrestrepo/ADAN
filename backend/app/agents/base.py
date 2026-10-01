@@ -7,7 +7,6 @@ Cada agente reutiliza: Cerebro (LLM) + EMS (Memoria) + TEF (Herramientas).
 import abc
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
-from typing import Any
 
 from app.ai.base import LLMAdapter, LLMMessage
 from app.ems.memory import EnterpriseMemorySystem

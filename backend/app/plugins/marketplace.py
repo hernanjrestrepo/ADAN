@@ -4,10 +4,8 @@ Plugin Marketplace — Sistema para instalar módulos nuevos.
 Registra plugins dinámicamente mediante TEF.
 """
 
-import uuid
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
-from typing import Any
 
 
 @dataclass

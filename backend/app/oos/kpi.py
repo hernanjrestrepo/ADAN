@@ -2,6 +2,7 @@
 OOS KPI Engine — Cálculo automático de KPIs.
 """
 
+import uuid
 from datetime import datetime, timezone
 from sqlalchemy.orm import Session
 
@@ -100,6 +101,3 @@ class KPIEngine:
                 self.db.add(kpi)
 
         self.db.flush()
-
-
-import uuid

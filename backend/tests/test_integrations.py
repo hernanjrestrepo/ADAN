@@ -3,12 +3,9 @@ Tests para Integration Hub — WO-010.
 """
 
 import pytest
-from unittest.mock import AsyncMock
 
-from app.models.models import User, Company
 from app.integrations.connectors import (
-    ConnectorManager, BaseConnector, ConnectorMetadata, ConnectorResult,
-    GmailConnector, OutlookConnector, GoogleCalendarConnector,
+    ConnectorManager, ConnectorMetadata, GmailConnector, OutlookConnector, GoogleCalendarConnector,
     SlackConnector, RESTAPIConnector,
 )
 

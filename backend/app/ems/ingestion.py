@@ -11,7 +11,7 @@ from dataclasses import dataclass, field
 from sqlalchemy.orm import Session
 
 from app.ems.models import EMSDocument, EMSChunk, EMSVersion
-from app.ems.chunking import TextChunker, Chunk
+from app.ems.chunking import TextChunker
 from app.ems.providers import (
     EmbeddingProvider, VectorStoreProvider, VectorRecord
 )

@@ -11,17 +11,13 @@ Implements the complete Level 1 flow per AD-FUNC-01:
 """
 from __future__ import annotations
 
-import json
-import time
-from datetime import datetime, timezone
 
 from sqlalchemy.orm import Session
 
 from app.ai.base import LLMAdapter, LLMMessage
 from app.ai.normalize import normalize_string, normalize_list
 from app.models.models import (
-    Card, CardStatus, Company, Conversation, Decision, DecisionStatus,
-    Document, Event, Level, Message, NivelStatus, Project, Score, ScoreType,
+    Card, CardStatus, Company, Conversation, Document, Level, Message, Project, Score,
 )
 from app.nivel1.board_room import BoardRoom, BoardConsensus
 from app.nivel1.gate_review import GateReviewEngine, GateReviewResult

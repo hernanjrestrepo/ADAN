@@ -2,7 +2,7 @@
 Integration Hub API — Endpoints para integraciones externas.
 """
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 
 from app.core.auth import get_current_user
@@ -26,19 +26,37 @@ class ExecuteRequest(BaseModel):
     params: dict = {}
 
 
-# Singleton
-_manager = ConnectorManager()
-_manager.register(GmailConnector())
-_manager.register(OutlookConnector())
-_manager.register(GoogleCalendarConnector())
-_manager.register(SlackConnector())
-_manager.register(RESTAPIConnector())
+# Un gestor por usuario: las credenciales y conexiones de un usuario nunca
+# son visibles ni utilizables por otro (antes era un singleton global).
+# Nota: viven en memoria del proceso; con varios workers cada uno tiene las suyas.
+_managers: dict[str, ConnectorManager] = {}
+
+
+def _new_manager() -> ConnectorManager:
+    manager = ConnectorManager()
+    manager.register(GmailConnector())
+    manager.register(OutlookConnector())
+    manager.register(GoogleCalendarConnector())
+    manager.register(SlackConnector())
+    manager.register(RESTAPIConnector())
+    return manager
+
+
+def get_manager(current_user: User = Depends(get_current_user)) -> ConnectorManager:
+    manager = _managers.get(current_user.id)
+    if manager is None:
+        manager = _managers[current_user.id] = _new_manager()
+    return manager
+
+
+# Catálogo (sin estado de usuario) para listados y health
+_catalog = _new_manager()
 
 
 @router.get("/connectors")
 async def list_connectors(current_user: User = Depends(get_current_user)):
     """Lista conectores disponibles."""
-    connectors = _manager.list_all()
+    connectors = _catalog.list_all()
     return [
         {
             "id": c.id,
@@ -56,39 +74,39 @@ async def list_connectors(current_user: User = Depends(get_current_user)):
 @router.post("/connect")
 async def connect_service(
     request: ConnectRequest,
-    current_user: User = Depends(get_current_user),
+    manager: ConnectorManager = Depends(get_manager),
 ):
     """Conecta a un servicio externo."""
-    result = await _manager.connect(request.connector_id, request.credentials)
+    result = await manager.connect(request.connector_id, request.credentials)
     return {"connector_id": request.connector_id, "connected": result}
 
 
 @router.post("/disconnect")
 async def disconnect_service(
     connector_id: str,
-    current_user: User = Depends(get_current_user),
+    manager: ConnectorManager = Depends(get_manager),
 ):
     """Desconecta de un servicio."""
-    result = await _manager.disconnect(connector_id)
+    result = await manager.disconnect(connector_id)
     return {"connector_id": connector_id, "disconnected": result}
 
 
 @router.get("/health/{connector_id}")
 async def connector_health(
     connector_id: str,
-    current_user: User = Depends(get_current_user),
+    manager: ConnectorManager = Depends(get_manager),
 ):
     """Verifica salud de un conector."""
-    return await _manager.health(connector_id)
+    return await manager.health(connector_id)
 
 
 @router.post("/execute")
 async def execute_connector(
     request: ExecuteRequest,
-    current_user: User = Depends(get_current_user),
+    manager: ConnectorManager = Depends(get_manager),
 ):
     """Ejecuta una acción en un conector."""
-    result = await _manager.execute(
+    result = await manager.execute(
         request.connector_id,
         request.action,
         request.params,
@@ -106,6 +124,6 @@ async def execute_connector(
 async def integrations_health():
     return {
         "status": "healthy",
-        "connectors": _manager.count(),
+        "connectors": _catalog.count(),
         "version": "0.1.0-wo010",
     }

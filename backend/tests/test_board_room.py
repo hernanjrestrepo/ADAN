@@ -2,8 +2,8 @@
 import asyncio
 import time
 import pytest
-from unittest.mock import AsyncMock, MagicMock
-from app.nivel1.board_room import BoardRoom, AGENT_PROMPTS, BoardConsensus
+from unittest.mock import MagicMock
+from app.nivel1.board_room import BoardRoom, BoardConsensus
 
 
 class MockLLMAdapter:
@@ -80,7 +80,7 @@ def test_board_room_concurrent_execution(mock_llm):
     board_room = BoardRoom(mock_llm)
 
     start = time.monotonic()
-    result = asyncio.run(
+    asyncio.run(
         board_room.run("Test problem")
     )
     total_time = time.monotonic() - start

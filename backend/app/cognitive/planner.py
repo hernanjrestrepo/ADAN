@@ -7,10 +7,8 @@ con pasos, agentes requeridos, herramientas y fallback.
 
 import json
 from dataclasses import dataclass, field
-from sqlalchemy.orm import Session
 
 from app.ai.base import LLMAdapter, LLMMessage
-from app.ai.normalize import normalize_string
 
 
 @dataclass

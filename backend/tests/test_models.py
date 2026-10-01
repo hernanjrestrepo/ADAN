@@ -5,8 +5,8 @@ from sqlalchemy.orm import sessionmaker
 
 from app.core.database import Base
 from app.models.models import (
-    Company, Decision, Document, Event, FoundingNarrative, Level,
-    Message, Conversation, Card, Project, Score, User, UserRole,
+    Company, FoundingNarrative, Level,
+    Project, User, UserRole,
 )
 
 

@@ -12,8 +12,8 @@ from datetime import datetime, timezone
 from sqlalchemy.orm import Session
 
 from app.models.models import (
-    Card, CardStatus, Company, Conversation, Decision, DecisionStatus,
-    Document, Event, Level, NivelStatus, Message, Project, Score, ScoreType,
+    Company, Decision, DecisionStatus,
+    Document, Event, Level, NivelStatus, Project, Score, ScoreType,
 )
 
 
@@ -243,8 +243,8 @@ class GemeloDigitalService:
             "decisions": decisions,
             "documents": documents,
             "events": events,
-            "current_level": next((l for l in levels if l.status == "active"), None),
-            "completed_levels": sum(1 for l in levels if l.status == "completed"),
+            "current_level": next((lvl for lvl in levels if lvl.status == "active"), None),
+            "completed_levels": sum(1 for lvl in levels if lvl.status == "completed"),
             "total_levels": len(levels),
         }
 

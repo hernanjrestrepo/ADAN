@@ -12,8 +12,8 @@ from app.models.models import (
 )
 from app.nivel1.service import Nivel1Service
 from app.schemas.schemas import (
-    ChatRequest, ChatResponse, CompanyResponse, DocumentResponse,
-    GateReviewResponse, LevelResponse, MessageResponse, ScoreResponse,
+    ChatRequest, ChatResponse, DocumentResponse,
+    GateReviewResponse, MessageResponse, ScoreResponse,
 )
 
 router = APIRouter(prefix="/nivel1", tags=["nivel1"])
@@ -152,7 +152,6 @@ async def chat_stream(
         conversation = service.get_or_create_conversation(card)
 
     # Save user message
-    from datetime import datetime, timezone
     user_msg = Message(
         conversation_id=conversation.id,
         role="user",
@@ -276,7 +275,7 @@ async def generate_diagnosis(
     doc = await service.generate_diagnosis(project, company, board_consensus)
 
     # Calculate scores
-    scores = await service.calculate_scores(project, board_consensus, doc.content)
+    await service.calculate_scores(project, board_consensus, doc.content)
 
     return DocumentResponse.model_validate(doc)
 
