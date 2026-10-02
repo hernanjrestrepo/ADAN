@@ -125,7 +125,7 @@ class TestWO004Acceptance:
 
         print("\n[1] Registrando usuario y creando empresa...")
         unique_id = uuid.uuid4().hex[:8]
-        resp = client.post("/api/v1/auth/register", json={
+        resp = client.post("/api/v1/auth/register", json={"accept_data_policy": True, 
             "email": f"ems_accept_{unique_id}@test.com",
             "name": "EMS Acceptance Tester",
             "password": "acceptance-pass-2026",

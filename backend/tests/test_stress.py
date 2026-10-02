@@ -19,7 +19,7 @@ async def register_and_create_company(session, base_url, user_id):
     """Register a user and create a company."""
     import uuid
     unique_id = f"{user_id}_{uuid.uuid4().hex[:8]}"
-    async with session.post(f"{base_url}/api/v1/auth/register", json={
+    async with session.post(f"{base_url}/api/v1/auth/register", json={"accept_data_policy": True, 
         "email": f"stress{unique_id}@adan.ai",
         "name": f"Stress User {user_id}",
         "password": "stress-pass-2026",

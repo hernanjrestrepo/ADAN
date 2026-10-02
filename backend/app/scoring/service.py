@@ -33,7 +33,8 @@ def _event(db: Session, project: Project, event_type: str, entity_type: str, ent
 
 def record_evidence(db: Session, project: Project, user: User, *, dimension: str, claim: str, kind: str,
                     polarity: str = engine.SUPPORTS, source: str | None = None,
-                    level_number: int | None = None, document_id: str | None = None) -> Evidence:
+                    level_number: int | None = None, document_id: str | None = None,
+                    verification: dict | None = None) -> Evidence:
     """El cliente registra un dato externo o un testimonio. Las inferencias son de los Agentes."""
     if kind not in (engine.EXTERNAL, engine.TESTIMONY):
         raise EvidenceError("El cliente registra datos externos o testimonios; las inferencias son de los Agentes")
@@ -50,8 +51,31 @@ def record_evidence(db: Session, project: Project, user: User, *, dimension: str
         item = Evidence(company_id=project.company_id, project_id=project.id, dimension=dimension, claim=claim,
                         kind=kind, polarity=polarity, source=(source or "").strip() or None,
                         level_number=level_number or engine.DIAGNOSTIC[dimension]["level"], document_id=document_id,
-                        evidence_source=f"cliente:{kind}")
+                        evidence_source=f"cliente:{kind}", verification=verification)
         db.add(item)
+        db.commit()
+    db.refresh(item)
+    return item
+
+
+def record_csi_signal(db: Session, project: Project, signal: dict, verification: dict | None) -> Evidence:
+    """Un dato de CSI entra como dato externo *propuesto*: espera la confirmación del cliente."""
+    with acting_as(Actor.agent("CSI"), reason="Señal externa de CSI"):
+        item = Evidence(company_id=project.company_id, project_id=project.id, dimension="problem",
+                        claim=signal["claim"], kind=engine.EXTERNAL, polarity=signal["polarity"],
+                        source=signal["source"], level_number=1, confirmed=False, verification=verification,
+                        evidence_source="csi")
+        db.add(item)
+        db.flush()
+    return item
+
+
+def confirm_evidence(db: Session, item: Evidence, user: User) -> Evidence:
+    """El cliente confirma un dato propuesto por CSI: desde ahora cuenta (versionado, con su autor)."""
+    if item.confirmed:
+        return item
+    with acting_as(Actor.user(user.id, user.name), reason="El cliente confirmó la evidencia externa"):
+        item.confirmed = True
         db.commit()
     db.refresh(item)
     return item
@@ -83,8 +107,12 @@ def record_board_inference(db: Session, project: Project, consensus) -> Evidence
                                   confidence=float(getattr(consensus, "confidence", 0) or 0))
 
 
-def active_evidence(db: Session, project: Project, dimension: str | None = None) -> list[Evidence]:
+def active_evidence(db: Session, project: Project, dimension: str | None = None,
+                    include_unconfirmed: bool = False) -> list[Evidence]:
+    """Evidencia vigente. Lo propuesto por CSI y no confirmado por el cliente no cuenta para el Score."""
     q = db.query(Evidence).filter(Evidence.project_id == project.id, Evidence.status == "active")
+    if not include_unconfirmed:
+        q = q.filter(Evidence.confirmed.is_(True))
     if dimension:
         q = q.filter(Evidence.dimension == dimension)
     return q.order_by(Evidence.created_at.desc()).all()

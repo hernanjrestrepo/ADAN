@@ -6,10 +6,24 @@ import Card from '../../components/ui/Card'
 import { Field, TextAreaField } from '../../components/ui/Field'
 import { EmptyState, LoadingState } from '../../components/ui/States'
 import { api, errorMessage } from '../../lib/api'
-import type { Evidence, EvidenceKind, EvidencePolarity, GatePreview } from '../../types'
+import type { Evidence, EvidenceKind, EvidencePolarity, EvidenceVerification, GatePreview } from '../../types'
 import { KIND } from './evidenceLabels'
 
 // Evidencia del Nivel 1 (AD-CMP-05): lo único que mueve el Problem Score y abre el Gate
+function VerificationNote({ v }: { v: EvidenceVerification }) {
+  const text = {
+    verified: `Fuente verificada${v.title ? `: «${v.title}»` : ''}`,
+    unreachable: 'No se pudo abrir la fuente: revisa el enlace',
+    blocked: 'Enlace no permitido (dirección interna o no pública)',
+  }[v.status]
+  return (
+    <p className={`text-xs mt-1 ${v.status === 'verified' ? 'text-adan-success' : 'text-adan-warning'}`}
+      data-testid="verification">
+      {v.status === 'verified' ? '✓ ' : '⚠ '}{text}
+    </p>
+  )
+}
+
 interface EvidencePanelProps {
   companyId: string
   onChanged: () => void
@@ -57,6 +71,9 @@ export default function EvidencePanel({ companyId, onChanged }: EvidencePanelPro
   const [saving, setSaving] = useState(false)
   const [retiring, setRetiring] = useState<string | null>(null)
   const [reason, setReason] = useState('')
+  const [csiConnected, setCsiConnected] = useState(false)
+  const [searching, setSearching] = useState(false)
+  const [csiNote, setCsiNote] = useState<string | null>(null)
 
   const fetchAll = useCallback(
     () => Promise.all([api.listEvidence(companyId), api.getGatePreview(companyId)]),
@@ -65,12 +82,13 @@ export default function EvidencePanel({ companyId, onChanged }: EvidencePanelPro
 
   useEffect(() => {
     let cancelled = false
+    api.getCsiStatus(companyId).then((s) => { if (!cancelled) setCsiConnected(s.connected) }).catch(() => undefined)
     fetchAll()
       .then(([list, preview]) => { if (!cancelled) { setItems(list); setGate(preview) } })
       .catch((err: unknown) => { if (!cancelled) setError(errorMessage(err)) })
       .finally(() => { if (!cancelled) setLoading(false) })
     return () => { cancelled = true }
-  }, [fetchAll])
+  }, [companyId, fetchAll])
 
   const reload = async () => {
     const [list, preview] = await fetchAll()
@@ -92,6 +110,32 @@ export default function EvidencePanel({ companyId, onChanged }: EvidencePanelPro
       setError(errorMessage(err))
     } finally {
       setSaving(false)
+    }
+  }
+
+  // CSI propone evidencia externa; cuenta solo cuando el cliente la confirma (WO-108)
+  const searchCsi = async () => {
+    setSearching(true)
+    setError(null)
+    try {
+      const found = await api.searchCsi(companyId)
+      setCsiNote(found.length ? `CSI propuso ${found.length} ${found.length === 1 ? 'dato' : 'datos'}: revísalos abajo.`
+        : 'CSI no encontró datos nuevos para este problema.')
+      await reload()
+    } catch (err) {
+      setError(errorMessage(err))
+    } finally {
+      setSearching(false)
+    }
+  }
+
+  const confirm = async (id: string) => {
+    setError(null)
+    try {
+      await api.confirmEvidence(companyId, id)
+      await reload()
+    } catch (err) {
+      setError(errorMessage(err))
     }
   }
 
@@ -160,6 +204,21 @@ export default function EvidencePanel({ companyId, onChanged }: EvidencePanelPro
         </form>
       </Card>
 
+      <Card className="!p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4" data-testid="csi">
+        <div>
+          <h3 className="font-bold">Inteligencia externa (CSI)</h3>
+          <p className="text-sm text-adan-muted">
+            {csiConnected
+              ? 'ADÁN puede pedirle a CSI estudios y datos sobre tu problema. Tú decides cuáles cuentan.'
+              : 'CSI todavía no está conectado. Mientras tanto, ADÁN verifica cada fuente que registras.'}
+          </p>
+          {csiNote && <p className="text-sm mt-2">{csiNote}</p>}
+        </div>
+        <Button variant="secondary" loading={searching} disabled={!csiConnected} onClick={searchCsi}>
+          Buscar evidencia en CSI
+        </Button>
+      </Card>
+
       {items.length === 0 ? (
         <EmptyState icon="🔎" title="Sin evidencia todavía">
           Empieza por un dato que cualquiera pueda verificar: es lo que más pesa para cerrar el Nivel 1.
@@ -178,7 +237,11 @@ export default function EvidencePanel({ companyId, onChanged }: EvidencePanelPro
                     {new Date(e.created_at).toLocaleDateString('es-CO')}
                   </span>
                 </div>
+                {!e.confirmed && (
+                  <p className="text-xs text-adan-warning mb-2">Propuesta por CSI: todavía no cuenta para tu Score.</p>
+                )}
                 <p className="text-sm">{e.claim}</p>
+                {e.verification && <VerificationNote v={e.verification} />}
                 {e.source && (
                   <p className="text-xs text-adan-muted mt-1 break-all">
                     Fuente: {/^https?:\/\//.test(e.source)
@@ -186,7 +249,13 @@ export default function EvidencePanel({ companyId, onChanged }: EvidencePanelPro
                       : e.source}
                   </p>
                 )}
-                {e.kind !== 'inference' && (retiring === e.id ? (
+                {!e.confirmed && retiring !== e.id && (
+                  <div className="flex gap-2 mt-3">
+                    <Button size="sm" variant="success" onClick={() => confirm(e.id)}>Confirmar</Button>
+                    <Button size="sm" variant="ghost" onClick={() => setRetiring(e.id)}>Descartar</Button>
+                  </div>
+                )}
+                {e.kind !== 'inference' && (e.confirmed || retiring === e.id) && (retiring === e.id ? (
                   <div className="flex flex-wrap items-end gap-2 mt-3">
                     <Field className="flex-1 min-w-48" label="¿Por qué la retiras?" value={reason}
                       onChange={(ev) => setReason(ev.target.value)} />

@@ -45,6 +45,11 @@ class Settings:
     # Enrutamiento de modelos (WO-099, AD-DEC-0002 decisión 3): Ollama para lo simple,
     # Anthropic según la complejidad. Sin ANTHROPIC_API_KEY todo va a Ollama (degradado).
     ANTHROPIC_API_KEY: str = os.getenv("ANTHROPIC_API_KEY", "")
+
+    # CSI (AD-000 §3): inteligencia externa del ecosistema Paradixe. Sin URL, ADÁN no inventa datos
+    # externos: solo verifica las fuentes que aporta el cliente (WO-108).
+    CSI_BASE_URL: str = os.getenv("CSI_BASE_URL", "").rstrip("/")
+    CSI_API_KEY: str = os.getenv("CSI_API_KEY", "")
     LLM_MODEL_STANDARD: str = os.getenv("LLM_MODEL_STANDARD", "claude-sonnet-5")
     LLM_MODEL_COMPLEX: str = os.getenv("LLM_MODEL_COMPLEX", "claude-opus-5")
     LLM_MODEL_FAST: str = os.getenv("LLM_MODEL_FAST", "claude-haiku-4-5")

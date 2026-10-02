@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session
 from app.core.authz import get_owned_company, get_owned_project
 from app.core.database import get_db
 from app.models.models import User
-from app.scoring import engine, service
+from app.scoring import engine, external, service
 from app.twin import lifecycle
 from app.twin.actor import Actor, acting_as
 from app.twin.api import acting_user
@@ -37,7 +37,8 @@ def _evidence_out(e: Evidence) -> dict:
     return {"id": e.id, "dimension": e.dimension, "claim": e.claim, "kind": e.kind,
             "kind_label": engine.TIERS[e.kind]["label"], "polarity": e.polarity, "source": e.source,
             "level_number": e.level_number, "status": e.status, "created_by": e.created_by,
-            "confidence_level": e.confidence_level, "created_at": e.created_at.isoformat()}
+            "confidence_level": e.confidence_level, "confirmed": e.confirmed, "verification": e.verification,
+            "created_at": e.created_at.isoformat()}
 
 
 def _gate_out(evaluation: engine.GateEvaluation) -> dict:
@@ -60,7 +61,7 @@ def _writable(db: Session, company_id: str, user: User):
 def list_evidence(company_id: str, dimension: Optional[str] = None, include_archived: bool = False,
                   db: Session = Depends(get_db), user: User = Depends(acting_user)):
     project = get_owned_project(db, company_id, user)
-    q = db.query(Evidence).filter(Evidence.project_id == project.id)
+    q = db.query(Evidence).filter(Evidence.project_id == project.id)  # incluye las propuestas de CSI
     if dimension:
         q = q.filter(Evidence.dimension == dimension)
     if not include_archived:
@@ -69,16 +70,63 @@ def list_evidence(company_id: str, dimension: Optional[str] = None, include_arch
 
 
 @router.post("/{company_id}/evidence", status_code=201)
-def add_evidence(company_id: str, body: EvidenceBody, db: Session = Depends(get_db),
-                 user: User = Depends(acting_user)):
+async def add_evidence(company_id: str, body: EvidenceBody, db: Session = Depends(get_db),
+                       user: User = Depends(acting_user)):
     _, project = _writable(db, company_id, user)
+    # Si la fuente es un enlace, ADÁN la abre y deja constancia (WO-108): verificable → verificado
+    verification = await external.verify_source(body.source.strip()) if external.looks_like_url(body.source) else None
     try:
         item = service.record_evidence(db, project, user, dimension=body.dimension, claim=body.claim,
-                                       kind=body.kind, polarity=body.polarity, source=body.source)
+                                       kind=body.kind, polarity=body.polarity, source=body.source,
+                                       verification=verification)
     except service.EvidenceError as exc:
         db.rollback()
         raise HTTPException(status_code=422, detail=str(exc)) from exc
     return _evidence_out(item)
+
+
+class CsiBody(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    query: Optional[str] = Field(None, max_length=2000)
+
+
+@router.post("/{company_id}/csi/search")
+async def csi_search(company_id: str, body: CsiBody, db: Session = Depends(get_db),
+                     user: User = Depends(acting_user)):
+    """Pide a CSI evidencia externa sobre el dolor; llega como propuesta que el cliente confirma o descarta."""
+    company, project = _writable(db, company_id, user)
+    query = (body.query or company.description or company.name).strip()
+    try:
+        signals = await external.csi_signals(query, country=company.country, industry=company.industry)
+    except external.CsiUnavailable as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+    known = {e.source for e in service.active_evidence(db, project, include_unconfirmed=True)}
+    created = []
+    for signal in signals:
+        if signal["source"] in known:
+            continue  # no repetir lo que ya está (AD-CMP-04 §4)
+        verification = await external.verify_source(signal["source"]) if external.looks_like_url(signal["source"]) else None
+        created.append(service.record_csi_signal(db, project, signal, verification))
+    db.commit()
+    return [_evidence_out(e) for e in created]
+
+
+@router.post("/{company_id}/evidence/{evidence_id}/confirm")
+def confirm_evidence(company_id: str, evidence_id: str, db: Session = Depends(get_db),
+                     user: User = Depends(acting_user)):
+    _, project = _writable(db, company_id, user)
+    item = db.query(Evidence).filter(Evidence.id == evidence_id, Evidence.project_id == project.id,
+                                     Evidence.status == "active").first()
+    if item is None:
+        raise HTTPException(status_code=404, detail="Evidencia no encontrada")
+    return _evidence_out(service.confirm_evidence(db, item, user))
+
+
+@router.get("/{company_id}/csi")
+def csi_status(company_id: str, db: Session = Depends(get_db), user: User = Depends(acting_user)):
+    get_owned_company(db, company_id, user)
+    from app.core.config import settings
+    return {"connected": bool(settings.CSI_BASE_URL)}
 
 
 @router.post("/{company_id}/evidence/{evidence_id}/archive")

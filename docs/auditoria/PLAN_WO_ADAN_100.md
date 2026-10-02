@@ -188,7 +188,8 @@ Criterio de cierre común (EPWO-051), además de lo específico de cada ficha:
   - Gate Review basado en evidencia registrada. Cierra B5.
 - **Estimación:** 5–8 días.
 
-### WO-108 — Onboarding y Nivel 1 completo
+### WO-108 — Onboarding y Nivel 1 completo 🟡
+- **Estado:** parte técnica fusionada (`docs/wo/WO-108_REPORTE.md`). Falta el cierre: el piloto real con una empresa de Paradixe (Hernán).
 - **Alcance:**
   - AD-FUNC-06 completo, con **consentimiento de datos** (`AD-DEC-0002` decisión 8).
   - Nivel 1 con evidencia externa vía CSI y aprobación del cliente.
@@ -294,4 +295,4 @@ Con un solo frente de trabajo son unos 7–11 meses; con dos frentes en paralelo
 1. WO-095 ✅ (`docs/wo/WO-095_REPORTE.md`).
 2. WO-096 🟡: solo falta Build B, que depende de la laptop.
 3. H2 completo: WO-091 ✅, WO-097 ✅, WO-092 ✅, WO-093 ✅.
-4. H3: WO-099 ✅ (adelantada el 2026-09-25) → WO-098 ✅ (2026-10-02) → WO-107 ✅ (2026-10-02) → WO-108 → WO-109.
+4. H3: WO-099 ✅ (adelantada el 2026-09-25) → WO-098 ✅ (2026-10-02) → WO-107 ✅ (2026-10-02) → WO-108 🟡 (técnica 2026-10-02; falta el piloto) → WO-109.

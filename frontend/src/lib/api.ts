@@ -1,7 +1,7 @@
 import type {
   BoardConsensus, BoardRoomInput, ChatResponse, Company, CompanyInput, DecideInput, Decision, DocumentRecord,
-  Evidence, EvidenceInput, GatePreview, GateReviewResult, Nivel1Status, Score, ScoreOverview, TimelineEvent,
-  TokenResponse, TwinKind, TwinOverview, User,
+  Evidence, EvidenceInput, GatePreview, GateReviewResult, LevelView, Nivel1Status, OnboardingState, Score,
+  ScoreOverview, TimelineEvent, TokenResponse, TwinKind, TwinOverview, User,
 } from '../types'
 
 const API_BASE = '/api/v1'
@@ -50,8 +50,21 @@ const post = <T>(path: string, body?: unknown) =>
 
 export const api = {
   // Auth
-  register: (email: string, name: string, password: string) =>
-    post<TokenResponse>('/auth/register', { email, name, password }),
+  register: (email: string, name: string, password: string, consent: { acceptDataPolicy: boolean; shareAggregated: boolean }) =>
+    post<TokenResponse>('/auth/register', {
+      email, name, password, accept_data_policy: consent.acceptDataPolicy, share_aggregated: consent.shareAggregated,
+    }),
+  // Onboarding y consentimiento (WO-108)
+  getOnboarding: () => request<OnboardingState>('/onboarding/me'),
+  startOnboarding: (companyName: string, stage: 'idea' | 'existing') =>
+    post<{ company_id: string; first_question: string | null }>('/onboarding/start', { company_name: companyName, stage }),
+  setConsent: (purpose: 'data_processing' | 'aggregated_intelligence', granted: boolean) =>
+    post<OnboardingState['consents']>('/onboarding/consents', { purpose, granted }),
+  getLevels: (companyId: string) => request<LevelView[]>(`/companies/${companyId}/levels`),
+  getCsiStatus: (companyId: string) => request<{ connected: boolean }>(`/scoring/${companyId}/csi`),
+  searchCsi: (companyId: string, query?: string) => post<Evidence[]>(`/scoring/${companyId}/csi/search`, { query }),
+  confirmEvidence: (companyId: string, evidenceId: string) =>
+    post<Evidence>(`/scoring/${companyId}/evidence/${evidenceId}/confirm`),
   login: (email: string, password: string) => post<TokenResponse>('/auth/login', { email, password }),
   getMe: () => request<User>('/auth/me'),
   // Cierra la sesión en todos los dispositivos

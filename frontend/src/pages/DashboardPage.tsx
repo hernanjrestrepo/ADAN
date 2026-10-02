@@ -1,15 +1,15 @@
 import { useEffect, useState, type FormEvent } from 'react'
-import { Link, useNavigate } from 'react-router'
+import { Link, Navigate, useNavigate } from 'react-router'
 import AppShell from '../components/AppShell'
 import Alert from '../components/ui/Alert'
 import Badge from '../components/ui/Badge'
 import Button from '../components/ui/Button'
 import Card from '../components/ui/Card'
 import { Field, TextAreaField } from '../components/ui/Field'
-import { EmptyState, LoadingState } from '../components/ui/States'
+import { LoadingState } from '../components/ui/States'
 import { useAuth } from '../auth/context'
 import { api, errorMessage } from '../lib/api'
-import type { Company, CompanyInput } from '../types'
+import type { Company, CompanyInput, Identity } from '../types'
 
 function greeting() {
   const h = new Date().getHours()
@@ -116,9 +116,12 @@ function CompanyCard({ company }: { company: Company }) {
       </button>
       <MaturityBar value={company.maturity} />
       <div className="flex items-center justify-between gap-3 pt-3 border-t border-adan-border">
-        <Link to={`/nivel1/${company.id}`} className="text-sm font-medium text-adan-text hover:text-adan-accent">
-          Continuar Nivel 1
-        </Link>
+        <span className="flex gap-4">
+          <Link to={`/nivel1/${company.id}`} className="text-sm font-medium text-adan-text hover:text-adan-accent">
+            Continuar Nivel 1
+          </Link>
+          <Link to={`/ruta/${company.id}`} className="text-sm text-adan-muted hover:text-adan-text">Ruta</Link>
+        </span>
         {/* Enlace aparte: un enlace no puede ir dentro de un botón */}
         <Link to={`/gemelo/${company.id}`} className="text-sm text-adan-accent hover:underline">
           Gemelo Digital →
@@ -133,12 +136,15 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [showCreate, setShowCreate] = useState(false)
+  const [identity, setIdentity] = useState<Identity | null>(null)
 
   useEffect(() => {
     api.getCompanies()
       .then(setCompanies)
       .catch((err: unknown) => setError(errorMessage(err)))
       .finally(() => setLoading(false))
+    // La identidad es informativa: si falla, el tablero sigue funcionando
+    api.getOnboarding().then((state) => setIdentity(state.identity)).catch(() => undefined)
   }, [])
 
   const { user } = useAuth()
@@ -151,6 +157,12 @@ export default function DashboardPage() {
           <div>
             <p className="text-sm text-adan-muted">{greeting()}{user ? `, ${user.name.split(' ')[0]}` : ''}</p>
             <h2 className="text-3xl font-bold mt-1">Mis Empresas</h2>
+            {identity && (
+              <p className="text-xs text-adan-muted mt-2" data-testid="identity">
+                <Badge tone="blue">{identity.label}</Badge>
+                {identity.next && <span className="ml-2">Siguiente: {identity.next.label} — {identity.next.milestone}</span>}
+              </p>
+            )}
             <p className="text-adan-muted mt-1">
               {companies.length > 0
                 ? `${companies.length} ${companies.length === 1 ? 'empresa' : 'empresas'} en camino`
@@ -163,12 +175,9 @@ export default function DashboardPage() {
         {showCreate && <CreateCompanyDialog onClose={() => setShowCreate(false)} />}
         {loading ? (
           <LoadingState label="Cargando empresas..." />
-        ) : companies.length === 0 ? (
-          <EmptyState icon="🏢" title="No hay empresas todavía"
-            action={<Button onClick={() => setShowCreate(true)}>Crear mi primera empresa</Button>}>
-            Crea tu primera empresa: nace su Gemelo Digital y empiezas por el Nivel 1, entender el dolor que
-            resuelve. ADÁN y su Board te acompañan; tú decides.
-          </EmptyState>
+        ) : companies.length === 0 && !error ? (
+          // Sin empresas no hay tablero que mostrar: el onboarding lleva a la primera pregunta (AD-FUNC-06)
+          <Navigate to="/bienvenida" replace />
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {companies.map((company) => <CompanyCard key={company.id} company={company} />)}

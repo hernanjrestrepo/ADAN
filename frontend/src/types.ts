@@ -283,7 +283,17 @@ export interface Evidence {
   status: string
   created_by: string | null
   confidence_level: number | null
+  confirmed: boolean
+  verification: EvidenceVerification | null
   created_at: string
+}
+
+export interface EvidenceVerification {
+  status: 'verified' | 'unreachable' | 'blocked'
+  http_status?: number
+  title?: string | null
+  detail?: string
+  checked_at: string
 }
 
 export interface EvidenceInput {
@@ -329,4 +339,42 @@ export interface CompanyInput {
   description: string
   industry: string
   country: string
+}
+
+// --- Onboarding (WO-108, AD-FUNC-06) ---
+
+export interface Identity {
+  key: string
+  label: string
+  step: number
+  of: number
+  next: { key: string; label: string; milestone: string } | null
+}
+
+export interface ConsentState {
+  purpose: 'data_processing' | 'aggregated_intelligence'
+  text: string
+  granted: boolean
+  policy_version: string | null
+  since: string | null
+}
+
+export interface OnboardingState {
+  identity: Identity
+  consents: Record<'data_processing' | 'aggregated_intelligence', ConsentState>
+  next: { step: 'company' | 'first_answer' | 'done'; company_id: string | null }
+  policy_version: string
+}
+
+export interface LevelView {
+  id: string
+  number: number
+  name: string
+  status: LevelStatus
+  completed_at: string | null
+  discovers: string
+  deliverable: string
+  score_key: string | null
+  score: { value: number; confidence: number } | null
+  cards: { id: string; title: string; description: string | null; card_type: string; status: string }[]
 }

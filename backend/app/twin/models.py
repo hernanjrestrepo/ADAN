@@ -33,6 +33,8 @@ from sqlalchemy import (
     UniqueConstraint,
 )
 
+from sqlalchemy import true as sa_true
+
 from app.core.database import Base, JSONType
 
 
@@ -458,6 +460,10 @@ class Evidence(ContratoBase, Base):
     polarity = Column(String(20), default="supports", nullable=False)  # supports | contradicts
     source = Column(Text, nullable=True)  # URL, documento o referencia verificable
     document_id = Column(String(36), ForeignKey("documents.id"), nullable=True)
+    # WO-108: la evidencia que propone CSI cuenta solo cuando el cliente la confirma
+    confirmed = Column(Boolean, default=True, server_default=sa_true(), nullable=False)
+    # Constancia de verificación de la fuente: verified | unreachable | blocked, título, fecha
+    verification = Column(JSONType, nullable=True)
 
     __table_args__ = (Index("idx_evidence_project_dimension", "project_id", "dimension"),)
 

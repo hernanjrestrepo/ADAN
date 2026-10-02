@@ -9,7 +9,8 @@ from app.core.auth import (
 from app.core.config import settings
 from app.core.database import get_db
 from app.core.ratelimit import client_ip, limiter, too_many
-from app.models.models import User, UserRole
+from app.core import privacy
+from app.models.models import Consent, User, UserRole
 from app.schemas.schemas import (
     TokenResponse, UserLogin, UserRegister, UserResponse,
 )
@@ -43,6 +44,11 @@ def register(body: UserRegister, request: Request, response: Response, db: Sessi
         created_by=None,
     )
     db.add(user)
+    db.flush()
+    db.add(Consent(user_id=user.id, purpose=privacy.DATA_PROCESSING, granted=True,
+                   policy_version=privacy.POLICY_VERSION))
+    db.add(Consent(user_id=user.id, purpose=privacy.AGGREGATED_INTELLIGENCE, granted=body.share_aggregated,
+                   policy_version=privacy.POLICY_VERSION))
     db.commit()
     db.refresh(user)
     return _issue_session(user, response)

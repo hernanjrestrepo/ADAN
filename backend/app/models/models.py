@@ -97,6 +97,27 @@ class User(Base):
     companies = relationship("Company", back_populates="primary_user", foreign_keys="Company.primary_user_id")
 
 
+# --- Consentimiento de datos (AD-DEC-0002 decisión 8, Ley 1581 de 2012; WO-108) ---
+
+class Consent(Base):
+    """Constancia de consentimiento: Registro Permanente, nunca se edita ni se borra.
+
+    Cambiar de opinión es una fila nueva; la vigente es la más reciente por propósito.
+    - `data_processing`: tratamiento de datos para prestar el servicio (obligatorio para registrarse).
+    - `aggregated_intelligence`: uso anonimizado y agregado para inteligencia de mercado (opcional).
+    """
+    __tablename__ = "consents"
+    __pattern__ = "C"
+
+    id = Column(String(36), primary_key=True, default=gen_uuid)
+    user_id = Column(String(36), ForeignKey("users.id"), nullable=False, index=True)
+    purpose = Column(String(40), nullable=False)
+    granted = Column(Boolean, nullable=False)
+    policy_version = Column(String(20), nullable=False)
+    channel = Column(String(20), default="web", nullable=False)
+    created_at = Column(DateTime, default=utcnow, nullable=False)
+
+
 # --- Companies (AD-005 §2.1) ---
 
 class Company(Base):

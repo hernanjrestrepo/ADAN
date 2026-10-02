@@ -19,7 +19,7 @@ PASSWORD = "clave-segura-2026"
 
 
 def _register(client, email):
-    resp = client.post("/api/v1/auth/register", json={"email": email, "name": "U", "password": PASSWORD})
+    resp = client.post("/api/v1/auth/register", json={"accept_data_policy": True, "email": email, "name": "U", "password": PASSWORD})
     assert resp.status_code == 201, resp.text
     return {"Authorization": f"Bearer {resp.json()['access_token']}"}
 
@@ -73,7 +73,7 @@ def test_production_refuses_insecure_settings(monkeypatch):
 @pytest.mark.parametrize("password", ["corta1", "aaaaaaaaaaaa", "x" * 73, "nuevo@example.com", "nuevo-usuario"])
 def test_weak_passwords_are_rejected(client, password):
     email = "nuevo-usuario@example.com" if password == "nuevo-usuario" else "nuevo@example.com"
-    resp = client.post("/api/v1/auth/register", json={"email": email, "name": "U", "password": password})
+    resp = client.post("/api/v1/auth/register", json={"accept_data_policy": True, "email": email, "name": "U", "password": password})
     assert resp.status_code == 422
 
 
@@ -93,7 +93,7 @@ def test_registrations_per_ip_are_limited(client, monkeypatch):
     monkeypatch.setattr(settings, "REGISTER_PER_IP_PER_HOUR", 2)
     _register(client, "uno@example.com")
     _register(client, "dos@example.com")
-    resp = client.post("/api/v1/auth/register", json={"email": "tres@example.com", "name": "U", "password": PASSWORD})
+    resp = client.post("/api/v1/auth/register", json={"accept_data_policy": True, "email": "tres@example.com", "name": "U", "password": PASSWORD})
     assert resp.status_code == 429
 
 
@@ -135,14 +135,14 @@ def test_security_headers(client):
 # ============================================================
 
 def test_session_cookie_is_httponly_and_works(client):
-    resp = client.post("/api/v1/auth/register", json={"email": "c@example.com", "name": "C", "password": PASSWORD})
+    resp = client.post("/api/v1/auth/register", json={"accept_data_policy": True, "email": "c@example.com", "name": "C", "password": PASSWORD})
     cookie = resp.headers["set-cookie"]
     assert cookie.startswith(f"{SESSION_COOKIE}=") and "HttpOnly" in cookie and "samesite=lax" in cookie.lower()
     assert client.get("/api/v1/auth/me").json()["email"] == "c@example.com"
 
 
 def test_cookie_requests_that_change_data_need_the_csrf_header(client):
-    client.post("/api/v1/auth/register", json={"email": "d@example.com", "name": "D", "password": PASSWORD})
+    client.post("/api/v1/auth/register", json={"accept_data_policy": True, "email": "d@example.com", "name": "D", "password": PASSWORD})
     blocked = client.post("/api/v1/companies/", json={"name": "Sin cabecera"})
     assert blocked.status_code == 403
     allowed = client.post("/api/v1/companies/", json={"name": "Con cabecera"}, headers={CSRF_HEADER: CSRF_VALUE})

@@ -13,7 +13,7 @@ def test_health(client):
 
 def test_register(client):
     """User registration works."""
-    resp = client.post("/api/v1/auth/register", json={
+    resp = client.post("/api/v1/auth/register", json={"accept_data_policy": True, 
         "email": "test@example.com",
         "name": "Test User",
         "password": "password123",
@@ -27,12 +27,12 @@ def test_register(client):
 
 def test_register_duplicate(client):
     """Duplicate email is rejected."""
-    client.post("/api/v1/auth/register", json={
+    client.post("/api/v1/auth/register", json={"accept_data_policy": True, 
         "email": "dup@example.com",
         "name": "User 1",
         "password": "password123",
     })
-    resp = client.post("/api/v1/auth/register", json={
+    resp = client.post("/api/v1/auth/register", json={"accept_data_policy": True, 
         "email": "dup@example.com",
         "name": "User 2",
         "password": "password456",
@@ -42,7 +42,7 @@ def test_register_duplicate(client):
 
 def test_login(client):
     """Login with valid credentials returns token."""
-    client.post("/api/v1/auth/register", json={
+    client.post("/api/v1/auth/register", json={"accept_data_policy": True, 
         "email": "login@example.com",
         "name": "Login User",
         "password": "password123",
@@ -57,7 +57,7 @@ def test_login(client):
 
 def test_login_wrong_password(client):
     """Login with wrong password is rejected."""
-    client.post("/api/v1/auth/register", json={
+    client.post("/api/v1/auth/register", json={"accept_data_policy": True, 
         "email": "wrong@example.com",
         "name": "Wrong User",
         "password": "password123",
@@ -71,7 +71,7 @@ def test_login_wrong_password(client):
 
 def test_me(client):
     """GET /me returns current user."""
-    reg = client.post("/api/v1/auth/register", json={
+    reg = client.post("/api/v1/auth/register", json={"accept_data_policy": True, 
         "email": "me@example.com",
         "name": "Me User",
         "password": "password123",

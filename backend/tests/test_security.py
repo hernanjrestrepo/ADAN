@@ -86,7 +86,7 @@ async def test_http_tool_blocks_internal_address():
 # ============================================================
 
 def _user_headers(client, email):
-    resp = client.post("/api/v1/auth/register", json={
+    resp = client.post("/api/v1/auth/register", json={"accept_data_policy": True, 
         "email": email, "name": "User", "password": "password123",
     })
     return {"Authorization": f"Bearer {resp.json()['access_token']}"}

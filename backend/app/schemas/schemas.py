@@ -22,6 +22,16 @@ class UserRegister(BaseModel):
     email: EmailStr
     name: str = Field(min_length=1, max_length=255)
     password: str = Field(min_length=PASSWORD_MIN_CHARS)
+    # Consentimiento explícito (AD-DEC-0002 decisión 8, Ley 1581 de 2012): sin él no hay cuenta
+    accept_data_policy: bool = Field(default=False, validate_default=True)
+    share_aggregated: bool = False  # inteligencia agregada y anonimizada: opcional
+
+    @field_validator("accept_data_policy")
+    @classmethod
+    def policy_must_be_accepted(cls, value: bool) -> bool:
+        if not value:
+            raise ValueError("Para crear la cuenta debes aceptar la política de tratamiento de datos")
+        return value
 
     @field_validator("password")
     @classmethod
