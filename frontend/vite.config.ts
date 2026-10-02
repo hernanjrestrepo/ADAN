@@ -5,7 +5,7 @@ import react from '@vitejs/plugin-react'
 const apiTarget = process.env.ADAN_API_URL || 'http://localhost:8020'
 // Demos temporales: túneles gratuitos (Cloudflare Quick Tunnel, ngrok, Pinggy, localhost.run) al servidor de desarrollo.
 // ADAN_ALLOWED_HOSTS agrega otros dominios separados por comas.
-const allowedHosts = ['localhost', '.trycloudflare.com', '.ngrok-free.app', '.pinggy.link', '.pinggy.online', '.lhr.life',
+const allowedHosts = ['localhost', '.trycloudflare.com', '.ngrok-free.app', '.pinggy.link', '.pinggy.online', '.pinggy.net', '.pinggy-free.link', '.lhr.life',
   ...(process.env.ADAN_ALLOWED_HOSTS ?? '').split(',').map((h) => h.trim()).filter(Boolean)]
 
 export default defineConfig({
