@@ -27,7 +27,7 @@ from app.models.models import Company, Event, Project, User
 from app.oos.models import DecisionRecord, Organization, WorkOrder
 
 PG_URL = os.getenv("TEST_DATABASE_URL", "")
-HEAD_REVISION = "0003"
+HEAD_REVISION = "0004"
 requires_pg = pytest.mark.skipif(
     not PG_URL.startswith("postgres"), reason="requiere TEST_DATABASE_URL de PostgreSQL"
 )
@@ -70,7 +70,9 @@ def test_single_declarative_base():
     tables = set(Base.metadata.tables)
     assert {"users", "companies", "ems_documents", "ems_chunk_embeddings", "oos_work_orders",
             "integration_connections", "tef_audit_log"} <= tables
-    assert len(tables) == 36  # + llm_usage (WO-099)
+    # 36 hasta WO-099 + 32 de WO-098: 26 entidades del Gemelo, 3 tablas N:M, Riesgo,
+    # versiones y linaje
+    assert len(tables) == 68
     assert EMSDocument.metadata is Base.metadata and WorkOrder.metadata is Base.metadata
 
 
@@ -295,6 +297,11 @@ def test_sqlite_data_is_copied_to_postgres(tmp_path, fresh_pg_url):
     with src.connect() as a, dst.connect() as b:
         for table in Base.metadata.sorted_tables:
             if table.name == "ems_chunk_embeddings":
+                continue
+            if table.name == "agents":
+                # Catálogo sembrado por la migración en ambos lados: se fusiona por código
+                codes = lambda conn: sorted(conn.execute(select(table.c.code)).scalars())  # noqa: E731
+                assert codes(a) == codes(b)
                 continue
             order = list(table.primary_key.columns)
             rows_a = [dict(r) for r in a.execute(select(table).order_by(*order)).mappings()]

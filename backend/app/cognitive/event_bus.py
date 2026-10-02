@@ -90,6 +90,10 @@ class EventBus:
         db_event = Event(
             id=event_id_str,
             project_id=project_id_str,
+            company_id=str(event.company_id) if event.company_id else None,
+            category="cognitive",  # trazas del motor de IA, fuera del Timeline (WO-098)
+            actor_type="agent" if event.agent_id else "system",
+            actor_id=str(event.agent_id) if event.agent_id else None,
             event_type=event.type,
             entity_type=event.source,
             entity_id=event_id_str,

@@ -95,9 +95,9 @@ export default function BoardRoomPanel({ result, running, onRun }: BoardRoomPane
           {result.votes.map((vote) => (
             <Card key={vote.agent} data-testid="agent-vote">
               <div className="flex items-center gap-3 mb-4">
-                {/* Los 7 roles empiezan por "C" (CEO, CFO, COO…): la inicial no los distingue */}
+                {/* CEO, CTO, CFO y CMO empiezan por "C": la inicial no los distingue */}
                 <div data-testid="agent-avatar" className="w-10 h-10 rounded-full bg-adan-accent/20 flex items-center justify-center text-adan-accent text-xs font-bold">
-                  {vote.agent.slice(0, 4)}
+                  {vote.agent.slice(0, 3).toUpperCase()}
                 </div>
                 <div className="flex-1">
                   <h3 className="font-bold">{vote.agent}</h3>

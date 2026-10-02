@@ -337,7 +337,9 @@ async def test_b13_acquire_without_urls_does_not_use_demo_sources():
 
 def test_b15_completing_level_7_does_not_create_level_8(db_session, company):
     project = company["project"]
-    GemeloDigitalService(db_session).complete_level(project, 7)
+    service = GemeloDigitalService(db_session)
+    service.activate_level(project, 7)  # Patrón B: solo se completa un Nivel activo (AD-008)
+    service.complete_level(project, 7)
     assert db_session.query(Level).filter_by(project_id=project.id, number=8).count() == 0
 
 
