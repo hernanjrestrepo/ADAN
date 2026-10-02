@@ -66,7 +66,8 @@ status, _, docs = request("GET", "/docs")
 check("sin documentación pública de la API", "swagger" not in docs.lower())
 
 email = f"smoke-{uuid.uuid4().hex[:8]}@example.com"
-status, headers, _ = request("POST", "/api/v1/auth/register", {"email": email, "name": "Smoke", "password": "clave-segura-2026"})
+status, headers, _ = request("POST", "/api/v1/auth/register", {"email": email, "name": "Smoke", "password": "clave-segura-2026",
+                                                            "accept_data_policy": True})
 check("registro", status == 201, str(status))
 check("cookie de sesión httpOnly", "HttpOnly" in headers.get("Set-Cookie", ""))
 status, _, _ = request("GET", "/api/v1/auth/me")
