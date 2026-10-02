@@ -59,6 +59,18 @@ test('el Board Room muestra la propuesta, las abstenciones y el disenso', async 
   await expect(page.getByText('la decisión final es tuya')).toBeVisible()
 })
 
+test('la última sesión del Board se ve al entrar y se puede abrir una nueva', async ({ page }) => {
+  const api = new FakeApi().withCompany()
+  api.loggedIn = true
+  api.lastBoard = BOARD_PROCEED
+  await api.install(page)
+  await page.goto('/nivel1/c1')
+  await page.getByRole('tab', { name: 'Board Room' }).click()
+  await expect(page.getByTestId('board-synthesis')).toBeVisible()
+  await page.getByRole('button', { name: 'Nueva sesión' }).click()
+  await expect(page.getByLabel('Tu pregunta para el Board')).toBeVisible()
+})
+
 test('el Nivel se cierra solo cuando el cliente lo aprueba', async ({ page }) => {
   const api = await openNivel1(page)
   await page.getByRole('button', { name: /Gate Review/ }).click()

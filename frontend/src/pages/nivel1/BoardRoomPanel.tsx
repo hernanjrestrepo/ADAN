@@ -10,6 +10,7 @@ interface BoardRoomPanelProps {
   result: BoardConsensus | null
   running: boolean
   onRun: (input: BoardRoomInput) => void
+  onNewSession: () => void
 }
 
 function List({ title, items }: { title: string; items: string[] }) {
@@ -49,12 +50,43 @@ function SessionForm({ onRun }: { onRun: (input: BoardRoomInput) => void }) {
   )
 }
 
-export default function BoardRoomPanel({ result, running, onRun }: BoardRoomPanelProps) {
+// Voto de un especialista: lo esencial a la vista, el análisis completo al desplegar
+function VoteCard({ vote }: { vote: BoardConsensus['votes'][number] }) {
+  return (
+    <Card data-testid="agent-vote">
+      <div className="flex items-center gap-3">
+        {/* CEO, CTO, CFO y CMO empiezan por "C": la inicial no los distingue */}
+        <div data-testid="agent-avatar" className="w-10 h-10 shrink-0 rounded-full bg-adan-accent/20 flex items-center justify-center text-adan-accent text-xs font-bold">
+          {vote.agent.slice(0, 3).toUpperCase()}
+        </div>
+        <div className="flex-1 min-w-0">
+          <h3 className="font-bold">{vote.agent}</h3>
+          <p className="text-xs text-adan-muted">confianza {vote.confidence.toFixed(0)}%</p>
+        </div>
+        <VoteBadge vote={vote.vote} />
+      </div>
+      <p className="text-sm mt-3">{vote.justification}</p>
+      <List title="Le preocupa" items={vote.key_concerns ?? []} />
+      <List title="Cambiaría su voto si…" items={vote.questions ?? []} />
+      {vote.analysis && vote.analysis !== vote.justification && (
+        <details className="mt-3 text-sm">
+          <summary className="cursor-pointer text-adan-muted">Ver análisis completo</summary>
+          <p className="mt-2 whitespace-pre-wrap text-adan-text/90">{vote.analysis}</p>
+        </details>
+      )}
+    </Card>
+  )
+}
+
+export default function BoardRoomPanel({ result, running, onRun, onNewSession }: BoardRoomPanelProps) {
   return (
     <div className="max-w-4xl mx-auto p-6 overflow-y-auto h-full">
-      <h2 className="text-2xl font-bold mb-6">Board Room</h2>
+      <div className="flex items-center justify-between gap-3 mb-6">
+        <h2 className="text-2xl font-bold">Board Room</h2>
+        {result && !running && <Button size="sm" variant="secondary" onClick={onNewSession}>Nueva sesión</Button>}
+      </div>
       {running ? (
-        <LoadingState label="El Board está deliberando..." />
+        <LoadingState label="Seis especialistas están deliberando; suele tardar uno o dos minutos..." />
       ) : !result ? (
         <SessionForm onRun={onRun} />
       ) : (
@@ -92,22 +124,7 @@ export default function BoardRoomPanel({ result, running, onRun }: BoardRoomPane
             <List title="Próximos pasos" items={result.next_steps ?? []} />
             <p className="text-xs text-adan-muted mt-4">Es una propuesta del Board: la decisión final es tuya.</p>
           </Card>
-          {result.votes.map((vote) => (
-            <Card key={vote.agent} data-testid="agent-vote">
-              <div className="flex items-center gap-3 mb-4">
-                {/* CEO, CTO, CFO y CMO empiezan por "C": la inicial no los distingue */}
-                <div data-testid="agent-avatar" className="w-10 h-10 rounded-full bg-adan-accent/20 flex items-center justify-center text-adan-accent text-xs font-bold">
-                  {vote.agent.slice(0, 3).toUpperCase()}
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-bold">{vote.agent}</h3>
-                  <p className="text-xs text-adan-muted">Agente del Board Room · confianza {vote.confidence.toFixed(0)}%</p>
-                </div>
-                <VoteBadge vote={vote.vote} />
-              </div>
-              <div className="text-sm whitespace-pre-wrap text-adan-text/90">{vote.analysis || vote.justification}</div>
-            </Card>
-          ))}
+          {result.votes.map((vote) => <VoteCard key={vote.agent} vote={vote} />)}
         </div>
       )}
     </div>

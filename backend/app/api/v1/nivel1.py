@@ -229,6 +229,21 @@ async def run_board_room(
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
+    return _board_out(consensus)
+
+
+@router.get("/{company_id}/board-room/last")
+def last_board_room(company_id: str, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
+    """La última sesión del Board Room, para verla de nuevo sin volver a ejecutarla."""
+    get_owned_company(db, company_id, user)
+    project = db.query(Project).filter(Project.company_id == company_id).first()
+    try:
+        return _board_out(Nivel1Service(llm=None, db=db).get_last_board_consensus(project))
+    except ValueError:
+        raise HTTPException(status_code=404, detail="Todavía no hay sesiones del Board Room")
+
+
+def _board_out(consensus) -> dict:
     return {
         "objective": consensus.objective,
         "decision_at_stake": consensus.decision_at_stake,

@@ -137,3 +137,59 @@ def test_unparseable_output_never_reaches_the_client_as_json(client, db_session)
 def test_streaming_prompt_asks_only_for_the_reply():
     prompt = discovery.system_prompt(discovery.empty_state(), structured=False)
     assert "`temas`" not in prompt and "UNA sola pregunta" in prompt
+
+
+# ============================================================
+# Board Room: evalúa lo que ADÁN entendió, no la charla cruda
+# ============================================================
+
+class BoardLLM(ScriptLLM):
+    """Guarda lo que recibe el Board y devuelve votos válidos."""
+
+    def __init__(self):
+        super().__init__([TURN_1])
+        self.board_prompts = []
+
+    async def chat_json(self, messages, schema, model=None, temperature=0.3, max_tokens=2048):
+        if "respuesta" in schema.get("properties", {}):
+            return await super().chat_json(messages, schema, model, temperature, max_tokens)
+        self.board_prompts.append(messages[-1].content)
+        props = schema["properties"]
+        if "vote" in props:
+            data = {"analysis": "a", "justification": "j", "vote": "PIVOT", "confidence": 40,
+                    "key_strengths": [], "key_concerns": [], "questions": []}
+        elif "objective" in props:
+            data = {"objective": "o", "decision_at_stake": "d"}
+        else:
+            data = {"synthesis": "Validar con 15 familias", "evidence_requests": ["15 entrevistas"], "next_steps": []}
+        return LLMResponse(content=json.dumps(data), model="fake", parsed=data)
+
+
+def test_board_evaluates_the_script_and_evidence_not_degraded_noise(client, db_session):
+    cid, headers = _setup(client, "board@example.com")
+    llm = _use(client, BoardLLM())
+    client.post(f"/api/v1/nivel1/{cid}/chat", json={"message": "A las familias les cuesta planear viajes"}, headers=headers)
+    client.post(f"/api/v1/scoring/{cid}/evidence", headers=headers, json={
+        "claim": "Sabre y PayPal anunciaron reserva agéntica en 2026", "kind": "external", "source": "Nota de prensa"})
+    # Una respuesta del modelo de respaldo no debe llegar al Board
+    conv_id = db_session.query(Message).filter(Message.role == "user").first().conversation_id
+    db_session.add(Message(conversation_id=conv_id, role="assistant", content="Problemos principales resueltos",
+                           metadata_json={"degraded": "sin ANTHROPIC_API_KEY"}))
+    db_session.commit()
+
+    resp = client.post(f"/api/v1/nivel1/{cid}/board-room", headers=headers)
+    assert resp.status_code == 200 and resp.json()["decision"] == "PIVOT"
+    vote_prompt = llm.board_prompts[1]
+    assert "Familias de ingreso medio-alto en Colombia [supuesto]" in vote_prompt
+    assert "[fuente externa] Sabre y PayPal" in vote_prompt
+    assert "Problemos" not in vote_prompt
+
+    last = client.get(f"/api/v1/nivel1/{cid}/board-room/last", headers=headers)
+    assert last.status_code == 200 and last.json()["synthesis"] == "Validar con 15 familias"
+
+
+def test_last_board_is_404_before_any_session_and_private(client):
+    cid, headers = _setup(client, "sinboard@example.com")
+    assert client.get(f"/api/v1/nivel1/{cid}/board-room/last", headers=headers).status_code == 404
+    _other, other_headers = _setup(client, "otroboard@example.com")
+    assert client.get(f"/api/v1/nivel1/{cid}/board-room/last", headers=other_headers).status_code == 404

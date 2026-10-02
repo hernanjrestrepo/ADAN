@@ -60,6 +60,8 @@ export default function Nivel1Page() {
   // Carga inicial; se ignora la respuesta si el usuario cambió de empresa antes de que llegara
   useEffect(() => {
     let cancelled = false
+    // La última sesión del Board se ve sin volver a ejecutarla (404 si todavía no hay ninguna)
+    api.getLastBoardRoom(companyId).then((b) => { if (!cancelled) setBoard(b) }).catch(() => undefined)
     api.getNivel1Status(companyId)
       .then((data) => { if (!cancelled) applyStatus(data) })
       .catch((err: unknown) => { if (!cancelled) setError(errorMessage(err)) })
@@ -203,7 +205,7 @@ export default function Nivel1Page() {
             <ChatPanel messages={messages} sending={sending} discovery={status?.discovery} onSend={handleSend}
               onRegisterEvidence={handleRegisterEvidence} onBoardRoom={() => handleBoardRoom()} onDiagnosis={handleDiagnosis} onGateReview={handleGateReview} />
           )}
-          {activeTab === 'boardroom' && <BoardRoomPanel result={board} running={boardRunning} onRun={handleBoardRoom} />}
+          {activeTab === 'boardroom' && <BoardRoomPanel result={board} running={boardRunning} onRun={handleBoardRoom} onNewSession={() => setBoard(null)} />}
           {activeTab === 'diagnosis' && (
             <DiagnosisPanel diagnosis={diagnosis} running={diagnosing} onGenerate={handleDiagnosis} />
           )}
