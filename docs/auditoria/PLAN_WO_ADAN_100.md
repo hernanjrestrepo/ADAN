@@ -46,7 +46,7 @@ WO-094 ✅ ─► WO-095 ✅ ─► WO-096
   WO-098 Gemelo y Decisiones ✅ ─► WO-099 Motor cognitivo + IA (Ollama/Anthropic) ✅
                           │
                           ▼
-  WO-107 Evidencia y Scoring ─► WO-108 Onboarding + Nivel 1 ──► WO-109 Agentes por tiempo (en paralelo)
+  WO-107 Evidencia y Scoring ✅ ─► WO-108 Onboarding + Nivel 1 ──► WO-109 Agentes por tiempo (en paralelo)
                           │
                           ▼
   WO-110 N2 ─► WO-111 N3 ─► WO-112 N4 (MVP con Anthropic) ─► WO-113 N5 ─► WO-114 N6 ─► WO-115 N7
@@ -180,7 +180,8 @@ Criterio de cierre común (EPWO-051), además de lo específico de cada ficha:
     - Fallback, degradación controlada y medición de costo por proyecto y Nivel (AD-IA-03).
 - **Estimación:** 10–15 días.
 
-### WO-107 — Evidencia y Scoring
+### WO-107 — Evidencia y Scoring ✅
+- **Estado:** fusionada (`docs/wo/WO-107_REPORTE.md`). Cierra B5. AD-ARQ-10 v0 decidida por delegación; falta su documento en el blueprint.
 - **Alcance:**
   - Jerarquía de evidencia (AD-CMP-05).
   - Los 8 scores de AD-FUNC-07 con su motor (AD-ARQ-10).
@@ -293,4 +294,4 @@ Con un solo frente de trabajo son unos 7–11 meses; con dos frentes en paralelo
 1. WO-095 ✅ (`docs/wo/WO-095_REPORTE.md`).
 2. WO-096 🟡: solo falta Build B, que depende de la laptop.
 3. H2 completo: WO-091 ✅, WO-097 ✅, WO-092 ✅, WO-093 ✅.
-4. H3: WO-099 ✅ (adelantada el 2026-09-25) → WO-098 ✅ (2026-10-02) → WO-107 → WO-108 → WO-109.
+4. H3: WO-099 ✅ (adelantada el 2026-09-25) → WO-098 ✅ (2026-10-02) → WO-107 ✅ (2026-10-02) → WO-108 → WO-109.

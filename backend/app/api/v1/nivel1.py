@@ -327,49 +327,55 @@ async def gate_review(
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user),
     llm: LLMAdapter = Depends(get_llm),
-    _usage: None = Depends(track_llm_usage),
 ):
-    """Run Gate Review with 80/100 minimum threshold."""
+    """Gate Review del Nivel 1 sobre la evidencia registrada (AD-CMP-05, WO-107).
+
+    Si alcanza, propone cerrar el Nivel; si no, dice exactamente qué falta.
+    """
     get_owned_company(db, company_id, user)
-
     project = db.query(Project).filter(Project.company_id == company_id).first()
-    diagnosis_doc = get_latest_diagnosis(db, project)
+    get_latest_diagnosis(db, project)  # el Diagnóstico del Dolor es el entregable del Nivel 1
 
-    # Get scores
-    scores = db.query(Score).filter(Score.project_id == project.id).all()
+    result, decision = await Nivel1Service(llm, db).run_gate_review(project)
+    return _gate_response(db, project, result, [decision] if decision else [])
 
-    # Get deliverables
-    documents = db.query(Document).filter(Document.project_id == project.id).all()
-    deliverables = [d.title for d in documents]
 
+@router.post("/{company_id}/advance-anyway", response_model=GateReviewResponse)
+async def advance_anyway(
+    company_id: str,
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
+    llm: LLMAdapter = Depends(get_llm),
+):
+    """El cliente quiere avanzar sin evidencia suficiente (AD-CMP-01 §3).
+
+    Se propone la decisión recomendando seguir; cerrar el Nivel exige decidir distinto a lo
+    recomendado, con los riesgos y la responsabilidad que asume.
+    """
+    get_owned_company(db, company_id, user)
+    project = db.query(Project).filter(Project.company_id == company_id).first()
     service = Nivel1Service(llm, db)
-
-    # Evaluate the same Board Room that produced the diagnosis
     try:
-        board_consensus = service.get_last_board_consensus(project)
+        decision = service.advance_without_evidence(project)
     except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=409, detail=str(e))
+    result, _ = await service.run_gate_review_preview(project)
+    return _gate_response(db, project, result, [decision])
 
-    # Run Gate Review
-    result, decision = await service.run_gate_review(
-        project,
-        diagnosis_doc.content,
-        board_consensus,
-        scores,
-        deliverables,
-    )
 
-    # Get updated level
-    level = db.query(Level).filter(
-        Level.project_id == project.id, Level.number == 1
-    ).first()
-
+def _gate_response(db: Session, project: Project, result, decisions: list) -> GateReviewResponse:
+    level = db.query(Level).filter(Level.project_id == project.id, Level.number == 1).first()
+    scores = db.query(Score).filter(Score.project_id == project.id).all()
     return GateReviewResponse(
         approved=result.approved,
         scores=[ScoreResponse.model_validate(s) for s in scores],
-        decisions=[DecisionResponse.model_validate(decision)] if decision else [],
+        decisions=[DecisionResponse.model_validate(d) for d in decisions],
         level_status=level.status.value if level else "unknown",
         message=result.message,
+        problem_score=result.overall_score,
+        confidence=result.confidence,
+        missing=result.missing,
+        evidence_breakdown=result.breakdown,
     )
 
 

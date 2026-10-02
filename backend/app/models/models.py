@@ -71,6 +71,8 @@ class ScoreType(str, PyEnum):
     PRODUCT = "product"
     MARKET = "market"
     EXECUTION = "execution"
+    RESPONSIBLE = "responsible"  # Score del Responsable (AD-FUNC-07 §3)
+    VENTURE = "venture"  # Venture Score (AD-FUNC-07 §4)
 
 
 # --- Users (AD-006 §4) ---

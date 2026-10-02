@@ -1,6 +1,7 @@
 import type {
   BoardConsensus, BoardRoomInput, ChatResponse, Company, CompanyInput, DecideInput, Decision, DocumentRecord,
-  GateReviewResult, Nivel1Status, Score, TimelineEvent, TokenResponse, TwinKind, TwinOverview, User,
+  Evidence, EvidenceInput, GatePreview, GateReviewResult, Nivel1Status, Score, ScoreOverview, TimelineEvent,
+  TokenResponse, TwinKind, TwinOverview, User,
 } from '../types'
 
 const API_BASE = '/api/v1'
@@ -70,6 +71,16 @@ export const api = {
   generateDiagnosis: (companyId: string) => post<DocumentRecord>(`/nivel1/${companyId}/diagnosis`),
   gateReview: (companyId: string) => post<GateReviewResult>(`/nivel1/${companyId}/gate-review`),
   getScores: (companyId: string) => request<Score[]>(`/nivel1/${companyId}/scores`),
+  advanceAnyway: (companyId: string) => post<GateReviewResult>(`/nivel1/${companyId}/advance-anyway`),
+  // Evidencia y Scoring (WO-107)
+  listEvidence: (companyId: string) => request<Evidence[]>(`/scoring/${companyId}/evidence`),
+  addEvidence: (companyId: string, input: EvidenceInput) => post<Evidence>(`/scoring/${companyId}/evidence`, input),
+  archiveEvidence: (companyId: string, evidenceId: string, reason: string) =>
+    post<Evidence>(`/scoring/${companyId}/evidence/${evidenceId}/archive`, { reason }),
+  getScoresOverview: (companyId: string) => request<ScoreOverview[]>(`/scoring/${companyId}/scores`),
+  calculateScore: (companyId: string, scoreType: string) =>
+    post<ScoreOverview>(`/scoring/${companyId}/scores/${scoreType}/calculate`),
+  getGatePreview: (companyId: string, level = 1) => request<GatePreview>(`/scoring/${companyId}/gate/${level}`),
   getDocuments: (companyId: string) => request<DocumentRecord[]>(`/nivel1/${companyId}/documents`),
   getDecisions: (companyId: string) => request<Decision[]>(`/nivel1/${companyId}/decisions`),
   decide: (companyId: string, decisionId: string, action: 'approve' | 'reject') =>

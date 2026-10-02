@@ -20,13 +20,15 @@ Los historiales importados se reescribieron para vivir bajo su carpeta, con auto
 
 ## Estado actual (2026-10-02)
 
-**Avance: ~45 %** hacia ADÁN Enterprise v1 (era ~22 % en la auditoría). Están cerrados:
+**Avance: ~50 %** hacia ADÁN Enterprise v1 (era ~22 % en la auditoría). Están cerrados:
 - H1: base segura.
 - H2: plataforma enterprise (PostgreSQL, seguridad por empresa, frontend TypeScript, CI y producción).
 - WO-099: IA por complejidad con Claude, Board Room de 7 roles y memoria en cinco capas.
 - WO-098: Gemelo Digital con las 38 entidades, los 4 Patrones, versiones, eventos inmutables, la Decisión con los 6 campos, el ciclo de vida y las vistas de Decisiones y Timeline (`/gemelo/<empresa>`).
 
-Lo siguiente en H3: WO-107 (Evidencia y Scoring), WO-108 y WO-109.
+- WO-107: Evidencia y Scoring. El Nivel 1 se cierra con evidencia verificable, no con palabras clave; los 8 Scores declaran su confianza.
+
+Lo siguiente en H3: WO-108 (Onboarding y Nivel 1 completo) y WO-109 (Agentes por tiempo).
 
 Qué se hizo, qué falta, cuándo se puede ver la plataforma y qué le toca a Hernán: **`docs/ESTADO_ADAN_2026-09-25.md`**.
 

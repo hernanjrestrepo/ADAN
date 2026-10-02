@@ -440,6 +440,28 @@ class TwinRisk(ContratoBase, Base):
     __table_args__ = (Index("idx_twin_risks_subject", "subject_type", "subject_id"),)
 
 
+class Evidence(ContratoBase, Base):
+    """Evidencia clasificada (AD-CMP-05, WO-107): una afirmación verificable sobre la Empresa.
+
+    `kind` es su lugar en la jerarquía de validez: external (dato verificable), testimony
+    (testimonio del cliente) o inference (inferencia de un Agente, siempre marcada como tal).
+    Retirarla es archivarla: el Score que la usó la sigue citando (AD-002 regla 1.5).
+    """
+    __tablename__ = "evidence"
+
+    company_id = _company_fk()
+    project_id = Column(String(36), ForeignKey("projects.id"), nullable=False, index=True)
+    level_number = Column(Integer, nullable=True)
+    dimension = Column(String(30), nullable=False)  # tipo de Score: problem, solution, ...
+    claim = Column(Text, nullable=False)
+    kind = Column(String(20), nullable=False)  # external | testimony | inference
+    polarity = Column(String(20), default="supports", nullable=False)  # supports | contradicts
+    source = Column(Text, nullable=True)  # URL, documento o referencia verificable
+    document_id = Column(String(36), ForeignKey("documents.id"), nullable=True)
+
+    __table_args__ = (Index("idx_evidence_project_dimension", "project_id", "dimension"),)
+
+
 # ============================================================
 # AD-006 §4 Entidades operativas que faltaban
 # ============================================================

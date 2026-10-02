@@ -21,13 +21,13 @@ from app.ai.router import for_tier
 from app.nivel1.context import ContextLayers
 from app.ai.base import LLMAdapter, LLMMessage
 from app.ai.normalize import normalize_string, normalize_list
-from app.core.disclaimer import strip_disclaimer
 from app.models.models import (
     Card, CardStatus, Company, Conversation, Decision, DecisionStatus,
     Document, Event, Level, Message, NivelStatus, Project, Score, ScoreType,
 )
 from app.nivel1.board_room import BoardRoom, BoardConsensus
-from app.nivel1.gate_review import GateReviewEngine, GateReviewResult
+from app.nivel1.gate_review import GateReviewResult, build_result
+from app.scoring import service as scoring
 from app.services.gemelo_digital import GemeloDigitalService
 
 # Mensajes recientes que se envían completos al modelo; los anteriores van resumidos
@@ -44,7 +44,6 @@ class Nivel1Service:
         self.db = db
         self.gemelo = GemeloDigitalService(db)
         self.board_room = BoardRoom(llm)
-        self.gate_review = GateReviewEngine()  # Deterministic, no LLM needed
 
     # --- Step 1: Pain Discovery Card ---
 
@@ -245,6 +244,9 @@ class Nivel1Service:
             consensus=consensus.to_dict(),
         )
         self.gemelo.save_board_minutes(project, consensus.minutes)
+        # El voto del Board entra como inferencia sobre el problema: la evidencia más débil (AD-CMP-05)
+        if scoring.record_board_inference(self.db, project, consensus) is not None:
+            self.db.commit()
 
         return consensus
 
@@ -352,88 +354,38 @@ class Nivel1Service:
         board_consensus: BoardConsensus,
         diagnosis: str,
     ) -> list[Score]:
-        """Calculate Problem Score and other Level 1 scores."""
-        scores = []
-
-        # Problem Score — based on board consensus
-        problem_score_value = board_consensus.score
-        problem_confidence = board_consensus.confidence
-
-        # Find problem-specific concerns
-        problem_concerns = []
-        for v in board_consensus.votes:
-            problem_concerns.extend(v.key_concerns)
-
-        reasoning = (
-            f"Score derivado del análisis del Board Room. "
-            f"Decisión: {board_consensus.decision}. "
-            f"Confianza promedio: {problem_confidence:.0f}%. "
-            f"Preocupaciones: {'; '.join(problem_concerns[:3])}"
-        )
-
-        score = self.gemelo.save_score(
-            project, "problem", problem_score_value, problem_confidence, reasoning
-        )
-        scores.append(score)
-
-        return scores
+        """Problem Score sobre la evidencia registrada (AD-CMP-05), no sobre el texto del diagnóstico."""
+        return [scoring.calculate_dimension(self.db, project, "problem")]
 
     # --- Step 7: Gate Review ---
 
-    async def run_gate_review(
-        self,
-        project: Project,
-        diagnosis: str,
-        board_consensus: BoardConsensus,
-        scores: list[Score],
-        deliverables: list[str],
-    ) -> tuple[GateReviewResult, Decision | None]:
-        """Run the DETERMINISTIC Gate Review engine (rules, not LLM).
+    async def run_gate_review(self, project: Project) -> tuple[GateReviewResult, Decision | None]:
+        """Gate del Nivel 1 sobre la evidencia registrada (WO-107).
 
-        Si aprueba, propone cerrar el Nivel: se completa solo cuando el cliente lo aprueba.
+        Si la evidencia alcanza, propone cerrar el Nivel; se completa solo cuando el cliente lo aprueba.
         """
-        # Build board votes for deterministic evaluation (abstentions are not votes)
-        board_votes = [
-            {"agent": v.agent, "vote": v.vote, "confidence": v.confidence}
-            for v in board_consensus.votes
-            if v.vote != "ABSTAIN"
-        ]
-
-        scores_data = [
-            {"type": s.score_type.value, "value": s.value, "confidence": s.confidence_level}
-            for s in scores
-        ]
-
-        # Get conversation messages for evaluation
-        messages = []
-        card = self.db.query(Card).filter(
-            Card.project_id == project.id,
-            Card.card_type == "pain_discovery",
-        ).first()
-        if card:
-            conv = self.db.query(Conversation).filter(
-                Conversation.card_id == card.id,
-            ).first()
-            if conv:
-                msgs = self.db.query(Message).filter(
-                    Message.conversation_id == conv.id,
-                ).all()
-                messages = [{"role": m.role, "content": m.content} for m in msgs]
-
-        # DETERMINISTIC evaluation — no LLM involved in scoring
-        result = self.gate_review.evaluate(
-            diagnosis=strip_disclaimer(diagnosis),
-            board_votes=board_votes,
-            scores=scores_data,
-            deliverables=deliverables,
-            conversation_messages=messages,
-        )
-
-        # If approved, propose closing the level; the client decides
+        evaluation, _score = scoring.evaluate_gate(self.db, project, 1)
+        result = build_result(1, evaluation)
         decision = None
         if result.approved:
-            decision = self.gemelo.propose_level_completion(
-                project, 1, result.overall_score, result.message,
-            )
-
+            decision = self.gemelo.propose_level_completion(project, 1, result.overall_score, result.message)
         return result, decision
+
+    async def run_gate_review_preview(self, project: Project) -> tuple[GateReviewResult, None]:
+        """La misma evaluación, sin proponer nada ni guardar un Score nuevo."""
+        rule = scoring.engine.GATE_RULES[1]
+        rows = scoring.active_evidence(self.db, project, rule.score_type)
+        return build_result(1, scoring.engine.evaluate_gate(1, scoring._items(rows))), None
+
+    def advance_without_evidence(self, project: Project) -> Decision:
+        """El cliente quiere avanzar sin evidencia suficiente (AD-CMP-01 §3).
+
+        ADÁN no bloquea ni decide por él: propone la decisión recomendando seguir trabajando el
+        Nivel. Elegir cerrarlo es decidir distinto a lo recomendado y exige los 6 campos.
+        """
+        evaluation, _score = scoring.evaluate_gate(self.db, project, 1)
+        if evaluation.sufficient:
+            raise ValueError("La evidencia ya alcanza: usa el Gate Review para proponer el cierre.")
+        result = build_result(1, evaluation)
+        return self.gemelo.propose_level_completion(project, 1, result.overall_score, result.message,
+                                                    recommended="CONTINUE")

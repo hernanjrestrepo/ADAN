@@ -272,7 +272,7 @@ class GemeloDigitalService:
         return None
 
     def propose_level_completion(
-        self, project: Project, level_number: int, score: float, message: str,
+        self, project: Project, level_number: int, score: float, message: str, recommended: str = "CLOSE",
     ) -> Decision:
         """Propone cerrar el Nivel; solo se completa cuando el cliente aprueba (AD-FUNC-01)."""
         with acting_as(Actor.agent("Gate Review"), reason="Propuesta de cierre de Nivel"):
@@ -289,8 +289,8 @@ class GemeloDigitalService:
                 status=DecisionStatus.PROPOSED,
                 reasoning=message,
                 confidence_level=score,
-                options=level_close_options(level_number, score, message),
-                recommended_option="CLOSE",
+                options=level_close_options(level_number, score, message, sufficient=recommended == "CLOSE"),
+                recommended_option=recommended,
                 prior_decisions=prior_decisions(self.db, project),
             )
             self.db.add(decision_obj)

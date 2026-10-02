@@ -13,6 +13,8 @@
 >
 > El diseño de §4 se implementó tal como estaba propuesto; las decisiones tomadas por delegación están en §4 del reporte. Siguiente: WO-107 (Evidencia y Scoring).
 
+> **Actualización (2026-10-02, después):** WO-107 quedó cerrada (`docs/wo/WO-107_REPORTE.md`), así que el avance sube a **~50 %**. El Nivel 1 ya no se aprueba por palabras clave en un texto del LLM (B5): se cierra con evidencia que el cliente puede verificar (datos con fuente y testimonios) y con su aprobación. Si quiere avanzar sin evidencia, decide él y queda documentado. Hay 8 Scores con su confianza declarada. También se rediseñó la interfaz: acceso, tablero y uso en celular. Siguiente: WO-108 (Onboarding y Nivel 1 completo).
+
 **En una línea:** ADÁN pasó de **~22 % a ~35 %** del camino a ADÁN Enterprise v1. Quedaron cerradas la **base segura (H1)** y la **plataforma enterprise (H2)**. Lo que sigue es el producto: Gemelo Digital, la IA de calidad y los Niveles 2 a 7.
 
 ---

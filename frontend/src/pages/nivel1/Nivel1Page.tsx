@@ -12,12 +12,14 @@ import type {
 import BoardRoomPanel from './BoardRoomPanel'
 import ChatPanel from './ChatPanel'
 import DiagnosisPanel from './DiagnosisPanel'
+import EvidencePanel from './EvidencePanel'
 import ScoresPanel from './ScoresPanel'
 
-type Tab = 'chat' | 'boardroom' | 'diagnosis' | 'scores'
+type Tab = 'chat' | 'evidence' | 'boardroom' | 'diagnosis' | 'scores'
 
 const TABS: { id: Tab; label: string }[] = [
   { id: 'chat', label: 'Conversación' },
+  { id: 'evidence', label: 'Evidencia' },
   { id: 'boardroom', label: 'Board Room' },
   { id: 'diagnosis', label: 'Diagnóstico' },
   { id: 'scores', label: 'Scores' },
@@ -44,6 +46,11 @@ export default function Nivel1Page() {
   const [gate, setGate] = useState<GateReviewResult | null>(null)
   const [pendingDecision, setPendingDecision] = useState<Decision | null>(null)
   const [deciding, setDeciding] = useState(false)
+  const [advancing, setAdvancing] = useState(false)
+  // Cambia cuando cambia la evidencia o una decisión: los Scores se vuelven a leer
+  const [refreshKey, setRefreshKey] = useState(0)
+  const bump = useCallback(() => setRefreshKey((k) => k + 1), [])
+  const showError = useCallback((message: string) => setError(message), [])
 
   const applyStatus = useCallback((data: Nivel1Status) => {
     setStatus(data)
@@ -118,9 +125,24 @@ export default function Nivel1Page() {
       const result = await api.gateReview(companyId)
       setGate(result)
       setPendingDecision(result.decisions[0] ?? null)
+      bump()
       await loadStatus()
     } catch (err) {
       setError(errorMessage(err))
+    }
+  }
+
+  // Sin evidencia suficiente, el cliente puede avanzar bajo su responsabilidad (AD-CMP-01 §3)
+  const handleAdvanceAnyway = async () => {
+    setAdvancing(true)
+    try {
+      const result = await api.advanceAnyway(companyId)
+      setGate(result)
+      setPendingDecision(result.decisions[0] ?? null)
+    } catch (err) {
+      setError(errorMessage(err))
+    } finally {
+      setAdvancing(false)
     }
   }
 
@@ -173,9 +195,11 @@ export default function Nivel1Page() {
           {activeTab === 'diagnosis' && (
             <DiagnosisPanel diagnosis={diagnosis} running={diagnosing} onGenerate={handleDiagnosis} />
           )}
+          {activeTab === 'evidence' && <EvidencePanel companyId={companyId} onChanged={bump} />}
           {activeTab === 'scores' && (
-            <ScoresPanel scores={status?.scores ?? []} gate={gate} pendingDecision={pendingDecision}
-              deciding={deciding} onDecide={handleDecision} />
+            <ScoresPanel companyId={companyId} refreshKey={refreshKey} gate={gate} pendingDecision={pendingDecision}
+              deciding={deciding} advancing={advancing} onDecide={handleDecision} onAdvanceAnyway={handleAdvanceAnyway}
+              onGoToEvidence={() => setActiveTab('evidence')} onError={showError} />
           )}
         </>
       )}

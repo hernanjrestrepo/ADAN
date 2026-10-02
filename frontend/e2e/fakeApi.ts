@@ -91,6 +91,8 @@ export class FakeApi {
   levelStatus: 'active' | 'completed' = 'active'
   calls: Call[] = []
   twinDecisions: Record<string, unknown>[] = [structuredClone(TWIN_DECISION)]
+  evidence: Record<string, unknown>[] = []
+  gateApproved = true
   timeline: TimelineItem[] = [
     { id: 'e2', event_type: 'entity_created', entity_type: 'brands', entity_id: 'b1', category: 'domain',
       data: { label: 'Pan de Ana' }, actor_type: 'user', actor_id: 'u1', created_at: '2026-09-25T09:00:00' },
@@ -165,6 +167,24 @@ export class FakeApi {
       return this.json(route, 200, { message: reply, conversation_id: 'conv1', card_id: null, disclaimer: 'aviso' })
     }
     if (method === 'POST' && path.endsWith('/board-room')) return this.json(route, 200, BOARD_NO_CONSENSUS)
+    if (path.startsWith('/scoring/')) return this.handleScoring(route, method, path, body)
+    if (method === 'POST' && path.endsWith('/advance-anyway')) {
+      return this.json(route, 200, {
+        approved: false, scores: [], level_status: 'active', missing: ['Al menos 1 dato verificable externamente'],
+        message: 'Todavía no hay evidencia suficiente para cerrar el Nivel 1.',
+        decisions: [{ id: 'd2', project_id: 'p1', title: 'Cerrar Nivel 1', description: null, proposed_by: 'Gate Review',
+          status: 'proposed', reasoning: null, confidence_level: 20, recommended_option: 'CONTINUE',
+          created_at: '2026-10-02T00:00:00' }],
+        disclaimer: 'aviso',
+      })
+    }
+    if (method === 'POST' && path.endsWith('/gate-review') && !this.gateApproved) {
+      return this.json(route, 200, {
+        approved: false, scores: [], level_status: 'active', decisions: [], disclaimer: 'aviso',
+        message: 'Todavía no hay evidencia suficiente para cerrar el Nivel 1.',
+        missing: ['Al menos 1 dato verificable externamente que respalde el problema'],
+      })
+    }
     if (method === 'POST' && path.endsWith('/gate-review')) {
       return this.json(route, 200, {
         approved: true, scores: [], level_status: 'active', message: 'Falta tu aprobación para cerrar el Nivel 1.',
@@ -179,6 +199,59 @@ export class FakeApi {
       return this.json(route, 200, { id: 'd1', status: body.action === 'approve' ? 'executed' : 'rejected' })
     }
     return this.json(route, 404, { detail: `Sin simular: ${route_}` })
+  }
+
+  private gatePreview() {
+    const count = (kind: string) => this.evidence.filter((e) => e.kind === kind && e.polarity === 'supports').length
+    const external = count('external')
+    const strong = external + count('testimony')
+    const missing = [
+      ...(external < 1 ? ['Al menos 1 dato verificable externamente que respalde el problema'] : []),
+      ...(strong < 2 ? [`Al menos 2 evidencias a favor entre datos externos y testimonios (tienes ${strong})`] : []),
+    ]
+    const value = Math.round((100 * (external + 0.6 * count('testimony'))) / (external + 0.6 * count('testimony') + 1.5))
+    return {
+      level_number: 1, sufficient: missing.length === 0, missing, score_type: 'problem', value,
+      confidence: missing.length ? 30 : 80, reasoning: '',
+      breakdown: {
+        external: { supports: external, contradicts: 0 }, testimony: { supports: count('testimony'), contradicts: 0 },
+        inference: { supports: 0, contradicts: 0 },
+      },
+    }
+  }
+
+  private handleScoring(route: Route, method: string, path: string, body: Record<string, unknown> | null) {
+    if (method === 'GET' && path === '/scoring/c1/evidence') return this.json(route, 200, this.evidence)
+    if (method === 'POST' && path === '/scoring/c1/evidence') {
+      if (body?.kind === 'external' && !body.source) {
+        return this.json(route, 422, { detail: 'Un dato verificable externamente necesita su fuente' })
+      }
+      const item = { id: `e${this.evidence.length + 1}`, dimension: 'problem', status: 'active', level_number: 1,
+        kind_label: body?.kind, created_by: 'user:u1', confidence_level: null, created_at: '2026-10-02T00:00:00',
+        source: null, ...body }
+      this.evidence.unshift(item)
+      return this.json(route, 201, item)
+    }
+    if (method === 'GET' && path === '/scoring/c1/gate/1') return this.json(route, 200, this.gatePreview())
+    if (method === 'GET' && path === '/scoring/c1/scores') {
+      const labels: [string, string, number | null][] = [['problem', 'Problem Score', 1], ['solution', 'Solution Score', 2],
+        ['business', 'Business Score', 3], ['product', 'Product Score', 4], ['market', 'Market Score', 5],
+        ['execution', 'Execution Score', 5], ['responsible', 'Score del Responsable', null], ['venture', 'Venture Score', 6]]
+      const gate = this.gatePreview()
+      return this.json(route, 200, labels.map(([key, label, level]) => {
+        const available = key === 'problem' || key === 'responsible'
+        return {
+          key, label, measures: 'mide algo', level, family: key === 'responsible' || key === 'venture' ? 'continuous' : 'diagnostic',
+          available, unavailable_reason: available ? null : key === 'venture' ? 'Nace en el Nivel 6' : `Se abre en el Nivel ${level}`,
+          evidence_count: key === 'problem' ? this.evidence.length : 0,
+          latest: key === 'problem' && this.evidence.length
+            ? { id: 's1', value: gate.value, confidence: gate.confidence, reasoning: 'Problem Score: con evidencia.',
+              breakdown: gate.breakdown, created_at: '2026-10-02T00:00:00' }
+            : null,
+        }
+      }))
+    }
+    return this.json(route, 404, { detail: `Sin simular: ${method} ${path}` })
   }
 
   private handleTwin(route: Route, method: string, path: string, body: Record<string, unknown> | null) {

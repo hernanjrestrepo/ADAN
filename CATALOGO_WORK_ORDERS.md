@@ -63,7 +63,8 @@ Build A/B y Build C usan el rango **WO-001 a WO-012 dos veces, para cosas distin
 | WO-097 | Seguridad por empresa | ✅ `docs/wo/WO-097_REPORTE.md` |
 | WO-098 | Gemelo Digital y Decisiones | ✅ `docs/wo/WO-098_REPORTE.md` |
 | WO-099 | Motor cognitivo único e IA | ✅ `docs/wo/WO-099_REPORTE.md` |
-| WO-107 → WO-122 | Evidencia, Niveles 1 a 7, experiencia, ecosistema y certificación | Planificadas (`docs/auditoria/PLAN_WO_ADAN_100.md`) |
+| WO-107 | Evidencia y Scoring | ✅ `docs/wo/WO-107_REPORTE.md` |
+| WO-108 → WO-122 | Niveles 1 a 7, experiencia, ecosistema y certificación | Planificadas (`docs/auditoria/PLAN_WO_ADAN_100.md`) |
 
 ## 5. Rangos reservados — no tocados por este catálogo
 

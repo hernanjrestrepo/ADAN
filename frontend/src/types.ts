@@ -257,7 +257,71 @@ export interface GateReviewResult {
   decisions: Decision[]
   level_status: string
   message: string
+  // WO-107: el Gate decide sobre evidencia registrada y dice qué falta
+  problem_score?: number | null
+  confidence?: number | null
+  missing?: string[]
+  evidence_breakdown?: EvidenceBreakdown | null
   disclaimer: string
+}
+
+// --- Evidencia y Scoring (WO-107, AD-CMP-05 y AD-FUNC-07) ---
+
+export type EvidenceKind = 'external' | 'testimony' | 'inference'
+export type EvidencePolarity = 'supports' | 'contradicts'
+export type EvidenceBreakdown = Record<EvidenceKind, Record<EvidencePolarity, number>>
+
+export interface Evidence {
+  id: string
+  dimension: string
+  claim: string
+  kind: EvidenceKind
+  kind_label: string
+  polarity: EvidencePolarity
+  source: string | null
+  level_number: number | null
+  status: string
+  created_by: string | null
+  confidence_level: number | null
+  created_at: string
+}
+
+export interface EvidenceInput {
+  dimension?: string
+  claim: string
+  kind: 'external' | 'testimony'
+  polarity: EvidencePolarity
+  source?: string
+}
+
+export interface ScoreOverview {
+  key: string
+  label: string
+  measures: string
+  level: number | null
+  family: 'diagnostic' | 'continuous'
+  available: boolean
+  unavailable_reason: string | null
+  evidence_count: number
+  latest: {
+    id: string
+    value: number
+    confidence: number
+    reasoning: string | null
+    breakdown: EvidenceBreakdown | null
+    created_at: string
+  } | null
+}
+
+export interface GatePreview {
+  level_number: number
+  sufficient: boolean
+  missing: string[]
+  score_type: string
+  value: number
+  confidence: number
+  reasoning: string
+  breakdown: EvidenceBreakdown
 }
 
 export interface CompanyInput {
