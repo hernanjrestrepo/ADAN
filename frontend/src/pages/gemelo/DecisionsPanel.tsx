@@ -134,13 +134,13 @@ function DecisionCard({ decision, busy, onPresent, onDecide, onExecute }: Decisi
           {diverging && (
             <div className="p-4 rounded-lg border border-adan-border space-y-3" data-testid="divergence-form">
               <p className="text-sm">
-                Estás eligiendo una opción distinta a la que recomienda el Board. Es tu decisión: para que ADÁN
+                Estás eligiendo una opción distinta a la recomendada. Es tu decisión: para que ADÁN
                 aprenda de ella, registra los riesgos que asumes y tu responsabilidad.
               </p>
               <TextAreaField label="Riesgos que asumes (uno por línea)" value={risks}
                 onChange={(e) => setRisks(e.target.value)} />
               <TextAreaField label="Responsabilidad que asumes" value={responsibility}
-                placeholder="Entiendo la recomendación del Board y elijo esta opción porque…"
+                placeholder="Entiendo la recomendación y elijo esta opción porque…"
                 onChange={(e) => setResponsibility(e.target.value)} />
             </div>
           )}

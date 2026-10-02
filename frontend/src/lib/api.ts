@@ -78,8 +78,10 @@ export const api = {
   // Gemelo Digital (WO-098)
   getTwin: (companyId: string) => request<TwinOverview>(`/twin/${companyId}`),
   getTwinKinds: () => request<TwinKind[]>('/twin/kinds'),
-  getTimeline: (companyId: string, before?: string) =>
-    request<TimelineEvent[]>(`/twin/${companyId}/timeline?limit=50${before ? `&before=${encodeURIComponent(before)}` : ''}`),
+  // Cursor (fecha, id) del último evento recibido: no se pierden eventos con la misma marca de tiempo
+  getTimeline: (companyId: string, before?: Pick<TimelineEvent, 'created_at' | 'id'>) =>
+    request<TimelineEvent[]>(`/twin/${companyId}/timeline?limit=50${before
+      ? `&before=${encodeURIComponent(before.created_at)}&before_id=${encodeURIComponent(before.id)}` : ''}`),
   getTwinDecisions: (companyId: string) => request<Decision[]>(`/twin/${companyId}/decisions`),
   presentDecision: (companyId: string, decisionId: string) =>
     post<Decision>(`/twin/${companyId}/decisions/${decisionId}/present`),

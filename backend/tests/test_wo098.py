@@ -360,6 +360,26 @@ def test_timeline_shows_domain_events_newest_first(client, db_session, twin):
     assert any(e["category"] == "cognitive" for e in with_cognitive)
 
 
+def test_timeline_pagination_does_not_lose_events_with_the_same_timestamp(client, db_session, twin):
+    from datetime import datetime
+    same = datetime(2030, 1, 1, 12, 0, 0)
+    for n in range(5):
+        db_session.add(Event(company_id=twin["id"], event_type="entity_created", entity_type="brands",
+                             entity_id=f"b{n}", data={"label": f"Marca {n}"}, created_at=same))
+    db_session.commit()
+    total = len(client.get(f"{twin['base']}/timeline?limit=200", headers=twin["headers"]).json())
+
+    seen, url = [], f"{twin['base']}/timeline?limit=2"
+    while True:
+        page = client.get(url, headers=twin["headers"]).json()
+        seen += [e["id"] for e in page]
+        if len(page) < 2:
+            break
+        last = page[-1]
+        url = f"{twin['base']}/timeline?limit=2&before={last['created_at']}&before_id={last['id']}"
+    assert len(seen) == len(set(seen)) == total >= 6
+
+
 # ============================================================
 # Triggers append-only en bases migradas
 # ============================================================
@@ -620,7 +640,7 @@ def test_merge_creates_new_twin_and_archives_the_originals(client, db_session, t
     assert resp.status_code == 201, resp.text
     merged_id = resp.json()["id"]
     merged = client.get(f"/api/v1/twin/{merged_id}", headers=twin["headers"]).json()
-    assert {(l["relation"], l["source_company_id"]) for l in merged["lineage"]} == {
+    assert {(link["relation"], link["source_company_id"]) for link in merged["lineage"]} == {
         ("merged_from", twin["id"]), ("merged_from", other_id)}
 
     original = client.get(twin["base"], headers=twin["headers"]).json()

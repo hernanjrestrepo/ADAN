@@ -92,7 +92,7 @@ export default function GemeloPage() {
     if (!last) return
     setLoadingMore(true)
     try {
-      const older = await api.getTimeline(companyId, last.created_at)
+      const older = await api.getTimeline(companyId, last)
       setEvents((prev) => [...prev, ...older])
       setHasMore(older.length === PAGE_SIZE)
     } catch (err) {

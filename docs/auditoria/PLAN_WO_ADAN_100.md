@@ -43,7 +43,7 @@ WO-094 ✅ ─► WO-095 ✅ ─► WO-096
      └──────────────► WO-093 Producción ✅ ◄──────┘
                           │
                           ▼
-  WO-098 Gemelo y Decisiones ─► WO-099 Motor cognitivo + IA (Ollama/Anthropic)
+  WO-098 Gemelo y Decisiones ✅ ─► WO-099 Motor cognitivo + IA (Ollama/Anthropic) ✅
                           │
                           ▼
   WO-107 Evidencia y Scoring ─► WO-108 Onboarding + Nivel 1 ──► WO-109 Agentes por tiempo (en paralelo)
@@ -155,7 +155,8 @@ Criterio de cierre común (EPWO-051), además de lo específico de cada ficha:
 - **Cierre:** Gate de Producción (EPWO-054).
 - **Estimación:** 5–8 días.
 
-### WO-098 — Gemelo Digital y Decisiones
+### WO-098 — Gemelo Digital y Decisiones ✅
+- **Estado:** fusionada (`docs/wo/WO-098_REPORTE.md`). Hernán puede revisar las decisiones tomadas por delegación (§4 del reporte). La reconciliación con el OOS queda en WO-109.
 - **Alcance:**
   - Las 38 entidades de AD-006 v1.2, partiendo de la migración de Build A (y de Build B, si ya está importado). Viene de WO-091.
   - Los 4 Patrones de AD-008.
@@ -292,4 +293,4 @@ Con un solo frente de trabajo son unos 7–11 meses; con dos frentes en paralelo
 1. WO-095 ✅ (`docs/wo/WO-095_REPORTE.md`).
 2. WO-096 🟡: solo falta Build B, que depende de la laptop.
 3. H2 completo: WO-091 ✅, WO-097 ✅, WO-092 ✅, WO-093 ✅.
-4. H3: WO-099 ✅ (adelantada el 2026-09-25) → WO-098 → WO-107 → WO-108 → WO-109.
+4. H3: WO-099 ✅ (adelantada el 2026-09-25) → WO-098 ✅ (2026-10-02) → WO-107 → WO-108 → WO-109.

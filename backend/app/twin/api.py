@@ -19,7 +19,7 @@ from typing import Any, Literal, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, ConfigDict, Field as PydField, ValidationError, create_model
-from sqlalchemy import func, or_, select
+from sqlalchemy import and_, func, or_, select
 from sqlalchemy.orm import Session
 
 from app.core.auth import get_current_user
@@ -424,10 +424,15 @@ def timeline(
     company_id: str,
     limit: int = Query(50, ge=1, le=200),
     before: Optional[str] = None,
+    before_id: Optional[str] = None,
     include_cognitive: bool = False,
     db: Session = Depends(get_db), user: User = Depends(acting_user),
 ):
-    """Eventos del Gemelo, del más reciente al más antiguo (AD-UX-08, AD-008 §4)."""
+    """Eventos del Gemelo, del más reciente al más antiguo (AD-UX-08, AD-008 §4).
+
+    Paginación por cursor: `before` (y `before_id`, el último evento recibido) devuelven los
+    anteriores sin perder los que comparten la misma marca de tiempo.
+    """
     get_owned_company(db, company_id, user)
     from app.models.models import Project
     project_ids = [p for (p,) in db.query(Project.id).filter(Project.company_id == company_id).all()]
@@ -442,9 +447,12 @@ def timeline(
             cutoff = datetime.fromisoformat(before)
             if cutoff.tzinfo is not None:
                 cutoff = cutoff.astimezone(timezone.utc).replace(tzinfo=None)
-            query = query.filter(Event.created_at < cutoff)
         except ValueError as exc:
             raise HTTPException(status_code=422, detail="before debe ser una fecha ISO") from exc
+        older = Event.created_at < cutoff
+        if before_id:
+            older = or_(older, and_(Event.created_at == cutoff, Event.id < before_id))
+        query = query.filter(older)
     events = query.order_by(Event.created_at.desc(), Event.id.desc()).limit(limit).all()
     return [{"id": e.id, "event_type": e.event_type, "entity_type": e.entity_type, "entity_id": e.entity_id,
              "category": e.category, "data": e.data or {}, "actor_type": e.actor_type, "actor_id": e.actor_id,
