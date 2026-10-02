@@ -24,6 +24,9 @@ test('el Board Room muestra la propuesta, las abstenciones y el disenso', async 
   await expect(page.getByRole('tab', { name: 'Board Room' })).toHaveAttribute('aria-selected', 'true')
   await expect(page.getByText('Sin consenso')).toBeVisible()
   await expect(page.getByTestId('agent-vote')).toHaveCount(2)
+  // Los 7 roles empiezan por "C": el avatar muestra el rol, no solo la inicial
+  await expect(page.getByTestId('agent-vote').nth(0)).toContainText('CEO')
+  await expect(page.getByTestId('agent-avatar')).toHaveText(['CEO', 'CFO'])
   await expect(page.getByText('Abstención')).toBeVisible()
   await expect(page.getByText('CFO: STOP — El margen es bajo')).toBeVisible()
   await expect(page.getByText('la decisión final es tuya')).toBeVisible()

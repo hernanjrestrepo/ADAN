@@ -1,21 +1,25 @@
 """Stress tests — concurrent user simulation.
 
-Necesitan el backend en localhost:8050 con Ollama. Simulan muchos usuarios desde una sola
-IP, así que el servidor debe levantarse con REGISTER_PER_IP_PER_HOUR alto (p. ej. 1000).
+Por defecto corren contra un servidor uvicorn levantado por la propia suite (fixture
+`live_server`), con un LLM simulado: así se ejecutan en CI y verifican la concurrencia
+de la API y de la base de datos.
+
+Para medir con el modelo real, apuntar a un backend con Ollama/Claude levantado con
+REGISTER_PER_IP_PER_HOUR alto (p. ej. 1000):
+
+    STRESS_BASE_URL=http://localhost:8050 pytest tests/test_stress.py
 """
 import asyncio
 import time
 import aiohttp
 import pytest
 
-BASE_URL = "http://localhost:8050"
 
-
-async def register_and_create_company(session, user_id):
+async def register_and_create_company(session, base_url, user_id):
     """Register a user and create a company."""
     import uuid
     unique_id = f"{user_id}_{uuid.uuid4().hex[:8]}"
-    async with session.post(f"{BASE_URL}/api/v1/auth/register", json={
+    async with session.post(f"{base_url}/api/v1/auth/register", json={
         "email": f"stress{unique_id}@adan.ai",
         "name": f"Stress User {user_id}",
         "password": "stress-pass-2026",
@@ -23,7 +27,7 @@ async def register_and_create_company(session, user_id):
         data = await resp.json()
         token = data["access_token"]
 
-    async with session.post(f"{BASE_URL}/api/v1/companies/", json={
+    async with session.post(f"{base_url}/api/v1/companies/", json={
         "name": f"StressCorp{user_id}",
         "description": f"Test company {user_id}",
         "industry": "Tech",
@@ -33,19 +37,19 @@ async def register_and_create_company(session, user_id):
         return token, company["id"]
 
 
-async def start_conversation(session, token, company_id):
+async def start_conversation(session, base_url, token, company_id):
     """El Board Room delibera sobre la conversación del Nivel 1: sin ella responde 400."""
-    async with session.post(f"{BASE_URL}/api/v1/nivel1/{company_id}/chat",
+    async with session.post(f"{base_url}/api/v1/nivel1/{company_id}/chat",
         headers={"Authorization": f"Bearer {token}"},
         json={"message": "Las panaderías de barrio pierden entre 15% y 20% del pan porque no saben cuánto hornear."},
     ) as resp:
         assert resp.status == 200, await resp.text()
 
 
-async def run_board_room(session, token, company_id):
+async def run_board_room(session, base_url, token, company_id):
     """Run Board Room for a company."""
     start = time.monotonic()
-    async with session.post(f"{BASE_URL}/api/v1/nivel1/{company_id}/board-room",
+    async with session.post(f"{base_url}/api/v1/nivel1/{company_id}/board-room",
         headers={"Authorization": f"Bearer {token}"},
         json={},
     ) as resp:
@@ -53,36 +57,36 @@ async def run_board_room(session, token, company_id):
         status = resp.status
         try:
             data = await resp.json()
-        except:
+        except Exception:
             data = {}
         return {"status": status, "duration": duration, "data": data}
 
 
 @pytest.mark.asyncio
-async def test_concurrent_registrations():
+async def test_concurrent_registrations(live_server):
     """Test 10 concurrent registrations."""
     async with aiohttp.ClientSession() as session:
-        tasks = [register_and_create_company(session, i) for i in range(10)]
+        tasks = [register_and_create_company(session, live_server, i) for i in range(10)]
         results = await asyncio.gather(*tasks, return_exceptions=True)
         successes = [r for r in results if not isinstance(r, Exception)]
         assert len(successes) == 10
 
 
 @pytest.mark.asyncio
-async def test_concurrent_board_room():
+async def test_concurrent_board_room(live_server):
     """Test 5 concurrent Board Rooms."""
     async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=900)) as session:
         # Create users and companies first
         pairs = []
         for i in range(5):
-            token, company_id = await register_and_create_company(session, i)
+            token, company_id = await register_and_create_company(session, live_server, i)
             pairs.append((token, company_id))
 
         for token, company_id in pairs:
-            await start_conversation(session, token, company_id)
+            await start_conversation(session, live_server, token, company_id)
 
         # Run Board Rooms concurrently
-        tasks = [run_board_room(session, t, c) for t, c in pairs]
+        tasks = [run_board_room(session, live_server, t, c) for t, c in pairs]
         results = await asyncio.gather(*tasks, return_exceptions=True)
 
         # Antes no se verificaba el código: con el token mal formado todo era 401 en 0 s
