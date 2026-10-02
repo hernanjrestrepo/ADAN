@@ -29,6 +29,10 @@ logger = logging.getLogger(__name__)
 BATCH_SIZE = 500
 # Derivados: se recalculan en el destino, no se copian
 SKIP_TABLES = {"ems_chunk_embeddings"}
+# Catálogos que siembran las migraciones (WO-098): se fusionan por su clave natural en lugar
+# de exigir que el destino esté vacío; las referencias a ellos se traducen a los ids del destino
+CATALOG_TABLES = {"agents": "code"}
+CATALOG_REFERENCES = {"conversation_agents": {"agent_id": "agents"}}
 
 
 def migrate(source_url: str, target_url: str, reindex: bool = True) -> dict[str, int]:
@@ -43,14 +47,15 @@ def migrate(source_url: str, target_url: str, reindex: bool = True) -> dict[str,
     tables = [t for t in Base.metadata.sorted_tables if t.name not in SKIP_TABLES]
 
     with target.connect() as conn:
-        not_empty = [t.name for t in tables
-                     if conn.execute(select(func.count()).select_from(t)).scalar_one()]
+        not_empty = [t.name for t in tables if t.name not in CATALOG_TABLES
+                     and conn.execute(select(func.count()).select_from(t)).scalar_one()]
     if not_empty:
         raise ValueError(f"El destino no está vacío: {', '.join(not_empty)}")
 
     source_inspector = inspect(source)
     source_tables = set(source_inspector.get_table_names())
     counts: dict[str, int] = {}
+    id_maps: dict[str, dict[str, str]] = {}
     with source.connect() as src, target.begin() as dst:
         for table in tables:
             if table.name not in source_tables:
@@ -62,14 +67,34 @@ def migrate(source_url: str, target_url: str, reindex: bool = True) -> dict[str,
             result = src.execution_options(stream_results=True).execute(select(*columns))
             copied = 0
             while batch := result.mappings().fetchmany(BATCH_SIZE):
-                dst.execute(table.insert(), [dict(row) for row in batch])
-                copied += len(batch)
+                rows = [dict(row) for row in batch]
+                if table.name in CATALOG_TABLES:
+                    rows = _merge_catalog(dst, table, CATALOG_TABLES[table.name], rows, id_maps)
+                for column, catalog in CATALOG_REFERENCES.get(table.name, {}).items():
+                    for row in rows:
+                        row[column] = id_maps.get(catalog, {}).get(row[column], row[column])
+                if rows:
+                    dst.execute(table.insert(), rows)
+                copied += len(rows)
             counts[table.name] = copied
             logger.info("%s: %d filas", table.name, copied)
 
     if reindex:
         counts["ems_chunk_embeddings"] = reindex_embeddings(target)
     return counts
+
+
+def _merge_catalog(dst, table, key: str, rows: list[dict], id_maps: dict) -> list[dict]:
+    """Devuelve solo las filas nuevas y registra qué id del destino corresponde a cada fila."""
+    existing = dict(dst.execute(select(table.c[key], table.c.id)).all())
+    mapping = id_maps.setdefault(table.name, {})
+    new_rows = []
+    for row in rows:
+        if row[key] in existing:
+            mapping[row["id"]] = existing[row[key]]
+        else:
+            new_rows.append(row)
+    return new_rows
 
 
 def reindex_embeddings(engine) -> int:

@@ -49,12 +49,21 @@ Build A/B y Build C usan el rango **WO-001 a WO-012 dos veces, para cosas distin
 
 ## 4. Línea de Gobierno / Consolidación (nueva, esta sesión)
 
+*Estados actualizados el 2026-10-02 (WO-098). La numeración vigente la fija `AD-ROOT-0001 §4`; el plan, `docs/auditoria/PLAN_WO_ADAN_100.md`.*
+
 | WO | Tema | Estado |
 |---|---|---|
-| WO-090 | Consolidación Oficial de ADÁN Enterprise (esta WO) | En curso — Sprint 2 de 4 |
-| WO-091 | Migración Enterprise — PostgreSQL + pgvector | No iniciada |
-| WO-092 | TypeScript | No iniciada |
-| WO-093 | Producción Enterprise — CI/CD, observabilidad, seguridad (alcance de "multiempresa" con solapamiento sin resolver contra WO-101-106, ver `AD-ROOT-0001 §4`) | No iniciada |
+| WO-090 | Consolidación Oficial de ADÁN Enterprise (esta WO) | Abierta: faltan el tag de baseline y la revisión humana (`AD-ROOT-0001 §4`) |
+| WO-091 | Migración Enterprise — PostgreSQL + pgvector | ✅ `docs/wo/WO-091_REPORTE.md` |
+| WO-092 | TypeScript | ✅ `docs/wo/WO-092_REPORTE.md` |
+| WO-093 | Producción Enterprise — CI/CD, observabilidad, seguridad (alcance de "multiempresa" con solapamiento sin resolver contra WO-101-106, ver `AD-ROOT-0001 §4`) | ✅ `docs/wo/WO-093_REPORTE.md` |
+| WO-094 | Hotfix de seguridad (TEF, SSRF, fugas entre empresas) | ✅ hernanjrestrepo/ADAN#1 |
+| WO-095 | Estabilización funcional | ✅ `docs/wo/WO-095_REPORTE.md` |
+| WO-096 | Consolidación (blueprint, mapa de reutilización) | 🟡 falta importar Build B (`docs/wo/WO-096_REPORTE.md`) |
+| WO-097 | Seguridad por empresa | ✅ `docs/wo/WO-097_REPORTE.md` |
+| WO-098 | Gemelo Digital y Decisiones | ✅ `docs/wo/WO-098_REPORTE.md` |
+| WO-099 | Motor cognitivo único e IA | ✅ `docs/wo/WO-099_REPORTE.md` |
+| WO-107 → WO-122 | Evidencia, Niveles 1 a 7, experiencia, ecosistema y certificación | Planificadas (`docs/auditoria/PLAN_WO_ADAN_100.md`) |
 
 ## 5. Rangos reservados — no tocados por este catálogo
 

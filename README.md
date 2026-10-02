@@ -18,9 +18,15 @@ Este repositorio reúne en un solo lugar todo el código de ADAN que existía po
 
 Los historiales importados se reescribieron para vivir bajo su carpeta, con autores y fechas intactos: `git log -- adan-platform/` y `git log -- autonomous/`.
 
-## Estado actual (2026-09-25)
+## Estado actual (2026-10-02)
 
-**Avance: ~40 %** hacia ADÁN Enterprise v1 (era ~22 % en la auditoría). Están cerrados H1 (base segura), H2 (plataforma enterprise: PostgreSQL, seguridad por empresa, frontend TypeScript, CI y producción) y WO-099 (IA por complejidad con Claude, Board Room de 7 roles y memoria en cinco capas). Lo siguiente en H3: WO-098 Gemelo Digital, WO-107, WO-108 y WO-109.
+**Avance: ~45 %** hacia ADÁN Enterprise v1 (era ~22 % en la auditoría). Están cerrados:
+- H1: base segura.
+- H2: plataforma enterprise (PostgreSQL, seguridad por empresa, frontend TypeScript, CI y producción).
+- WO-099: IA por complejidad con Claude, Board Room de 7 roles y memoria en cinco capas.
+- WO-098: Gemelo Digital con las 38 entidades, los 4 Patrones, versiones, eventos inmutables, la Decisión con los 6 campos, el ciclo de vida y las vistas de Decisiones y Timeline (`/gemelo/<empresa>`).
+
+Lo siguiente en H3: WO-107 (Evidencia y Scoring), WO-108 y WO-109.
 
 Qué se hizo, qué falta, cuándo se puede ver la plataforma y qué le toca a Hernán: **`docs/ESTADO_ADAN_2026-09-25.md`**.
 

@@ -15,7 +15,7 @@ from datetime import datetime, timezone
 from enum import Enum as PyEnum
 
 from sqlalchemy import (
-    Column, DateTime, Enum, Float, ForeignKey, Integer, String, Text, Boolean,
+    Column, Date, DateTime, Enum, Float, ForeignKey, Integer, String, Text, Boolean,
     UniqueConstraint,
 )
 from sqlalchemy.orm import relationship
@@ -35,6 +35,7 @@ def gen_uuid():
 
 class EntityStatus(str, PyEnum):
     ACTIVE = "active"
+    PAUSED = "paused"  # Patrón D (AD-008): solo Empresa, Proyecto y Workspace
     ARCHIVED = "archived"
 
 
@@ -57,6 +58,7 @@ class CardStatus(str, PyEnum):
 
 class DecisionStatus(str, PyEnum):
     PROPOSED = "proposed"
+    PRESENTED = "presented"  # presentada al cliente (AD-CMP-03 §1, WO-098)
     APPROVED = "approved"
     REJECTED = "rejected"
     EXECUTED = "executed"
@@ -97,6 +99,8 @@ class User(Base):
 
 class Company(Base):
     __tablename__ = "companies"
+    __pattern__ = "D"  # Contenedor Continuo (AD-008 §2)
+    __state_attr__ = "status"
 
     id = Column(String(36), primary_key=True, default=gen_uuid)
     name = Column(String(255), nullable=False)
@@ -106,8 +110,12 @@ class Company(Base):
     legal_structure = Column(String(100), nullable=True)
     founding_narrative = Column(Text, nullable=True)  # Narrativa Fundacional
     maturity = Column(Float, default=0.0, nullable=False)  # Madurez Organizacional (0-1)
+    jurisdiction = Column(String(100), nullable=True)  # AD-005 §2.1 (WO-098)
+    founded_on = Column(Date, nullable=True)  # de aquí sale la Edad (AD-005 §4)
+    intangibles = Column(JSONType, nullable=True)  # cultura, confianza, propósito… (AD-005 §3)
     status = Column(Enum(EntityStatus, native_enum=False, length=50), default=EntityStatus.ACTIVE, nullable=False)
     version = Column(Integer, default=1, nullable=False)
+    updated_by = Column(String(120), nullable=True)  # responsable del último cambio (AD-006 §2)
     confidence_level = Column(Float, default=0.0, nullable=False)
     created_at = Column(DateTime, default=utcnow, nullable=False)
     updated_at = Column(DateTime, default=utcnow, onupdate=utcnow, nullable=False)
@@ -129,6 +137,8 @@ class FoundingNarrative(Base):
     founding_motivation = Column(Text, nullable=True)
     irreversible_commitment = Column(Text, nullable=True)
     status = Column(Enum(EntityStatus, native_enum=False, length=50), default=EntityStatus.ACTIVE, nullable=False)
+    version = Column(Integer, default=1, server_default="1", nullable=False)
+    updated_by = Column(String(120), nullable=True)
     created_at = Column(DateTime, default=utcnow, nullable=False)
     updated_at = Column(DateTime, default=utcnow, onupdate=utcnow, nullable=False)
 
@@ -139,12 +149,15 @@ class FoundingNarrative(Base):
 
 class Project(Base):
     __tablename__ = "projects"
+    __pattern__ = "D"
+    __state_attr__ = "status"
 
     id = Column(String(36), primary_key=True, default=gen_uuid)
     company_id = Column(String(36), ForeignKey("companies.id"), nullable=False)
     name = Column(String(255), nullable=False)
     status = Column(Enum(EntityStatus, native_enum=False, length=50), default=EntityStatus.ACTIVE, nullable=False)
     version = Column(Integer, default=1, nullable=False)
+    updated_by = Column(String(120), nullable=True)  # responsable del último cambio (AD-006 §2)
     created_at = Column(DateTime, default=utcnow, nullable=False)
     updated_at = Column(DateTime, default=utcnow, onupdate=utcnow, nullable=False)
 
@@ -161,6 +174,8 @@ class Project(Base):
 
 class Level(Base):
     __tablename__ = "levels"
+    __pattern__ = "B"
+    __state_attr__ = "status"
 
     id = Column(String(36), primary_key=True, default=gen_uuid)
     project_id = Column(String(36), ForeignKey("projects.id"), nullable=False)
@@ -169,6 +184,7 @@ class Level(Base):
     status = Column(Enum(NivelStatus, native_enum=False, length=50), default=NivelStatus.BLOCKED, nullable=False)
     completed_at = Column(DateTime, nullable=True)
     version = Column(Integer, default=1, nullable=False)
+    updated_by = Column(String(120), nullable=True)  # responsable del último cambio (AD-006 §2)
     created_at = Column(DateTime, default=utcnow, nullable=False)
     updated_at = Column(DateTime, default=utcnow, onupdate=utcnow, nullable=False)
 
@@ -182,6 +198,8 @@ class Level(Base):
 
 class Card(Base):
     __tablename__ = "cards"
+    __pattern__ = "B"
+    __state_attr__ = "status"
 
     id = Column(String(36), primary_key=True, default=gen_uuid)
     project_id = Column(String(36), ForeignKey("projects.id"), nullable=False)
@@ -191,6 +209,7 @@ class Card(Base):
     card_type = Column(String(100), nullable=False)  # e.g., "pain_discovery", "diagnosis"
     status = Column(Enum(CardStatus, native_enum=False, length=50), default=CardStatus.BLOCKED, nullable=False)
     version = Column(Integer, default=1, nullable=False)
+    updated_by = Column(String(120), nullable=True)  # responsable del último cambio (AD-006 §2)
     created_at = Column(DateTime, default=utcnow, nullable=False)
     updated_at = Column(DateTime, default=utcnow, onupdate=utcnow, nullable=False)
 
@@ -210,6 +229,7 @@ class Conversation(Base):
     status = Column(Enum(EntityStatus, native_enum=False, length=50), default=EntityStatus.ACTIVE, nullable=False)
     summary = Column(Text, nullable=True)  # Generated when conversation completes
     version = Column(Integer, default=1, nullable=False)
+    updated_by = Column(String(120), nullable=True)  # responsable del último cambio (AD-006 §2)
     created_at = Column(DateTime, default=utcnow, nullable=False)
     updated_at = Column(DateTime, default=utcnow, onupdate=utcnow, nullable=False)
 
@@ -237,9 +257,14 @@ class Message(Base):
 
 class Score(Base):
     __tablename__ = "scores"
+    __pattern__ = "C"  # Registro Permanente: un cálculo nuevo es una fila nueva
 
     id = Column(String(36), primary_key=True, default=gen_uuid)
     project_id = Column(String(36), ForeignKey("projects.id"), nullable=False)
+    # AD-006 v1.2: N:1 con Empresa ("company", vía el proyecto) o con el Usuario Principal
+    # ("responsible": Score del Responsable, AD-FUNC-07)
+    subject = Column(String(20), default="company", server_default="company", nullable=False)
+    user_id = Column(String(36), ForeignKey("users.id"), nullable=True)
     score_type = Column(Enum(ScoreType, native_enum=False, length=50), nullable=False)
     value = Column(Float, nullable=False)  # 0-100
     confidence_level = Column(Float, nullable=False)  # 0-100
@@ -255,6 +280,8 @@ class Score(Base):
 
 class Decision(Base):
     __tablename__ = "decisions"
+    __pattern__ = "A"
+    __state_attr__ = "status"
 
     id = Column(String(36), primary_key=True, default=gen_uuid)
     project_id = Column(String(36), ForeignKey("projects.id"), nullable=False)
@@ -265,8 +292,24 @@ class Decision(Base):
     status = Column(Enum(DecisionStatus, native_enum=False, length=50), default=DecisionStatus.PROPOSED, nullable=False)
     reasoning = Column(Text, nullable=True)
     disagreement = Column(Text, nullable=True)  # From AD-CMP-03 §3
+    # WO-098 — AD-CMP-03 y AD-FUNC-02 §2.5
+    # Opciones con su fundamento, nivel de evidencia y Confidence Level:
+    # [{"key", "label", "rationale", "evidence_level", "confidence"}]
+    options = Column(JSONType, nullable=True)
+    recommended_option = Column(String(50), nullable=True)
+    chosen_option = Column(String(50), nullable=True)
+    # Los 6 campos cuando el cliente decide distinto a lo recomendado (§2.5):
+    # opción elegida, opción recomendada con su fundamento, evidencia y confianza de cada
+    # una, riesgos asumidos y responsabilidad asumida por el cliente
+    divergence = Column(JSONType, nullable=True)
+    # Consulta previa (AD-CMP-03 §2): decisiones aprobadas o ejecutadas al proponer esta
+    prior_decisions = Column(JSONType, nullable=True)
+    presented_at = Column(DateTime, nullable=True)
+    decided_at = Column(DateTime, nullable=True)
+    executed_at = Column(DateTime, nullable=True)
     confidence_level = Column(Float, nullable=True)
     version = Column(Integer, default=1, nullable=False)
+    updated_by = Column(String(120), nullable=True)  # responsable del último cambio (AD-006 §2)
     created_at = Column(DateTime, default=utcnow, nullable=False)
     updated_at = Column(DateTime, default=utcnow, onupdate=utcnow, nullable=False)
 
@@ -285,6 +328,7 @@ class Document(Base):
     doc_type = Column(String(100), nullable=False)  # "diagnosis", "business_plan", "blueprint"
     origin = Column(String(100), nullable=False)  # "generated_by_adan" or "received_from_client"
     version = Column(Integer, default=1, nullable=False)
+    updated_by = Column(String(120), nullable=True)  # responsable del último cambio (AD-006 §2)
     created_at = Column(DateTime, default=utcnow, nullable=False)
     updated_at = Column(DateTime, default=utcnow, onupdate=utcnow, nullable=False)
 
@@ -295,13 +339,19 @@ class Document(Base):
 
 class Event(Base):
     __tablename__ = "events"
+    __pattern__ = "C"
 
     id = Column(String(36), primary_key=True, default=gen_uuid)
-    project_id = Column(String(36), ForeignKey("projects.id"), nullable=False)
+    project_id = Column(String(36), ForeignKey("projects.id"), nullable=True)  # nulo: evento de empresa
     event_type = Column(String(100), nullable=False)  # "level_completed", "card_completed", etc.
     entity_type = Column(String(100), nullable=False)  # "level", "card", "score", etc.
     entity_id = Column(String(36), nullable=False)
     data = Column(JSONType, nullable=True)  # Event payload
+    # WO-098: "domain" (lo que muestra el Timeline) o "cognitive" (trazas del motor de IA)
+    category = Column(String(20), default="domain", server_default="domain", nullable=False)
+    company_id = Column(String(36), ForeignKey("companies.id"), nullable=True, index=True)
+    actor_type = Column(String(10), nullable=True)  # user | agent | system
+    actor_id = Column(String(120), nullable=True)
     created_at = Column(DateTime, default=utcnow, nullable=False)
 
     project = relationship("Project", back_populates="events")

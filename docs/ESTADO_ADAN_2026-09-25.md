@@ -3,6 +3,16 @@
 **Para:** Hernán · **Preparado por:** Claude Code, al pausar el trabajo antes de WO-098
 > **Actualización (2026-09-25, después):** WO-099 quedó cerrada (`docs/wo/WO-099_REPORTE.md`), así que el avance sube a **~40 %**. Hay IA por complejidad: Claude Sonnet para la conversación, Claude Opus para los votos y Ollama para lo simple. El Board Room tiene los 7 roles con el Flujo Maestro, participación del cliente y acta, y hay un solo Board. La memoria tiene cinco capas y se mide el costo por empresa. **Para la demo solo falta poner `ANTHROPIC_API_KEY`** y correr `python scripts/check_claude.py`.
 
+> **Actualización (2026-10-02):** WO-098 quedó cerrada (`docs/wo/WO-098_REPORTE.md`), así que el avance sube a **~45 %**. El Gemelo Digital tiene ahora:
+> - las 38 entidades;
+> - reglas de AD-008 que impiden que un agente apruebe o ejecute;
+> - una versión de cada cambio y eventos que no se pueden borrar ni modificar;
+> - la Decisión con *Presentada*, opciones con evidencia, consulta previa y los 6 campos cuando el cliente decide distinto;
+> - nacimiento, reinvención, división, fusión, pausa y archivo;
+> - las pantallas de Decisiones y Timeline en `/gemelo/<empresa>`.
+>
+> El diseño de §4 se implementó tal como estaba propuesto; las decisiones tomadas por delegación están en §4 del reporte. Siguiente: WO-107 (Evidencia y Scoring).
+
 **En una línea:** ADÁN pasó de **~22 % a ~35 %** del camino a ADÁN Enterprise v1. Quedaron cerradas la **base segura (H1)** y la **plataforma enterprise (H2)**. Lo que sigue es el producto: Gemelo Digital, la IA de calidad y los Niveles 2 a 7.
 
 ---

@@ -5,6 +5,7 @@ import DashboardPage from './pages/DashboardPage'
 import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
 import Nivel1Page from './pages/nivel1/Nivel1Page'
+import GemeloPage from './pages/gemelo/GemeloPage'
 
 function Private({ children }: { children: ReactNode }) {
   const { user } = useAuth()
@@ -24,6 +25,7 @@ export default function App() {
       <Route path="/register" element={<PublicOnly><RegisterPage /></PublicOnly>} />
       <Route path="/dashboard" element={<Private><DashboardPage /></Private>} />
       <Route path="/nivel1/:companyId" element={<Private><Nivel1Page /></Private>} />
+      <Route path="/gemelo/:companyId" element={<Private><GemeloPage /></Private>} />
       <Route path="*" element={<Navigate to={user ? '/dashboard' : '/login'} replace />} />
     </Routes>
   )

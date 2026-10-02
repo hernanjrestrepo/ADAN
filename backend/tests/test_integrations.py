@@ -120,11 +120,11 @@ class TestSlackConnector:
 
 class TestRESTAPIConnector:
     @pytest.mark.asyncio
-    async def test_execute_get(self):
+    async def test_execute_get(self, local_site):
         connector = RESTAPIConnector()
-        await connector.connect({"base_url": "https://httpbin.org"})
+        await connector.connect({"base_url": local_site})
         result = await connector.execute("get", {
-            "url": "https://httpbin.org/get",
+            "url": f"{local_site}/get",
             "method": "GET",
         })
         assert result.status == "success"

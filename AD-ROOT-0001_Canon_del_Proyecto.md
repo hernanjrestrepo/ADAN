@@ -27,7 +27,7 @@
 FastAPI · React · TypeScript · PostgreSQL · pgvector · Ollama · Docker
 Event Bus · EMS · TEF · Board · DKA · OOS · Voice
 ```
-**Estado de implementación (2026-09-24):** PostgreSQL 16 + pgvector, con migraciones de Alembic, está implementado en Build C desde WO-091; SQLite queda solo para desarrollo y pruebas. El frontend está en TypeScript desde WO-092 (React 19, react-router 8, vite 8). Con eso queda resuelta la nota de consistencia que sigue. Desde WO-093 hay un stack de producción con Docker (`docker-compose.prod.yml`) y CI en GitHub Actions.
+**Estado de implementación (2026-09-24):** PostgreSQL 16 + pgvector, con migraciones de Alembic, está implementado en Build C desde WO-091; SQLite queda solo para desarrollo y pruebas. El frontend está en TypeScript desde WO-092 (React 19, react-router 8, vite 8). Con eso queda resuelta la nota de consistencia que sigue. Desde WO-093 hay un stack de producción con Docker (`docker-compose.prod.yml`) y CI en GitHub Actions. Desde WO-098 el Gemelo Digital (`backend/app/twin/`) es la fuente oficial de las entidades de la empresa; el modelo paralelo del OOS se reconcilia en WO-109.
 
 **Nota de consistencia (no resuelta silenciosamente):** el frontend actual de Build C está escrito en JavaScript (JSX), no TypeScript. La arquitectura oficial aquí decidida especifica TypeScript. Esto implica que la migración pendiente no es solo SQLite→PostgreSQL (explícita en `AD-DEC-0001 §5.4`) sino también una migración de JSX a TypeScript en el frontend — se deja registrado como parte del alcance en vez de asumir cuál de los dos prevalece.
 
@@ -97,3 +97,4 @@ Independientemente de la decisión anterior: el worktree registrado en `C:\Users
 | 2026-09-24 | WO-092: §3 frontend en TypeScript | Ejecutado por Claude Code con la autorización general de Hernán (2026-09-24) |
 | 2026-09-24 | WO-093: §3 Docker de producción, CI y operación (`docs/operacion/RUNBOOK.md`) | Ejecutado por Claude Code con la autorización general de Hernán (2026-09-24) |
 | 2026-09-25 | WO-099: §3 enrutamiento de modelos Ollama/Claude (AD-DEC-0002 decisión 3), un solo Board Room de 7 roles, memoria en cinco capas | Ejecutado por Claude Code; Hernán aprobó adelantarla a WO-098 ("sigue con lo que propones", 2026-09-25) |
+| 2026-10-02 | WO-098: §3 Gemelo Digital con las 38 entidades de AD-006 v1.2, los 4 Patrones de AD-008 aplicados en un solo punto, versiones, event store append-only (triggers en PostgreSQL y SQLite), Decisión con los 6 campos y ciclo de vida AD-CMP-06 (`docs/wo/WO-098_REPORTE.md`) | Ejecutado por Claude Code con la delegación de Hernán ("hazlo todo, lo que tengas que tomar decisiones tómalas tú", 2026-10-01) |

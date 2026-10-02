@@ -408,7 +408,11 @@ def decide(
         raise HTTPException(status_code=404, detail="Decision not found")
 
     try:
-        decision = GemeloDigitalService(db).decide(project, decision, body.action == "approve", user.id)
+        decision = GemeloDigitalService(db).decide(
+            project, decision, body.action == "approve", user.id,
+            chosen_option=body.chosen_option, risks_assumed=body.risks_assumed,
+            responsibility_statement=body.responsibility_statement,
+        )
     except ValueError as e:
         raise HTTPException(status_code=409, detail=str(e))
     return DecisionResponse.model_validate(decision)

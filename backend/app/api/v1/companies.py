@@ -6,20 +6,12 @@ from app.core.auth import get_current_user
 from app.core.authz import get_owned_company, get_owned_project, owned_companies
 from app.ai.usage import LLMUsage
 from app.core.database import get_db
-from app.models.models import Company, FoundingNarrative, Level, Project, User
+from app.twin import lifecycle
+from app.models.models import Company, User
 from app.schemas.schemas import CompanyCreate, CompanyResponse, ProjectResponse
 
 router = APIRouter(prefix="/companies", tags=["companies"])
 
-LEVEL_NAMES = [
-    "El Dolor",
-    "Propuesta de Valor",
-    "Plan de Negocios",
-    "MVP",
-    "Validación Simulada",
-    "Lanzamiento",
-    "Escalamiento",
-]
 
 
 @router.post("/", response_model=CompanyResponse, status_code=201)
@@ -28,39 +20,8 @@ def create_company(
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user),
 ):
-    company = Company(
-        name=body.name,
-        description=body.description,
-        industry=body.industry,
-        country=body.country,
-        created_by=user.id,
-        primary_user_id=user.id,
-    )
-    db.add(company)
-    db.flush()
-
-    # Create founding narrative placeholder
-    narrative = FoundingNarrative(company_id=company.id)
-    db.add(narrative)
-
-    # Create project (1:1 with company per AD-006 §4)
-    project = Project(
-        company_id=company.id,
-        name=f"Proyecto {body.name}",
-    )
-    db.add(project)
-    db.flush()
-
-    # Create all 7 levels (Nivel 1 starts active, rest blocked)
-    for i, name in enumerate(LEVEL_NAMES, 1):
-        level = Level(
-            project_id=project.id,
-            number=i,
-            name=name,
-            status="active" if i == 1 else "blocked",
-        )
-        db.add(level)
-
+    # Nace el Gemelo: Empresa, Narrativa Fundacional, Proyecto, Workspace y 7 Niveles (AD-CMP-06 §1)
+    company = lifecycle.birth(db, user, body.name, body.description, body.industry, body.country)
     db.commit()
     db.refresh(company)
     return CompanyResponse.model_validate(company)

@@ -9,7 +9,6 @@ import app.api.v1.nivel1 as nivel1_api
 import app.ems.store as ems_store
 from app.agents.board import ExecutiveBoard, _to_percent
 from app.agents.ceo import CEOAgent
-from app.ai.base import LLMAdapter, LLMResponse
 from app.ai.normalize import normalize_vote
 from app.core.disclaimer import AI_DISCLAIMER, strip_disclaimer, with_disclaimer
 from app.dka.pipeline import KnowledgeAcquisitionPipeline
@@ -23,45 +22,7 @@ from app.models.models import (
 from app.nivel1.board_room import AgentVote, BoardConsensus, BoardRoom
 from app.nivel1.service import MAX_CONTEXT_MESSAGES, Nivel1Service
 from app.services.gemelo_digital import GemeloDigitalService
-
-VALID_VOTE = (
-    '{"analysis":"A","justification":"J","vote":"PROCEED","confidence":80,'
-    '"key_strengths":["s"],"key_concerns":["c"],"questions":["q"]}'
-)
-
-
-class FakeLLM(LLMAdapter):
-    """LLM de prueba: respuestas configurables y conteo de llamadas."""
-
-    def __init__(self, chat_replies=None, generate_reply="Documento generado", stream_tokens=None):
-        self.chat_replies = list(chat_replies or [VALID_VOTE])
-        self.generate_reply = generate_reply
-        self.stream_tokens = stream_tokens or ["Hola", "\nmundo"]
-        self.chat_calls = 0
-        self.generate_calls = 0
-        self.last_messages = None
-
-    async def chat(self, messages, model=None, temperature=0.7, max_tokens=2048):
-        self.chat_calls += 1
-        self.last_messages = messages
-        reply = self.chat_replies[(self.chat_calls - 1) % len(self.chat_replies)]
-        return LLMResponse(content=reply, model="fake")
-
-    async def chat_stream(self, messages, model=None, temperature=0.7, max_tokens=2048):
-        self.last_messages = messages
-        for token in self.stream_tokens:
-            yield token
-
-    async def generate(self, prompt, model=None, system=None, temperature=0.7, max_tokens=2048):
-        self.generate_calls += 1
-        return LLMResponse(content=self.generate_reply, model="fake")
-
-    async def health_check(self):
-        return True
-
-    def list_models(self):
-        return []
-
+from tests.fakes import VALID_VOTE, FakeLLM  # noqa: F401 — VALID_VOTE lo reusa test_wo099
 
 def _headers(client, email="wo095@example.com"):
     resp = client.post("/api/v1/auth/register", json={"email": email, "name": "U", "password": "password123"})
@@ -376,7 +337,9 @@ async def test_b13_acquire_without_urls_does_not_use_demo_sources():
 
 def test_b15_completing_level_7_does_not_create_level_8(db_session, company):
     project = company["project"]
-    GemeloDigitalService(db_session).complete_level(project, 7)
+    service = GemeloDigitalService(db_session)
+    service.activate_level(project, 7)  # Patrón B: solo se completa un Nivel activo (AD-008)
+    service.complete_level(project, 7)
     assert db_session.query(Level).filter_by(project_id=project.id, number=8).count() == 0
 
 

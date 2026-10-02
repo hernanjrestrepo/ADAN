@@ -1,6 +1,6 @@
 import type {
-  BoardConsensus, BoardRoomInput, ChatResponse, Company, CompanyInput, Decision, DocumentRecord, GateReviewResult,
-  Nivel1Status, Score, TokenResponse, User,
+  BoardConsensus, BoardRoomInput, ChatResponse, Company, CompanyInput, DecideInput, Decision, DocumentRecord,
+  GateReviewResult, Nivel1Status, Score, TimelineEvent, TokenResponse, TwinKind, TwinOverview, User,
 } from '../types'
 
 const API_BASE = '/api/v1'
@@ -74,6 +74,22 @@ export const api = {
   getDecisions: (companyId: string) => request<Decision[]>(`/nivel1/${companyId}/decisions`),
   decide: (companyId: string, decisionId: string, action: 'approve' | 'reject') =>
     post<Decision>(`/nivel1/${companyId}/decisions/${decisionId}`, { action }),
+
+  // Gemelo Digital (WO-098)
+  getTwin: (companyId: string) => request<TwinOverview>(`/twin/${companyId}`),
+  getTwinKinds: () => request<TwinKind[]>('/twin/kinds'),
+  // Cursor (fecha, id) del último evento recibido: no se pierden eventos con la misma marca de tiempo
+  getTimeline: (companyId: string, before?: Pick<TimelineEvent, 'created_at' | 'id'>) =>
+    request<TimelineEvent[]>(`/twin/${companyId}/timeline?limit=50${before
+      ? `&before=${encodeURIComponent(before.created_at)}&before_id=${encodeURIComponent(before.id)}` : ''}`),
+  getTwinDecisions: (companyId: string) => request<Decision[]>(`/twin/${companyId}/decisions`),
+  presentDecision: (companyId: string, decisionId: string) =>
+    post<Decision>(`/twin/${companyId}/decisions/${decisionId}/present`),
+  decideDecision: (companyId: string, decisionId: string, input: DecideInput) =>
+    post<Decision>(`/twin/${companyId}/decisions/${decisionId}/decide`, input),
+  executeDecision: (companyId: string, decisionId: string, businessDecisionTitle?: string) =>
+    post<Decision>(`/twin/${companyId}/decisions/${decisionId}/execute`,
+      businessDecisionTitle ? { business_decision_title: businessDecisionTitle } : {}),
 }
 
 export function errorMessage(err: unknown): string {

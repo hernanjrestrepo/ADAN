@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react'
-import { useNavigate } from 'react-router'
+import { Link, useNavigate } from 'react-router'
 import AppShell from '../components/AppShell'
 import Alert from '../components/ui/Alert'
 import Badge from '../components/ui/Badge'
@@ -61,7 +61,8 @@ function CreateCompanyDialog({ onClose }: { onClose: () => void }) {
 function CompanyCard({ company }: { company: Company }) {
   const navigate = useNavigate()
   return (
-    <button type="button" onClick={() => navigate(`/nivel1/${company.id}`)} className="text-left">
+    <div className="flex flex-col gap-2">
+    <button type="button" onClick={() => navigate(`/nivel1/${company.id}`)} className="text-left flex-1">
       <Card className="h-full hover:border-adan-accent transition-colors">
         <h3 className="text-lg font-bold mb-1">{company.name}</h3>
         {company.description && <p className="text-adan-muted text-sm mb-3 line-clamp-2">{company.description}</p>}
@@ -75,6 +76,11 @@ function CompanyCard({ company }: { company: Company }) {
         </div>
       </Card>
     </button>
+    {/* Enlace aparte: un enlace no puede ir dentro de un botón */}
+    <Link to={`/gemelo/${company.id}`} className="text-sm text-adan-accent hover:underline self-end">
+      Gemelo Digital →
+    </Link>
+    </div>
   )
 }
 
