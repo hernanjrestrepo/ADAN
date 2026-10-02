@@ -27,7 +27,7 @@ from app.models.models import Company, Event, Project, User
 from app.oos.models import DecisionRecord, Organization, WorkOrder
 
 PG_URL = os.getenv("TEST_DATABASE_URL", "")
-HEAD_REVISION = "0007"
+HEAD_REVISION = "0008"
 requires_pg = pytest.mark.skipif(
     not PG_URL.startswith("postgres"), reason="requiere TEST_DATABASE_URL de PostgreSQL"
 )
@@ -72,7 +72,7 @@ def test_single_declarative_base():
             "integration_connections", "tef_audit_log"} <= tables
     # 36 hasta WO-099 + 32 de WO-098: 26 entidades del Gemelo, 3 tablas N:M, Riesgo,
     # versiones y linaje
-    assert len(tables) == 70
+    assert len(tables) == 73
     assert EMSDocument.metadata is Base.metadata and WorkOrder.metadata is Base.metadata
 
 

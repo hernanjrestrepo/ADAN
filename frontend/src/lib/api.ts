@@ -1,4 +1,5 @@
 import type {
+  AgentContract, AgentOffering, AgentTask, ContractReport, HirePeriod,
   BoardConsensus, BoardRoomInput, ChatResponse, Company, CompanyInput, DecideInput, Decision, DocumentRecord,
   Evidence, EvidenceInput, GatePreview, GateReviewResult, LevelView, Nivel1Status, OnboardingState, Score,
   ScoreOverview, TimelineEvent, TokenResponse, TwinKind, TwinOverview, User,
@@ -60,6 +61,23 @@ export const api = {
     post<{ company_id: string; first_question: string | null }>('/onboarding/start', { company_name: companyName, stage }),
   setConsent: (purpose: 'data_processing' | 'aggregated_intelligence', granted: boolean) =>
     post<OnboardingState['consents']>('/onboarding/consents', { purpose, granted }),
+  // Agentes por tiempo (WO-109)
+  getHireCatalog: () => request<AgentOffering[]>('/hire/catalog'),
+  getContracts: (companyId: string) => request<AgentContract[]>(`/hire/${companyId}/contracts`),
+  hireAgent: (companyId: string, offeringCode: string, period: HirePeriod, units: number) =>
+    post<AgentContract>(`/hire/${companyId}/contracts`, { offering_code: offeringCode, period, units }),
+  cancelContract: (companyId: string, contractId: string) =>
+    post<AgentContract>(`/hire/${companyId}/contracts/${contractId}/cancel`),
+  getContractTasks: (companyId: string, contractId: string) =>
+    request<AgentTask[]>(`/hire/${companyId}/contracts/${contractId}/tasks`),
+  assignTask: (companyId: string, contractId: string, title: string, description: string) =>
+    post<AgentTask>(`/hire/${companyId}/contracts/${contractId}/tasks`, { title, description }),
+  runTask: (companyId: string, contractId: string, taskId: string) =>
+    post<{ task: AgentTask }>(`/hire/${companyId}/contracts/${contractId}/tasks/${taskId}/run`),
+  reviewTask: (companyId: string, contractId: string, taskId: string, approve: boolean, feedback?: string) =>
+    post<AgentTask>(`/hire/${companyId}/contracts/${contractId}/tasks/${taskId}/review`, { approve, feedback }),
+  getContractReport: (companyId: string, contractId: string) =>
+    request<ContractReport>(`/hire/${companyId}/contracts/${contractId}/report`),
   getLevels: (companyId: string) => request<LevelView[]>(`/companies/${companyId}/levels`),
   getCsiStatus: (companyId: string) => request<{ connected: boolean }>(`/scoring/${companyId}/csi`),
   searchCsi: (companyId: string, query?: string) => post<Evidence[]>(`/scoring/${companyId}/csi/search`, { query }),

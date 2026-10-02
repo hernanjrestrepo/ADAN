@@ -20,7 +20,7 @@ Los historiales importados se reescribieron para vivir bajo su carpeta, con auto
 
 ## Estado actual (2026-10-02)
 
-**Avance: ~55 %** hacia ADÁN Enterprise v1 (era ~22 % en la auditoría). Están cerrados:
+**Avance: ~60 %** hacia ADÁN Enterprise v1 (era ~22 % en la auditoría). Están cerrados:
 - H1: base segura.
 - H2: plataforma enterprise (PostgreSQL, seguridad por empresa, frontend TypeScript, CI y producción).
 - WO-099: IA por complejidad con Claude, Board Room de 7 roles y memoria en cinco capas.
@@ -28,8 +28,9 @@ Los historiales importados se reescribieron para vivir bajo su carpeta, con auto
 
 - WO-107: Evidencia y Scoring. El Nivel 1 se cierra con evidencia verificable, no con palabras clave; los 8 Scores declaran su confianza.
 - WO-108 (parte técnica): onboarding de una sola pregunta, con ADÁN preguntando en segundos; consentimiento de datos (Ley 1581); evidencia externa verificada y contrato con CSI; ruta de 7 Niveles. Falta el piloto real.
+- WO-109: agentes por hora, día, semana o mes (`/agentes/<empresa>`), con tareas como Work Orders, herramientas de TEF, aprobación del cliente y medición del trabajo. Los precios quedan para WO-100.
 
-Lo siguiente en H3: el piloto de WO-108 (Hernán) y WO-109 (Agentes por tiempo).
+H3 está completo salvo el piloto de WO-108 (Hernán). Sigue H4: los Niveles 2 a 7 (WO-110 a WO-115).
 
 Qué se hizo, qué falta, cuándo se puede ver la plataforma y qué le toca a Hernán: **`docs/ESTADO_ADAN_2026-09-25.md`**.
 

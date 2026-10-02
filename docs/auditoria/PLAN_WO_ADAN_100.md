@@ -197,7 +197,8 @@ Criterio de cierre común (EPWO-051), además de lo específico de cada ficha:
 - **Cierre:** piloto real con una empresa de Paradixe.
 - **Estimación:** 5–8 días.
 
-### WO-109 — Agentes por tiempo
+### WO-109 — Agentes por tiempo ✅
+- **Estado:** primera versión fusionada (`docs/wo/WO-109_REPORTE.md`). Los precios se fijan en WO-100.
 - **Objetivo:** que ADÁN suministre agentes por hora, día, semana o mes para tareas específicas de cada empresa (`AD-DEC-0002` decisión 1). Es el ingreso recurrente de ADÁN.
 - **Alcance:**
   - Catálogo de agentes: rol, habilidades, herramientas y modelo, construido sobre la `agent_factory` actual llevada a persistencia.
@@ -295,4 +296,4 @@ Con un solo frente de trabajo son unos 7–11 meses; con dos frentes en paralelo
 1. WO-095 ✅ (`docs/wo/WO-095_REPORTE.md`).
 2. WO-096 🟡: solo falta Build B, que depende de la laptop.
 3. H2 completo: WO-091 ✅, WO-097 ✅, WO-092 ✅, WO-093 ✅.
-4. H3: WO-099 ✅ (adelantada el 2026-09-25) → WO-098 ✅ (2026-10-02) → WO-107 ✅ (2026-10-02) → WO-108 🟡 (técnica 2026-10-02; falta el piloto) → WO-109.
+4. H3: WO-099 ✅ (adelantada el 2026-09-25) → WO-098 ✅ (2026-10-02) → WO-107 ✅ (2026-10-02) → WO-108 🟡 (técnica 2026-10-02; falta el piloto) → WO-109 ✅ (2026-10-02).

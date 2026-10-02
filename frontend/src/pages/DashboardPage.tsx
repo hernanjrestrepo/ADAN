@@ -121,6 +121,7 @@ function CompanyCard({ company }: { company: Company }) {
             Continuar Nivel 1
           </Link>
           <Link to={`/ruta/${company.id}`} className="text-sm text-adan-muted hover:text-adan-text">Ruta</Link>
+          <Link to={`/agentes/${company.id}`} className="text-sm text-adan-muted hover:text-adan-text">Agentes</Link>
         </span>
         {/* Enlace aparte: un enlace no puede ir dentro de un botón */}
         <Link to={`/gemelo/${company.id}`} className="text-sm text-adan-accent hover:underline">
