@@ -41,7 +41,7 @@ export default function RegisterPage() {
           onChange={(e) => setPassword(e.target.value)} minLength={10} maxLength={72} required
           hint="Mínimo 10 caracteres." />
         <Alert message={error} />
-        <Button type="submit" block disabled={loading}>{loading ? 'Creando cuenta...' : 'Crear cuenta'}</Button>
+        <Button type="submit" block loading={loading}>Crear cuenta</Button>
       </form>
       <p className="text-center text-adan-muted mt-6">
         ¿Ya tienes cuenta?{' '}

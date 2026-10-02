@@ -29,14 +29,14 @@ export default function LoginPage() {
   }
 
   return (
-    <AuthLayout subtitle="Sistema Operativo Empresarial">
+    <AuthLayout subtitle="Bienvenido de nuevo">
       <form onSubmit={handleSubmit} className="space-y-4">
         <Field label="Email" type="email" autoComplete="email" value={email}
           onChange={(e) => setEmail(e.target.value)} required />
         <Field label="Contraseña" type="password" autoComplete="current-password" value={password}
           onChange={(e) => setPassword(e.target.value)} required />
         <Alert message={error} />
-        <Button type="submit" block disabled={loading}>{loading ? 'Ingresando...' : 'Ingresar'}</Button>
+        <Button type="submit" block loading={loading}>Ingresar</Button>
       </form>
       <p className="text-center text-adan-muted mt-6">
         ¿No tienes cuenta?{' '}

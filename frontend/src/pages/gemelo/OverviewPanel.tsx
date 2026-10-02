@@ -9,6 +9,16 @@ const STAGE_LABELS: Record<string, string> = {
 
 const STATUS_LABELS: Record<string, string> = { active: 'Activo', paused: 'Pausado', archived: 'Archivado' }
 
+// "0.0 años" no dice nada: menos de un mes es "Recién nacida"; menos de un año, en meses
+function formatAge(years: number): string {
+  if (years < 1 / 12) return 'Recién nacida'
+  if (years < 1) {
+    const months = Math.round(years * 12)
+    return `${months} ${months === 1 ? 'mes' : 'meses'}`
+  }
+  return `${years.toFixed(1)} años`
+}
+
 interface OverviewPanelProps {
   twin: TwinOverview
   kinds: TwinKind[]
@@ -21,7 +31,7 @@ export default function OverviewPanel({ twin, kinds }: OverviewPanelProps) {
     <div className="space-y-6">
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4" data-testid="twin-identity">
         <Stat label="Estado" value={STATUS_LABELS[twin.company.status] ?? twin.company.status} />
-        <Stat label="Edad" value={`${identity.age_years.toFixed(1)} años`} />
+        <Stat label="Edad" value={formatAge(identity.age_years)} />
         <Stat label="Madurez" value={`${Math.round(identity.maturity * 100)}%`} />
         <Stat label="Etapa del ciclo de vida" value={STAGE_LABELS[identity.lifecycle_stage] ?? identity.lifecycle_stage} />
       </div>
@@ -50,7 +60,7 @@ export default function OverviewPanel({ twin, kinds }: OverviewPanelProps) {
       {clusters.map((cluster) => (
         <Card key={cluster}>
           <h3 className="font-bold mb-3">{cluster}</h3>
-          <dl className="grid grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-2 text-sm">
+          <dl className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-2 text-sm">
             {kinds.filter((k) => k.cluster_label === cluster).map((k) => (
               <div key={k.key} className="flex justify-between gap-2">
                 <dt className="text-adan-muted">{k.label_plural}</dt>
