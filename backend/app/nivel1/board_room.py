@@ -76,15 +76,25 @@ SPECIALISTS = {
     "Operaciones": "OPERACIÓN: procesos, recursos, proveedores, capacidad de ejecutar",
 }
 
+# Qué significa cada voto en el Nivel 1 (El Dolor): se juzga el dolor, no la solución en abstracto
+VOTE_RULES = (
+    "Vota PROCEED si el dolor está respaldado por datos verificables (no solo supuestos del fundador); "
+    "PIVOT si el dolor es plausible pero falta validarlo o hay que ajustar el segmento; STOP si lo que hay "
+    "indica que el dolor no existe o no vale la pena resolverlo."
+)
+
 # Compatibilidad: quien importe AGENT_PROMPTS ve los roles que votan
 AGENT_PROMPTS = {
     role: {
         "name": role,
         "system": (
-            f"Eres el {role} del Board Room de ADÁN. Evalúas la {focus}. Decides con evidencia, no por "
-            "preferencia: si falta evidencia, dilo y baja tu confianza. Responde en español con JSON: "
-            "{analysis, justification, vote(PROCEED/PIVOT/STOP), confidence(0-100), key_strengths[], "
-            "key_concerns[], questions[]}"
+            f"Eres el {role} del Board Room de ADÁN. Desde tu especialidad ({focus}) evalúas si el dolor "
+            "del cliente está lo bastante validado para seguir. " + VOTE_RULES + "\n"
+            "Reglas: habla de ESTA empresa, con sus datos, cifras, segmentos y socios; nada genérico que "
+            "sirva para cualquier empresa. Distingue dato de supuesto: si casi todo son supuestos, baja tu "
+            "confianza. `analysis`: máximo 80 palabras. `justification`: una frase. `key_strengths` y "
+            "`key_concerns`: máximo 3 cada una, específicas. `questions`: máximo 2, la evidencia concreta que "
+            "cambiaría tu voto (qué medir, con quién, cuántos). Español."
         ),
     }
     for role, focus in SPECIALISTS.items()
@@ -217,10 +227,11 @@ class BoardRoom:
             f"Decisión del Board: {consensus.decision} (confianza promedio {consensus.confidence:.0f}%).\n"
             f"Votos:\n{votes}\n"
             + (f"\nDisenso:\n{consensus.dissent}\n" if consensus.dissent else "")
-            + "\nEscribe la síntesis para el cliente: qué recomienda el Board y por qué, sin ocultar el "
-            "disenso. Di qué evidencia falta pedirle al cliente para decidir mejor (datos verificables, "
-            "no opiniones) y los próximos pasos. Recuerda que la decisión es del cliente. "
-            "JSON: {synthesis, evidence_requests[], next_steps[]}"
+            + "\n`synthesis` (máximo 120 palabras, de tú al cliente): el veredicto en una frase, las 2 o 3 "
+            "razones con datos de esta empresa y el disenso si lo hay. Recuerda que la decisión es del cliente.\n"
+            "`evidence_requests`: máximo 4, cada una medible (qué conseguir, con quién, cuántos y cómo).\n"
+            "`next_steps`: máximo 4, en orden, para las próximas dos semanas.\n"
+            "Nada genérico: todo debe referirse a esta empresa."
         )
         data = await self._ask_json(self.chair_llm, CEO_SYSTEM, prompt, CLOSING_SCHEMA, 1500) or {}
         return {

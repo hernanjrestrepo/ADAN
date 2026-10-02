@@ -122,6 +122,21 @@ def merge(state: dict, parsed: dict) -> dict:
     return new
 
 
+def brief(state: dict) -> str:
+    """Resumen del guion para el Board: cada tema con lo dicho y si es dato o supuesto."""
+    lines = []
+    for tid, label, _goal in TOPICS:
+        t = state["temas"][tid]
+        if t["estado"] == "sin_dato":
+            lines.append(f"- {label}: sin dato (el cliente no lo sabe; hay que validarlo)")
+        elif t["resumen"]:
+            lines.append(f"- {label}: {t['resumen']} [{t['base']}{', incompleto' if t['estado'] == 'parcial' else ''}]")
+        else:
+            lines.append(f"- {label}: no se ha hablado")
+    return "\n".join(lines) if any(state["temas"][tid]["resumen"] or state["temas"][tid]["estado"] == "sin_dato"
+                                    for tid in TOPIC_IDS) else ""
+
+
 def system_prompt(state: dict, structured: bool = True) -> str:
     """Las instrucciones del turno: el guion, lo que ya se sabe y qué toca preguntar.
 

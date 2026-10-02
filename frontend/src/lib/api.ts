@@ -104,6 +104,7 @@ export const api = {
     }),
   runBoardRoom: (companyId: string, input?: BoardRoomInput) =>
     post<BoardConsensus>(`/nivel1/${companyId}/board-room`, input ?? {}),
+  getLastBoardRoom: (companyId: string) => request<BoardConsensus>(`/nivel1/${companyId}/board-room/last`),
   generateDiagnosis: (companyId: string) => post<DocumentRecord>(`/nivel1/${companyId}/diagnosis`),
   gateReview: (companyId: string) => post<GateReviewResult>(`/nivel1/${companyId}/gate-review`),
   getScores: (companyId: string) => request<Score[]>(`/nivel1/${companyId}/scores`),

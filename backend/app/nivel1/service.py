@@ -197,34 +197,10 @@ class Nivel1Service:
     async def run_board_room(self, project: Project, company: Company,
                              client_question: str = "", client_position: str = "") -> BoardConsensus:
         """Board Room de 7 roles (AD-FUNC-02): el CEO preside y seis especialistas votan."""
-        # Get conversation context
-        card = self.db.query(Card).filter(
-            Card.project_id == project.id,
-            Card.card_type == "pain_discovery",
-        ).first()
-
-        pain_description = ""
-        conversation_context = ""
-
-        if card:
-            conversation = self.db.query(Conversation).filter(
-                Conversation.card_id == card.id,
-            ).first()
-
-            if conversation:
-                messages = self.db.query(Message).filter(
-                    Message.conversation_id == conversation.id,
-                ).order_by(Message.created_at).all()
-
-                pain_description = "\n".join([
-                    f"{m.role}: {m.content}" for m in messages if m.role == "user"
-                ])
-                conversation_context = "\n".join([
-                    f"{m.role}: {m.content}" for m in messages
-                ])
-
+        pain_description = self.board_brief(project)
         if not pain_description.strip():
             raise ValueError("No hay descripción del dolor. Inicia una conversación primero.")
+        conversation_context = ""
 
         # El Board también ve lo que ya se sabe de la empresa (capa Proyecto, AD-CMP-04)
         conversation_context += "\n\nLo que ya se sabe de la empresa:\n" + ContextLayers(self.db).project_layer(project)
@@ -257,6 +233,31 @@ class Nivel1Service:
             self.db.commit()
 
         return consensus
+
+    def board_brief(self, project: Project) -> str:
+        """Lo que el Board evalúa: lo que ADÁN entendió (guion), la evidencia registrada y las palabras
+        del cliente. Las respuestas del modelo de respaldo y el resto de la charla no entran: antes el
+        Board leía la conversación cruda, con ruido y respuestas sin sentido."""
+        card = self.db.query(Card).filter(Card.project_id == project.id, Card.card_type == "pain_discovery").first()
+        conversation = self.db.query(Conversation).filter(Conversation.card_id == card.id).first() if card else None
+        history = self._history(conversation) if conversation else []
+        state = discovery.current_state(history)
+        parts = []
+        understood = discovery.brief(state)
+        if understood:
+            parts.append("Lo que ADÁN entendió del dolor (guion del Nivel 1):\n" + understood)
+        evidence = scoring.active_evidence(self.db, project, "problem")
+        if evidence:
+            labels = {"external": "fuente externa", "testimony": "testimonio de clientes", "inference": "inferencia"}
+            parts.append("Evidencia registrada:\n" + "\n".join(
+                f"- [{labels.get(e.kind, e.kind)}{', en contra' if e.polarity == 'contradicts' else ''}] {e.claim}"
+                + (f" (fuente: {e.source})" if e.source else "") for e in evidence[:15]))
+        else:
+            parts.append("Evidencia registrada: ninguna.")
+        words = [m.content.strip()[:800] for m in history if m.role == "user" and len(m.content.strip()) >= 10]
+        if words:
+            parts.append("Palabras del cliente (lo más reciente):\n" + "\n".join(f"- {w}" for w in words[-6:]))
+        return "\n\n".join(parts) if (understood or words) else ""
 
     def get_last_board_consensus(self, project: Project) -> BoardConsensus:
         """Último Board Room guardado: recomendaciones y Gate Review no lo vuelven a ejecutar."""

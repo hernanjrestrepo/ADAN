@@ -101,6 +101,7 @@ export class FakeApi {
     metadata_json?: { degraded?: string | null } }[] = []
   // Guion del Nivel 1: cada turno del chat marca el siguiente tema como entendido
   chatDegraded: string | null = null
+  lastBoard: unknown = null
   discoveryDone = 0
   levelStatus: 'active' | 'completed' = 'active'
   calls: Call[] = []
@@ -230,6 +231,9 @@ export class FakeApi {
         agent_name: 'ADÁN', metadata_json: { degraded: this.chatDegraded } }
       this.messages.push(reply)
       return this.json(route, 200, { message: reply, conversation_id: 'conv1', card_id: null, disclaimer: 'aviso' })
+    }
+    if (method === 'GET' && path.endsWith('/board-room/last')) {
+      return this.lastBoard ? this.json(route, 200, this.lastBoard) : this.json(route, 404, { detail: 'Todavía no hay sesiones' })
     }
     if (method === 'POST' && path.endsWith('/board-room')) return this.json(route, 200, BOARD_NO_CONSENSUS)
     if (path.startsWith('/scoring/')) return this.handleScoring(route, method, path, body)
