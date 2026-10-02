@@ -8,7 +8,7 @@ from app.twin.models import Evidence
 
 
 def _register(client, email):
-    resp = client.post("/api/v1/auth/register", json={"email": email, "name": "U", "password": "password123"})
+    resp = client.post("/api/v1/auth/register", json={"accept_data_policy": True, "email": email, "name": "U", "password": "password123"})
     assert resp.status_code == 201, resp.text
     return {"Authorization": f"Bearer {resp.json()['access_token']}"}
 

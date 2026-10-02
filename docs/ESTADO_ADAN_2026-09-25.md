@@ -15,6 +15,15 @@
 
 > **Actualización (2026-10-02, después):** WO-107 quedó cerrada (`docs/wo/WO-107_REPORTE.md`), así que el avance sube a **~50 %**. El Nivel 1 ya no se aprueba por palabras clave en un texto del LLM (B5): se cierra con evidencia que el cliente puede verificar (datos con fuente y testimonios) y con su aprobación. Si quiere avanzar sin evidencia, decide él y queda documentado. Hay 8 Scores con su confianza declarada. También se rediseñó la interfaz: acceso, tablero y uso en celular. Siguiente: WO-108 (Onboarding y Nivel 1 completo).
 
+> **Actualización (2026-10-02, más tarde):** la parte técnica de WO-108 está hecha (`docs/wo/WO-108_REPORTE.md`), así que el avance sube a **~55 %**.
+> - Registro con consentimiento de datos (Ley 1581).
+> - Una sola pregunta de bienvenida, y ADÁN hace su primera pregunta en 2 a 3 segundos.
+> - Las fuentes de la evidencia se verifican.
+> - Contrato listo para conectar CSI.
+> - Ruta de 7 Niveles.
+>
+> **Lo que sigue depende de Hernán:** el piloto real con una empresa de Paradixe, que es el criterio de cierre de WO-108. Necesita el despliegue y la clave de Anthropic.
+
 **En una línea:** ADÁN pasó de **~22 % a ~35 %** del camino a ADÁN Enterprise v1. Quedaron cerradas la **base segura (H1)** y la **plataforma enterprise (H2)**. Lo que sigue es el producto: Gemelo Digital, la IA de calidad y los Niveles 2 a 7.
 
 ---

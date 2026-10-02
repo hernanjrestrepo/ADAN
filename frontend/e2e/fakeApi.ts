@@ -84,6 +84,16 @@ export interface Call {
   headers: Record<string, string>
 }
 
+const LEVEL_NAMES = ['El Dolor', 'Propuesta de Valor', 'Plan de Negocios', 'MVP', 'Validación Simulada', 'Lanzamiento',
+  'Escalamiento']
+export const LEVELS = LEVEL_NAMES.map((name, i) => ({
+  id: `l${i + 1}`, number: i + 1, name, status: i === 0 ? 'active' : 'blocked', completed_at: null,
+  discovers: `Qué descubre el Nivel ${i + 1}`, deliverable: `Entregable ${i + 1}`, score_key: i === 0 ? 'problem' : null,
+  score: i === 0 ? { value: 42, confidence: 55 } : null,
+  cards: i === 0 ? [{ id: 'card1', title: 'Descubrimiento del Dolor', description: '¿Qué problema real resuelves?',
+    card_type: 'pain_discovery', status: 'active' }] : [],
+}))
+
 export class FakeApi {
   loggedIn = false
   companies: typeof COMPANY[] = []
@@ -93,6 +103,8 @@ export class FakeApi {
   twinDecisions: Record<string, unknown>[] = [structuredClone(TWIN_DECISION)]
   evidence: Record<string, unknown>[] = []
   gateApproved = true
+  csiConnected = false
+  aggregated = false
   timeline: TimelineItem[] = [
     { id: 'e2', event_type: 'entity_created', entity_type: 'brands', entity_id: 'b1', category: 'domain',
       data: { label: 'Pan de Ana' }, actor_type: 'user', actor_id: 'u1', created_at: '2026-09-25T09:00:00' },
@@ -143,6 +155,34 @@ export class FakeApi {
     }
     if (!this.loggedIn) return this.json(route, 401, { detail: 'Not authenticated' })
 
+    if (route_ === 'GET /onboarding/me') {
+      const has = this.companies.length > 0
+      return this.json(route, 200, {
+        identity: has
+          ? { key: 'responsable', label: 'Responsable de Empresa', step: 2, of: 5,
+            next: { key: 'lider_activo', label: 'Líder Activo', milestone: 'Recibiste tu primer Diagnóstico real del Nivel 1' } }
+          : { key: 'usuario', label: 'Usuario', step: 1, of: 5,
+            next: { key: 'responsable', label: 'Responsable de Empresa', milestone: 'Confirmaste que eres responsable de una Empresa' } },
+        consents: this.consents(),
+        next: has ? { step: 'first_answer', company_id: this.companies[0]!.id } : { step: 'company', company_id: null },
+        policy_version: '2026-10',
+      })
+    }
+    if (route_ === 'POST /onboarding/start') {
+      const company = { ...COMPANY, id: 'c-new', name: body.company_name }
+      this.companies.push(company)
+      return this.json(route, 201, { company_id: 'c-new', first_question: 'Hola, Ana. ¿Qué problema quieres resolver?' })
+    }
+    if (route_ === 'POST /onboarding/consents') {
+      this.aggregated = body.granted
+      return this.json(route, 200, this.consents())
+    }
+    if (method === 'GET' && path.endsWith('/levels')) return this.json(route, 200, LEVELS)
+    const companyMatch = path.match(/^\/companies\/([^/]+)$/)
+    if (method === 'GET' && companyMatch) {
+      const found = this.companies.find((c) => c.id === companyMatch[1])
+      return found ? this.json(route, 200, found) : this.json(route, 404, { detail: 'Company not found' })
+    }
     if (route_ === 'GET /companies/') return this.json(route, 200, this.companies)
     if (route_ === 'POST /companies/') {
       const company = { ...COMPANY, id: 'c-new', name: body.name }
@@ -201,8 +241,18 @@ export class FakeApi {
     return this.json(route, 404, { detail: `Sin simular: ${route_}` })
   }
 
+  private consents() {
+    return {
+      data_processing: { purpose: 'data_processing', text: 'Tratamiento de mis datos para prestarme el servicio de ADÁN',
+        granted: true, policy_version: '2026-10', since: '2026-10-02T00:00:00' },
+      aggregated_intelligence: { purpose: 'aggregated_intelligence', text: 'Uso de mis datos anonimizados y agregados',
+        granted: this.aggregated, policy_version: '2026-10', since: '2026-10-02T00:00:00' },
+    }
+  }
+
   private gatePreview() {
-    const count = (kind: string) => this.evidence.filter((e) => e.kind === kind && e.polarity === 'supports').length
+    const count = (kind: string) =>
+      this.evidence.filter((e) => e.kind === kind && e.polarity === 'supports' && e.confirmed !== false).length
     const external = count('external')
     const strong = external + count('testimony')
     const missing = [
@@ -222,13 +272,32 @@ export class FakeApi {
 
   private handleScoring(route: Route, method: string, path: string, body: Record<string, unknown> | null) {
     if (method === 'GET' && path === '/scoring/c1/evidence') return this.json(route, 200, this.evidence)
+    if (method === 'GET' && path === '/scoring/c1/csi') return this.json(route, 200, { connected: this.csiConnected })
+    if (method === 'POST' && path === '/scoring/c1/csi/search') {
+      const item = { id: `csi${this.evidence.length + 1}`, dimension: 'problem', status: 'active', level_number: 1,
+        kind: 'external', kind_label: 'Dato verificable externamente', polarity: 'supports',
+        claim: 'El 38 % de las panaderías reporta pérdidas diarias de pan', source: 'https://csi.example/estudio',
+        created_by: 'agent:CSI', confidence_level: null, confirmed: false,
+        verification: { status: 'verified', title: 'Estudio CSI', checked_at: '2026-10-02T00:00:00' },
+        created_at: '2026-10-02T00:00:00' }
+      this.evidence.unshift(item)
+      return this.json(route, 200, [item])
+    }
+    const confirm = path.match(/^\/scoring\/c1\/evidence\/([^/]+)\/confirm$/)
+    if (method === 'POST' && confirm) {
+      const item = this.evidence.find((e) => e.id === confirm[1])
+      if (item) item.confirmed = true
+      return this.json(route, 200, item)
+    }
     if (method === 'POST' && path === '/scoring/c1/evidence') {
       if (body?.kind === 'external' && !body.source) {
         return this.json(route, 422, { detail: 'Un dato verificable externamente necesita su fuente' })
       }
+      const verification = typeof body?.source === 'string' && body.source.startsWith('http')
+        ? { status: 'verified', title: 'Estudio de pérdidas de pan', checked_at: '2026-10-02T00:00:00' } : null
       const item = { id: `e${this.evidence.length + 1}`, dimension: 'problem', status: 'active', level_number: 1,
         kind_label: body?.kind, created_by: 'user:u1', confidence_level: null, created_at: '2026-10-02T00:00:00',
-        source: null, ...body }
+        source: null, confirmed: true, verification, ...body }
       this.evidence.unshift(item)
       return this.json(route, 201, item)
     }

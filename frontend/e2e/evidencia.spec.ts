@@ -58,3 +58,25 @@ test('los 8 Scores se muestran con su disponibilidad', async ({ page }) => {
   await expect(page.getByText('Nace en el Nivel 6')).toBeVisible()
   await expect(page.getByText('Se abre en el Nivel 2')).toBeVisible()
 })
+
+test('cada fuente se verifica y CSI propone datos que el cliente confirma', async ({ page }) => {
+  const api = new FakeApi().withCompany()
+  api.csiConnected = true
+  await openEvidence(page, api)
+  await page.getByLabel('¿Qué afirmas?').fill('El 40 % de las panaderías bota pan cada día')
+  await page.getByLabel('Fuente (obligatoria)').fill('https://example.org/estudio')
+  await page.getByRole('button', { name: 'Registrar evidencia' }).click()
+  await expect(page.getByTestId('verification').first()).toContainText('Fuente verificada')
+
+  await page.getByRole('button', { name: 'Buscar evidencia en CSI' }).click()
+  await expect(page.getByText('Propuesta por CSI: todavía no cuenta para tu Score.')).toBeVisible()
+  await expect(page.getByTestId('gate-progress')).toContainText('Dato verificable: 1 a favor')
+  await page.getByRole('button', { name: 'Confirmar' }).click()
+  await expect(page.getByTestId('gate-progress')).toContainText('Dato verificable: 2 a favor')
+})
+
+test('sin CSI conectado se dice claramente', async ({ page }) => {
+  await openEvidence(page, new FakeApi().withCompany())
+  await expect(page.getByTestId('csi')).toContainText('CSI todavía no está conectado')
+  await expect(page.getByRole('button', { name: 'Buscar evidencia en CSI' })).toBeDisabled()
+})

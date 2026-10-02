@@ -72,7 +72,7 @@ def test_unhandled_errors_return_the_request_id(client):
 
 
 def test_metrics_use_route_templates(client):
-    headers = {"Authorization": "Bearer " + client.post("/api/v1/auth/register", json={
+    headers = {"Authorization": "Bearer " + client.post("/api/v1/auth/register", json={"accept_data_policy": True, 
         "email": "m@example.com", "name": "M", "password": PASSWORD}).json()["access_token"]}
     labels = {"method": "GET", "route": "/api/v1/companies/{company_id}", "status": "404"}
     before = _sample("adan_http_requests_total", labels)

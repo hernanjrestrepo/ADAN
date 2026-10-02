@@ -3,7 +3,7 @@ import pytest
 
 
 def _register_and_get_token(client):
-    resp = client.post("/api/v1/auth/register", json={
+    resp = client.post("/api/v1/auth/register", json={"accept_data_policy": True, 
         "email": "company@example.com",
         "name": "Company User",
         "password": "password123",
