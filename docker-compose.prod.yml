@@ -1,0 +1,101 @@
+# ADÁN — despliegue de producción (WO-093)
+#
+#   cp .env.example .env    # y completar los valores marcados como obligatorios
+#   docker compose -f docker-compose.prod.yml up -d --build
+#
+# Solo se publica el puerto HTTP del frontend (nginx). PostgreSQL, el backend y
+# Ollama quedan en la red interna. Poner TLS delante (balanceador o proxy).
+
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-adan}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD debe definirse en .env}
+      POSTGRES_DB: ${POSTGRES_DB:-adan}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+
+  ollama:
+    image: ollama/ollama:latest
+    volumes:
+      - ollama-models:/root/.ollama
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c 'echo > /dev/tcp/localhost/11434' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
+    restart: unless-stopped
+
+  model-pull:
+    image: curlimages/curl:latest
+    depends_on:
+      ollama:
+        condition: service_healthy
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        for model in "$${DEFAULT_MODEL}" "$${EMBEDDING_MODEL}"; do
+          [ -z "$$model" ] && continue
+          echo "Pulling model: $$model"
+          curl -sf http://ollama:11434/api/pull -d "{\"name\": \"$$model\"}" > /dev/null
+        done
+        echo "Model pull complete."
+    environment:
+      DEFAULT_MODEL: ${DEFAULT_MODEL:-qwen2.5:0.5b}
+      EMBEDDING_MODEL: ${PULL_EMBEDDING_MODEL:-}
+    restart: "no"
+
+  backend:
+    build: ./backend
+    environment:
+      ENVIRONMENT: production
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-adan}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-adan}
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET debe definirse en .env (mínimo 32 caracteres)}
+      CORS_ORIGINS: ${CORS_ORIGINS:?CORS_ORIGINS debe definirse en .env (p. ej. https://adan.tu-dominio.com)}
+      OLLAMA_BASE_URL: http://ollama:11434
+      DEFAULT_MODEL: ${DEFAULT_MODEL:-qwen2.5:0.5b}
+      LLM_PROVIDER: ollama
+      EMBEDDING_PROVIDER: ${EMBEDDING_PROVIDER:-local}
+      EMBEDDING_MODEL: ${EMBEDDING_MODEL:-nomic-embed-text}
+      WEB_CONCURRENCY: ${WEB_CONCURRENCY:-2}
+      TRUST_PROXY_HEADERS: "true"
+      FORWARDED_ALLOW_IPS: "*"
+      AUTH_RATE_LIMIT_PER_MINUTE: ${AUTH_RATE_LIMIT_PER_MINUTE:-20}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      TEF_ENABLE_PYTHON_SANDBOX: "false"
+      ALLOW_PRIVATE_HTTP: "false"
+    volumes:
+      - backend-files:/app/data
+    depends_on:
+      postgres:
+        condition: service_healthy
+      ollama:
+        condition: service_healthy
+      model-pull:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+  web:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.prod
+    ports:
+      - "${HTTP_PORT:-80}:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  postgres-data:
+  ollama-models:
+  backend-files:

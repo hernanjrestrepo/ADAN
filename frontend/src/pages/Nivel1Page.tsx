@@ -314,7 +314,9 @@ export default function Nivel1Page() {
                       Score {boardResults.score.toFixed(0)} · Confianza {boardResults.confidence.toFixed(0)}%
                     </span>
                   </div>
-                  <p className="text-sm whitespace-pre-wrap text-adan-text/90">{boardResults.summary}</p>
+                  <div className="prose prose-invert prose-sm max-w-none text-adan-text/90">
+                    <ReactMarkdown>{boardResults.summary}</ReactMarkdown>
+                  </div>
                   {boardResults.dissent && (
                     <p className="text-xs text-adan-warning mt-3">Disenso: {boardResults.dissent}</p>
                   )}
@@ -322,8 +324,8 @@ export default function Nivel1Page() {
                 {boardResults.votes.map((vote) => (
                   <div key={vote.agent} className="bg-adan-surface border border-adan-border rounded-xl p-6">
                     <div className="flex items-center gap-3 mb-4">
-                      <div className="w-10 h-10 rounded-full bg-adan-accent/20 flex items-center justify-center text-adan-accent font-bold">
-                        {vote.agent[0]}
+                      <div className="w-10 h-10 rounded-full bg-adan-accent/20 flex items-center justify-center text-adan-accent text-xs font-bold">
+                        {vote.agent.slice(0, 3)}
                       </div>
                       <div className="flex-1">
                         <h3 className="font-bold">{vote.agent}</h3>

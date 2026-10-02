@@ -1,0 +1,143 @@
+name: CI
+
+on:
+  push:
+    branches: [laptop, main, "claude/**"]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    name: Backend (lint + tests SQLite + migraciones)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: backend/requirements*.txt
+      - run: pip install -r requirements-dev.txt
+      - name: Ruff
+        run: ruff check app tests migrations scripts
+      - name: Tests (SQLite)
+        run: pytest -q --cov=app --cov-report=term --cov-fail-under=80
+      - name: Migraciones coinciden con los modelos
+        env:
+          DATABASE_URL: sqlite:///${{ runner.temp }}/check.db
+        run: |
+          python -c "from app.core.database import init_db; init_db()"
+          alembic check
+
+  backend-postgres:
+    name: Backend (tests PostgreSQL + pgvector)
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: adan
+          POSTGRES_PASSWORD: adan
+          POSTGRES_DB: adan_test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U adan -d adan_test"
+          --health-interval 5s --health-timeout 5s --health-retries 20
+    defaults:
+      run:
+        working-directory: backend
+    env:
+      TEST_DATABASE_URL: postgresql+psycopg://adan:adan@localhost:5432/adan_test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: backend/requirements*.txt
+      - run: pip install -r requirements-dev.txt
+      - name: Tests (PostgreSQL)
+        run: pytest -q
+      - name: Migraciones coinciden con los modelos (PostgreSQL)
+        env:
+          DATABASE_URL: postgresql+psycopg://adan:adan@localhost:5432/adan_test
+        run: |
+          python -c "from app.core.database import init_db; init_db()"
+          alembic check
+
+  frontend:
+    name: Frontend (typecheck + tests + build)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+
+  security:
+    name: Auditoría de dependencias
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: pip-audit (backend)
+        run: |
+          pip install pip-audit
+          pip-audit -r backend/requirements.txt
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: npm audit (frontend)
+        working-directory: frontend
+        run: npm audit --audit-level=high
+
+  docker:
+    name: Imágenes Docker de producción
+    runs-on: ubuntu-latest
+    needs: [backend, frontend]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - name: Build backend
+        uses: docker/build-push-action@v6
+        with:
+          context: backend
+          push: false
+          cache-from: type=gha,scope=backend
+          cache-to: type=gha,mode=max,scope=backend
+      - name: Build web (nginx + SPA)
+        uses: docker/build-push-action@v6
+        with:
+          context: frontend
+          file: frontend/Dockerfile.prod
+          push: false
+          cache-from: type=gha,scope=web
+          cache-to: type=gha,mode=max,scope=web
+      - name: Validar docker-compose
+        env:
+          POSTGRES_PASSWORD: ci
+          JWT_SECRET: ci-secret-with-at-least-32-characters!!
+          CORS_ORIGINS: https://adan.example.com
+        run: |
+          docker compose config -q
+          docker compose -f docker-compose.prod.yml config -q

@@ -21,7 +21,7 @@ const board: BoardRoomResult = {
   decision: 'PIVOT',
   score: 61.4,
   confidence: 72,
-  summary: 'El Board recomienda ajustar el segmento objetivo.',
+  summary: '**Decisión del Board Room: PIVOT**\n\nEl Board recomienda ajustar el segmento objetivo.',
   votes: [
     {
       agent: 'CFO', analysis: 'Márgenes bajos en retail.', justification: '', vote: 'PIVOT',
@@ -55,5 +55,8 @@ describe('Nivel1Page', () => {
     expect(await screen.findByText('Decisión: Pivotar')).toBeInTheDocument()
     expect(screen.getByText('Márgenes bajos en retail.')).toBeInTheDocument()
     expect(screen.getByText('Capital de trabajo')).toBeInTheDocument()
+    // el resumen llega en Markdown: se renderiza, no se muestra con asteriscos
+    expect(screen.getByText('Decisión del Board Room: PIVOT').tagName).toBe('STRONG')
+    expect(screen.queryByText(/\*\*/)).not.toBeInTheDocument()
   })
 })
