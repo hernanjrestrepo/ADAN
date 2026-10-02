@@ -78,7 +78,7 @@ export default function ChatPanel({ messages, sending, onSend, onBoardRoom, onDi
         <Button type="submit" disabled={sending || !input.trim()}>Enviar</Button>
       </form>
 
-      <div className="flex gap-3 mt-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-4">
         <Button variant="secondary" className="flex-1" onClick={onBoardRoom}>🏛️ Ejecutar Board Room</Button>
         <Button variant="secondary" className="flex-1" onClick={onDiagnosis}>📋 Generar Diagnóstico</Button>
         <Button variant="secondary" className="flex-1 !border-adan-success/50 !text-adan-success" onClick={onGateReview}>

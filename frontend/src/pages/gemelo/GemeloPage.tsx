@@ -111,15 +111,18 @@ export default function GemeloPage() {
       status={pending > 0 ? <Badge tone="yellow">{pending} por decidir</Badge> : undefined}
       toolbar={<Tabs tabs={TABS} active={tab} onChange={setTab} />}
     >
-      <div className="max-w-4xl mx-auto p-6 overflow-y-auto h-full">
+      <div className="max-w-4xl mx-auto p-4 sm:p-6 overflow-y-auto h-full">
         {error && <div className="mb-4"><Alert message={error} onClose={() => setError(null)} /></div>}
         {loading ? (
           <LoadingState label="Cargando el Gemelo Digital..." />
         ) : twin && (
           <>
-            <div className="flex items-center justify-between mb-6">
-              <h1 className="text-2xl font-bold">{name}</h1>
-              <Link to={`/nivel1/${companyId}`} className="text-sm text-adan-accent hover:underline">Ir al Nivel 1</Link>
+            <div className="flex items-center justify-between gap-4 mb-6">
+              <h1 className="text-2xl font-bold truncate">{name}</h1>
+              <Link to={`/nivel1/${companyId}`}
+                className="shrink-0 rounded-lg border border-adan-border px-3 py-1.5 text-sm text-adan-text hover:border-adan-accent">
+                Ir al Nivel 1 →
+              </Link>
             </div>
             {tab === 'overview' && <OverviewPanel twin={twin} kinds={kinds} />}
             {tab === 'decisions' && (

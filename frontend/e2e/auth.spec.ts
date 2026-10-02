@@ -29,7 +29,7 @@ test('registro, sesión y cierre de sesión', async ({ page }) => {
   await page.getByRole('button', { name: 'Crear cuenta' }).click()
 
   await expect(page).toHaveURL(/\/dashboard$/)
-  await expect(page.getByText(USER.name)).toBeVisible()
+  await expect(page.getByRole('banner').getByText(USER.name)).toBeVisible()
   await expect(page.getByText(/ADÁN es una inteligencia artificial/)).toBeVisible()
   // El token no se guarda en el navegador: la sesión es la cookie httpOnly del backend
   expect(await page.evaluate(() => localStorage.length)).toBe(0)
