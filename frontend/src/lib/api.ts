@@ -6,6 +6,7 @@ import type {
 } from '../types'
 
 const API_BASE = '/api/v1'
+const CHAT_TIMEOUT_MS = 180_000
 
 export class ApiError extends Error {
   readonly status: number
@@ -95,8 +96,12 @@ export const api = {
 
   // Nivel 1
   getNivel1Status: (companyId: string) => request<Nivel1Status>(`/nivel1/${companyId}/status`),
+  // Un turno de conversación nunca deja la pantalla "pensando" para siempre
   chat: (companyId: string, message: string, conversationId?: string) =>
-    post<ChatResponse>(`/nivel1/${companyId}/chat`, { message, conversation_id: conversationId }),
+    request<ChatResponse>(`/nivel1/${companyId}/chat`, {
+      method: 'POST', body: JSON.stringify({ message, conversation_id: conversationId }),
+      signal: AbortSignal.timeout(CHAT_TIMEOUT_MS),
+    }),
   runBoardRoom: (companyId: string, input?: BoardRoomInput) =>
     post<BoardConsensus>(`/nivel1/${companyId}/board-room`, input ?? {}),
   generateDiagnosis: (companyId: string) => post<DocumentRecord>(`/nivel1/${companyId}/diagnosis`),
@@ -135,5 +140,9 @@ export const api = {
 }
 
 export function errorMessage(err: unknown): string {
+  if (err instanceof DOMException && err.name === 'TimeoutError') {
+    return 'ADÁN tardó demasiado en responder. Tu mensaje quedó guardado: vuelve a intentarlo en un momento.'
+  }
+  if (err instanceof TypeError) return 'No hay conexión con ADÁN. Revisa tu conexión e inténtalo de nuevo.'
   return err instanceof Error ? err.message : String(err)
 }

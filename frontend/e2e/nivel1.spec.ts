@@ -18,6 +18,33 @@ test('la conversación envía el mensaje y muestra la respuesta', async ({ page 
   expect(api.callsTo('POST', '/nivel1/c1/chat')[0]?.body).toMatchObject({ message: 'Las panaderías pierden pan cada día' })
 })
 
+test('ADÁN muestra lo que entendió de cada respuesta y la evidencia se registra con un clic', async ({ page }) => {
+  const api = await openNivel1(page)
+  await page.setViewportSize({ width: 1400, height: 900 })
+  const panel = page.getByRole('complementary', { name: 'Lo que ADÁN ya entendió' })
+  await expect(panel.getByTestId('discovery-count')).toHaveText('0 de 7')
+  await page.getByLabel('Mensaje para ADÁN').fill('Las panaderías botan pan cada día')
+  await page.getByLabel('Mensaje para ADÁN').press('Enter')
+  await expect(page.getByText('¿Cuánto pan se pierde al día?')).toBeVisible()
+  await expect(panel.getByTestId('discovery-count')).toHaveText('2 de 7')
+  await expect(panel.getByText('Las panaderías botan pan cada día')).toBeVisible()
+  await expect(panel.getByTestId('discovery-topic').nth(2)).toContainText('Siguiente')
+
+  await page.getByRole('button', { name: 'Registrar como evidencia' }).click()
+  await expect(page.getByTestId('evidence-suggestion')).toHaveCount(0)
+  expect(api.callsTo('POST', '/scoring/c1/evidence')[0]?.body).toMatchObject({
+    claim: '8 de 10 panaderías entrevistadas botan más del 10 % del pan', kind: 'testimony',
+  })
+})
+
+test('si responde el modelo de respaldo, ADÁN lo dice y el guion no avanza', async ({ page }) => {
+  const api = await openNivel1(page)
+  api.chatDegraded = 'Claude no disponible (AuthenticationError)'
+  await page.getByLabel('Mensaje para ADÁN').fill('Hola')
+  await page.getByRole('button', { name: 'Enviar' }).click()
+  await expect(page.getByTestId('degraded-note')).toContainText('AuthenticationError')
+})
+
 test('el Board Room muestra la propuesta, las abstenciones y el disenso', async ({ page }) => {
   await openNivel1(page)
   await page.getByRole('button', { name: /Ejecutar Board Room/ }).click()

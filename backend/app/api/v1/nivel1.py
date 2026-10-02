@@ -15,7 +15,7 @@ from app.core.disclaimer import AI_DISCLAIMER
 from app.models.models import (
     Card, Conversation, Decision, Document, Level, Message, Project, Score, User,
 )
-from app.nivel1.service import Nivel1Service
+from app.nivel1.service import Nivel1Service, discovery_progress
 from app.services.gemelo_digital import GemeloDigitalService
 from app.ai.router import for_tier
 from app.ai.usage import usage_scope
@@ -105,6 +105,8 @@ def get_nivel1_status(
         "messages": messages,
         "scores": scores,
         "documents": documents,
+        # Guion del descubrimiento: qué entendió ADÁN de cada tema y qué falta
+        "discovery": discovery_progress(db, conversation, project),
     }
 
 
@@ -179,7 +181,7 @@ async def chat_stream(
     db.add(user_msg)
     db.commit()
 
-    messages = service.build_llm_messages(conversation)
+    messages = service.build_llm_messages(conversation, structured=False)
 
     # Stream response. Each event is JSON so tokens with line breaks don't break SSE framing.
     async def generate():
