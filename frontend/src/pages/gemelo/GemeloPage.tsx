@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { Link, useParams } from 'react-router'
+import { Link, useParams, useSearchParams } from 'react-router'
 import AppShell from '../../components/AppShell'
 import Alert from '../../components/ui/Alert'
 import Badge from '../../components/ui/Badge'
@@ -38,7 +38,9 @@ async function fetchTwin(companyId: string): Promise<TwinData> {
 // Gemelo Digital (WO-098): la identidad permanente de la Empresa, sus Decisiones y su historia
 export default function GemeloPage() {
   const { companyId = '' } = useParams()
-  const [tab, setTab] = useState<Tab>('overview')
+  const [params] = useSearchParams()
+  const initial = params.get('tab')
+  const [tab, setTab] = useState<Tab>(TABS.some((t) => t.id === initial) ? (initial as Tab) : 'overview')
   const [twin, setTwin] = useState<TwinOverview | null>(null)
   const [kinds, setKinds] = useState<TwinKind[]>([])
   const [decisions, setDecisions] = useState<Decision[]>([])

@@ -70,12 +70,16 @@ def board_options(votes: list[dict], recommended: str) -> list[dict]:
     return options
 
 
-def level_close_options(level_number: int, score: float, message: str) -> list[dict]:
+def level_close_options(level_number: int, score: float, message: str, sufficient: bool = True) -> list[dict]:
+    """Opciones del cierre de un Nivel. Sin evidencia suficiente, cerrar es la opción débil."""
+    close_evidence = ("alta" if score >= 70 else "media") if sufficient else "baja"
     return [
-        {"key": "CLOSE", "label": f"Cerrar el Nivel {level_number}", "rationale": message,
-         "evidence_level": "alta" if score >= 70 else "media", "confidence": round(score, 1)},
+        {"key": "CLOSE", "label": f"Cerrar el Nivel {level_number}",
+         "rationale": message if sufficient else "Avanzar sin la evidencia que exige el Nivel, bajo tu responsabilidad",
+         "evidence_level": close_evidence, "confidence": round(score, 1)},
         {"key": "CONTINUE", "label": f"Seguir trabajando el Nivel {level_number}",
-         "rationale": "Reunir más evidencia antes de avanzar", "evidence_level": "baja",
+         "rationale": "Reunir más evidencia antes de avanzar" if sufficient else message,
+         "evidence_level": "baja" if sufficient else "media",
          "confidence": round(max(0.0, 100 - score), 1)},
     ]
 

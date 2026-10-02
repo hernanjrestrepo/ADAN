@@ -1,123 +1,73 @@
-"""Gate Review tests — proves deterministic scoring."""
-import pytest
-from app.nivel1.gate_review import GateReviewEngine, CRITERIA, MINIMUM_PASSING_SCORE
+"""Motor de Scoring y Gate por evidencia (WO-107, AD-CMP-05). Reemplaza al Gate por palabras clave (B5)."""
+from app.scoring.engine import (
+    CONTRADICTS, EXTERNAL, INFERENCE, TESTIMONY, EvidenceItem as E, evaluate_gate, responsible_score,
+    score_dimension, venture_score,
+)
 
 
-@pytest.fixture
-def engine():
-    return GateReviewEngine()
+def test_same_evidence_same_score():
+    items = [E(EXTERNAL), E(TESTIMONY), E(INFERENCE, CONTRADICTS)]
+    assert score_dimension("problem", items) == score_dimension("problem", items)
 
 
-def test_gate_review_is_deterministic(engine):
-    """Same inputs produce same outputs — no LLM involved."""
-    inputs = {
-        "diagnosis": "Problema claro con evidencia. Mercado de 500 empresas.",
-        "board_votes": [
-            {"agent": "CEO", "vote": "PROCEED", "confidence": 90},
-            {"agent": "CTO", "vote": "PROCEED", "confidence": 85},
-            {"agent": "CFO", "vote": "PROCEED", "confidence": 80},
-            {"agent": "CMO", "vote": "PROCEED", "confidence": 85},
-        ],
-        "scores": [{"type": "problem", "value": 75, "confidence": 80}],
-        "deliverables": ["Diagnóstico del Dolor"],
-        "conversation_messages": [
-            {"role": "user", "content": "Tenemos un SaaS de monitoreo energetico para 500 empresas."},
-        ],
-    }
-    result1 = engine.evaluate(**inputs)
-    result2 = engine.evaluate(**inputs)
-    assert result1.overall_score == result2.overall_score
-    assert result1.approved == result2.approved
+def test_without_evidence_the_score_is_declared_not_omitted():
+    result = score_dimension("problem", [])
+    assert (result.value, result.confidence) == (0.0, 0.0)
+    assert "sin evidencia" in result.reasoning
 
 
-def test_criteria_weights_sum_to_one(engine):
-    """All criteria weights sum to 1.0."""
-    total = sum(c["weight"] for c in CRITERIA.values())
-    assert abs(total - 1.0) < 0.001
+def test_conversation_alone_is_never_enough():
+    """Muchas inferencias de Agentes: la confianza no pasa de 40 % y el Gate no abre."""
+    many = [E(INFERENCE)] * 50
+    result = score_dimension("problem", many)
+    assert result.confidence <= 40.0
+    assert "no es evidencia suficiente" in result.reasoning
+    assert not evaluate_gate(1, many).sufficient
 
 
-def test_minimum_passing_score(engine):
-    """Minimum passing score is 80."""
-    assert MINIMUM_PASSING_SCORE == 80
+def test_hierarchy_external_weighs_more_than_testimony_and_inference():
+    external = score_dimension("problem", [E(EXTERNAL)] * 2)
+    testimony = score_dimension("problem", [E(TESTIMONY)] * 2)
+    inference = score_dimension("problem", [E(INFERENCE)] * 2)
+    assert external.value > testimony.value > inference.value
+    assert external.confidence > testimony.confidence > inference.confidence
 
 
-def test_all_proceed_approves(engine):
-    """All PROCEED votes with comprehensive data should score well."""
-    result = engine.evaluate(
-        diagnosis=(
-            "Problema claro: las empresas medianas pagan entre 500 y 5000 USD mensuales "
-            "en energía sin datos en tiempo real. Las facturas de luz son su segundo gasto "
-            "más grande después de nómina. Mercado: 500 empresas en Colombia. "
-            "Competidores: paneles solares sin monitoreo. Solución: SaaS IoT con sensores "
-            "y dashboard por 200 USD/mes. Validado con 3 pilotos exitosos."
-        ),
-        board_votes=[
-            {"agent": "CEO", "vote": "PROCEED", "confidence": 90},
-            {"agent": "CTO", "vote": "PROCEED", "confidence": 90},
-            {"agent": "CFO", "vote": "PROCEED", "confidence": 90},
-            {"agent": "CMO", "vote": "PROCEED", "confidence": 90},
-        ],
-        scores=[{"type": "problem", "value": 80, "confidence": 85}],
-        deliverables=["Diagnóstico del Dolor", "Recomendaciones"],
-        conversation_messages=[
-            {"role": "user", "content": "SaaS IoT energetico para 500 empresas en Colombia. Precio 200 USD/mes. Competidores: paneles solares sin monitoreo. 3 pilotos exitosos."},
-            {"role": "assistant", "content": "Entendido. Cuéntame más sobre el mercado."},
-            {"role": "user", "content": "Mercado de 500 empresas medianas. Ya tenemos 3 pilotos con clientes reales pagando."},
-        ],
-    )
-    assert result.overall_score >= 50  # Comprehensive data should score decently
+def test_contradicting_evidence_lowers_the_score():
+    base = score_dimension("problem", [E(EXTERNAL)] * 3)
+    contradicted = score_dimension("problem", [E(EXTERNAL)] * 3 + [E(EXTERNAL, CONTRADICTS)] * 2)
+    assert contradicted.value < base.value
 
 
-def test_all_stop_rejects(engine):
-    """All STOP votes should reject."""
-    result = engine.evaluate(
-        diagnosis="Problema",
-        board_votes=[
-            {"agent": "CEO", "vote": "STOP", "confidence": 90},
-            {"agent": "CTO", "vote": "STOP", "confidence": 90},
-            {"agent": "CFO", "vote": "STOP", "confidence": 90},
-            {"agent": "CMO", "vote": "STOP", "confidence": 90},
-        ],
-        scores=[],
-        deliverables=[],
-        conversation_messages=[],
-    )
-    assert result.approved is False
-    assert result.overall_score < 80
+def test_unclassified_claims_do_not_count():
+    assert score_dimension("problem", [E("rumor")]).value == 0
 
 
-def test_score_calculation(engine):
-    """Score is calculated as weighted average."""
-    result = engine.evaluate(
-        diagnosis="Problema claro",
-        board_votes=[{"agent": "CEO", "vote": "PROCEED", "confidence": 80}],
-        scores=[],
-        deliverables=[],
-        conversation_messages=[],
-    )
-    assert 0 <= result.overall_score <= 100
-    assert isinstance(result.criteria_scores, dict)
-    assert len(result.criteria_scores) == 7
+def test_level_1_gate_requires_external_evidence():
+    only_testimony = evaluate_gate(1, [E(TESTIMONY)] * 6)
+    assert not only_testimony.sufficient
+    assert any("dato verificable" in m for m in only_testimony.missing)
+
+    enough = evaluate_gate(1, [E(EXTERNAL)] * 3 + [E(TESTIMONY)] * 2)
+    assert enough.sufficient, enough.missing
+    assert enough.missing == []
 
 
-def test_blocking_issues_prevent_approval(engine):
-    """Blocking issues prevent approval."""
-    result = engine.evaluate(
-        diagnosis="Problema claro con evidencia. Mercado de 500 empresas.",
-        board_votes=[
-            {"agent": "CEO", "vote": "PROCEED", "confidence": 95},
-            {"agent": "CTO", "vote": "PROCEED", "confidence": 95},
-            {"agent": "CFO", "vote": "PROCEED", "confidence": 95},
-            {"agent": "CMO", "vote": "PROCEED", "confidence": 95},
-        ],
-        scores=[{"type": "problem", "value": 90, "confidence": 90}],
-        deliverables=["Diagnóstico", "Recomendaciones", "Score"],
-        conversation_messages=[
-            {"role": "user", "content": "SaaS IoT energetico 500 empresas 200 USD/mes Colombia."},
-            {"role": "assistant", "content": "Entendido."},
-            {"role": "user", "content": "Mercado validado con 3 pilotos."},
-        ],
-    )
-    # With comprehensive data, should score reasonably
-    assert result.overall_score >= 40
-    assert isinstance(result.criteria_scores, dict)
+def test_gate_says_exactly_what_is_missing():
+    evaluation = evaluate_gate(1, [E(EXTERNAL)])
+    assert not evaluation.sufficient
+    assert any("evidencias a favor" in m for m in evaluation.missing)
+    assert any("Confianza" in m for m in evaluation.missing)
+
+
+def test_responsible_score_grows_with_track_record():
+    none = responsible_score(0, 0, 0, 0)
+    some = responsible_score(4, 3, 1, 1)
+    assert none.value == 0 and "todavía no hay decisiones" in none.reasoning
+    assert some.value > 0 and some.confidence > 0
+
+
+def test_venture_score_weights_by_confidence():
+    result = venture_score({"problem": (80.0, 90.0), "solution": (20.0, 10.0)})
+    assert 70 < result.value < 80  # domina el Score con más confianza
+    assert venture_score({}).confidence == 0

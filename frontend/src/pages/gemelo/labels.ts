@@ -27,7 +27,7 @@ const ENTITY_LABELS: Record<string, string> = {
   processes: 'Proceso', business_occurrences: 'Suceso Empresarial', objectives: 'Objetivo', goals: 'Meta',
   indicators: 'Indicador', assets: 'Activo', liabilities: 'Pasivo', revenues: 'Ingreso', expenses: 'Gasto',
   twin_risks: 'Riesgo', tasks: 'Tarea', workspaces: 'Workspace', document: 'Documento', documents: 'Documento',
-  decision: 'Decisión', level: 'Nivel',
+  decision: 'Decisión', level: 'Nivel', evidence: 'Evidencia', scores: 'Score',
 }
 
 export const ACTOR_LABELS: Record<string, string> = { user: 'Tú', agent: 'Agente', system: 'ADÁN' }
@@ -64,6 +64,11 @@ export function describeEvent(e: TimelineEvent): string {
       return 'Se completó un Nivel'
     case 'level_completion_proposed':
       return 'El Gate Review propuso cerrar el Nivel'
+    case 'score_calculated': {
+      const value = typeof e.data.value === 'number' ? Math.round(e.data.value) : '—'
+      const confidence = typeof e.data.confidence === 'number' ? Math.round(e.data.confidence) : '—'
+      return `${e.data.label ?? 'Score'}: ${value}/100 con ${confidence} % de confianza`
+    }
     default:
       return `${e.event_type.replaceAll('_', ' ')}${label}`
   }

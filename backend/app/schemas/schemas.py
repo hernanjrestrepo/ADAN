@@ -258,4 +258,9 @@ class GateReviewResponse(BaseModel):
     decisions: list[DecisionResponse]
     level_status: str
     message: str
+    # WO-107: el Gate decide sobre evidencia registrada y dice qué falta
+    problem_score: float | None = None
+    confidence: float | None = None
+    missing: list[str] = []
+    evidence_breakdown: dict | None = None
     disclaimer: str = AI_DISCLAIMER

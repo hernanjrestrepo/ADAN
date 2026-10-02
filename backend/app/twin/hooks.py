@@ -104,7 +104,7 @@ def _is_twin_business(obj) -> bool:
 
 
 def _label(obj) -> str:
-    for attr in ("name", "title", "statement", "description", "source", "category"):
+    for attr in ("name", "title", "statement", "claim", "description", "source", "category"):
         value = getattr(obj, attr, None)
         if isinstance(value, str) and value:
             return value[:120]
