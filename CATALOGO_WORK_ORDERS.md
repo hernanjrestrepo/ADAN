@@ -51,10 +51,10 @@ Build A/B y Build C usan el rango **WO-001 a WO-012 dos veces, para cosas distin
 
 | WO | Tema | Estado |
 |---|---|---|
-| WO-090 | Consolidación Oficial de ADÁN Enterprise (esta WO) | En curso — Sprint 2 de 4 |
-| WO-091 | Migración Enterprise — PostgreSQL + pgvector | No iniciada |
-| WO-092 | TypeScript | No iniciada |
-| WO-093 | Producción Enterprise — CI/CD, observabilidad, seguridad (alcance de "multiempresa" con solapamiento sin resolver contra WO-101-106, ver `AD-ROOT-0001 §4`) | No iniciada |
+| WO-090 | Consolidación Oficial de ADÁN Enterprise | ✅ Cerrada 2026-10-01 — `REPORTE_CONSOLIDACION_WO090.md` §10 |
+| WO-091 | Migración Enterprise — PostgreSQL + pgvector | ✅ Cerrada 2026-10-01 — `docs/WO-091_REPORTE_CIERRE.md` |
+| WO-092 | TypeScript | ✅ Cerrada 2026-10-01 — `docs/WO-092_REPORTE_CIERRE.md` |
+| WO-093 | Producción Enterprise — CI/CD, observabilidad, seguridad (el solapamiento de "multiempresa" con WO-101→106 se resolvió en `AD-DEC-0002 §D4`) | ✅ Cerrada 2026-10-02 — `docs/WO-093_REPORTE_CIERRE.md` |
 
 ## 5. Rangos reservados — no tocados por este catálogo
 
@@ -68,4 +68,4 @@ Build A/B y Build C usan el rango **WO-001 a WO-012 dos veces, para cosas distin
 ## 6. Brechas de este catálogo (honestas, no rellenadas por inferencia)
 
 1. Tema de Build C WO-003 a WO-010: sin evidencia directa. Cerrar esta brecha requeriría leer el código de `cognitive/`, `oos/`, `dka/`, `tef/`, `ems/`, `nivel1/` línea por línea para inferir a qué WO correspondería cada uno — no se hizo en este Sprint porque sería inferencia, no catalogación.
-2. No se verificó si WO-013 a WO-015 fueron deliberadamente saltadas (reservadas para algo) o simplemente no se llegaron a nombrar — ningún documento de Build C lo explica.
+2. No se verificó si WO-013 a WO-015 fueron deliberadamente saltadas (reservadas para algo) o simplemente no se llegaron a nombrar — ningún documento de Build C lo explica. **Resuelto (2026-10-01, `AD-DEC-0002 §D5`):** se declaran números no usados permanentemente y no se reasignan.

@@ -246,3 +246,25 @@ class TestProductionConfig:
             DATABASE_URL="postgresql+psycopg://u:p@db/adan", CORS_ORIGINS=["https://adan.example.com"],
         )
         assert cfg.validate() == []
+
+
+class TestArchiveUserScript:
+    def test_archive_and_restore(self, client, db_session, monkeypatch):
+        from app.models.models import EntityStatus, User
+        from scripts import archive_user
+
+        monkeypatch.setattr(archive_user, "engine", db_session.get_bind())
+        monkeypatch.setattr(archive_user, "init_db", lambda: None)
+        _register(client, "wo090-verify@example.com")
+
+        assert archive_user.main(["wo090-verify@example.com"]) == 0
+        db_session.expire_all()
+        user = db_session.query(User).filter(User.email == "wo090-verify@example.com").one()
+        assert user.status == EntityStatus.ARCHIVED
+        resp = client.post("/api/v1/auth/login", json={"email": "wo090-verify@example.com", "password": "secret123"})
+        assert resp.status_code == 401
+
+        assert archive_user.main(["wo090-verify@example.com", "--restore"]) == 0
+        db_session.expire_all()
+        assert db_session.query(User).filter(User.email == "wo090-verify@example.com").one().status == EntityStatus.ACTIVE
+        assert archive_user.main(["no-existe@example.com"]) == 0

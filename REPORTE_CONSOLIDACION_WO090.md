@@ -3,7 +3,7 @@
 **WO-090 — Consolidación Oficial de ADÁN Enterprise** (renumerada de la propuesta original "WO-100" — ver hallazgo bloqueante §3)
 **Fecha:** 2026-07-31 · **Ejecutor:** esta sesión (Claude Code) · **Autoriza:** Hernán (CTO ADÁN)
 **Formato:** EPWO-050 (cierre de Work Order) · **Checklist:** EPWO-051
-**Estado:** 🟡 **ABIERTA.** No cumple simultáneamente el checklist de EPWO-051 — ver §7. Esto es esperado en este punto, no un error: el propio alcance de esta WO deja el commit de congelación pendiente de aprobación explícita.
+**Estado:** ✅ **CERRADA el 2026-10-01** (ver §10). *Estado original del 2026-07-31: 🟡 ABIERTA, pendiente del commit de congelación y de decisiones de Hernán, que se tomaron por delegación en `AD-DEC-0002`.*
 
 ---
 
@@ -105,4 +105,45 @@ Verificado ejecutando, no por inspección (Linux, Python 3.11):
 
 **Resultado de la suite:** 209 passed, 7 failed de 216. Los 7 fallos son de entorno: 5 requieren acceso a `httpbin.org` (bloqueado en el contenedor de verificación) y 2 de `test_stress.py` requieren el backend levantado en :8050 (pasan cuando lo está). En la laptop con internet y backend activo se espera 216/216.
 
-**Siguen pendientes (requieren decisión de Hernán, no técnicas):** commit de congelación en rama oficial, usuario `wo090-verify@example.com` (§3.9), reconciliación EPWO-029 (§3.10), y las WO-091/092/093, que por Regla 7 de `AD-GOV-0001` necesitan Fase -1 y aprobación explícita antes de iniciar.
+**Pendientes de decisión a esa fecha** (commit de congelación, usuario de verificación §3.9, EPWO-029 §3.10, WO-091/092/093): resueltos en §10 y `AD-DEC-0002`.
+
+---
+
+## 10. Cierre — 2026-10-01
+
+Decisiones pendientes resueltas por delegación de Hernán en **`AD-DEC-0002`**:
+
+| Pendiente (§6) | Resolución |
+|---|---|
+| Rama oficial / commit de congelación | Repositorio `github.com/hernanjrestrepo/ADAN`, rama `laptop`. La congelación de Build C es el commit `abc6b6c`; los cambios posteriores están en commits por WO (`AD-DEC-0002 §D1`) |
+| Usuario `wo090-verify@example.com` (§3.9) | Se archiva, no se borra: `python -m scripts.archive_user wo090-verify@example.com` (`§D2`) |
+| Estados EPWO-029 (§3.10) | A y B: Deprecado; C: Piloto (`§D3`) |
+
+Hallazgos no bloqueantes de §3, estado final:
+
+| # | Estado |
+|---|---|
+| 1. Tests de `test_board_room.py` | ✅ Corregidos (`c4b7826`) |
+| 2. Dependencias de test no declaradas | ✅ `requirements-dev.txt` |
+| 3. Tres bases declarativas | ✅ Unificadas en WO-091 |
+| 4. Cobertura 0% (`dka/tools.py`, `services/memory.py`) | ✅ `dka/tools.py` al 100%; `services/memory.py` eliminado (código muerto con fuga de datos entre empresas) |
+| 5. Stack Docker no verificado | ✅ Stack de producción levantado y probado (WO-093 §5) |
+| 6. Vulnerabilidades npm | ✅ 0 (WO-092) |
+| 7. Inyección SQL post-autenticación | ✅ Sin SQL construido con texto del usuario en la API; `sql_query` (TEF) restringida y probada; se agregó aislamiento entre clientes (WO-093 S1) |
+| 8. Superficie TEF | ✅ Corregida (WO-093 S3-S6) |
+| 9. Usuario de verificación | ✅ `§D2` |
+| 10. EPWO-029 | ✅ `§D3` |
+
+### Checklist EPWO-051 (final)
+
+- [x] Evidencia objetiva
+- [x] Documentación actualizada
+- [x] Funcionalidad implementada: no aplica (WO de consolidación), por diseño
+- [x] Pruebas aprobadas: 260/260 en PostgreSQL; 259 + 1 skip en SQLite
+- [x] Repositorio limpio y commits realizados (por WO)
+- [x] Baseline reproducible desde el repositorio (CI)
+- [x] Validación de seguridad completada (WO-093)
+- [x] Alcance no modificado sin registro (`AD-DEC-0002`)
+- [x] Deuda técnica registrada · [x] Riesgos abiertos documentados
+
+**WO-090: CERRADA.**
