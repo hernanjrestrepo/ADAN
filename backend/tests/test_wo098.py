@@ -424,3 +424,219 @@ def test_migrated_postgres_blocks_updates_and_deletes_of_permanent_records(fresh
             with engine.begin() as conn:
                 conn.execute(text(statement))
     engine.dispose()
+
+
+# ============================================================
+# Sprint 3 — Decisión completa (AD-CMP-03, AD-FUNC-02 §2.5)
+# ============================================================
+
+VOTES = [
+    {"agent": "CTO", "vote": "PROCEED", "confidence": 80, "justification": "Técnicamente simple"},
+    {"agent": "CFO", "vote": "PROCEED", "confidence": 70, "justification": "Margen suficiente"},
+    {"agent": "CMO", "vote": "PROCEED", "confidence": 75, "justification": "Demanda clara"},
+    {"agent": "Legal", "vote": "PIVOT", "confidence": 60, "justification": "Registro sanitario"},
+    {"agent": "Producto", "vote": "STOP", "confidence": 40, "justification": "MVP difuso"},
+    {"agent": "Operaciones", "vote": "ABSTAIN", "confidence": 0, "justification": ""},
+]
+
+
+def _board_decision(db_session, twin):
+    project = db_session.query(Project).filter_by(company_id=twin["id"]).one()
+    decision = GemeloDigitalService(db_session).save_board_room_result(
+        project, "PROCEED", 72, "El Board recomienda avanzar", VOTES, consensus={"dissent": "Legal: PIVOT"})
+    return project, decision
+
+
+def test_board_proposal_carries_options_evidence_and_dissent(db_session, twin):
+    _, decision = _board_decision(db_session, twin)
+    options = {o["key"]: o for o in decision.options}
+    assert decision.recommended_option == "PROCEED"
+    assert options["PROCEED"]["votes"] == 3 and options["PROCEED"]["evidence_level"] == "alta"
+    assert options["PIVOT"]["evidence_level"] == "baja" and options["PIVOT"]["confidence"] == 60
+    assert options["STOP"]["label"] == "Detener"
+    assert "Legal" in options["PIVOT"]["rationale"]
+    assert decision.disagreement == "Legal: PIVOT"  # el disenso se adjunta, nunca se descarta (§3)
+
+
+def test_full_cycle_present_approve_execute_and_business_decision(client, db_session, twin):
+    _, decision = _board_decision(db_session, twin)
+    base = f"{twin['base']}/decisions/{decision.id}"
+    assert client.post(f"{base}/present", headers=twin["headers"]).json()["status"] == "presented"
+    approved = client.post(f"{base}/decide", json={"action": "approve"}, headers=twin["headers"]).json()
+    assert approved["status"] == "approved" and approved["chosen_option"] == "PROCEED"
+    assert approved["divergence"] is None
+    executed = client.post(f"{base}/execute", json={"business_decision_title": "Abrir punto de venta en Bogotá"},
+                           headers=twin["headers"]).json()
+    assert executed["status"] == "executed" and executed["executed_at"]
+
+    listed = client.get(f"{twin['base']}/decisions", headers=twin["headers"]).json()
+    item = next(d for d in listed if d["id"] == decision.id)
+    assert item["business_decision"]["title"] == "Abrir punto de venta en Bogotá"
+    assert item["business_decision"]["state"] == "executed"  # relación explícita, no fusión (§4)
+
+    steps = [(e.data["from"], e.data["to"]) for e in sorted(
+        db_session.query(Event).filter_by(entity_id=decision.id, event_type="state_changed").all(),
+        key=lambda e: e.created_at)]
+    assert steps == [("proposed", "presented"), ("presented", "approved"), ("approved", "executed")]
+
+
+def test_deciding_differently_requires_the_six_fields(client, db_session, twin):
+    _, decision = _board_decision(db_session, twin)
+    url = f"{twin['base']}/decisions/{decision.id}/decide"
+    missing = client.post(url, json={"action": "approve", "chosen_option": "PIVOT"}, headers=twin["headers"])
+    assert missing.status_code == 409 and "riesgos asumidos" in missing.json()["detail"]
+    no_statement = client.post(url, json={"action": "approve", "chosen_option": "PIVOT",
+                                          "risks_assumed": ["Retrasar el lanzamiento"]}, headers=twin["headers"])
+    assert no_statement.status_code == 409
+    db_session.expire_all()
+    assert db_session.get(Decision, decision.id).status == DecisionStatus.PROPOSED
+
+    resp = client.post(url, json={
+        "action": "approve", "chosen_option": "PIVOT",
+        "risks_assumed": ["Retrasar el lanzamiento seis meses", "Perder la ventana de la temporada"],
+        "responsibility_statement": "Entiendo que el Board recomendó avanzar y elijo pivotar bajo mi responsabilidad.",
+    }, headers=twin["headers"])
+    assert resp.status_code == 200, resp.text
+    divergence = resp.json()["divergence"]
+    # Los 6 campos de AD-FUNC-02 §2.5
+    assert divergence["chosen_option"]["key"] == "PIVOT"
+    assert divergence["recommended_option"]["key"] == "PROCEED" and divergence["recommended_option"]["rationale"]
+    assert divergence["evidence_level"] == {"chosen": "baja", "recommended": "alta"}
+    assert divergence["confidence"] == {"chosen": 60.0, "recommended": 75.0}
+    assert len(divergence["risks_assumed"]) == 2
+    assert "bajo mi responsabilidad" in divergence["responsibility_assumed"]
+
+    # Los riesgos asumidos quedan como Riesgos del Gemelo (AD-005 §3)
+    from app.twin.models import TwinRisk
+    risks = db_session.query(TwinRisk).filter_by(subject_type="decision", subject_id=decision.id).all()
+    assert {r.description for r in risks} == set(divergence["risks_assumed"])
+
+
+def test_unknown_option_and_reject(client, db_session, twin):
+    _, decision = _board_decision(db_session, twin)
+    url = f"{twin['base']}/decisions/{decision.id}/decide"
+    assert client.post(url, json={"action": "approve", "chosen_option": "VENDER"},
+                       headers=twin["headers"]).status_code == 409
+    rejected = client.post(url, json={"action": "reject"}, headers=twin["headers"]).json()
+    assert rejected["status"] == "rejected" and rejected["chosen_option"] is None
+    again = client.post(url, json={"action": "approve"}, headers=twin["headers"])
+    assert again.status_code == 409
+
+
+def test_prior_consultation_lists_already_approved_decisions(client, db_session, twin):
+    project, first = _board_decision(db_session, twin)
+    client.post(f"{twin['base']}/decisions/{first.id}/decide", json={"action": "approve"}, headers=twin["headers"])
+    second = GemeloDigitalService(db_session).save_board_room_result(project, "PIVOT", 55, "Segunda sesión", VOTES)
+    assert [d["id"] for d in second.prior_decisions] == [first.id]
+    assert second.prior_decisions[0]["chosen_option"] == "PROCEED"
+
+
+def test_level_close_can_be_declined_as_a_documented_decision(client, db_session, twin):
+    project = db_session.query(Project).filter_by(company_id=twin["id"]).one()
+    decision = GemeloDigitalService(db_session).propose_level_completion(project, 1, 82, "Gate aprobado")
+    assert decision.recommended_option == "CLOSE"
+    resp = client.post(f"/api/v1/nivel1/{twin['id']}/decisions/{decision.id}", json={
+        "action": "approve", "chosen_option": "CONTINUE", "risks_assumed": ["Más tiempo en el Nivel 1"],
+        "responsibility_statement": "Prefiero validar con más clientes antes de cerrar el Nivel.",
+    }, headers=twin["headers"])
+    assert resp.status_code == 200, resp.text
+    assert resp.json()["status"] == "executed"
+    level1 = db_session.query(Level).filter_by(project_id=project.id, number=1).one()
+    db_session.refresh(level1)
+    assert level1.status == NivelStatus.ACTIVE  # el cliente eligió seguir trabajando el Nivel
+
+
+def test_client_can_register_a_proposal_with_options(client, twin):
+    body = {"title": "¿Precio por suscripción o por bolsa?", "recommended_option": "SUB", "options": [
+        {"key": "SUB", "label": "Suscripción", "rationale": "Ingreso recurrente", "evidence_level": "media",
+         "confidence": 65},
+        {"key": "BAG", "label": "Bolsa", "confidence": 40}]}
+    resp = client.post(f"{twin['base']}/decisions", json=body, headers=twin["headers"])
+    assert resp.status_code == 201 and resp.json()["status"] == "proposed"
+    bad = client.post(f"{twin['base']}/decisions", json={**body, "recommended_option": "X"}, headers=twin["headers"])
+    assert bad.status_code == 422
+
+
+# ============================================================
+# Sprint 3 — Ciclo de vida del Gemelo (AD-CMP-06)
+# ============================================================
+
+def test_twin_is_born_with_company_project_and_workspace(client, db_session, twin):
+    from app.twin.models import Workspace
+    project = db_session.query(Project).filter_by(company_id=twin["id"]).one()
+    workspace = db_session.query(Workspace).filter_by(project_id=project.id).one()
+    assert workspace.status == "active"
+    born = [e for e in client.get(f"{twin['base']}/timeline", headers=twin["headers"]).json()
+            if e["event_type"] == "twin_born"]
+    assert len(born) == 1 and born[0]["actor_type"] == "user"
+
+
+def test_reinvention_changes_the_narrative_not_the_twin(client, db_session, twin):
+    url = f"{twin['base']}/lifecycle/reinvent"
+    short = client.post(url, json={"origin_story": "Nueva historia de origen", "reason": "corto"},
+                        headers=twin["headers"])
+    assert short.status_code == 422
+    resp = client.post(url, json={"origin_story": "De vender café a enseñar a tostarlo",
+                                  "reason": "Los clientes valoran más el conocimiento que el grano"},
+                       headers=twin["headers"])
+    assert resp.status_code == 200 and resp.json()["id"] == twin["id"]
+    from app.models.models import FoundingNarrative
+    narrative = db_session.query(FoundingNarrative).filter_by(company_id=twin["id"]).one()
+    history = client.get(f"{twin['base']}/history/founding_narratives/{narrative.id}", headers=twin["headers"]).json()
+    assert history[-1]["changes"]["origin_story"] == [None, "De vender café a enseñar a tostarlo"]
+    assert history[-1]["reason"] == "Los clientes valoran más el conocimiento que el grano"
+    types = [e["event_type"] for e in client.get(f"{twin['base']}/timeline", headers=twin["headers"]).json()]
+    assert "twin_reinvented" in types
+
+
+def test_split_creates_a_new_twin_that_inherits_by_reference(client, db_session, twin):
+    initiative = _create(client, twin, "initiatives", {"name": "Escuela de barismo"})
+    split_url = f"{twin['base']}/lifecycle/split"
+    body = {"initiative_id": initiative["id"], "name": "Andino Academy",
+            "reason": "La escuela ya tiene clientes propios y otro modelo de negocio"}
+    assert client.post(split_url, json=body, headers=twin["headers"]).status_code == 409  # no aprobada
+    client.patch(f"{twin['base']}/entities/initiatives/{initiative['id']}", json={"state": "approved"},
+                 headers=twin["headers"])
+    resp = client.post(split_url, json=body, headers=twin["headers"])
+    assert resp.status_code == 201, resp.text
+    child_id = resp.json()["id"]
+
+    assert db_session.get(CompanyInitiative, initiative["id"]).spun_off_company_id == child_id  # "separada hacia"
+    child = client.get(f"/api/v1/twin/{child_id}", headers=twin["headers"]).json()
+    assert child["lineage"][0]["relation"] == "split_from"
+    assert child["lineage"][0]["source_company_id"] == twin["id"]
+    assert child["counts"]["initiatives"] == 0  # por referencia, no por copia
+    parent = client.get(twin["base"], headers=twin["headers"]).json()
+    assert parent["lineage"][0]["company_id"] == child_id
+    assert client.post(split_url, json=body, headers=twin["headers"]).status_code == 409  # ya separada
+
+
+def test_merge_creates_new_twin_and_archives_the_originals(client, db_session, twin):
+    other_id = client.post("/api/v1/companies/", json={"name": "Tostadores del Sur"},
+                           headers=twin["headers"]).json()["id"]
+    resp = client.post("/api/v1/twin/lifecycle/merge", json={
+        "company_ids": [twin["id"], other_id], "name": "Andino del Sur",
+        "reason": "Las dos empresas se fusionaron para compartir planta"}, headers=twin["headers"])
+    assert resp.status_code == 201, resp.text
+    merged_id = resp.json()["id"]
+    merged = client.get(f"/api/v1/twin/{merged_id}", headers=twin["headers"]).json()
+    assert {(l["relation"], l["source_company_id"]) for l in merged["lineage"]} == {
+        ("merged_from", twin["id"]), ("merged_from", other_id)}
+
+    original = client.get(twin["base"], headers=twin["headers"]).json()
+    assert original["company"]["status"] == "archived"  # sigue consultable (§6)
+    blocked = client.post(f"{twin['base']}/entities/brands", json={"name": "X"}, headers=twin["headers"])
+    assert blocked.status_code == 409 and "archivado" in blocked.json()["detail"]
+
+
+def test_pause_resume_and_archive(client, twin):
+    base = f"{twin['base']}/lifecycle"
+    assert client.post(f"{base}/resume", headers=twin["headers"]).status_code == 409
+    assert client.post(f"{base}/pause", json={"reason": "Vacaciones"}, headers=twin["headers"]).json()["status"] == "paused"
+    assert client.post(f"{base}/resume", headers=twin["headers"]).json()["status"] == "active"
+    assert client.post(f"{base}/archive", json={"reason": "x"}, headers=twin["headers"]).status_code == 422
+    archived = client.post(f"{base}/archive", json={"reason": "La empresa cerró operaciones (Ley 8)"},
+                           headers=twin["headers"])
+    assert archived.json()["status"] == "archived"
+    assert client.get(twin["base"], headers=twin["headers"]).status_code == 200
+    assert client.post(f"{base}/pause", headers=twin["headers"]).status_code == 409

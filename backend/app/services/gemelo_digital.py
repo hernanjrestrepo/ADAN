@@ -152,6 +152,7 @@ class GemeloDigitalService:
     ) -> Decision:
         """Save Board Room result as a proposed Decision: only the client approves (Patrón A)."""
         with acting_as(Actor.agent("Board Room"), reason="Propuesta del Board Room"):
+            from app.twin.decisions import board_options, prior_decisions
             decision_obj = Decision(
                 project_id=project.id,
                 title=f"Board Room: {decision}",
@@ -160,6 +161,10 @@ class GemeloDigitalService:
                 status=DecisionStatus.PROPOSED,
                 reasoning=summary,
                 confidence_level=score,
+                options=board_options(votes, decision),
+                recommended_option=decision if decision in ("PROCEED", "PIVOT", "STOP") else None,
+                prior_decisions=prior_decisions(self.db, project),
+                disagreement=(consensus or {}).get("dissent") or None,
             )
             self.db.add(decision_obj)
             self.db.flush()  # Generate ID before using it
@@ -275,6 +280,7 @@ class GemeloDigitalService:
             if pending:
                 return pending
 
+            from app.twin.decisions import level_close_options, prior_decisions
             decision_obj = Decision(
                 project_id=project.id,
                 title=f"Cerrar Nivel {level_number}",
@@ -283,6 +289,9 @@ class GemeloDigitalService:
                 status=DecisionStatus.PROPOSED,
                 reasoning=message,
                 confidence_level=score,
+                options=level_close_options(level_number, score, message),
+                recommended_option="CLOSE",
+                prior_decisions=prior_decisions(self.db, project),
             )
             self.db.add(decision_obj)
             self.db.flush()
@@ -306,7 +315,11 @@ class GemeloDigitalService:
                     return decision_obj
         return None
 
-    def decide(self, project: Project, decision_obj: Decision, approve: bool, user_id: str) -> Decision:
+    def decide(
+        self, project: Project, decision_obj: Decision, approve: bool, user_id: str,
+        chosen_option: str | None = None, risks_assumed: list[str] | None = None,
+        responsibility_statement: str | None = None,
+    ) -> Decision:
         """El cliente aprueba o rechaza una decisión propuesta (Patrón A, AD-008).
 
         Si aprueba el cierre de un Nivel, el Nivel se completa y la decisión queda ejecutada.
@@ -315,13 +328,28 @@ class GemeloDigitalService:
             raise ValueError("Solo se puede aprobar o rechazar una decisión propuesta")
         # Patrón A (AD-008 §3): solo el cliente aprueba, rechaza y ejecuta
         with acting_as(Actor.user(user_id), reason="Decisión del cliente"):
-            return self._decide(project, decision_obj, approve, user_id)
+            try:
+                return self._decide(project, decision_obj, approve, user_id,
+                                    chosen_option, risks_assumed, responsibility_statement)
+            except Exception:
+                self.db.rollback()
+                raise
 
-    def _decide(self, project: Project, decision_obj: Decision, approve: bool, user_id: str) -> Decision:
+    def _decide(
+        self, project: Project, decision_obj: Decision, approve: bool, user_id: str,
+        chosen_option: str | None, risks_assumed: list[str] | None, responsibility_statement: str | None,
+    ) -> Decision:
+        from app.twin.decisions import record_choice, utcnow
 
+        if approve:
+            # Opción elegida y, si difiere de la recomendada, los 6 campos (AD-FUNC-02 §2.5)
+            record_choice(self.db, project, decision_obj, chosen_option, risks_assumed, responsibility_statement)
         decision_obj.status = DecisionStatus.APPROVED if approve else DecisionStatus.REJECTED
         decision_obj.approved_by = user_id
-        # El evento de la transición lo registra el Gemelo (app/twin/hooks.py, AD-008 §4)
+        decision_obj.decided_at = utcnow()
+        # El evento de la transición lo registra el Gemelo (app/twin/hooks.py, AD-008 §4).
+        # Flush aquí: "aprobada" queda registrada antes de "ejecutada" (Patrón A sin saltos)
+        self.db.flush()
 
         if approve:
             level_number = next(
@@ -330,8 +358,11 @@ class GemeloDigitalService:
                 None,
             )
             if level_number is not None:
-                self.complete_level(project, level_number)
+                # "Seguir trabajando el Nivel" es una opción válida (y distinta a la del Gate)
+                if decision_obj.chosen_option != "CONTINUE":
+                    self.complete_level(project, level_number)
                 decision_obj.status = DecisionStatus.EXECUTED
+                decision_obj.executed_at = utcnow()
 
         self.db.commit()
         self.db.refresh(decision_obj)

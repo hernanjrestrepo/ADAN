@@ -28,6 +28,7 @@ from app.core.database import get_db
 from app.models.models import Company, Event, User
 from app.twin import models as tm
 from app.twin.actor import Actor, acting_as, set_request_actor
+from app.twin import decisions as twin_decisions, lifecycle
 from app.twin.agents import ensure_agent_catalog
 from app.twin.hooks import TwinRuleError
 from app.twin.registry import (
@@ -140,6 +141,15 @@ def _validate_refs(db: Session, kind: EntityKind, company_id: str, data: dict[st
             if not db.query(target.model.id).filter(
                     target.model.id == subject_id, target.model.company_id == company_id).first():
                 raise HTTPException(status_code=422, detail=f"subject_id: {target.label} no encontrado")
+
+
+def _writable_company(db: Session, company_id: str, user: User) -> Company:
+    company = get_owned_company(db, company_id, user)
+    try:
+        lifecycle.ensure_writable(company)
+    except lifecycle.LifecycleError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+    return company
 
 
 def _commit(db: Session) -> None:
@@ -266,7 +276,7 @@ def create_entity(
     company_id: str, kind_key: str, body: dict[str, Any],
     db: Session = Depends(get_db), user: User = Depends(acting_user),
 ):
-    get_owned_company(db, company_id, user)
+    _writable_company(db, company_id, user)
     kind = _kind(kind_key)
     create_cls, _ = _MODELS[kind.key]
     data = _validate(create_cls, body).model_dump(exclude_none=True)
@@ -291,7 +301,7 @@ def update_entity(
     company_id: str, kind_key: str, entity_id: str, body: dict[str, Any],
     db: Session = Depends(get_db), user: User = Depends(acting_user),
 ):
-    get_owned_company(db, company_id, user)
+    _writable_company(db, company_id, user)
     kind = _kind(kind_key)
     _, update_cls = _MODELS[kind.key]
     data = _validate(update_cls, body).model_dump(exclude_unset=True)
@@ -317,7 +327,7 @@ class ArchiveBody(BaseModel):
 
 
 def _set_status(db, user, company_id, kind_key, entity_id, status, reason):
-    get_owned_company(db, company_id, user)
+    _writable_company(db, company_id, user)
     kind = _kind(kind_key)
     obj = _get_entity(db, kind, company_id, entity_id)
     if obj.status == status:
@@ -350,7 +360,7 @@ class RolesBody(BaseModel):
 def set_position_roles(company_id: str, position_id: str, body: RolesBody,
                        db: Session = Depends(get_db), user: User = Depends(acting_user)):
     """Rol Funcional es N:M con Cargo (AD-006 §3)."""
-    get_owned_company(db, company_id, user)
+    _writable_company(db, company_id, user)
     position = _get_entity(db, KINDS["positions"], company_id, position_id)
     role_ids = sorted(set(body.functional_role_ids))
     found = {r for (r,) in db.query(tm.FunctionalRole.id).filter(
@@ -439,3 +449,231 @@ def timeline(
     return [{"id": e.id, "event_type": e.event_type, "entity_type": e.entity_type, "entity_id": e.entity_id,
              "category": e.category, "data": e.data or {}, "actor_type": e.actor_type, "actor_id": e.actor_id,
              "created_at": e.created_at.isoformat()} for e in events]
+
+
+# ============================================================
+# Decisiones (AD-CMP-03, AD-FUNC-02 §2.5) — vista DEC (AD-UX-10)
+# ============================================================
+
+def _decision_out(d) -> dict[str, Any]:
+    from app.schemas.schemas import DecisionResponse
+    return DecisionResponse.model_validate(d).model_dump(mode="json")
+
+
+def _owned_decision(db: Session, company_id: str, decision_id: str, user: User):
+    from app.core.authz import get_owned_project
+    from app.models.models import Decision
+    project = get_owned_project(db, company_id, user)
+    decision = db.query(Decision).filter(Decision.id == decision_id, Decision.project_id == project.id).first()
+    if decision is None:
+        raise HTTPException(status_code=404, detail="Decisión no encontrada")
+    return project, decision
+
+
+@router.get("/{company_id}/decisions")
+def list_decisions(company_id: str, db: Session = Depends(get_db), user: User = Depends(acting_user)):
+    """Todas las decisiones del Gemelo con su ciclo, opciones, disenso y registro de §2.5."""
+    from app.core.authz import get_owned_project
+    from app.models.models import Decision
+    from app.twin.models import BusinessDecision
+    project = get_owned_project(db, company_id, user)
+    decisions = db.query(Decision).filter(Decision.project_id == project.id).order_by(Decision.created_at.desc()).all()
+    business = {b.adan_decision_id: b for b in db.query(BusinessDecision).filter(
+        BusinessDecision.company_id == company_id, BusinessDecision.adan_decision_id.isnot(None)).all()}
+    out = []
+    for d in decisions:
+        item = _decision_out(d)
+        b = business.get(d.id)
+        item["business_decision"] = {"id": b.id, "title": b.title, "state": b.state} if b else None
+        out.append(item)
+    return out
+
+
+class ProposeBody(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    title: str = PydField(..., min_length=3, max_length=255)
+    description: str | None = PydField(None, max_length=20000)
+    options: list[dict[str, Any]] = PydField(..., min_length=2, max_length=10)
+    recommended_option: str = PydField(..., max_length=50)
+
+
+@router.post("/{company_id}/decisions", status_code=201)
+def propose_decision(company_id: str, body: ProposeBody, db: Session = Depends(get_db),
+                     user: User = Depends(acting_user)):
+    """El cliente (o un Usuario con delegación) registra una propuesta con sus opciones.
+
+    Los Agentes proponen por sus propios flujos (Board Room, Gate Review).
+    """
+    from app.core.authz import get_owned_project
+    from app.models.models import Decision, DecisionStatus
+    _writable_company(db, company_id, user)
+    project = get_owned_project(db, company_id, user)
+    keys = [str(o.get("key", "")).strip() for o in body.options]
+    if any(not k for k in keys) or len(set(keys)) != len(keys):
+        raise HTTPException(status_code=422, detail="Cada opción necesita una clave única")
+    if body.recommended_option not in keys:
+        raise HTTPException(status_code=422, detail="La opción recomendada debe ser una de las opciones")
+    options = [{"key": str(o["key"]).strip(), "label": str(o.get("label") or o["key"])[:255],
+                "rationale": str(o.get("rationale") or "")[:2000],
+                "evidence_level": o.get("evidence_level") if o.get("evidence_level") in ("alta", "media", "baja") else "baja",
+                "confidence": float(o.get("confidence") or 0)} for o in body.options]
+    decision = Decision(project_id=project.id, title=body.title, description=body.description,
+                        proposed_by="Usuario Principal", status=DecisionStatus.PROPOSED, options=options,
+                        recommended_option=body.recommended_option,
+                        prior_decisions=twin_decisions.prior_decisions(db, project))
+    db.add(decision)
+    _commit(db)
+    db.refresh(decision)
+    return _decision_out(decision)
+
+
+@router.post("/{company_id}/decisions/{decision_id}/present")
+def present_decision(company_id: str, decision_id: str, db: Session = Depends(get_db),
+                     user: User = Depends(acting_user)):
+    _writable_company(db, company_id, user)
+    _, decision = _owned_decision(db, company_id, decision_id, user)
+    try:
+        decision = twin_decisions.present(db, decision, Actor.user(user.id, user.name))
+    except (twin_decisions.DecisionError, TwinRuleError) as exc:
+        db.rollback()
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+    return _decision_out(decision)
+
+
+class DecideBody(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    action: Literal["approve", "reject"]
+    chosen_option: str | None = PydField(None, max_length=50)
+    risks_assumed: list[str] | None = PydField(None, max_length=20)
+    responsibility_statement: str | None = PydField(None, max_length=2000)
+
+
+@router.post("/{company_id}/decisions/{decision_id}/decide")
+def decide_decision(company_id: str, decision_id: str, body: DecideBody, db: Session = Depends(get_db),
+                    user: User = Depends(acting_user)):
+    """Aprobar o rechazar (solo el cliente). Decidir distinto exige los 6 campos de §2.5."""
+    from app.services.gemelo_digital import GemeloDigitalService
+    _writable_company(db, company_id, user)
+    project, decision = _owned_decision(db, company_id, decision_id, user)
+    try:
+        decision = GemeloDigitalService(db).decide(
+            project, decision, body.action == "approve", user.id, chosen_option=body.chosen_option,
+            risks_assumed=body.risks_assumed, responsibility_statement=body.responsibility_statement)
+    except (twin_decisions.DecisionError, TwinRuleError, ValueError) as exc:
+        db.rollback()
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+    return _decision_out(decision)
+
+
+class ExecuteBody(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    business_decision_title: str | None = PydField(None, max_length=255)
+
+
+@router.post("/{company_id}/decisions/{decision_id}/execute")
+def execute_decision(company_id: str, decision_id: str, body: ExecuteBody | None = None,
+                     db: Session = Depends(get_db), user: User = Depends(acting_user)):
+    """Aprobada → Ejecutada. Opcionalmente registra la Decisión de Negocio que originó (§4)."""
+    _writable_company(db, company_id, user)
+    project, decision = _owned_decision(db, company_id, decision_id, user)
+    try:
+        decision = twin_decisions.execute(db, project, decision, user.id,
+                                          business_title=body.business_decision_title if body else None)
+    except (twin_decisions.DecisionError, TwinRuleError) as exc:
+        db.rollback()
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+    return _decision_out(decision)
+
+
+# ============================================================
+# Ciclo de vida (AD-CMP-06)
+# ============================================================
+
+class ReasonBody(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    reason: str | None = PydField(None, max_length=2000)
+
+
+class ReinventBody(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    origin_story: str = PydField(..., min_length=10, max_length=20000)
+    founding_motivation: str | None = PydField(None, max_length=20000)
+    irreversible_commitment: str | None = PydField(None, max_length=20000)
+    reason: str = PydField(..., min_length=10, max_length=2000)
+
+
+class SplitBody(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    initiative_id: str
+    name: str = PydField(..., min_length=1, max_length=255)
+    description: str | None = PydField(None, max_length=5000)
+    reason: str = PydField(..., min_length=10, max_length=2000)
+
+
+class MergeBody(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    company_ids: list[str] = PydField(..., min_length=2, max_length=10)
+    name: str = PydField(..., min_length=1, max_length=255)
+    description: str | None = PydField(None, max_length=5000)
+    reason: str = PydField(..., min_length=10, max_length=2000)
+
+
+def _lifecycle_call(db: Session, fn, *args, **kwargs):
+    try:
+        return fn(db, *args, **kwargs)
+    except (lifecycle.LifecycleError, TwinRuleError) as exc:
+        db.rollback()
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+
+
+def _company_out(company: Company) -> dict[str, Any]:
+    status = company.status.value if hasattr(company.status, "value") else company.status
+    return {"id": company.id, "name": company.name, "status": status, "version": company.version}
+
+
+@router.post("/lifecycle/merge", status_code=201)
+def merge_twins(body: MergeBody, db: Session = Depends(get_db), user: User = Depends(acting_user)):
+    companies = [get_owned_company(db, cid, user) for cid in body.company_ids]
+    merged = _lifecycle_call(db, lifecycle.merge, companies, user, body.name, body.reason, body.description)
+    return _company_out(merged)
+
+
+@router.post("/{company_id}/lifecycle/reinvent")
+def reinvent_twin(company_id: str, body: ReinventBody, db: Session = Depends(get_db),
+                  user: User = Depends(acting_user)):
+    company = get_owned_company(db, company_id, user)
+    company = _lifecycle_call(db, lifecycle.reinvent, company, user, body.origin_story, body.reason,
+                              body.founding_motivation, body.irreversible_commitment)
+    return _company_out(company)
+
+
+@router.post("/{company_id}/lifecycle/split", status_code=201)
+def split_twin(company_id: str, body: SplitBody, db: Session = Depends(get_db),
+               user: User = Depends(acting_user)):
+    company = get_owned_company(db, company_id, user)
+    child = _lifecycle_call(db, lifecycle.split, company, user, body.initiative_id, body.name, body.reason,
+                            body.description)
+    return _company_out(child)
+
+
+@router.post("/{company_id}/lifecycle/pause")
+def pause_twin(company_id: str, body: ReasonBody | None = None, db: Session = Depends(get_db),
+               user: User = Depends(acting_user)):
+    company = get_owned_company(db, company_id, user)
+    return _company_out(_lifecycle_call(db, lifecycle.pause, company, user, body.reason if body else None))
+
+
+@router.post("/{company_id}/lifecycle/resume")
+def resume_twin(company_id: str, body: ReasonBody | None = None, db: Session = Depends(get_db),
+                user: User = Depends(acting_user)):
+    company = get_owned_company(db, company_id, user)
+    return _company_out(_lifecycle_call(db, lifecycle.resume, company, user, body.reason if body else None))
+
+
+@router.post("/{company_id}/lifecycle/archive")
+def archive_twin(company_id: str, body: ReasonBody, db: Session = Depends(get_db),
+                 user: User = Depends(acting_user)):
+    if not body.reason or len(body.reason.strip()) < 10:
+        raise HTTPException(status_code=422, detail="Archivar un Gemelo exige explicar por qué")
+    company = get_owned_company(db, company_id, user)
+    return _company_out(_lifecycle_call(db, lifecycle.archive, company, user, body.reason))

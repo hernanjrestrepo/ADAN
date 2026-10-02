@@ -27,7 +27,7 @@ from app.models.models import Company, Event, Project, User
 from app.oos.models import DecisionRecord, Organization, WorkOrder
 
 PG_URL = os.getenv("TEST_DATABASE_URL", "")
-HEAD_REVISION = "0004"
+HEAD_REVISION = "0005"
 requires_pg = pytest.mark.skipif(
     not PG_URL.startswith("postgres"), reason="requiere TEST_DATABASE_URL de PostgreSQL"
 )

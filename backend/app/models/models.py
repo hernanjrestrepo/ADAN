@@ -292,6 +292,21 @@ class Decision(Base):
     status = Column(Enum(DecisionStatus, native_enum=False, length=50), default=DecisionStatus.PROPOSED, nullable=False)
     reasoning = Column(Text, nullable=True)
     disagreement = Column(Text, nullable=True)  # From AD-CMP-03 §3
+    # WO-098 — AD-CMP-03 y AD-FUNC-02 §2.5
+    # Opciones con su fundamento, nivel de evidencia y Confidence Level:
+    # [{"key", "label", "rationale", "evidence_level", "confidence"}]
+    options = Column(JSONType, nullable=True)
+    recommended_option = Column(String(50), nullable=True)
+    chosen_option = Column(String(50), nullable=True)
+    # Los 6 campos cuando el cliente decide distinto a lo recomendado (§2.5):
+    # opción elegida, opción recomendada con su fundamento, evidencia y confianza de cada
+    # una, riesgos asumidos y responsabilidad asumida por el cliente
+    divergence = Column(JSONType, nullable=True)
+    # Consulta previa (AD-CMP-03 §2): decisiones aprobadas o ejecutadas al proponer esta
+    prior_decisions = Column(JSONType, nullable=True)
+    presented_at = Column(DateTime, nullable=True)
+    decided_at = Column(DateTime, nullable=True)
+    executed_at = Column(DateTime, nullable=True)
     confidence_level = Column(Float, nullable=True)
     version = Column(Integer, default=1, nullable=False)
     updated_by = Column(String(120), nullable=True)  # responsable del último cambio (AD-006 §2)

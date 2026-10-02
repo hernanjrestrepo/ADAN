@@ -175,12 +175,27 @@ class DecisionResponse(BaseModel):
     reasoning: str | None
     confidence_level: float | None
     created_at: datetime
+    # WO-098 — AD-CMP-03 y AD-FUNC-02 §2.5
+    disagreement: str | None = None
+    options: list[dict] | None = None
+    recommended_option: str | None = None
+    chosen_option: str | None = None
+    divergence: dict | None = None
+    prior_decisions: list[dict] | None = None
+    presented_at: datetime | None = None
+    decided_at: datetime | None = None
+    executed_at: datetime | None = None
 
     model_config = {"from_attributes": True}
 
 
 class DecisionAction(BaseModel):
     action: str = Field(pattern="^(approve|reject)$")
+    # Al aprobar: la opción elegida. Si difiere de la recomendada, riesgos y responsabilidad
+    # asumidos son obligatorios (AD-FUNC-02 §2.5)
+    chosen_option: str | None = Field(None, max_length=50)
+    risks_assumed: list[str] | None = Field(None, max_length=20)
+    responsibility_statement: str | None = Field(None, max_length=2000)
 
 
 # --- Documents ---
