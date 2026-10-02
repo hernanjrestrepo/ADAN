@@ -58,6 +58,34 @@ export interface Message {
   agent_name?: string | null
   content: string
   created_at: string
+  // degraded: respondió el modelo local de respaldo porque Claude no estaba disponible
+  metadata_json?: { degraded?: string | null } | null
+}
+
+// Guion del Descubrimiento del Dolor: siete temas y lo que ADÁN ya entendió de cada uno
+export type DiscoveryStatus = 'pendiente' | 'parcial' | 'respondido' | 'sin_dato'
+
+export interface DiscoveryTopic {
+  id: string
+  label: string
+  estado: DiscoveryStatus
+  resumen: string
+  base: 'dato' | 'supuesto' | 'desconocida'
+}
+
+export interface EvidenceSuggestion {
+  afirmacion: string
+  tipo: 'testimony' | 'external'
+  fuente: string
+}
+
+export interface DiscoveryProgress {
+  topics: DiscoveryTopic[]
+  done: number
+  total: number
+  next: string | null
+  complete: boolean
+  evidence_suggestions: EvidenceSuggestion[]
 }
 
 export interface Score {
@@ -200,6 +228,7 @@ export interface Nivel1Status {
   messages: Message[]
   scores: Score[]
   documents: DocumentRecord[]
+  discovery?: DiscoveryProgress
 }
 
 export interface ChatResponse {

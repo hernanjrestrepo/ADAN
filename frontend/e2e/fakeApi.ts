@@ -97,7 +97,11 @@ export const LEVELS = LEVEL_NAMES.map((name, i) => ({
 export class FakeApi {
   loggedIn = false
   companies: typeof COMPANY[] = []
-  messages: { id: string; role: string; content: string; created_at: string; agent_name?: string | null }[] = []
+  messages: { id: string; role: string; content: string; created_at: string; agent_name?: string | null;
+    metadata_json?: { degraded?: string | null } }[] = []
+  // Guion del Nivel 1: cada turno del chat marca el siguiente tema como entendido
+  chatDegraded: string | null = null
+  discoveryDone = 0
   levelStatus: 'active' | 'completed' = 'active'
   calls: Call[] = []
   twinDecisions: Record<string, unknown>[] = [structuredClone(TWIN_DECISION)]
@@ -127,6 +131,23 @@ export class FakeApi {
 
   callsTo(method: string, path: string) {
     return this.calls.filter((c) => c.method === method && c.path === path)
+  }
+
+  discovery() {
+    const labels = ['El problema', 'A quién le duele', 'Cuándo y cada cuánto pasa', 'Cuánto les cuesta hoy',
+      'Cómo lo resuelven hoy', 'Por qué ahora y si pagarían', 'Qué prueba hay']
+    const ids = ['problema', 'afectados', 'momento', 'costo', 'alternativas', 'urgencia', 'evidencia']
+    const topics = ids.map((id, i) => ({
+      id, label: labels[i], estado: i < this.discoveryDone ? 'respondido' : 'pendiente',
+      resumen: i === 0 && this.discoveryDone ? 'Las panaderías botan pan cada día' : '', base: 'supuesto',
+    }))
+    const claim = '8 de 10 panaderías entrevistadas botan más del 10 % del pan'
+    const registered = this.evidence.some((e) => e.claim === claim)
+    return {
+      topics, done: this.discoveryDone, total: 7, next: ids[this.discoveryDone] ?? null, complete: this.discoveryDone === 7,
+      evidence_suggestions: this.discoveryDone && !registered
+        ? [{ afirmacion: claim, tipo: 'testimony', fuente: 'Entrevistas, septiembre 2026' }] : [],
+    }
   }
 
   private json(route: Route, status: number, body: unknown) {
@@ -198,13 +219,15 @@ export class FakeApi {
         company, project: { id: 'p1', company_id: company.id, name: 'P', status: 'active' },
         level: { id: 'l1', project_id: 'p1', number: 1, name: 'El Dolor', status: this.levelStatus, completed_at: null },
         card: null, conversation: this.messages.length ? { id: 'conv1' } : null,
-        messages: this.messages, scores: [], documents: [],
+        messages: this.messages, scores: [], documents: [], discovery: this.discovery(),
       })
     }
     if (method === 'POST' && path.endsWith('/chat')) {
       const now = new Date().toISOString()
       this.messages.push({ id: `m${this.messages.length}`, role: 'user', content: body.message, created_at: now })
-      const reply = { id: `m${this.messages.length}`, role: 'assistant', content: '¿Cuánto pan se pierde al día?', created_at: now, agent_name: null }
+      if (!this.chatDegraded) this.discoveryDone = Math.min(7, this.discoveryDone + 2)
+      const reply = { id: `m${this.messages.length}`, role: 'assistant', content: '¿Cuánto pan se pierde al día?', created_at: now,
+        agent_name: 'ADÁN', metadata_json: { degraded: this.chatDegraded } }
       this.messages.push(reply)
       return this.json(route, 200, { message: reply, conversation_id: 'conv1', card_id: null, disclaimer: 'aviso' })
     }

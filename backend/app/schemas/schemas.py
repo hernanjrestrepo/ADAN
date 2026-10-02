@@ -155,6 +155,7 @@ class MessageResponse(BaseModel):
     agent_name: str | None
     content: str
     created_at: datetime
+    metadata_json: dict | None = None
 
     model_config = {"from_attributes": True}
 

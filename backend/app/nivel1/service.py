@@ -18,6 +18,7 @@ from datetime import datetime, timezone
 from sqlalchemy.orm import Session
 
 from app.ai.router import for_tier
+from app.nivel1 import discovery
 from app.nivel1.context import ContextLayers
 from app.ai.base import LLMAdapter, LLMMessage
 from app.ai.normalize import normalize_string, normalize_list
@@ -33,6 +34,16 @@ from app.services.gemelo_digital import GemeloDigitalService
 # Mensajes recientes que se envían completos al modelo; los anteriores van resumidos
 MAX_CONTEXT_MESSAGES = 12
 MAX_SUMMARY_CHARS = 2000
+
+
+def discovery_progress(db: Session, conversation: Conversation | None, project: Project) -> dict:
+    """Avance del guion para la interfaz; la evidencia ya registrada no se vuelve a sugerir."""
+    history = db.query(Message).filter(Message.conversation_id == conversation.id).order_by(
+        Message.created_at).all() if conversation else []
+    state = discovery.current_state(history)
+    known = {e.claim.strip().lower() for e in scoring.active_evidence(db, project, "problem", include_unconfirmed=True)}
+    state["evidencia_sugerida"] = [e for e in state["evidencia_sugerida"] if e["afirmacion"].strip().lower() not in known]
+    return discovery.progress(state)
 
 
 class Nivel1Service:
@@ -97,34 +108,47 @@ class Nivel1Service:
         user_message: str,
         conversation: Conversation | None = None,
     ) -> tuple[Message, Conversation]:
-        """Process a user message through the AI and return the response."""
+        """Un turno del guion de descubrimiento: ADÁN entiende la respuesta y hace la siguiente pregunta.
+
+        Una sola llamada con salida estructurada devuelve la respuesta y el estado de los siete temas
+        (discovery.py). Si responde el modelo local de respaldo, el estado no se toca y el mensaje
+        queda marcado como degradado para que el cliente lo sepa.
+        """
         card = self.get_or_create_pain_card(project, level)
         if conversation is None:
             conversation = self.get_or_create_conversation(card)
 
-        # Save user message
-        user_msg = Message(
-            conversation_id=conversation.id,
-            role="user",
-            content=user_message,
-        )
-        self.db.add(user_msg)
+        self.db.add(Message(conversation_id=conversation.id, role="user", content=user_message))
         self.db.commit()
 
-        messages = self.build_llm_messages(conversation)
+        state = discovery.current_state(self._history(conversation))
+        messages = self.build_llm_messages(conversation, state)
+        response = await self.llm.chat_json(messages, discovery.SCHEMA, temperature=0.4, max_tokens=2048)
 
-        # Get AI response — reduced tokens for faster inference
-        response = await self.llm.chat(messages, temperature=0.7, max_tokens=512)
+        degraded = response.metadata.get("degraded")
+        parsed = response.parsed if isinstance(response.parsed, dict) else {}
+        reply = parsed.get("respuesta") if isinstance(parsed.get("respuesta"), str) else ""
+        if reply.strip():
+            content = reply.strip()
+            if not degraded:
+                state = discovery.merge(state, parsed)
+        elif response.content.strip() and not response.content.lstrip().startswith(("{", "[")):
+            content = response.content.strip()  # el modelo respondió en texto: se muestra tal cual
+        else:
+            content = ("No pude procesar tu mensaje esta vez. Quedó guardado: escríbeme de nuevo la idea "
+                       "principal y seguimos donde íbamos.")
 
-        # Save assistant message
         assistant_msg = Message(
             conversation_id=conversation.id,
             role="assistant",
-            content=response.content,
+            agent_name="ADÁN",
+            content=content,
             metadata_json={
                 "model": response.model,
                 "tokens": response.prompt_tokens + response.completion_tokens,
                 "duration_s": response.duration_s,
+                "degraded": degraded,
+                "discovery": state,
             },
         )
         self.db.add(assistant_msg)
@@ -133,22 +157,28 @@ class Nivel1Service:
 
         return assistant_msg, conversation
 
-    def build_llm_messages(self, conversation: Conversation) -> list[LLMMessage]:
-        """Contexto para el modelo: resumen de lo antiguo + los mensajes recientes completos.
-
-        Evita desbordar la ventana de contexto en conversaciones largas (AD-CMP-04).
-        """
-        history = self.db.query(Message).filter(
+    def _history(self, conversation: Conversation) -> list[Message]:
+        return self.db.query(Message).filter(
             Message.conversation_id == conversation.id
         ).order_by(Message.created_at).all()
 
-        message_count = len([m for m in history if m.role == "user"])
+    def build_llm_messages(self, conversation: Conversation, state: dict | None = None,
+                           structured: bool = True) -> list[LLMMessage]:
+        """Contexto para el modelo: guion y estado, resumen de lo antiguo y los mensajes recientes completos.
+
+        Evita desbordar la ventana de contexto en conversaciones largas (AD-CMP-04).
+        """
+        history = self._history(conversation)
+        if state is None:
+            state = discovery.current_state(history)
         older, recent = history[:-MAX_CONTEXT_MESSAGES], history[-MAX_CONTEXT_MESSAGES:]
         if older:
             conversation.summary = self._summarize(older)
             self.db.commit()
 
-        system_prompt = self._build_chat_system_prompt(message_count, conversation.summary)
+        system_prompt = discovery.system_prompt(state, structured=structured)
+        if conversation.summary:
+            system_prompt += f"\n\nResumen de lo que el cliente contó antes: {conversation.summary}"
         # Capas Global, Proyecto, Nivel y Card (AD-CMP-04); la Conversación son los mensajes
         system_prompt += "\n\n" + ContextLayers(self.db).for_conversation(conversation)
         messages = [LLMMessage(role="system", content=system_prompt)]
@@ -161,28 +191,6 @@ class Nivel1Service:
         """Resumen extractivo de lo que el usuario ya contó (sin llamar al modelo)."""
         summary = " | ".join(m.content[:200] for m in messages if m.role == "user")
         return summary[:MAX_SUMMARY_CHARS]
-
-    def _build_chat_system_prompt(self, message_count: int, existing_summary: str = None) -> str:
-        """Build an intelligent system prompt that evolves with the conversation."""
-        base = "ADÁN, comité ejecutivo IA. Nivel 1: Descubrimiento del Dolor. Entiende el problema. Español."
-
-        if message_count == 0:
-            base += " Saluda y pregunta el problema. Una pregunta a la vez."
-        elif message_count <= 2:
-            base += " Profundiza: ¿a quién afecta? ¿urgencia? ¿intentos previos?"
-        elif message_count <= 5:
-            base += " Explora: ¿quién sufre? ¿cuántos? ¿costo sin solución?"
-        else:
-            base += (
-                "\n\nLa conversación está avanzada. "
-                "Sintetiza lo que has entendido y pregunta si hay algo más relevante "
-                "que no se haya mencionado. Prepárate para cerrar la fase de descubrimiento."
-            )
-
-        if existing_summary:
-            base += f"\n\nResumen de la conversación hasta ahora: {existing_summary}"
-
-        return base
 
     # --- Step 3: Board Room ---
 

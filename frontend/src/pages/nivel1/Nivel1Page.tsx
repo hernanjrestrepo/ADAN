@@ -7,7 +7,7 @@ import Tabs from '../../components/ui/Tabs'
 import { LoadingState } from '../../components/ui/States'
 import { api, errorMessage } from '../../lib/api'
 import type {
-  BoardConsensus, BoardRoomInput, Decision, DocumentRecord, GateReviewResult, LevelStatus, Message, Nivel1Status,
+  BoardConsensus, BoardRoomInput, Decision, EvidenceSuggestion, DocumentRecord, GateReviewResult, LevelStatus, Message, Nivel1Status,
 } from '../../types'
 import BoardRoomPanel from './BoardRoomPanel'
 import ChatPanel from './ChatPanel'
@@ -87,8 +87,20 @@ export default function Nivel1Page() {
     } catch (err) {
       setError(errorMessage(err))
       setMessages((prev) => prev.filter((m) => m.id !== tempId))
+      await loadStatus()  // el backend pudo guardar el mensaje aunque la respuesta no llegara
     } finally {
       setSending(false)
+    }
+  }
+
+  // Evidencia que el cliente mencionó en la conversación: entra solo si él la registra (AD-CMP-05)
+  const handleRegisterEvidence = async (s: EvidenceSuggestion) => {
+    try {
+      await api.addEvidence(companyId, { claim: s.afirmacion, kind: s.tipo, polarity: 'supports', source: s.fuente || undefined })
+      bump()
+      await loadStatus()
+    } catch (err) {
+      setError(errorMessage(err))
     }
   }
 
@@ -188,8 +200,8 @@ export default function Nivel1Page() {
       ) : (
         <>
           {activeTab === 'chat' && (
-            <ChatPanel messages={messages} sending={sending} onSend={handleSend}
-              onBoardRoom={() => handleBoardRoom()} onDiagnosis={handleDiagnosis} onGateReview={handleGateReview} />
+            <ChatPanel messages={messages} sending={sending} discovery={status?.discovery} onSend={handleSend}
+              onRegisterEvidence={handleRegisterEvidence} onBoardRoom={() => handleBoardRoom()} onDiagnosis={handleDiagnosis} onGateReview={handleGateReview} />
           )}
           {activeTab === 'boardroom' && <BoardRoomPanel result={board} running={boardRunning} onRun={handleBoardRoom} />}
           {activeTab === 'diagnosis' && (
