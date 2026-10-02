@@ -98,8 +98,9 @@ def _is_versioned(obj) -> bool:
 
 
 def _is_twin_business(obj) -> bool:
-    from app.twin.models import Agent, ContratoBase
-    return isinstance(obj, ContratoBase) and not isinstance(obj, Agent)
+    """Entidades que el cliente reconoce como suyas (van al Timeline al crearse)."""
+    from app.twin.models import Agent, ContratoBase, Workspace
+    return isinstance(obj, ContratoBase) and not isinstance(obj, (Agent, Workspace))
 
 
 def _label(obj) -> str:

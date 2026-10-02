@@ -81,7 +81,36 @@ export interface DocumentRecord {
   created_at: string
 }
 
-export type DecisionStatus = 'proposed' | 'approved' | 'rejected' | 'executed'
+// Patrón A (AD-008) con el estado "Presentada" de AD-CMP-03 (WO-098)
+export type DecisionStatus = 'proposed' | 'presented' | 'approved' | 'rejected' | 'executed'
+
+export type EvidenceLevel = 'alta' | 'media' | 'baja'
+
+export interface DecisionOption {
+  key: string
+  label: string
+  rationale?: string
+  evidence_level?: EvidenceLevel
+  confidence?: number
+  votes?: number
+}
+
+// Los 6 campos cuando el cliente decide distinto a lo recomendado (AD-FUNC-02 §2.5)
+export interface Divergence {
+  chosen_option: { key: string; label?: string }
+  recommended_option: { key: string; label?: string; rationale?: string }
+  evidence_level: { chosen?: EvidenceLevel; recommended?: EvidenceLevel }
+  confidence: { chosen?: number; recommended?: number }
+  risks_assumed: string[]
+  responsibility_assumed: string
+}
+
+export interface PriorDecision {
+  id: string
+  title: string
+  status: DecisionStatus
+  chosen_option: string | null
+}
 
 export interface Decision {
   id: string
@@ -92,6 +121,73 @@ export interface Decision {
   status: DecisionStatus
   reasoning: string | null
   confidence_level: number | null
+  created_at: string
+  disagreement?: string | null
+  options?: DecisionOption[] | null
+  recommended_option?: string | null
+  chosen_option?: string | null
+  divergence?: Divergence | null
+  prior_decisions?: PriorDecision[] | null
+  presented_at?: string | null
+  decided_at?: string | null
+  executed_at?: string | null
+  business_decision?: { id: string; title: string; state: string } | null
+}
+
+export interface DecideInput {
+  action: 'approve' | 'reject'
+  chosen_option?: string
+  risks_assumed?: string[]
+  responsibility_statement?: string
+}
+
+// Gemelo Digital (WO-098)
+export interface TwinOverview {
+  company: {
+    id: string
+    name: string
+    status: 'active' | 'paused' | 'archived'
+    version: number
+    founded_on: string | null
+    jurisdiction: string | null
+    legal_structure: string | null
+    intangibles: Record<string, string>
+  }
+  identity: {
+    age_years: number
+    maturity: number
+    lifecycle_stage: string
+    maturation_velocity_per_year: number | null
+  }
+  counts: Record<string, number>
+  lineage: {
+    company_id: string
+    source_company_id: string
+    relation: 'split_from' | 'merged_from'
+    initiative_id: string | null
+    note: string | null
+    created_at: string
+  }[]
+}
+
+export interface TwinKind {
+  key: string
+  label: string
+  label_plural: string
+  cluster: string
+  cluster_label: string
+  pattern: 'A' | 'B' | 'C' | 'D' | null
+}
+
+export interface TimelineEvent {
+  id: string
+  event_type: string
+  entity_type: string
+  entity_id: string
+  category: 'domain' | 'cognitive'
+  data: { label?: string; from?: string; to?: string; reason?: string; [key: string]: unknown }
+  actor_type: 'user' | 'agent' | 'system' | null
+  actor_id: string | null
   created_at: string
 }
 

@@ -151,7 +151,8 @@ export default function Nivel1Page() {
 
   return (
     <AppShell
-      crumbs={[{ label: 'Mis Empresas', to: '/dashboard' }, { label: companyName }, { label: 'Nivel 1 — El Dolor' }]}
+      crumbs={[{ label: 'Mis Empresas', to: '/dashboard' }, { label: companyName, to: `/gemelo/${companyId}` },
+        { label: 'Nivel 1 — El Dolor' }]}
       status={<Badge tone={levelBadge.tone}>{levelBadge.text}</Badge>}
       toolbar={<Tabs tabs={TABS} active={activeTab} onChange={setActiveTab} />}
     >
