@@ -378,3 +378,58 @@ export interface LevelView {
   score: { value: number; confidence: number } | null
   cards: { id: string; title: string; description: string | null; card_type: string; status: string }[]
 }
+
+// --- Agentes por tiempo (WO-109) ---
+
+export type HirePeriod = 'hour' | 'day' | 'week' | 'month'
+
+export interface AgentOffering {
+  code: string
+  name: string
+  role: string
+  description: string
+  skills: string[]
+  tools: string[]
+  tier: string
+  price_note: string
+}
+
+export interface AgentContract {
+  id: string
+  offering: AgentOffering
+  period: HirePeriod
+  units: number
+  hours_capacity: number
+  hours_used: number
+  starts_at: string
+  ends_at: string
+  state: 'active' | 'expired' | 'exhausted' | 'cancelled'
+  price_note: string
+}
+
+export interface AgentTask {
+  id: string
+  title: string
+  description: string | null
+  status: 'assigned' | 'in_progress' | 'review' | 'completed'
+  result: string | null
+  blocking_reason: string | null
+  feedback: string[]
+  created_at: string | null
+  completed_at: string | null
+}
+
+export interface ContractReport {
+  hours_capacity: number
+  hours_used: number
+  hours_left: number
+  state: string
+  runs: number
+  delivered: number
+  failed: number
+  model_cost_usd: number
+  tokens: number
+  degraded_runs: number
+  tools: string[]
+  price_note: string
+}

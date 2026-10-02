@@ -65,7 +65,8 @@ Build A/B y Build C usan el rango **WO-001 a WO-012 dos veces, para cosas distin
 | WO-099 | Motor cognitivo único e IA | ✅ `docs/wo/WO-099_REPORTE.md` |
 | WO-107 | Evidencia y Scoring | ✅ `docs/wo/WO-107_REPORTE.md` |
 | WO-108 | Onboarding y Nivel 1 completo | 🟡 técnica hecha; falta el piloto real (`docs/wo/WO-108_REPORTE.md`) |
-| WO-109 → WO-122 | Agentes por tiempo, Niveles 2 a 7, experiencia, ecosistema y certificación | Planificadas (`docs/auditoria/PLAN_WO_ADAN_100.md`) |
+| WO-109 | Agentes por tiempo | ✅ `docs/wo/WO-109_REPORTE.md` |
+| WO-110 → WO-122 | Niveles 2 a 7, experiencia, ecosistema y certificación | Planificadas (`docs/auditoria/PLAN_WO_ADAN_100.md`) |
 
 ## 5. Rangos reservados — no tocados por este catálogo
 

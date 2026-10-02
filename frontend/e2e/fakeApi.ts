@@ -104,6 +104,8 @@ export class FakeApi {
   evidence: Record<string, unknown>[] = []
   gateApproved = true
   csiConnected = false
+  contracts: Record<string, unknown>[] = []
+  agentTasks: Record<string, unknown>[] = []
   aggregated = false
   timeline: TimelineItem[] = [
     { id: 'e2', event_type: 'entity_created', entity_type: 'brands', entity_id: 'b1', category: 'domain',
@@ -208,6 +210,7 @@ export class FakeApi {
     }
     if (method === 'POST' && path.endsWith('/board-room')) return this.json(route, 200, BOARD_NO_CONSENSUS)
     if (path.startsWith('/scoring/')) return this.handleScoring(route, method, path, body)
+    if (path.startsWith('/hire/')) return this.handleHire(route, method, path, body)
     if (method === 'POST' && path.endsWith('/advance-anyway')) {
       return this.json(route, 200, {
         approved: false, scores: [], level_status: 'active', missing: ['Al menos 1 dato verificable externamente'],
@@ -239,6 +242,40 @@ export class FakeApi {
       return this.json(route, 200, { id: 'd1', status: body.action === 'approve' ? 'executed' : 'rejected' })
     }
     return this.json(route, 404, { detail: `Sin simular: ${route_}` })
+  }
+
+  private handleHire(route: Route, method: string, path: string, body: Record<string, unknown> | null) {
+    const offering = { code: 'redactor', name: 'Redactor Comercial', role: 'Marketing', description: 'Escribe textos comerciales',
+      skills: ['copywriting'], tools: [], tier: 'standard', price_note: 'Precio por definir (WO-100)' }
+    if (method === 'GET' && path === '/hire/catalog') return this.json(route, 200, [offering])
+    if (method === 'GET' && path === '/hire/c1/contracts') return this.json(route, 200, this.contracts)
+    if (method === 'POST' && path === '/hire/c1/contracts') {
+      const hours = ({ hour: 1, day: 8, week: 40, month: 160 } as Record<string, number>)[String(body?.period)] ?? 1
+      const contract = { id: `k${this.contracts.length + 1}`, offering, period: body?.period, units: body?.units,
+        hours_capacity: hours * Number(body?.units), hours_used: 0, starts_at: '2026-10-02T00:00:00',
+        ends_at: '2026-10-09T00:00:00', state: 'active', price_note: offering.price_note }
+      this.contracts.unshift(contract)
+      return this.json(route, 201, contract)
+    }
+    const m = path.match(/^\/hire\/c1\/contracts\/([^/]+)\/tasks(?:\/([^/]+)\/(run|review))?$/)
+    if (m && method === 'GET') return this.json(route, 200, this.agentTasks)
+    if (m && method === 'POST' && !m[2]) {
+      const task = { id: `t${this.agentTasks.length + 1}`, title: body?.title, description: body?.description,
+        status: 'assigned', result: null, blocking_reason: null, feedback: [], created_at: null, completed_at: null }
+      this.agentTasks.unshift(task)
+      return this.json(route, 201, task)
+    }
+    const task = m && this.agentTasks.find((t) => t.id === m[2])
+    if (task && m[3] === 'run') {
+      task.status = 'review'
+      task.result = 'Propuesta de valor: viajes corporativos sin fricción.'
+      return this.json(route, 200, { task, work: { seconds: 2.1, outcome: 'delivered' } })
+    }
+    if (task && m[3] === 'review') {
+      task.status = body?.approve ? 'completed' : 'assigned'
+      return this.json(route, 200, task)
+    }
+    return this.json(route, 404, { detail: `Sin simular: ${method} ${path}` })
   }
 
   private consents() {

@@ -6,6 +6,7 @@ import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
 import Nivel1Page from './pages/nivel1/Nivel1Page'
 import GemeloPage from './pages/gemelo/GemeloPage'
+import AgentsPage from './pages/AgentsPage'
 import PrivacyPage from './pages/PrivacyPage'
 import RoutePage from './pages/RoutePage'
 import WelcomePage from './pages/WelcomePage'
@@ -30,6 +31,7 @@ export default function App() {
       <Route path="/bienvenida" element={<Private><WelcomePage /></Private>} />
       <Route path="/dashboard" element={<Private><DashboardPage /></Private>} />
       <Route path="/ruta/:companyId" element={<Private><RoutePage /></Private>} />
+      <Route path="/agentes/:companyId" element={<Private><AgentsPage /></Private>} />
       <Route path="/nivel1/:companyId" element={<Private><Nivel1Page /></Private>} />
       <Route path="/gemelo/:companyId" element={<Private><GemeloPage /></Private>} />
       <Route path="*" element={<Navigate to={user ? '/dashboard' : '/login'} replace />} />
