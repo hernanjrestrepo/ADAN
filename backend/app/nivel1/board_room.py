@@ -103,7 +103,8 @@ VOTE_SCHEMA = {
         "analysis": {"type": "string"},
         "justification": {"type": "string"},
         "vote": {"type": "string", "enum": ["PROCEED", "PIVOT", "STOP"]},
-        "confidence": {"type": "integer", "minimum": 0, "maximum": 100},
+        # 0-100; la API de Claude no admite minimum/maximum en enteros: se acota al normalizar
+        "confidence": {"type": "integer"},
         "key_strengths": {"type": "array", "items": {"type": "string"}},
         "key_concerns": {"type": "array", "items": {"type": "string"}},
         "questions": {"type": "array", "items": {"type": "string"}},

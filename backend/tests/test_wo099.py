@@ -327,3 +327,18 @@ def test_closing_a_level_rolls_its_summary_up_to_the_project(db_session, client)
     conv = db_session.query(Conversation).filter(Conversation.card_id == card.id).one()
     assert "Las panaderías botan pan" in conv.summary
     assert "Resumen del Nivel 1" in ContextLayers(db_session).project_layer(project)
+
+
+def test_structured_schemas_use_only_features_claude_accepts():
+    """La API rechaza minimum/maximum en enteros (400 visto con la clave real, 2026-09-25)."""
+    from app.nivel1.board_room import CLOSING_SCHEMA, OPENING_SCHEMA
+
+    def walk(node):
+        if isinstance(node, dict):
+            if node.get("type") == "integer":
+                assert not {"minimum", "maximum"} & set(node)
+            for value in node.values():
+                walk(value)
+    for schema in (VOTE_SCHEMA, OPENING_SCHEMA, CLOSING_SCHEMA):
+        walk(schema)
+        assert schema["additionalProperties"] is False
