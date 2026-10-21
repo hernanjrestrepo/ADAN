@@ -36,7 +36,7 @@ export default function AppShell({ crumbs = [], status, toolbar, children }: App
       <a href="#contenido" className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:rounded-lg focus:bg-adan-accent focus:px-4 focus:py-2 focus:text-white">
         Saltar al contenido
       </a>
-      <header className="sticky top-0 z-40 border-b border-adan-border bg-adan-bg/85 backdrop-blur px-4 sm:px-6 py-3">
+      <header className="sticky top-0 z-40 border-b border-adan-border bg-adan-bg/85 backdrop-blur-sm px-4 sm:px-6 py-3">
         <div className="flex items-center justify-between max-w-7xl mx-auto gap-4">
           <nav aria-label="Ubicación" className="flex items-center gap-2 text-sm min-w-0">
             <Link to="/dashboard" aria-label="ADÁN, ir a Mis Empresas" className="shrink-0">

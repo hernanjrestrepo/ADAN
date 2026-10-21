@@ -23,7 +23,7 @@ interface ScoresPanelProps {
 function ScoreCard({ score, onCalculate, busy }: { score: ScoreOverview; onCalculate: () => void; busy: boolean }) {
   const latest = score.latest
   return (
-    <Card className={`!p-5 ${score.available ? '' : 'opacity-60'}`} data-testid="score-card">
+    <Card className={`p-5! ${score.available ? '' : 'opacity-60'}`} data-testid="score-card">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <h3 className="font-bold">{score.label}</h3>

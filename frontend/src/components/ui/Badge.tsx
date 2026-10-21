@@ -11,5 +11,5 @@ const TONES: Record<Tone, string> = {
 }
 
 export default function Badge({ tone = 'gray', children }: { tone?: Tone; children: ReactNode }) {
-  return <span className={`text-xs px-2 py-1 rounded ${TONES[tone]}`}>{children}</span>
+  return <span className={`text-xs px-2 py-1 rounded-sm ${TONES[tone]}`}>{children}</span>
 }

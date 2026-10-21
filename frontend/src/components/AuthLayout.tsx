@@ -12,7 +12,7 @@ const HIGHLIGHTS = [
 export default function AuthLayout({ subtitle, children }: { subtitle: string; children: ReactNode }) {
   return (
     <div className="min-h-screen grid lg:grid-cols-2">
-      <aside className="hidden lg:flex flex-col justify-between p-12 border-r border-adan-border bg-gradient-to-br from-adan-primary/60 via-adan-bg to-adan-bg">
+      <aside className="hidden lg:flex flex-col justify-between p-12 border-r border-adan-border bg-linear-to-br from-adan-primary/60 via-adan-bg to-adan-bg">
         <Logo size="lg" />
         <div>
           <h2 className="text-4xl font-bold leading-tight mb-4">Crea o reinventa tu empresa con un equipo directivo de IA.</h2>

@@ -17,6 +17,11 @@ services:
       - DEFAULT_MODEL=${DEFAULT_MODEL:-qwen2.5:0.5b}
       # Claude para conversación (Sonnet) y Board (Opus); sin clave todo corre en Ollama (WO-099)
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      # O Kimi (Moonshot) con LLM_CLOUD_PROVIDER=kimi; "auto" usa Claude si hay clave y si no, Kimi
+      - LLM_CLOUD_PROVIDER=${LLM_CLOUD_PROVIDER:-auto}
+      - KIMI_API_KEY=${KIMI_API_KEY:-}
+      - KIMI_BASE_URL=${KIMI_BASE_URL:-https://api.moonshot.ai/v1}
+      - KIMI_MODEL=${KIMI_MODEL:-kimi-k2.6}
       - EMBEDDING_PROVIDER=ollama
       - EMBEDDING_MODEL=nomic-embed-text
       - LLM_PROVIDER=ollama

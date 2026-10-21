@@ -45,6 +45,14 @@ class Settings:
     # Enrutamiento de modelos (WO-099, AD-DEC-0002 decisión 3): Ollama para lo simple,
     # Anthropic según la complejidad. Sin ANTHROPIC_API_KEY todo va a Ollama (degradado).
     ANTHROPIC_API_KEY: str = os.getenv("ANTHROPIC_API_KEY", "")
+    # Proveedor de nube: "auto" (Claude si hay clave, si no Kimi), "anthropic" o "kimi"
+    LLM_CLOUD_PROVIDER: str = os.getenv("LLM_CLOUD_PROVIDER", "auto").strip().lower()
+    # Kimi (Moonshot), compatible con OpenAI: la misma cuenta de Xmart Travel. Un solo modelo para todos los niveles.
+    KIMI_API_KEY: str = os.getenv("KIMI_API_KEY", "")
+    KIMI_BASE_URL: str = os.getenv("KIMI_BASE_URL", "https://api.moonshot.ai/v1")
+    KIMI_MODEL: str = os.getenv("KIMI_MODEL", "kimi-k2.6")
+    KIMI_PRICE_INPUT: float = float(os.getenv("KIMI_PRICE_INPUT", "0.95"))   # USD por millón (lista, oct-2026)
+    KIMI_PRICE_OUTPUT: float = float(os.getenv("KIMI_PRICE_OUTPUT", "4.0"))
 
     # CSI (AD-000 §3): inteligencia externa del ecosistema Paradixe. Sin URL, ADÁN no inventa datos
     # externos: solo verifica las fuentes que aporta el cliente (WO-108).

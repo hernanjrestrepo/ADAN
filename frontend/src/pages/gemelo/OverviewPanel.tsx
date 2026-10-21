@@ -76,7 +76,7 @@ export default function OverviewPanel({ twin, kinds }: OverviewPanelProps) {
 
 function Stat({ label, value }: { label: string; value: string }) {
   return (
-    <Card className="!p-4">
+    <Card className="p-4!">
       <p className="text-xs text-adan-muted">{label}</p>
       <p className="text-lg font-bold">{value}</p>
     </Card>

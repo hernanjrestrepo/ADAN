@@ -2,7 +2,7 @@ import { useId, type InputHTMLAttributes, type TextareaHTMLAttributes } from 're
 
 const CONTROL =
   'w-full px-4 py-3 bg-adan-bg border border-adan-border rounded-lg text-adan-text ' +
-  'placeholder:text-adan-muted/70 focus:outline-none focus:border-adan-accent'
+  'placeholder:text-adan-muted/70 focus:outline-hidden focus:border-adan-accent'
 
 interface FieldProps extends InputHTMLAttributes<HTMLInputElement> {
   label: string

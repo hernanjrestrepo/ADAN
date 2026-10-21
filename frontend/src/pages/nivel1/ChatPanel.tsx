@@ -209,7 +209,7 @@ export default function ChatPanel({
             placeholder="Escribe tu respuesta… (Enter envía, Shift+Enter salto de línea)"
             maxLength={MAX_MESSAGE_CHARS}
             rows={Math.min(6, Math.max(2, input.split('\n').length))}
-            className="flex-1 resize-none px-4 py-3 bg-adan-surface border border-adan-border rounded-xl text-adan-text focus:outline-none focus:border-adan-accent"
+            className="flex-1 resize-none px-4 py-3 bg-adan-surface border border-adan-border rounded-xl text-adan-text focus:outline-hidden focus:border-adan-accent"
             disabled={sending}
           />
           <Button type="submit" disabled={sending || !input.trim()}>Enviar</Button>
@@ -218,7 +218,7 @@ export default function ChatPanel({
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-4">
           <Button variant="secondary" className="flex-1" onClick={onBoardRoom}>🏛️ Ejecutar Board Room</Button>
           <Button variant="secondary" className="flex-1" onClick={onDiagnosis}>📋 Generar Diagnóstico</Button>
-          <Button variant="secondary" className="flex-1 !border-adan-success/50 !text-adan-success" onClick={onGateReview}>
+          <Button variant="secondary" className="flex-1 border-adan-success/50! text-adan-success!" onClick={onGateReview}>
             ✅ Gate Review
           </Button>
         </div>

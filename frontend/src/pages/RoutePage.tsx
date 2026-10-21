@@ -49,7 +49,7 @@ export default function RoutePage() {
               </p>
               <div className="mt-4 h-2 rounded-full bg-adan-surface overflow-hidden" role="progressbar"
                 aria-label="Niveles completados" aria-valuenow={done} aria-valuemin={0} aria-valuemax={7}>
-                <div className="h-full bg-gradient-to-r from-adan-accent to-indigo-400" style={{ width: `${(done / 7) * 100}%` }} />
+                <div className="h-full bg-linear-to-r from-adan-accent to-indigo-400" style={{ width: `${(done / 7) * 100}%` }} />
               </div>
             </div>
             <ol className="relative border-l-2 border-adan-border ml-3 space-y-8" aria-label="Niveles">
@@ -58,7 +58,7 @@ export default function RoutePage() {
                 return (
                   <li key={level.id} className="ml-8" data-testid="level-step">
                     <span aria-hidden="true"
-                      className={`absolute -left-[11px] mt-1 h-5 w-5 rounded-full border-2 ${st.dot}`} />
+                      className={`absolute left-[-11px] mt-1 h-5 w-5 rounded-full border-2 ${st.dot}`} />
                     <div className={level.status === 'blocked' ? 'opacity-60' : ''}>
                       <div className="flex flex-wrap items-center gap-2">
                         <h2 className="text-lg font-bold">Nivel {level.number} — {level.name}</h2>

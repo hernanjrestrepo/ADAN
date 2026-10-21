@@ -11,6 +11,9 @@ Cada tarea declara su complejidad y el enrutador elige el modelo:
 
 Sin `ANTHROPIC_API_KEY`, o si Claude falla, la llamada cae a Ollama y la respuesta queda
 marcada como degradada (`metadata["degraded"]`): el servicio sigue, con menor calidad.
+
+Con `LLM_CLOUD_PROVIDER=kimi` (o `auto` sin clave de Anthropic) la nube es Kimi (`KIMI_MODEL`
+para `fast`, `standard` y `complex`), con la misma caída a Ollama si falla.
 """
 from __future__ import annotations
 
@@ -27,7 +30,21 @@ TIERS = ("simple", "fast", "standard", "complex")
 EFFORT = {"fast": None, "standard": "low", "complex": "medium"}
 
 
+def cloud_provider() -> str | None:
+    """El proveedor de nube vigente: Claude o Kimi según `LLM_CLOUD_PROVIDER` y las claves que haya."""
+    choice = settings.LLM_CLOUD_PROVIDER
+    if choice == "kimi" or (choice == "auto" and not settings.ANTHROPIC_API_KEY):
+        return "kimi" if settings.KIMI_API_KEY else None
+    return "anthropic" if settings.ANTHROPIC_API_KEY else None
+
+
+CLOUD_LABEL = {"anthropic": "Claude", "kimi": "Kimi", None: "Claude"}
+MISSING_KEY = {"kimi": "sin KIMI_API_KEY"}
+
+
 def tier_model(tier: str) -> str:
+    if tier != "simple" and cloud_provider() == "kimi":
+        return settings.KIMI_MODEL
     return {"fast": settings.LLM_MODEL_FAST, "standard": settings.LLM_MODEL_STANDARD,
             "complex": settings.LLM_MODEL_COMPLEX}.get(tier, settings.DEFAULT_MODEL)
 
@@ -48,15 +65,17 @@ class TieredLLM(LLMAdapter):
                 response = await call(self.claude, tier_model(self.tier))
                 record_usage(response, self.tier, operation)
                 return response
-            except Exception as exc:  # red, API o rechazo: se degrada a Ollama
-                logger.warning("Claude no disponible para %s (%s): se usa Ollama", operation, type(exc).__name__)
+            except Exception as exc:  # red, API, saldo o rechazo: se degrada a Ollama
+                label = CLOUD_LABEL[cloud_provider()]
+                logger.warning("%s no disponible para %s (%s: %s): se usa Ollama", label, operation,
+                               type(exc).__name__, str(exc)[:200])
                 response = await call(self.local, None)
-                response.metadata["degraded"] = f"Claude no disponible ({type(exc).__name__})"
+                response.metadata["degraded"] = f"{label} no disponible ({type(exc).__name__})"
                 record_usage(response, self.tier, operation)
                 return response
         response = await call(self.local, None)
         if self.tier != "simple":
-            response.metadata["degraded"] = "sin ANTHROPIC_API_KEY"
+            response.metadata["degraded"] = MISSING_KEY.get(settings.LLM_CLOUD_PROVIDER, "sin ANTHROPIC_API_KEY")
         record_usage(response, self.tier, operation)
         return response
 
@@ -83,7 +102,8 @@ class TieredLLM(LLMAdapter):
         except Exception as exc:
             if self.claude is None or started:
                 raise
-            logger.warning("Claude no disponible para chat_stream (%s): se usa Ollama", type(exc).__name__)
+            logger.warning("%s no disponible para chat_stream (%s): se usa Ollama",
+                           CLOUD_LABEL[cloud_provider()], type(exc).__name__)
             async for token in self.local.chat_stream(messages, model=model, temperature=temperature,
                                                       max_tokens=max_tokens):
                 yield token
@@ -111,8 +131,13 @@ class ModelRouter(TieredLLM):
 
 
 def _default_claude_factory():
-    if not settings.ANTHROPIC_API_KEY:
+    """Fábrica del modelo de nube por nivel (el nombre se conserva: antes solo existía Claude)."""
+    provider = cloud_provider()
+    if provider is None:
         return lambda tier: None
+    if provider == "kimi":
+        from app.ai.kimi_adapter import KimiAdapter
+        return lambda tier: KimiAdapter()
 
     from app.ai.anthropic_adapter import AnthropicAdapter
 
