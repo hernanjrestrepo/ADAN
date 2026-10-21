@@ -48,7 +48,7 @@ function CreateCompanyDialog({ onClose }: { onClose: () => void }) {
   }
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center z-50 p-0 sm:p-4"
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-end sm:items-center justify-center z-50 p-0 sm:p-4"
       onMouseDown={(e) => { if (e.target === e.currentTarget && !creating) onClose() }}>
       <div className="bg-adan-surface border border-adan-border rounded-t-2xl sm:rounded-2xl p-6 w-full max-w-lg shadow-2xl"
         role="dialog" aria-modal="true" aria-labelledby="create-company-title">
@@ -87,7 +87,7 @@ function MaturityBar({ value }: { value: number }) {
       </div>
       <div className="h-1.5 rounded-full bg-adan-bg overflow-hidden" role="progressbar" aria-valuenow={pct}
         aria-valuemin={0} aria-valuemax={100} aria-label="Madurez">
-        <div className="h-full rounded-full bg-gradient-to-r from-adan-accent to-indigo-400" style={{ width: `${pct}%` }} />
+        <div className="h-full rounded-full bg-linear-to-r from-adan-accent to-indigo-400" style={{ width: `${pct}%` }} />
       </div>
     </div>
   )

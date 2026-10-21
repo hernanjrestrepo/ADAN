@@ -32,7 +32,7 @@ interface EvidencePanelProps {
 function GateProgress({ gate }: { gate: GatePreview }) {
   const b = gate.breakdown
   return (
-    <Card className={gate.sufficient ? '!border-adan-success/50' : '!border-adan-warning/40'} data-testid="gate-progress">
+    <Card className={gate.sufficient ? 'border-adan-success/50!' : 'border-adan-warning/40!'} data-testid="gate-progress">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <p className="text-sm text-adan-muted">Para cerrar el Nivel 1</p>
@@ -194,7 +194,7 @@ export default function EvidencePanel({ companyId, onChanged }: EvidencePanelPro
               <label htmlFor="evidence-polarity" className="block text-sm text-adan-muted mb-1">¿Qué hace con el problema?</label>
               <select id="evidence-polarity" value={polarity}
                 onChange={(e) => setPolarity(e.target.value as EvidencePolarity)}
-                className="w-full px-4 py-3 bg-adan-bg border border-adan-border rounded-lg text-adan-text focus:outline-none focus:border-adan-accent">
+                className="w-full px-4 py-3 bg-adan-bg border border-adan-border rounded-lg text-adan-text focus:outline-hidden focus:border-adan-accent">
                 <option value="supports">Lo respalda</option>
                 <option value="contradicts">Lo contradice</option>
               </select>
@@ -204,7 +204,7 @@ export default function EvidencePanel({ companyId, onChanged }: EvidencePanelPro
         </form>
       </Card>
 
-      <Card className="!p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4" data-testid="csi">
+      <Card className="p-5! flex flex-col sm:flex-row sm:items-center justify-between gap-4" data-testid="csi">
         <div>
           <h3 className="font-bold">Inteligencia externa (CSI)</h3>
           <p className="text-sm text-adan-muted">
@@ -227,7 +227,7 @@ export default function EvidencePanel({ companyId, onChanged }: EvidencePanelPro
         <ul className="space-y-3" aria-label="Evidencia registrada">
           {items.map((e) => (
             <li key={e.id}>
-              <Card className="!p-4" data-testid="evidence-item">
+              <Card className="p-4!" data-testid="evidence-item">
                 <div className="flex flex-wrap items-center gap-2 mb-2">
                   <Badge tone={KIND[e.kind].tone}>{KIND[e.kind].label}</Badge>
                   <Badge tone={e.polarity === 'supports' ? 'green' : 'red'}>
