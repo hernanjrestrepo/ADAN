@@ -6,7 +6,7 @@ export const KIND: Record<EvidenceKind, { label: string; short: string; tone: To
   external: { label: 'Dato verificable', short: 'datos', tone: 'green',
     hint: 'Un estudio, una estadística, un registro público o un documento' },
   testimony: { label: 'Testimonio', short: 'testimonios', tone: 'blue',
-    hint: 'Lo que tú o tus clientes declaran directamente' },
+    hint: 'Lo que tus clientes declaran directamente: entrevistas, mensajes o ventas' },
   inference: { label: 'Inferencia de un Agente', short: 'inferencias', tone: 'gray',
     hint: 'Lo que concluyó el Board; nunca basta por sí sola' },
 }
