@@ -126,11 +126,14 @@ class GateRule:
     min_confidence: float
     min_external_support: int      # datos verificables a favor
     min_client_or_external: int    # testimonio o dato externo a favor (en total)
+    min_testimony_support: int = 0  # testimonios de clientes a favor (entrevistas, mensajes, ventas)
 
 
-# Nivel 1 (AD-FUNC-01): "requiere evidencia externa suficiente"
+# Nivel 1 (AD-FUNC-01): "requiere evidencia externa suficiente". Los datos de mercado prueban que el
+# mercado existe, no que a esos clientes les duela: sin testimonios del segmento el dolor no está validado
+# (piloto de Xmart Travel, 2026-10-21: 4 cifras del DANE, ANATO y Booking abrían el Gate sin un solo cliente).
 GATE_RULES = {1: GateRule("problem", min_value=60.0, min_confidence=50.0,
-                          min_external_support=1, min_client_or_external=2)}
+                          min_external_support=1, min_client_or_external=2, min_testimony_support=5)}
 
 
 @dataclass
@@ -146,11 +149,16 @@ def evaluate_gate(level_number: int, items: list[EvidenceItem]) -> GateEvaluatio
     result = score_dimension(rule.score_type, items)
     b = result.breakdown
     external = b[EXTERNAL][SUPPORTS]
-    strong = external + b[TESTIMONY][SUPPORTS]
+    testimony = b[TESTIMONY][SUPPORTS]
+    strong = external + testimony
     missing = []
     if external < rule.min_external_support:
         missing.append(f"Al menos {rule.min_external_support} dato verificable externamente que respalde el problema "
                        "(un estudio, una estadística, un registro público, un documento)")
+    if testimony < rule.min_testimony_support:
+        missing.append(f"Al menos {rule.min_testimony_support} testimonios de clientes del segmento que confirmen el "
+                       f"problema: entrevistas, mensajes o ventas (tienes {testimony}). Los datos de mercado "
+                       "muestran que el mercado existe, no que a esos clientes les duela")
     if strong < rule.min_client_or_external:
         missing.append(f"Al menos {rule.min_client_or_external} evidencias a favor entre datos externos y "
                        f"testimonios (tienes {strong})")

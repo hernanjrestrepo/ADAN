@@ -29,7 +29,7 @@ def _strong_evidence(client, co):
     for n in range(3):
         assert _add(client, co, claim=f"Estudio de mercado {n}: 40 % de tiendas pierde café", kind="external",
                     source=f"https://example.org/estudio-{n}").status_code == 201
-    for n in range(2):
+    for n in range(5):
         assert _add(client, co, claim=f"Entrevisté a la tienda {n} y confirma el problema",
                     kind="testimony").status_code == 201
 
@@ -115,7 +115,7 @@ def test_each_calculation_is_a_new_score_with_its_evidence(client, db_session, c
     rows = db_session.query(Score).filter_by(project_id=co["project"].id).all()
     assert len(rows) == 2  # nunca sobrescribe: serie histórica (AD-CMP-05 §4)
     assert one["latest"]["breakdown"]["external"]["supports"] == 3
-    assert one["evidence_count"] == 5
+    assert one["evidence_count"] == 8
     assert rows[0].evidence["engine"] == "AD-ARQ-10 v0"
 
 
