@@ -5,6 +5,7 @@ export interface User {
   email: string
   name: string
   role: string
+  is_superadmin?: boolean
 }
 
 export interface TokenResponse {
@@ -884,4 +885,63 @@ export interface AppleNetwork {
   rate_per_level: number
   depth: number
   total_earned: number
+}
+
+// Consola de Paradixe (superadministradores)
+export interface AdminSummary {
+  users: number
+  users_30d: number
+  companies: number
+  referred_users: number
+  purchases: number
+  purchases_cop: number
+  apples_sold: number
+  apples_gifted: number
+  apples_referral: number
+  apples_in_wallets: number
+  levels: { level: number; name: string; apples: number; paid: number; revenue: number; cost: number }[]
+  levels_revenue: number
+  levels_cost: number
+  levels_margin: number | null
+  config: { provider: string; live: boolean; required: boolean; welcome_referral: number; trm: number }
+}
+
+export interface AdminUser {
+  id: string
+  name: string
+  email: string
+  created_at: string | null
+  balance: number
+  gift_balance: number
+  companies: number
+  levels_paid: number
+  purchased_cop: number
+  code: string | null
+  sponsor: string | null
+  invited: number
+}
+
+export interface AdminPurchase extends ApplePurchase {
+  email: string
+  external_id: string | null
+  resolved_at: string | null
+}
+
+export interface AdminMovement {
+  id: string
+  email: string
+  kind: string
+  amount: number
+  detail: string
+  created_at: string
+}
+
+export interface AdminCompany {
+  id: string
+  name: string
+  owner: string
+  status: string
+  stage: string | null
+  created_at: string
+  levels_paid: number[]
 }

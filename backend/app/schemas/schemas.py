@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from datetime import datetime
-from pydantic import BaseModel, EmailStr, Field, field_validator, model_validator
+from pydantic import BaseModel, EmailStr, Field, field_validator, model_validator, computed_field
 
 from app.core.disclaimer import AI_DISCLAIMER
 
@@ -68,6 +68,13 @@ class UserResponse(BaseModel):
     role: str
 
     model_config = {"from_attributes": True}
+
+    @computed_field
+    @property
+    def is_superadmin(self) -> bool:
+        from app.core.config import settings
+        admins = {e.strip().lower() for e in settings.PARADIXE_SUPERADMINS.split(",") if e.strip()}
+        return self.email.lower() in admins
 
 
 # --- Companies ---

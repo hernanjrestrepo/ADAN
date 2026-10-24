@@ -6,15 +6,28 @@ cambia aquí y no en cada router. Todo recurso ajeno responde 404 (no se revela 
 """
 from __future__ import annotations
 
-from fastapi import HTTPException
+from fastapi import Depends, HTTPException
 from sqlalchemy.orm import Query, Session
 
+from app.core.config import settings
+from app.core.auth import get_current_user
 from app.models.models import Company, Project, User
 
 
 def owned_companies(db: Session, user: User) -> Query:
     """Consulta de las empresas a las que el usuario tiene acceso."""
     return db.query(Company).filter(Company.primary_user_id == user.id)
+
+
+def is_superadmin(user: User) -> bool:
+    admins = {e.strip().lower() for e in settings.PARADIXE_SUPERADMINS.split(",") if e.strip()}
+    return bool(user.email) and user.email.lower() in admins
+
+
+def require_superadmin(user: User = Depends(get_current_user)) -> User:
+    if not is_superadmin(user):
+        raise HTTPException(status_code=403, detail="Solo para superadministradores de Paradixe")
+    return user
 
 
 def get_owned_company(db: Session, company_id: str, user: User) -> Company:
