@@ -233,6 +233,22 @@ export class FakeApi {
       this.messages.push(reply)
       return this.json(route, 200, { message: reply, conversation_id: 'conv1', card_id: null, disclaimer: 'aviso' })
     }
+    if (method === 'GET' && path.endsWith('/arena/last')) return this.json(route, 404, { detail: 'Todavía no has entrado' })
+    if (method === 'POST' && path.endsWith('/arena/start')) {
+      const inv = (id: string, name: string) => ({ id, name, role: 'Inversionista', avatar: '💼', first_impression: `${name} ve cero ventas.`,
+        questions: [`¿Quién ya te pagó, ${name}?`], red_flags: ['Sin tracción'] })
+      return this.json(route, 200, { id: 'a1', phase: 'questions', pitch: body?.pitch ?? '',
+        investors: [inv('angel', 'Ángela Ruiz'), inv('vc', 'Fondo Horizonte'), inv('banca', 'Banca Pyme'), inv('estrategico', 'Grupo Estratégico')] })
+    }
+    if (method === 'POST' && path.endsWith('/arena/a1/answer')) {
+      const decided = (id: string, name: string, decision: string) => ({ id, name, role: 'Inversionista', avatar: '💼',
+        first_impression: 'x', questions: [], red_flags: [], decision, amount_usd: decision === 'NO_INVIERTE' ? 0 : 100000,
+        terms: '10 %', reason: `${name} decidió.`, conditions: [], fatal_flaw: '', answer: body?.answers?.[id] ?? '' })
+      return this.json(route, 200, { id: 'a1', phase: 'decided', pitch: '', passed: true, backers: 2, total_usd: 200000,
+        verdict: 'Pasaste La Arena: 2 de 4 inversionistas te respaldan.',
+        investors: [decided('angel', 'Ángela Ruiz', 'INVIERTE'), decided('vc', 'Fondo Horizonte', 'NO_INVIERTE'),
+          decided('banca', 'Banca Pyme', 'CON_CONDICIONES'), decided('estrategico', 'Grupo Estratégico', 'NO_INVIERTE')] })
+    }
     if (method === 'POST' && path.endsWith('/documents/upload')) {
       const now = new Date().toISOString()
       this.discoveryDone = Math.max(this.discoveryDone, 3)

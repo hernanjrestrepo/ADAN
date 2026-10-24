@@ -5,7 +5,8 @@
 - **Seis especialistas** (CTO, CFO, CMO, Legal, Producto, Operaciones): analizan en paralelo,
   cada uno desde su especialidad, y votan PROCEED, PIVOT o STOP con su confianza.
 - **El cliente** participa desde el inicio: puede plantear la pregunta y su posición.
-- **Consenso** por mayoría, con quórum; el disenso nunca se oculta.
+- **Consenso exigente**: avanzar requiere 5 de 6 a favor, sin STOP, confianza alta y cada área a prueba de
+  balas; si no, PIVOT. Un abogado del diablo rota en cada sesión. El disenso nunca se oculta.
 - **Acta**: apertura, votos, síntesis, disenso y evidencia pedida quedan registrados.
 Es una recomendación: la decisión es del cliente (Patrón A).
 """
@@ -13,6 +14,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import math
 import time
 from dataclasses import asdict, dataclass, field
 
@@ -33,6 +35,9 @@ class AgentVote:
     questions: list[str] = field(default_factory=list)
     model: str = ""
     duration_s: float = 0.0
+    failure_mode: str = ""      # la razón más probable por la que la empresa cerraría, desde su especialidad
+    bulletproof: bool = False   # si en su especialidad el tema está a prueba de balas
+    devils_advocate: bool = False
 
 
 @dataclass
@@ -55,6 +60,8 @@ class BoardConsensus:
     client_question: str = ""
     client_position: str = ""
     minutes: str = ""              # acta de la sesión
+    failure_modes: list[str] = field(default_factory=list)  # por qué esta empresa podría cerrar
+    bulletproof_gaps: list[str] = field(default_factory=list)  # áreas que todavía no están a prueba de balas
 
     def to_dict(self) -> dict:
         return asdict(self)
@@ -66,6 +73,10 @@ class BoardConsensus:
         return cls(**{**{k: v for k, v in data.items() if k in known}, "votes": votes})
 
 
+# Para avanzar (PROCEED): 5 de 6 a favor y confianza promedio de 70 o más
+SUPERMAJORITY = 5 / 6
+MIN_CONFIDENCE = 70
+
 # El CEO preside; estos seis votan (AD-FUNC-02 §1)
 SPECIALISTS = {
     "CTO": "viabilidad TÉCNICA: factibilidad, arquitectura, riesgos tecnológicos",
@@ -76,29 +87,56 @@ SPECIALISTS = {
     "Operaciones": "OPERACIÓN: procesos, recursos, proveedores, capacidad de ejecutar",
 }
 
-# Qué significa cada voto en el Nivel 1 (El Dolor): se juzga el dolor, no la solución en abstracto
+# El Board existe para que la empresa no sea parte del 90 % que cierra en sus primeros cinco años por falta de
+# información, planeación o preparación. Por eso es exigente por defecto: busca primero por qué fallaría.
+FAILURE_LENS = {
+    "CTO": "producto que no se puede construir o mantener con los recursos reales, dependencia de un proveedor o "
+           "de una tecnología, deuda técnica, seguridad",
+    "CFO": "quedarse sin caja (la primera causa de cierre), costos subestimados, margen que no alcanza, precio sin "
+           "validar, punto de equilibrio irreal, capital insuficiente",
+    "CMO": "no hay necesidad real de mercado (la causa más común de cierre), segmento mal elegido, canal sin costo "
+           "de adquisición conocido, competencia que ya lo resuelve",
+    "Legal": "operar sin licencias o registros, contratos que no existen, datos personales sin base legal, "
+             "propiedad intelectual ajena, responsabilidad frente al consumidor",
+    "Producto": "construir lo que nadie pidió, alcance inflado, solución que no resuelve el dolor validado, "
+                "experiencia que el cliente abandona",
+    "Operaciones": "no poder entregar lo que se vende, un solo proveedor o persona crítica, procesos sin dueño, "
+                   "capacidad que no escala, equipo incompleto",
+}
+
 VOTE_RULES = (
-    "Vota PROCEED si el dolor está respaldado por datos verificables (no solo supuestos del fundador); "
-    "PIVOT si el dolor es plausible pero falta validarlo o hay que ajustar el segmento; STOP si lo que hay "
-    "indica que el dolor no existe o no vale la pena resolverlo."
+    "Tu postura por defecto es escéptica. Vota PROCEED solo si, en TU especialidad, el tema está a prueba de "
+    "balas: respaldado por evidencia verificable (datos externos con fuente, clientes reales, ventas, cifras "
+    "medidas), no por supuestos ni proyecciones del fundador. Ante la duda, PIVOT: es más barato corregir ahora "
+    "que cerrar después. STOP si lo que hay indica que el problema no existe o que el modelo no puede funcionar. "
+    "Una confianza mayor a 70 exige que cites al menos dos datos verificables de esta empresa."
 )
 
+DEVILS_ADVOCATE = (
+    "\nEN ESTA SESIÓN ERES EL ABOGADO DEL DIABLO: tu trabajo es construir el caso más fuerte posible en contra de "
+    "seguir, con datos de esta empresa. Solo puedes votar PROCEED si, después de buscar a fondo, no encuentras "
+    "ninguna falla seria."
+)
+
+
+def _system(role: str, focus: str, devil: bool = False) -> str:
+    return (
+        f"Eres el {role} del Board Room de ADÁN. Tu especialidad: {focus}. Desde ahí evalúas si esta empresa está "
+        "lista para seguir. Recuerda: 9 de cada 10 empresas cierran en sus primeros cinco años; tu trabajo es que "
+        "esta no sea una de ellas, y eso exige decir la verdad incómoda a tiempo.\n"
+        f"Busca primero cómo podría fallar desde tu área: {FAILURE_LENS.get(role, focus)}.\n"
+        + VOTE_RULES + (DEVILS_ADVOCATE if devil else "") + "\n"
+        "Reglas: habla de ESTA empresa, con sus datos, cifras, segmentos y socios; nada genérico que sirva para "
+        "cualquier empresa. Distingue dato de supuesto: si casi todo son supuestos, baja tu confianza. "
+        "`analysis`: máximo 80 palabras. `justification`: una frase. `failure_mode`: la razón más probable por la "
+        "que esta empresa cerraría desde tu especialidad, en una frase concreta. `bulletproof`: true solo si tu "
+        "área está a prueba de balas. `key_strengths` y `key_concerns`: máximo 3 cada una, específicas. "
+        "`questions`: máximo 2, la evidencia concreta que cambiaría tu voto (qué medir, con quién, cuántos). Español."
+    )
+
+
 # Compatibilidad: quien importe AGENT_PROMPTS ve los roles que votan
-AGENT_PROMPTS = {
-    role: {
-        "name": role,
-        "system": (
-            f"Eres el {role} del Board Room de ADÁN. Desde tu especialidad ({focus}) evalúas si el dolor "
-            "del cliente está lo bastante validado para seguir. " + VOTE_RULES + "\n"
-            "Reglas: habla de ESTA empresa, con sus datos, cifras, segmentos y socios; nada genérico que "
-            "sirva para cualquier empresa. Distingue dato de supuesto: si casi todo son supuestos, baja tu "
-            "confianza. `analysis`: máximo 80 palabras. `justification`: una frase. `key_strengths` y "
-            "`key_concerns`: máximo 3 cada una, específicas. `questions`: máximo 2, la evidencia concreta que "
-            "cambiaría tu voto (qué medir, con quién, cuántos). Español."
-        ),
-    }
-    for role, focus in SPECIALISTS.items()
-}
+AGENT_PROMPTS = {role: {"name": role, "system": _system(role, focus)} for role, focus in SPECIALISTS.items()}
 
 CEO_SYSTEM = (
     "Eres el CEO Agent de ADÁN y presides el Board Room (CEO, CTO, CFO, CMO, Legal, Producto, "
@@ -117,8 +155,11 @@ VOTE_SCHEMA = {
         "key_strengths": {"type": "array", "items": {"type": "string"}},
         "key_concerns": {"type": "array", "items": {"type": "string"}},
         "questions": {"type": "array", "items": {"type": "string"}},
+        "failure_mode": {"type": "string"},
+        "bulletproof": {"type": "boolean"},
     },
-    "required": ["analysis", "justification", "vote", "confidence", "key_strengths", "key_concerns", "questions"],
+    "required": ["analysis", "justification", "vote", "confidence", "key_strengths", "key_concerns", "questions",
+                 "failure_mode", "bulletproof"],
     "additionalProperties": False,
 }
 
@@ -138,8 +179,9 @@ CLOSING_SCHEMA = {
         "synthesis": {"type": "string"},
         "evidence_requests": {"type": "array", "items": {"type": "string"}},
         "next_steps": {"type": "array", "items": {"type": "string"}},
+        "failure_modes": {"type": "array", "items": {"type": "string"}},
     },
-    "required": ["synthesis", "evidence_requests", "next_steps"],
+    "required": ["synthesis", "evidence_requests", "next_steps", "failure_modes"],
     "additionalProperties": False,
 }
 
@@ -153,15 +195,18 @@ class BoardRoom:
         self.chair_llm = for_tier(llm, "standard")
 
     async def run(self, pain_description: str, conversation_context: str = "",
-                  client_question: str = "", client_position: str = "") -> BoardConsensus:
+                  client_question: str = "", client_position: str = "", session_number: int = 0) -> BoardConsensus:
+        # El abogado del diablo rota sesión a sesión entre los seis especialistas
+        devil = list(SPECIALISTS)[session_number % len(SPECIALISTS)]
         # 1. Habla primero el CEO: objetivo y decisión en juego
         opening = await self._open(pain_description, client_question, client_position)
 
         # 2. Los especialistas deliberan en paralelo, con la apertura y la posición del cliente
         briefing = self._briefing(opening, client_question, client_position)
         votes = await asyncio.gather(*[
-            self._analyze_agent(role, config, pain_description, conversation_context + briefing)
-            for role, config in AGENT_PROMPTS.items()
+            self._analyze_agent(role, {"name": role, "system": _system(role, SPECIALISTS[role], role == devil)},
+                                pain_description, conversation_context + briefing, devil=role == devil)
+            for role in SPECIALISTS
         ])
 
         # 3. Consenso por mayoría, con quórum y disenso visible
@@ -177,6 +222,7 @@ class BoardRoom:
             consensus.synthesis = closing["synthesis"]
             consensus.evidence_requests = closing["evidence_requests"]
             consensus.next_steps = closing["next_steps"]
+            consensus.failure_modes = closing["failure_modes"] or consensus.failure_modes
         consensus.minutes = self._minutes(consensus)
         return consensus
 
@@ -227,8 +273,15 @@ class BoardRoom:
             f"Decisión del Board: {consensus.decision} (confianza promedio {consensus.confidence:.0f}%).\n"
             f"Votos:\n{votes}\n"
             + (f"\nDisenso:\n{consensus.dissent}\n" if consensus.dissent else "")
+            + ("\nModos de falla que vieron los especialistas:\n" + "\n".join(f"- {f}" for f in consensus.failure_modes)
+               + "\n" if consensus.failure_modes else "")
+            + (f"Áreas que no están a prueba de balas: {', '.join(consensus.bulletproof_gaps)}\n"
+               if consensus.bulletproof_gaps else "")
             + "\n`synthesis` (máximo 120 palabras, de tú al cliente): el veredicto en una frase, las 2 o 3 "
-            "razones con datos de esta empresa y el disenso si lo hay. Recuerda que la decisión es del cliente.\n"
+            "razones con datos de esta empresa y el disenso si lo hay. Sé honesto aunque incomode: el objetivo es que "
+            "la empresa no cierre. Recuerda que la decisión es del cliente.\n"
+            "`failure_modes`: las 3 razones más probables por las que esta empresa cerraría, cada una con cómo "
+            "blindarse.\n"
             "`evidence_requests`: máximo 4, cada una medible (qué conseguir, con quién, cuántos y cómo).\n"
             "`next_steps`: máximo 4, en orden, para las próximas dos semanas.\n"
             "Nada genérico: todo debe referirse a esta empresa."
@@ -238,6 +291,7 @@ class BoardRoom:
             "synthesis": normalize_string(data.get("synthesis")),
             "evidence_requests": normalize_list(data.get("evidence_requests")),
             "next_steps": normalize_list(data.get("next_steps")),
+            "failure_modes": normalize_list(data.get("failure_modes")),
         }
 
     @staticmethod
@@ -259,11 +313,16 @@ class BoardRoom:
                 lines.append(f"- Posición: {c.client_position}")
         lines += ["", "## Votos"]
         for v in c.votes:
-            lines.append(f"- **{v.agent}**: {v.vote} ({v.confidence:.0f}%). {v.justification}")
+            devil = " (abogado del diablo)" if v.devils_advocate else ""
+            lines.append(f"- **{v.agent}**{devil}: {v.vote} ({v.confidence:.0f}%). {v.justification}")
         lines += ["", f"## Resultado: {c.decision}",
                   f"Score {c.score:.0f}/100 · confianza promedio {c.confidence:.0f}%"]
         if c.dissent:
             lines += ["", "## Disenso", c.dissent]
+        if c.failure_modes:
+            lines += ["", "## Por qué esta empresa podría cerrar"] + [f"- {f}" for f in c.failure_modes]
+        if c.bulletproof_gaps:
+            lines += ["", "## Todavía no está a prueba de balas"] + [f"- {g}" for g in c.bulletproof_gaps]
         if c.synthesis:
             lines += ["", "## Síntesis del CEO", c.synthesis]
         if c.evidence_requests:
@@ -279,6 +338,7 @@ class BoardRoom:
         agent_config: dict,
         pain_description: str,
         conversation_context: str,
+        devil: bool = False,
     ) -> AgentVote:
         """Run a single agent's independent analysis."""
         context_block = ""
@@ -311,6 +371,7 @@ class BoardRoom:
                 vote="ABSTAIN",
                 confidence=0,
                 duration_s=time.monotonic() - start,
+                devils_advocate=devil,
             )
         duration = time.monotonic() - start
 
@@ -339,6 +400,11 @@ class BoardRoom:
                 questions=normalized["questions"],
                 model=response.model,
                 duration_s=duration,
+                failure_mode=normalize_string(raw_data.get("failure_mode", "")),
+                # Sin el campo (respuestas viejas o de prueba), un PROCEED cuenta como a prueba de balas
+                bulletproof=bool(raw_data["bulletproof"]) if isinstance(raw_data.get("bulletproof"), bool)
+                else normalized["vote"] == "PROCEED",
+                devils_advocate=devil,
             )
         except (json.JSONDecodeError, KeyError, ValueError, AttributeError, TypeError):
             # Sin JSON válido no hay voto: se registra como abstención y no cuenta
@@ -378,21 +444,24 @@ class BoardRoom:
 
         total = len(votes)
 
-        # Decision by majority
+        # Avanzar exige que el tema esté a prueba de balas: casi todo el Board a favor (5 de 6), nadie pide
+        # detenerse, confianza alta y cada voto a favor con su área blindada. Si no, se ajusta (PIVOT).
+        avg_confidence = sum(v.confidence for v in votes) / total if total > 0 else 0
+        needed = math.ceil(len(votes_all) * SUPERMAJORITY)
+        all_shielded = all(v.bulletproof for v in votes if v.vote == "PROCEED")
         if vote_counts["STOP"] >= total / 2:
             decision = "STOP"
-        elif vote_counts["PIVOT"] >= total / 2:
-            decision = "PIVOT"
-        else:
+        elif (vote_counts["PROCEED"] >= needed and vote_counts["STOP"] == 0 and avg_confidence >= MIN_CONFIDENCE
+              and all_shielded):
             decision = "PROCEED"
+        else:
+            decision = "PIVOT"
 
         # Calculate aggregate score (average confidence, weighted by vote)
         vote_weights = {"PROCEED": 1.0, "PIVOT": 0.5, "STOP": 0.0}
         weighted_sum = sum(v.confidence * vote_weights.get(v.vote, 0.5) for v in votes)
         score = weighted_sum / total if total > 0 else 0
 
-        # Average confidence
-        avg_confidence = sum(v.confidence for v in votes) / total if total > 0 else 0
 
         # Find unanimous concerns and strengths
         all_concerns = [set(v.key_concerns) for v in votes if v.key_concerns]
@@ -433,4 +502,6 @@ class BoardRoom:
             concerns_majority=concerns_majority,
             strengths_unanimous=strengths_unanimous,
             dissent=dissent,
+            failure_modes=[f"{v.agent}: {v.failure_mode}" for v in votes if v.failure_mode][:6],
+            bulletproof_gaps=[v.agent for v in votes if not v.bulletproof],
         )

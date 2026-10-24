@@ -60,12 +60,23 @@ function VoteCard({ vote }: { vote: BoardConsensus['votes'][number] }) {
           {vote.agent.slice(0, 3).toUpperCase()}
         </div>
         <div className="flex-1 min-w-0">
-          <h3 className="font-bold">{vote.agent}</h3>
-          <p className="text-xs text-adan-muted">confianza {vote.confidence.toFixed(0)}%</p>
+          <h3 className="font-bold">
+            {vote.agent}
+            {vote.devils_advocate && <span className="ml-2 text-xs font-normal text-orange-300" title="Su trabajo en esta sesión es construir el caso en contra">😈 Abogado del diablo</span>}
+          </h3>
+          <p className="text-xs text-adan-muted">
+            confianza {vote.confidence.toFixed(0)}%
+            {vote.bulletproof !== undefined && (vote.bulletproof
+              ? <span className="ml-2 text-adan-success">· su área está a prueba de balas</span>
+              : <span className="ml-2 text-adan-warning">· su área todavía no está a prueba de balas</span>)}
+          </p>
         </div>
         <VoteBadge vote={vote.vote} />
       </div>
       <p className="text-sm mt-3">{vote.justification}</p>
+      {vote.failure_mode && (
+        <p className="text-sm mt-2 rounded-lg bg-adan-danger/10 px-3 py-2"><span className="font-bold">Podría cerrar por:</span> {vote.failure_mode}</p>
+      )}
       <List title="Le preocupa" items={vote.key_concerns ?? []} />
       <List title="Cambiaría su voto si…" items={vote.questions ?? []} />
       {vote.analysis && vote.analysis !== vote.justification && (
@@ -119,6 +130,18 @@ export default function BoardRoomPanel({ result, running, onRun, onNewSession }:
               <div className="mt-4 text-sm whitespace-pre-wrap">
                 <span className="font-bold">Disenso:</span>{'\n'}{result.dissent}
               </div>
+            )}
+            {(result.failure_modes ?? []).length > 0 && (
+              <div className="mt-4 rounded-xl border border-adan-danger/30 bg-adan-danger/5 p-4" data-testid="failure-modes">
+                <p className="text-sm font-bold">Por qué esta empresa podría cerrar (y cómo blindarla)</p>
+                <p className="text-xs text-adan-muted mt-1">9 de cada 10 empresas cierran en sus primeros cinco años. El Board te lo dice a tiempo.</p>
+                <ul className="mt-2 list-disc pl-5 space-y-1 text-sm">{(result.failure_modes ?? []).map((f) => <li key={f}>{f}</li>)}</ul>
+              </div>
+            )}
+            {(result.bulletproof_gaps ?? []).length > 0 && (
+              <p className="mt-3 text-sm text-adan-warning">
+                Todavía no está a prueba de balas en: {(result.bulletproof_gaps ?? []).join(', ')}. Para avanzar, el Board exige 5 de 6 a favor y cada área blindada.
+              </p>
             )}
             <List title="Evidencia que el Board te pide" items={result.evidence_requests ?? []} />
             <List title="Próximos pasos" items={result.next_steps ?? []} />

@@ -102,7 +102,8 @@ async def test_b3_abstentions_do_not_count():
     llm = FakeLLM(chat_replies=[VALID_VOTE, "no es JSON"])
     consensus = await BoardRoom(llm).run("Problema")
     assert sum(v.vote == "ABSTAIN" for v in consensus.votes) == 3
-    assert consensus.decision == "PROCEED"
+    # Con medio Board abstenido no se alcanzan los 5 de 6 que exige avanzar: se ajusta (Board crítico)
+    assert consensus.decision == "PIVOT"
     assert consensus.confidence == 80
     assert "Abstenciones" in consensus.summary
 

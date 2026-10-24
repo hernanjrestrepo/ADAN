@@ -245,8 +245,12 @@ class Nivel1Service:
         # El Board también ve lo que ya se sabe de la empresa (capa Proyecto, AD-CMP-04)
         conversation_context += "\n\nLo que ya se sabe de la empresa:\n" + ContextLayers(self.db).project_layer(project)
 
+        # Cuántas sesiones van: el abogado del diablo rota entre los especialistas
+        sessions = self.db.query(Document).filter(Document.project_id == project.id,
+                                                  Document.doc_type == "board_minutes").count()
         consensus = await self.board_room.run(pain_description, conversation_context,
-                                              client_question=client_question, client_position=client_position)
+                                              client_question=client_question, client_position=client_position,
+                                              session_number=sessions)
 
         # Persist result in Gemelo Digital
         votes_data = [

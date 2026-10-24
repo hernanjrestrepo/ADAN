@@ -1,5 +1,5 @@
 import type {
-  AgentContract, AgentOffering, AgentTask, ContractReport, HirePeriod,
+  ArenaSession, AgentContract, AgentOffering, AgentTask, ContractReport, HirePeriod,
   BoardConsensus, BoardRoomInput, ChatResponse, Company, CompanyInput, DecideInput, Decision, DocumentRecord,
   Evidence, EvidenceInput, GatePreview, GateReviewResult, LevelView, Nivel1Status, OnboardingState, Score,
   ScoreOverview, TimelineEvent, TokenResponse, TwinKind, TwinOverview, UploadResult, User,
@@ -117,6 +117,16 @@ export const api = {
     }
     return response.json() as Promise<UploadResult>
   },
+  // La Arena (inversionistas simulados): leer y deliberar toma tiempo
+  startArena: (companyId: string, pitch: string) =>
+    request<ArenaSession>(`/nivel1/${companyId}/arena/start`, {
+      method: 'POST', body: JSON.stringify({ pitch }), signal: AbortSignal.timeout(CHAT_TIMEOUT_MS * 2),
+    }),
+  answerArena: (companyId: string, sessionId: string, answers: Record<string, string>) =>
+    request<ArenaSession>(`/nivel1/${companyId}/arena/${sessionId}/answer`, {
+      method: 'POST', body: JSON.stringify({ answers }), signal: AbortSignal.timeout(CHAT_TIMEOUT_MS * 2),
+    }),
+  getLastArena: (companyId: string) => request<ArenaSession>(`/nivel1/${companyId}/arena/last`),
   runBoardRoom: (companyId: string, input?: BoardRoomInput) =>
     post<BoardConsensus>(`/nivel1/${companyId}/board-room`, input ?? {}),
   getLastBoardRoom: (companyId: string) => request<BoardConsensus>(`/nivel1/${companyId}/board-room/last`),
