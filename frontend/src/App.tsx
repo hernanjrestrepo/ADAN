@@ -23,9 +23,12 @@ function Private({ children }: { children: ReactNode }) {
   return user ? children : <Navigate to="/login" replace />
 }
 
+// `?next=/universo` vuelve a donde estaba la persona tras entrar o registrarse (solo rutas internas)
 function PublicOnly({ children }: { children: ReactNode }) {
   const { user } = useAuth()
-  return user ? <Navigate to="/dashboard" replace /> : children
+  const next = new URLSearchParams(window.location.search).get('next') ?? ''
+  const safe = next.startsWith('/') && !next.startsWith('//') ? next : '/dashboard'
+  return user ? <Navigate to={safe} replace /> : children
 }
 
 export default function App() {

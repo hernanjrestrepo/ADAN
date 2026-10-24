@@ -40,7 +40,7 @@ export default function LoginPage() {
       </form>
       <p className="text-center text-adan-muted mt-6">
         ¿No tienes cuenta?{' '}
-        <Link to="/register" className="text-adan-accent hover:underline">Regístrate</Link>
+        <Link to={`/register${window.location.search}`} className="text-adan-accent hover:underline">Regístrate</Link>
       </p>
     </AuthLayout>
   )

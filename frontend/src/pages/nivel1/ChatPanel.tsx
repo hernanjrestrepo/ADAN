@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from 
 import ReactMarkdown from 'react-markdown'
 import Badge from '../../components/ui/Badge'
 import Button from '../../components/ui/Button'
+import MicButton from '../../components/MicButton'
 import { EmptyState } from '../../components/ui/States'
 import type { DiscoveryProgress, DiscoveryTopic, EvidenceSuggestion, Message } from '../../types'
 
@@ -240,6 +241,8 @@ export default function ChatPanel({
               <Button type="button" variant="secondary" onClick={pickFiles} disabled={busy} title="Cargar documentos">📎</Button>
             </>
           )}
+          <MicButton onText={(t) => setInput((v) => (v ? `${v} ${t}` : t))} disabled={busy}
+            className="px-3 py-3 rounded-xl border border-adan-border bg-adan-surface hover:border-adan-accent disabled:opacity-40" />
           <Button type="submit" disabled={busy || !input.trim()}>Enviar</Button>
         </form>
 

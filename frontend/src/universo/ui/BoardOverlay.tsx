@@ -12,6 +12,7 @@ export default function BoardOverlay() {
   const approve = useUniverso((s) => s.approveLevel)
   const dismiss = useUniverso((s) => s.dismissBoard)
   const log = useUniverso((s) => s.log)
+  const arenaPassed = useUniverso((s) => s.arenaPassed)
 
   useEffect(() => {
     if (!board || board.phase === 'decided') return
@@ -33,7 +34,7 @@ export default function BoardOverlay() {
           <h2 className="text-lg font-bold">{level.name}: {level.tagline}</h2>
         </div>
         <span className="rounded-full bg-white/5 px-3 py-1 text-xs">
-          {board.phase === 'gathering' ? 'El equipo llega a la sala…' : board.phase === 'opening' ? 'Valeria abre la sesión' : `${yes} a favor · ${shown.length - yes} pivotar`}
+          {board.phase === 'gathering' ? 'El equipo llega a la sala…' : board.phase === 'opening' ? 'ADÁN abre la sesión' : `${yes} a favor · ${shown.length - yes} pivotar`}
         </span>
       </div>
 
@@ -55,9 +56,9 @@ export default function BoardOverlay() {
 
       {board.phase === 'decided' && (
         <div className="mt-4 u-rise">
-          <div className="flex gap-3 rounded-2xl bg-white/[0.04] p-3">
+          <div className={`flex gap-3 rounded-2xl p-3 ${board.revealsRisk ? 'bg-red-500/10 ring-1 ring-red-400/40' : 'bg-white/[0.04]'}`}>
             <Avatar id="ceo" size={34} />
-            <p className="text-sm text-slate-200"><b>Valeria (CEO):</b> {board.synthesis}</p>
+            <p className="text-sm text-slate-200"><b>ADÁN (CEO):</b> {board.synthesis}</p>
           </div>
           <div className="mt-3 flex flex-wrap justify-end gap-2">
             <button type="button" onClick={dismiss} className="rounded-xl bg-white/10 px-4 py-2 text-sm font-semibold hover:bg-white/20">
@@ -66,7 +67,7 @@ export default function BoardOverlay() {
             {board.recommendation === 'PROCEED' ? (
               <button type="button" onClick={approve}
                 className="u-pulse rounded-xl bg-linear-to-r from-emerald-400 to-cyan-400 px-5 py-2 text-sm font-bold text-slate-950">
-                ✓ Apruebo el cierre del Nivel {level.number}
+                {level.number === 5 && !arenaPassed ? '🥊 Ir a La Arena' : `✓ Apruebo el cierre del Nivel ${level.number}`}
               </button>
             ) : (
               <button type="button" onClick={() => { log(`Decidiste avanzar distinto a lo recomendado. Queda documentado: riesgos asumidos y responsabilidad (AD-FUNC-02 §2.5).`, '#fb923c'); approve() }}

@@ -69,7 +69,7 @@ export default function RegisterPage() {
       </form>
       <p className="text-center text-adan-muted mt-6">
         ¿Ya tienes cuenta?{' '}
-        <Link to="/login" className="text-adan-accent hover:underline">Inicia sesión</Link>
+        <Link to={`/login${window.location.search}`} className="text-adan-accent hover:underline">Inicia sesión</Link>
       </p>
     </AuthLayout>
   )

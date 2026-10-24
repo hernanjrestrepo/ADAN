@@ -109,3 +109,24 @@
   .universo canvas, .u-no-print { display: none !important; }
   .u-report { position: static !important; background: #fff !important; color: #0f172a !important; box-shadow: none !important; }
 }
+
+/* Emoción del personaje sobre su cabeza */
+.u-mood { font-size: 22px; line-height: 1; filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.35)); animation: u-pop 0.25s ease-out; }
+
+/* Respuestas de ADÁN en el chat */
+.u-md p { margin: 0.35em 0; }
+.u-md ol, .u-md ul { margin: 0.35em 0; padding-left: 1.2em; }
+.u-md ol { list-style: decimal; }
+.u-md ul { list-style: disc; }
+.u-md li { margin: 0.25em 0; }
+.u-md strong { color: #fff; }
+
+/* Marca ADÁN */
+.u-brand {
+  font-weight: 900;
+  letter-spacing: 0.18em;
+  background: linear-gradient(90deg, #a5f3fc, #a5b4fc 50%, #f0abfc);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}

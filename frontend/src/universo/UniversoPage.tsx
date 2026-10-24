@@ -1,10 +1,11 @@
 import '@fontsource-variable/space-grotesk'
 import './universo.css'
-import { Component, type ReactNode, useCallback, useState } from 'react'
-import { Link } from 'react-router'
+import { Component, type ReactNode, useCallback, useEffect, useState } from 'react'
 import World from './scene/World'
 import { useUniverso } from './store'
+import AdanChat from './ui/AdanChat'
 import AgentCard from './ui/AgentCard'
+import ArenaOverlay from './ui/ArenaOverlay'
 import BoardOverlay from './ui/BoardOverlay'
 import Celebration from './ui/Celebration'
 import Feed from './ui/Feed'
@@ -46,6 +47,11 @@ export default function UniversoPage() {
   const [autopilot, setAutopilot] = useState(false)
   const stop = useCallback(() => setAutopilot(false), [])
   useAutopilot(autopilot && started, stop)
+  // ADÁN recibe a la persona con el chat abierto; se recoge cuando sesiona el Board, La Arena o se mira a alguien
+  const [chatOpen, setChatOpen] = useState(() => window.innerWidth >= 1024)
+  useEffect(() => useUniverso.subscribe((s, prev) => {
+    if ((s.board && !prev.board) || (s.arena && !prev.arena) || (s.selected && !prev.selected)) setChatOpen(false)
+  }), [])
 
   return (
     <div className="universo fixed inset-0 overflow-hidden">
@@ -60,16 +66,15 @@ export default function UniversoPage() {
           {panel === 'ruta' ? <RoutePanel /> : panel === 'ecosistema' ? <EcosystemPanel /> : panel === 'insignias' ? <BadgesPanel /> : <MissionPanel />}
           <AgentCard />
           <BoardOverlay />
-          <Feed />
+          <ArenaOverlay />
+          {!chatOpen && <Feed />}
           <Celebration />
           <ReportModal />
         </>
       ) : (
-        <>
-          <Onboarding />
-          <Link to="/login" className="u-no-print fixed right-4 top-4 z-50 text-xs text-slate-400 hover:text-white">Ya tengo cuenta →</Link>
-        </>
+        <Onboarding />
       )}
+      <AdanChat open={chatOpen} onToggle={() => setChatOpen((v) => !v)} />
     </div>
   )
 }

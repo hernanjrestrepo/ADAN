@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import MicButton from '../../components/MicButton'
 import Button from '../../components/ui/Button'
 import Card from '../../components/ui/Card'
 import { LoadingState } from '../../components/ui/States'
@@ -50,6 +51,11 @@ function InvestorCard({ inv, answer, onAnswer, decided }: {
           maxLength={4000} placeholder="Responde con datos: cifras, clientes, ventas, contratos…"
           className="mt-3 w-full resize-y rounded-xl border border-adan-border bg-adan-bg px-3 py-2 text-sm focus:border-adan-accent focus:outline-hidden" />
       )}
+      {!decided && (
+        <div className="mt-2 flex justify-end">
+          <MicButton onText={(t) => onAnswer(answer ? `${answer} ${t}` : t)} className="rounded-lg border border-adan-border px-3 py-1.5 text-sm hover:border-adan-accent" />
+        </div>
+      )}
     </Card>
   )
 }
@@ -100,6 +106,7 @@ export default function ArenaPanel({ companyId, onError }: { companyId: string; 
             <textarea aria-label="Tu pitch" value={pitch} onChange={(e) => setPitch(e.target.value)} rows={3} maxLength={8000}
               placeholder="Opcional: tu pitch en tus palabras. Si lo dejas vacío, los inversionistas leen lo que ADÁN ya sabe de tu empresa."
               className="w-full resize-y rounded-xl border border-adan-border bg-adan-bg px-3 py-2 text-sm focus:border-adan-accent focus:outline-hidden" />
+            <MicButton onText={(t) => setPitch((v) => (v ? `${v} ${t}` : t))} className="mt-3 mr-2 rounded-lg border border-adan-border px-3 py-2 text-sm hover:border-adan-accent" />
             <Button className="mt-3" onClick={start} loading={busy}>{session ? 'Volver a entrar a La Arena' : 'Entrar a La Arena'}</Button>
           </div>
         )}
