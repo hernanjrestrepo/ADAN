@@ -114,3 +114,17 @@ test('el cliente carga su documentación y ADÁN cuenta lo que aprendió', async
   expect(api.callsTo('POST', '/nivel1/c1/documents/upload')).toHaveLength(1)
   expect(api.callsTo('POST', '/nivel1/c1/documents/upload')[0]?.headers['x-requested-with']).toBe('adan')
 })
+
+test('La Arena: los inversionistas preguntan, el cliente responde y sale el veredicto', async ({ page }) => {
+  const api = await openNivel1(page)
+  await page.getByRole('tab', { name: 'La Arena' }).click()
+  await page.getByLabel('Tu pitch').fill('Pan de masa madre por suscripción')
+  await page.getByRole('button', { name: 'Entrar a La Arena' }).click()
+  await expect(page.getByTestId('arena-investor')).toHaveCount(4)
+  await page.getByLabel('Tu respuesta a Ángela Ruiz').fill('Ya vendí 30 suscripciones')
+  await page.getByRole('button', { name: 'Responder a los inversionistas' }).click()
+  await expect(page.getByTestId('arena-verdict')).toContainText('Pasaste La Arena')
+  expect(api.callsTo('POST', '/nivel1/c1/arena/start')[0]?.body).toEqual({ pitch: 'Pan de masa madre por suscripción' })
+  const answer = api.callsTo('POST', '/nivel1/c1/arena/a1/answer')[0]?.body as { answers: Record<string, string> } | undefined
+  expect(answer?.answers.angel).toBe('Ya vendí 30 suscripciones')
+})

@@ -10,17 +10,19 @@ import type {
   BoardConsensus, BoardRoomInput, Decision, EvidenceSuggestion, DocumentRecord, GateReviewResult, LevelStatus, Message, Nivel1Status,
 } from '../../types'
 import BoardRoomPanel from './BoardRoomPanel'
+import ArenaPanel from './ArenaPanel'
 import ChatPanel from './ChatPanel'
 import DiagnosisPanel from './DiagnosisPanel'
 import EvidencePanel from './EvidencePanel'
 import ScoresPanel from './ScoresPanel'
 
-type Tab = 'chat' | 'evidence' | 'boardroom' | 'diagnosis' | 'scores'
+type Tab = 'chat' | 'evidence' | 'boardroom' | 'arena' | 'diagnosis' | 'scores'
 
 const TABS: { id: Tab; label: string }[] = [
   { id: 'chat', label: 'Conversación' },
   { id: 'evidence', label: 'Evidencia' },
   { id: 'boardroom', label: 'Board Room' },
+  { id: 'arena', label: 'La Arena' },
   { id: 'diagnosis', label: 'Diagnóstico' },
   { id: 'scores', label: 'Scores' },
 ]
@@ -221,6 +223,7 @@ export default function Nivel1Page() {
               uploading={uploading} onUpload={handleUpload}
               onRegisterEvidence={handleRegisterEvidence} onBoardRoom={() => handleBoardRoom()} onDiagnosis={handleDiagnosis} onGateReview={handleGateReview} />
           )}
+          {activeTab === 'arena' && <ArenaPanel companyId={companyId} onError={showError} />}
           {activeTab === 'boardroom' && <BoardRoomPanel result={board} running={boardRunning} onRun={handleBoardRoom} onNewSession={() => setBoard(null)} />}
           {activeTab === 'diagnosis' && (
             <DiagnosisPanel diagnosis={diagnosis} running={diagnosing} onGenerate={handleDiagnosis} />

@@ -251,6 +251,10 @@ export interface AgentVote {
   questions: string[]
   model: string
   duration_s: number
+  // Board crítico: por qué cerraría la empresa desde su área y si su área está a prueba de balas
+  failure_mode?: string
+  bulletproof?: boolean
+  devils_advocate?: boolean
 }
 
 export interface BoardConsensus {
@@ -273,6 +277,8 @@ export interface BoardConsensus {
   client_question: string
   client_position: string
   minutes: string
+  failure_modes?: string[]
+  bulletproof_gaps?: string[]
 }
 
 export interface BoardRoomInput {
@@ -481,4 +487,34 @@ export interface UploadResult {
   conversation_id: string
   learning: { resumen?: string; etapa?: string; vacios?: string[]; riesgos?: string[] }
   discovery: DiscoveryProgress
+}
+
+// La Arena: cuatro inversionistas simulados
+export interface ArenaInvestor {
+  id: string
+  name: string
+  role: string
+  avatar: string
+  first_impression: string
+  questions: string[]
+  red_flags: string[]
+  unavailable?: boolean
+  answer?: string
+  decision?: 'INVIERTE' | 'CON_CONDICIONES' | 'NO_INVIERTE' | 'SIN_RESPUESTA'
+  amount_usd?: number
+  terms?: string
+  reason?: string
+  conditions?: string[]
+  fatal_flaw?: string
+}
+
+export interface ArenaSession {
+  id: string
+  phase: 'questions' | 'decided'
+  pitch: string
+  investors: ArenaInvestor[]
+  passed?: boolean
+  backers?: number
+  total_usd?: number
+  verdict?: string
 }

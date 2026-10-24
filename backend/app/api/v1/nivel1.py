@@ -3,10 +3,12 @@ import json
 
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from fastapi.responses import StreamingResponse
+from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
 from app.ai.base import LLMAdapter
 from app.ai.factory import get_llm_adapter
+from app.arena.service import Arena
 from app.documents import extract as doc_extract
 from app.ems.memory import EnterpriseMemorySystem
 from app.ems.store import embedding_provider, get_vector_store
@@ -269,6 +271,55 @@ async def upload_documents(
             "discovery": discovery_progress(db, conversation, project)}
 
 
+class ArenaStart(BaseModel):
+    pitch: str = Field("", max_length=8000)
+
+
+class ArenaAnswers(BaseModel):
+    answers: dict[str, str] = Field(default_factory=dict)
+
+
+@router.post("/{company_id}/arena/start")
+async def arena_start(company_id: str, body: ArenaStart | None = None, db: Session = Depends(get_db),
+                      user: User = Depends(llm_user), llm: LLMAdapter = Depends(get_llm),
+                      _usage: None = Depends(track_llm_usage)):
+    """La Arena: cuatro inversionistas simulados escuchan la empresa y hacen sus preguntas más difíciles."""
+    get_owned_company(db, company_id, user)
+    project = db.query(Project).filter(Project.company_id == company_id).first()
+    brief = Nivel1Service(llm, db).board_brief(project)
+    pitch = body.pitch.strip() if body else ""
+    if not brief.strip() and not pitch:
+        raise HTTPException(status_code=400, detail="Cuéntale primero a ADÁN tu empresa, o escribe tu pitch.")
+    return await Arena(llm, db).start(project, brief, pitch)
+
+
+@router.post("/{company_id}/arena/{session_id}/answer")
+async def arena_answer(company_id: str, session_id: str, body: ArenaAnswers, db: Session = Depends(get_db),
+                       user: User = Depends(llm_user), llm: LLMAdapter = Depends(get_llm),
+                       _usage: None = Depends(track_llm_usage)):
+    """El fundador responde y cada inversionista decide si invierte, con cuánto y con qué condiciones."""
+    get_owned_company(db, company_id, user)
+    project = db.query(Project).filter(Project.company_id == company_id).first()
+    arena = Arena(llm, db)
+    session = arena.get(project, session_id)
+    if not session:
+        raise HTTPException(status_code=404, detail="Esa sesión de La Arena no existe")
+    if session["phase"] != "questions":
+        raise HTTPException(status_code=409, detail="Esa sesión ya terminó: entra de nuevo a La Arena")
+    answers = {k: v[:4000] for k, v in body.answers.items() if k in {i["id"] for i in session["investors"]}}
+    return await arena.answer(project, session, answers)
+
+
+@router.get("/{company_id}/arena/last")
+def arena_last(company_id: str, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
+    get_owned_company(db, company_id, user)
+    project = db.query(Project).filter(Project.company_id == company_id).first()
+    session = Arena(llm=None, db=db).get(project)  # type: ignore[arg-type]
+    if not session:
+        raise HTTPException(status_code=404, detail="Todavía no has entrado a La Arena")
+    return session
+
+
 @router.post("/{company_id}/board-room")
 async def run_board_room(
     company_id: str,
@@ -331,6 +382,9 @@ def _board_out(consensus) -> dict:
                 "questions": v.questions,
                 "model": v.model,
                 "duration_s": v.duration_s,
+                "failure_mode": v.failure_mode,
+                "bulletproof": v.bulletproof,
+                "devils_advocate": v.devils_advocate,
             }
             for v in consensus.votes
         ],
@@ -338,6 +392,8 @@ def _board_out(consensus) -> dict:
         "concerns_majority": consensus.concerns_majority,
         "strengths_unanimous": consensus.strengths_unanimous,
         "dissent": consensus.dissent,
+        "failure_modes": consensus.failure_modes,
+        "bulletproof_gaps": consensus.bulletproof_gaps,
         "disclaimer": AI_DISCLAIMER,
     }
 
