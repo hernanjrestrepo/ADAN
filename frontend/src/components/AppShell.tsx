@@ -57,6 +57,7 @@ export default function AppShell({ crumbs = [], status, toolbar, children }: App
           </nav>
           <div className="flex items-center gap-3 shrink-0">
             {status}
+            <Link to="/comunidad" className="hidden md:inline text-sm text-adan-muted hover:text-adan-text" title="La red de empresas e inversionistas">🤝 Comunidad</Link>
             <Link to="/universo" className="hidden md:inline text-sm text-adan-muted hover:text-adan-text" title="La oficina 3D de ADÁN">🌌 Universo</Link>
             <span className="hidden sm:flex items-center gap-2" title={user?.email}>
               <span aria-hidden="true"

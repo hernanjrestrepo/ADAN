@@ -742,3 +742,67 @@ export interface ExecutiveReport {
   recomendacion: string
   generated_at: string
 }
+
+// Comunidad ADÁN
+export interface CommunityProfile {
+  id?: string
+  display_name: string
+  headline?: string
+  bio?: string
+  kind: string
+  city?: string
+  country?: string
+  website?: string
+  linkedin?: string
+  public: boolean
+  ticket_min_usd?: number | null
+  ticket_max_usd?: number | null
+  sectors?: string[]
+  stages?: string[]
+  is_curator?: boolean
+}
+
+export interface AdanSeal {
+  levels_closed: number[]
+  current_level?: number | null
+  current_level_name?: string
+  problem_score?: number | null
+  testimonies?: number
+  external_sources?: number
+  board_decision?: string | null
+  arena_passed?: boolean | null
+  legal_steps?: [number, number] | null
+  breakeven_month?: number | null
+}
+
+export interface CommunityListing {
+  id: string
+  company_id: string
+  published: boolean
+  name: string
+  tagline: string
+  description: string
+  sector: string
+  country: string
+  city: string
+  stage: string
+  looking_for: string[]
+  amount_sought_usd: number | null
+  website: string
+  seal: AdanSeal
+  paradixe_selection: boolean
+  selection_note: string
+  mine: boolean
+}
+
+export interface CommunityConnection {
+  id: string
+  kind: string
+  message: string
+  status: string
+  direction: 'sent' | 'received'
+  other_name: string
+  other_headline: string
+  listing_name: string | null
+  other_email: string | null
+}

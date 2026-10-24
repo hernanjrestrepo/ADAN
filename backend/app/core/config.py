@@ -58,6 +58,8 @@ class Settings:
     # externos: solo verifica las fuentes que aporta el cliente (WO-108).
     CSI_BASE_URL: str = os.getenv("CSI_BASE_URL", "").rstrip("/")
     CSI_API_KEY: str = os.getenv("CSI_API_KEY", "")
+    # Comunidad: correos de los curadores de Paradixe que marcan las Selecciones Paradixe (separados por comas)
+    PARADIXE_CURATORS: str = os.getenv("PARADIXE_CURATORS", "")
     LLM_MODEL_STANDARD: str = os.getenv("LLM_MODEL_STANDARD", "claude-sonnet-5")
     LLM_MODEL_COMPLEX: str = os.getenv("LLM_MODEL_COMPLEX", "claude-opus-5")
     LLM_MODEL_FAST: str = os.getenv("LLM_MODEL_FAST", "claude-haiku-4-5")

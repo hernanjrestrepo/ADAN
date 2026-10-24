@@ -1,5 +1,5 @@
 import type {
-  ExecutiveReport, FinancialModel, OrgChart, PublicSurvey, SurveyAnswer, SurveyInsights, SurveyResults, SurveySummary, ArenaSession, AgentContract, LegalGuide, NameCheck, Statutes, StatutesInput, AgentOffering, AgentTask, ContractReport, HirePeriod,
+  CommunityConnection, CommunityListing, CommunityProfile, ExecutiveReport, FinancialModel, OrgChart, PublicSurvey, SurveyAnswer, SurveyInsights, SurveyResults, SurveySummary, ArenaSession, AgentContract, LegalGuide, NameCheck, Statutes, StatutesInput, AgentOffering, AgentTask, ContractReport, HirePeriod,
   BoardConsensus, BoardRoomInput, ChatResponse, Company, CompanyInput, DecideInput, Decision, DocumentRecord,
   Evidence, EvidenceInput, GatePreview, GateReviewResult, LevelView, Nivel1Status, OnboardingState, Score,
   ScoreOverview, TimelineEvent, TokenResponse, TwinKind, TwinOverview, UploadResult, User,
@@ -117,6 +117,21 @@ export const api = {
     }
     return response.json() as Promise<UploadResult>
   },
+  // Comunidad ADÁN
+  listCommunityCompanies: (f: { q: string; stage: string; looking_for: string; seleccion: boolean }) => {
+    const params = new URLSearchParams({ q: f.q, stage: f.stage, looking_for: f.looking_for, seleccion: String(f.seleccion) })
+    return request<CommunityListing[]>(`/comunidad/empresas?${params.toString()}`)
+  },
+  listCommunityPeople: (kind: string) => request<CommunityProfile[]>(`/comunidad/personas?kind=${encodeURIComponent(kind)}`),
+  getCommunityProfile: () => request<CommunityProfile>('/comunidad/perfil'),
+  saveCommunityProfile: (p: CommunityProfile) => request<CommunityProfile>('/comunidad/perfil', { method: 'PUT', body: JSON.stringify(p) }),
+  getMyListing: (companyId: string) => request<CommunityListing>(`/comunidad/mis-empresas/${companyId}`),
+  publishListing: (companyId: string, l: Partial<CommunityListing>) =>
+    request<CommunityListing>(`/comunidad/mis-empresas/${companyId}`, { method: 'PUT', body: JSON.stringify(l) }),
+  connectCommunity: (body: { kind: string; message: string; listing_id?: string; to_profile_id?: string }) =>
+    post<CommunityConnection>('/comunidad/conexiones', body),
+  getConnections: () => request<{ received: CommunityConnection[]; sent: CommunityConnection[] }>('/comunidad/conexiones'),
+  respondConnection: (id: string, accept: boolean) => post<CommunityConnection>(`/comunidad/conexiones/${id}/responder`, { accept }),
   // Finanzas y estrategia
   buildOrg: (companyId: string) =>
     request<OrgChart>(`/finanzas/${companyId}/organigrama`, { method: 'POST', signal: AbortSignal.timeout(CHAT_TIMEOUT_MS) }),
