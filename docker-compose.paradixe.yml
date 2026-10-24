@@ -1,0 +1,19 @@
+# ADÁN en el servidor de Paradixe (adan.paradixe.xyz), detrás del Caddy que ya atiende los puertos 80 y 443.
+#
+#   COMPOSE_OVERRIDE=docker-compose.paradixe.yml scripts/deploy.sh
+#
+# - El frontend no publica puertos: el Caddy del servidor lo alcanza por la red compartida `edge` con el nombre
+#   `adan-web` y le pone el HTTPS (Let's Encrypt) a adan.paradixe.xyz.
+# - El resto del stack (backend, Postgres, Redis, Ollama, sandbox) sigue en sus redes internas, sin acceso desde fuera.
+services:
+  frontend:
+    ports: !reset []
+    networks:
+      web: {}
+      edge:
+        aliases: [adan-web]
+
+networks:
+  edge:
+    external: true
+    name: ${EDGE_NETWORK:-xmart_default}
