@@ -11,6 +11,8 @@ import PrivacyPage from './pages/PrivacyPage'
 import RoutePage from './pages/RoutePage'
 import WelcomePage from './pages/WelcomePage'
 import ConstitucionPage from './pages/constitucion/ConstitucionPage'
+import SurveyPublicPage from './pages/SurveyPublicPage'
+import FinanzasPage from './pages/finanzas/FinanzasPage'
 
 // La oficina 3D pesa (three.js): se carga solo al entrar a /universo
 const UniversoPage = lazy(() => import('./universo/UniversoPage'))
@@ -32,6 +34,7 @@ export default function App() {
       <Route path="/login" element={<PublicOnly><LoginPage /></PublicOnly>} />
       <Route path="/register" element={<PublicOnly><RegisterPage /></PublicOnly>} />
       <Route path="/privacidad" element={<PrivacyPage />} />
+      <Route path="/encuesta/:token" element={<SurveyPublicPage />} />
       <Route path="/universo" element={
         <Suspense fallback={<div className="fixed inset-0 flex items-center justify-center bg-[#0a0a0f] text-sm text-slate-400">Abriendo la oficina de ADÁN…</div>}>
           <UniversoPage />
@@ -43,6 +46,7 @@ export default function App() {
       <Route path="/nivel1/:companyId" element={<Private><Nivel1Page /></Private>} />
       <Route path="/gemelo/:companyId" element={<Private><GemeloPage /></Private>} />
       <Route path="/constitucion/:companyId" element={<Private><ConstitucionPage /></Private>} />
+      <Route path="/finanzas/:companyId" element={<Private><FinanzasPage /></Private>} />
       <Route path="*" element={<Navigate to={user ? '/dashboard' : '/login'} replace />} />
     </Routes>
   )

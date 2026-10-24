@@ -1,5 +1,5 @@
 import type {
-  ArenaSession, AgentContract, LegalGuide, NameCheck, Statutes, StatutesInput, AgentOffering, AgentTask, ContractReport, HirePeriod,
+  ExecutiveReport, FinancialModel, OrgChart, PublicSurvey, SurveyAnswer, SurveyInsights, SurveyResults, SurveySummary, ArenaSession, AgentContract, LegalGuide, NameCheck, Statutes, StatutesInput, AgentOffering, AgentTask, ContractReport, HirePeriod,
   BoardConsensus, BoardRoomInput, ChatResponse, Company, CompanyInput, DecideInput, Decision, DocumentRecord,
   Evidence, EvidenceInput, GatePreview, GateReviewResult, LevelView, Nivel1Status, OnboardingState, Score,
   ScoreOverview, TimelineEvent, TokenResponse, TwinKind, TwinOverview, UploadResult, User,
@@ -117,6 +117,41 @@ export const api = {
     }
     return response.json() as Promise<UploadResult>
   },
+  // Finanzas y estrategia
+  buildOrg: (companyId: string) =>
+    request<OrgChart>(`/finanzas/${companyId}/organigrama`, { method: 'POST', signal: AbortSignal.timeout(CHAT_TIMEOUT_MS) }),
+  getOrg: (companyId: string) => request<OrgChart>(`/finanzas/${companyId}/organigrama`),
+  buildFinancialModel: (companyId: string) =>
+    request<FinancialModel>(`/finanzas/${companyId}/modelo`, { method: 'POST', signal: AbortSignal.timeout(CHAT_TIMEOUT_MS * 2) }),
+  recomputeFinancialModel: (companyId: string, assumptions: FinancialModel['assumptions']) =>
+    post<FinancialModel>(`/finanzas/${companyId}/modelo/calcular`, { assumptions }),
+  getFinancialModel: (companyId: string) => request<FinancialModel>(`/finanzas/${companyId}/modelo`),
+  buildReport: (companyId: string) =>
+    request<ExecutiveReport>(`/finanzas/${companyId}/informe`, { method: 'POST', signal: AbortSignal.timeout(CHAT_TIMEOUT_MS * 2) }),
+  getReport: (companyId: string) => request<ExecutiveReport>(`/finanzas/${companyId}/informe`),
+  // Descarga autenticada de un archivo generado (Excel, Word)
+  downloadFile: async (path: string, filename: string) => {
+    const response = await fetch(`${API_BASE}${path}`, { credentials: 'same-origin', headers: { 'X-Requested-With': 'adan' } })
+    if (!response.ok) throw new ApiError('No se pudo descargar el archivo', response.status)
+    const url = URL.createObjectURL(await response.blob())
+    const a = document.createElement('a')
+    a.href = url
+    a.download = filename
+    a.click()
+    URL.revokeObjectURL(url)
+  },
+  // Encuestas: el fundador las crea; quien responde entra sin cuenta
+  createSurvey: (companyId: string, objective: string) =>
+    request<SurveySummary & { preguntas: unknown[] }>(`/nivel1/${companyId}/surveys`, {
+      method: 'POST', body: JSON.stringify({ objective }), signal: AbortSignal.timeout(CHAT_TIMEOUT_MS),
+    }),
+  listSurveys: (companyId: string) => request<SurveySummary[]>(`/nivel1/${companyId}/surveys`),
+  getSurveyResults: (companyId: string, token: string) => request<SurveyResults>(`/nivel1/${companyId}/surveys/${token}/results`),
+  getSurveyInsights: (companyId: string, token: string) =>
+    request<SurveyInsights>(`/nivel1/${companyId}/surveys/${token}/insights`, { method: 'POST', signal: AbortSignal.timeout(CHAT_TIMEOUT_MS) }),
+  getPublicSurvey: (token: string) => request<PublicSurvey>(`/encuestas/${token}`),
+  answerSurvey: (token: string, answers: Record<string, SurveyAnswer>, consent: boolean) =>
+    post<{ ok: boolean }>(`/encuestas/${token}`, { answers, consent }),
   // Constitución de la empresa: investigar en internet toma tiempo
   checkName: (companyId: string, name: string, country: string) =>
     request<NameCheck>(`/constitucion/${companyId}/nombre`, {

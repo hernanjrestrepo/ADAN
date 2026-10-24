@@ -596,3 +596,149 @@ export interface Statutes {
   title: string
   markdown: string
 }
+
+// Encuestas de validación
+export type SurveyAnswer = string | number | string[]
+
+export interface PublicSurvey {
+  token: string
+  company: string
+  titulo: string
+  intro: string
+  open: boolean
+  preguntas: { id: string; texto: string; tipo: 'opcion' | 'multiple' | 'escala' | 'numero' | 'texto'; opciones: string[] }[]
+}
+
+export interface SurveySummary {
+  token: string
+  titulo: string
+  created_at: string
+  open: boolean
+  responses: number
+}
+
+export interface SurveyResults {
+  token: string
+  titulo: string
+  open: boolean
+  responses: number
+  questions: {
+    id: string
+    texto: string
+    tipo: string
+    opciones: string[]
+    por_que: string
+    answered: number
+    counts?: Record<string, number>
+    average?: number | null
+    texts?: string[]
+  }[]
+}
+
+export interface SurveyInsights {
+  resumen: string
+  hallazgos: string[]
+  alertas: string[]
+  evidencia_sugerida: { afirmacion: string; tipo: 'testimony'; polaridad: EvidencePolarity; fuente: string }[]
+}
+
+// Finanzas y estrategia
+export interface OrgRole {
+  area: string
+  cargo: string
+  tipo: 'humano' | 'agente_adan' | 'servicio_paradixe'
+  servicio: string
+  responsabilidades: string[]
+  desde_mes: number
+  minutos_mes: number
+  costo_mensual: number
+  costo_humano_equivalente: number
+  por_que: string
+  precio: string
+}
+
+export interface OrgChart {
+  moneda: string
+  resumen: string
+  roles: OrgRole[]
+  costo_mensual_total: number
+  costo_todo_humano: number
+  ahorro_mensual: number
+  ahorro_pct: number
+  generated_at: string
+}
+
+export interface CashRow {
+  mes: number
+  unidades: number
+  ingresos: number
+  costo_variable: number
+  margen_contribucion: number
+  gastos_fijos: number
+  marketing: number
+  ebitda: number
+  impuestos: number
+  capex: number
+  financiacion: number
+  flujo_neto: number
+  caja: number
+}
+
+export interface CashKpis {
+  punto_equilibrio_mes: number | null
+  caja_minima: number
+  caja_minima_mes: number
+  capital_necesario: number
+  margen_contribucion_pct: number
+  ingresos_ano_1: number
+  ingresos_ano_2: number
+  ebitda_ano_1: number
+  ebitda_ano_2: number
+  caja_final: number
+  se_queda_sin_caja: boolean
+  mes_sin_caja: number | null
+  gasto_fijo_mensual_inicial: number
+  ingresos_24_meses: number
+}
+
+export interface FinancialModel {
+  assumptions: {
+    moneda: string
+    unidad: string
+    precio_unitario: number
+    mes_inicio_ventas: number
+    unidades_mes_1: number
+    crecimiento_mensual_pct: number
+    unidades_max_mes: number
+    costo_variable_pct: number
+    comision_pagos_pct: number
+    marketing_mensual: number
+    impuesto_renta_pct: number
+    capital_inicial: number
+    gastos_fijos: { concepto: string; monto_mensual: number; desde_mes: number; tipo?: string | null; base?: string | null }[]
+    capex: { concepto: string; monto: number; mes: number; base?: string | null }[]
+    financiacion: { fuente: string; monto: number; mes: number }[]
+    bases: Record<string, string>
+  }
+  base: { scenario: string; rows: CashRow[]; kpis: CashKpis }
+  scenarios: Record<string, CashKpis>
+  advertencias: string[]
+  searched: boolean
+  generated_at: string
+  edited?: boolean
+}
+
+export interface ExecutiveReport {
+  titulo: string
+  company: string
+  respuesta: string
+  scqa: { situacion: string; complicacion: string; pregunta: string; respuesta: string }
+  argumentos: { titulo: string; evidencia: string[] }[]
+  lean_canvas: Record<'problema' | 'segmentos' | 'propuesta_unica' | 'solucion' | 'canales' | 'ingresos' | 'costos' | 'metricas_clave' | 'ventaja_injusta', string>
+  benchmark: { competidor: string; fortalezas: string; debilidades: string; como_ganarle: string }[]
+  riesgos: { riesgo: string; probabilidad: 'alta' | 'media' | 'baja'; impacto: 'alto' | 'medio' | 'bajo'; mitigacion: string }[]
+  six_sigma: { ctq: string[]; definir: string; medir: string; analizar: string; mejorar: string; controlar: string }
+  plan_90_dias: { semanas: string; accion: string; responsable: string; entregable: string }[]
+  recomendacion: string
+  generated_at: string
+}
