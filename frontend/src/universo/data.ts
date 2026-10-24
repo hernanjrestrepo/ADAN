@@ -2,7 +2,7 @@
 // AD-FUNC-03/04 (emoción y ritmo de cada Nivel), AD-FUNC-07 (Scores) y AD-000 v2.0 (ecosistema).
 // Todo lo que aparece de una empresa es un EJEMPLO ILUSTRATIVO: en ADÁN real sale de la evidencia del cliente.
 
-export type ZoneId = 'board' | 'csi' | 'memoria' | 'genexis' | 'simulador' | 'gemelo' | 'eva' | 'mercado'
+export type ZoneId = 'board' | 'csi' | 'memoria' | 'genexis' | 'simulador' | 'gemelo' | 'eva' | 'mercado' | 'cafeteria' | 'arena'
 export type AgentId =
   | 'ceo' | 'cto' | 'cfo' | 'cmo' | 'legal' | 'producto' | 'operaciones'
   | 'csi' | 'genexis' | 'eva' | 'investigador' | 'analista'
@@ -33,10 +33,27 @@ export const ZONES: Record<ZoneId, Zone> = {
     description: 'Ventas y marketing con IA: campañas, voz y agentes conversacionales cuando la empresa sale al mercado.' },
   mercado: { id: 'mercado', name: 'Marketplace y Comunidad', short: 'Agentes por tiempo', position: [0, 14], color: '#c084fc',
     description: 'Agentes por hora, día, semana o mes, y la red de empresas del ecosistema Paradixe.' },
+  cafeteria: { id: 'cafeteria', name: 'Cafetería', short: 'Pausa y conversación', position: [-17.5, -0.5], color: '#f59e0b',
+    description: 'Donde el equipo se toma un café, se ríe y se cuenta lo que pasó en el Board.' },
+  arena: { id: 'arena', name: 'La Arena', short: '4 inversionistas', position: [17.5, -0.5], color: '#ef4444',
+    description: 'Cuatro inversionistas simulados y exigentes. En el Nivel 5 no se pasa sin convencerlos.' },
+}
+
+export type Hair = 'corto' | 'largo' | 'mono' | 'rizado' | 'calvo'
+export type Outfit = 'traje' | 'vestido' | 'falda'
+export interface Look {
+  skin: string
+  hair: Hair
+  hairColor: string
+  outfit: Outfit
+  beard?: boolean
+  mustache?: boolean
+  glasses?: boolean
 }
 
 export interface Agent {
   id: AgentId
+  look: Look
   name: string
   role: string
   title: string
@@ -49,40 +66,40 @@ export interface Agent {
 }
 
 export const AGENTS: Agent[] = [
-  { id: 'ceo', name: 'Valeria', role: 'CEO', title: 'CEO Agent · preside el Board', color: '#60a5fa', home: [-3, 1.5], seat: 0,
-    board: true, focus: 'Abre y cierra cada sesión, da la voz de ADÁN y nunca decide por ti.',
-    hello: 'Soy Valeria. Presido el Board: abro con el objetivo, escucho a todos y te traigo una recomendación. Tú decides.' },
-  { id: 'cto', name: 'Mateo', role: 'CTO', title: 'Viabilidad técnica', color: '#38bdf8', home: [-8, -6], seat: 1,
+  { id: 'ceo', look: { skin: '#e8b996', hair: 'corto', hairColor: '#d1d5db', outfit: 'traje', beard: true, glasses: true }, name: 'ADÁN', role: 'CEO', title: 'CEO · preside el Board', color: '#60a5fa', home: [-3, 1.5], seat: 0,
+    board: true, focus: 'Preside el Board: abre y cierra cada sesión, escucha a todos y nunca decide por ti.',
+    hello: 'Soy ADÁN, el CEO de tu equipo. Presido el Board: abro con el objetivo, escucho a todos y te traigo una recomendación honesta. Tú decides.' },
+  { id: 'cto', look: { skin: '#c68863', hair: 'rizado', hairColor: '#1f1410', outfit: 'traje', glasses: true }, name: 'Mateo', role: 'CTO', title: 'Viabilidad técnica', color: '#38bdf8', home: [-8, -6], seat: 1,
     board: true, focus: 'Factibilidad, arquitectura y riesgos tecnológicos.',
     hello: 'Soy Mateo. Miro si lo que quieres construir se puede construir, con qué y a qué riesgo.' },
-  { id: 'cfo', name: 'Camila', role: 'CFO', title: 'Viabilidad financiera', color: '#4ade80', home: [-8, -2], seat: 2,
+  { id: 'cfo', look: { skin: '#f1c7a5', hair: 'largo', hairColor: '#6b3e1f', outfit: 'falda' }, name: 'Camila', role: 'CFO', title: 'Viabilidad financiera', color: '#4ade80', home: [-8, -2], seat: 2,
     board: true, focus: 'Costos, ingresos, caja y sostenibilidad, contrastados con benchmarks de CSI.',
     hello: 'Soy Camila. Mis números se contrastan con datos reales del sector: nada de soñar con cifras que no son.' },
-  { id: 'cmo', name: 'Santiago', role: 'CMO', title: 'Mercado', color: '#f97316', home: [-8, 2], seat: 3,
+  { id: 'cmo', look: { skin: '#d6a07a', hair: 'corto', hairColor: '#2b1b12', outfit: 'traje', mustache: true }, name: 'Santiago', role: 'CMO', title: 'Mercado', color: '#f97316', home: [-8, 2], seat: 3,
     board: true, focus: 'Dolor real, demanda, diferenciación y canales.',
     hello: 'Soy Santiago. Me obsesiona una pregunta: ¿a quién le duele y cómo llegamos a esa persona?' },
-  { id: 'legal', name: 'Lucía', role: 'Legal', title: 'Riesgos legales', color: '#e879f9', home: [8, -6], seat: 4,
+  { id: 'legal', look: { skin: '#a8714f', hair: 'mono', hairColor: '#0f0b0a', outfit: 'vestido', glasses: true }, name: 'Lucía', role: 'Legal', title: 'Riesgos legales', color: '#e879f9', home: [8, -6], seat: 4,
     board: true, focus: 'Regulación, contratos, propiedad intelectual y datos personales.',
     hello: 'Soy Lucía. Te ayudo a ver los riesgos legales a tiempo. Ojo: soy una IA, no reemplazo a tu abogado.' },
-  { id: 'producto', name: 'Andrés', role: 'Producto', title: 'Problema–solución', color: '#facc15', home: [8, -2], seat: 5,
+  { id: 'producto', look: { skin: '#e3ae88', hair: 'corto', hairColor: '#8a5a2b', outfit: 'traje', beard: true }, name: 'Andrés', role: 'Producto', title: 'Problema–solución', color: '#facc15', home: [8, -2], seat: 5,
     board: true, focus: 'Usuario, alcance del MVP y experiencia.',
     hello: 'Soy Andrés. Cuido que lo que se construya resuelva el dolor validado, y nada más de lo necesario.' },
-  { id: 'operaciones', name: 'Sofía', role: 'Operaciones', title: 'Capacidad de ejecutar', color: '#2dd4bf', home: [8, 2], seat: 6,
+  { id: 'operaciones', look: { skin: '#f3d1b5', hair: 'largo', hairColor: '#e2c27a', outfit: 'falda' }, name: 'Sofía', role: 'Operaciones', title: 'Capacidad de ejecutar', color: '#2dd4bf', home: [8, 2], seat: 6,
     board: true, focus: 'Procesos, recursos, proveedores y capacidad real de operar.',
     hello: 'Soy Sofía. Pregunto lo incómodo: ¿quién hace qué, con qué recursos y cuándo?' },
-  { id: 'csi', name: 'Orión', role: 'CSI', title: 'Inteligencia externa', color: '#22d3ee', home: [-14, -7], board: false,
+  { id: 'csi', look: { skin: '#9ec9d6', hair: 'calvo', hairColor: '#000000', outfit: 'traje' }, name: 'Orión', role: 'CSI', title: 'Inteligencia externa', color: '#22d3ee', home: [-14, -7], board: false,
     focus: 'Trae datos del mundo: estudios, cifras públicas, competencia y regulación.',
     hello: 'Soy Orión, del Radar CSI. Si algo se afirma sobre el mercado, busco la fuente.' },
-  { id: 'genexis', name: 'Forja', role: 'Genexis', title: 'Constructor del MVP', color: '#f472b6', home: [14, -7], board: false,
+  { id: 'genexis', look: { skin: '#b98260', hair: 'corto', hairColor: '#3b2416', outfit: 'traje', beard: true, mustache: true }, name: 'Forja', role: 'Genexis', title: 'Constructor del MVP', color: '#f472b6', home: [14, -7], board: false,
     focus: 'Construye el MVP aprobado. Nunca empieza sin tu aprobación del blueprint.',
     hello: 'Soy Forja, de Genexis. Construyo lo que apruebas en el Nivel 4: ni una línea antes.' },
-  { id: 'eva', name: 'Eva', role: 'EVA', title: 'Ventas y voz', color: '#fb923c', home: [14, 9], board: false,
+  { id: 'eva', look: { skin: '#f0c4a2', hair: 'largo', hairColor: '#b4441f', outfit: 'vestido' }, name: 'Eva', role: 'EVA', title: 'Ventas y voz', color: '#fb923c', home: [14, 9], board: false,
     focus: 'Lleva el producto al mercado: campañas, voz y omnicanalidad.',
     hello: 'Soy Eva. Cuando tu empresa sale al mercado, yo la ayudo a vender en todos los canales.' },
-  { id: 'investigador', name: 'Iris', role: 'Agente por hora', title: 'Investigadora de mercado', color: '#c084fc', home: [-3, 14], board: false,
+  { id: 'investigador', look: { skin: '#c48b66', hair: 'mono', hairColor: '#3a2518', outfit: 'falda', glasses: true }, name: 'Iris', role: 'Agente por hora', title: 'Investigadora de mercado', color: '#c084fc', home: [-3, 14], board: false,
     focus: 'Agente por tiempo: entrevistas, encuestas y análisis de competencia.',
     hello: 'Soy Iris, agente por hora del Marketplace. Me contratas para una tarea y entrego con evidencia.' },
-  { id: 'analista', name: 'Teo', role: 'Agente por día', title: 'Analista financiero', color: '#a3e635', home: [3, 14], board: false,
+  { id: 'analista', look: { skin: '#e0b08c', hair: 'corto', hairColor: '#111827', outfit: 'traje', mustache: true }, name: 'Teo', role: 'Agente por día', title: 'Analista financiero', color: '#a3e635', home: [3, 14], board: false,
     focus: 'Agente por tiempo: modelos financieros, flujo de caja y conciliaciones.',
     hello: 'Soy Teo, agente por día. Armo modelos financieros y tú apruebas la entrega antes de usarla.' },
 ]
@@ -264,6 +281,7 @@ export interface Level {
   avance: string
   badge: { name: string; icon: string; meaning: string }
   focus: Partial<Record<AgentId, string>>
+  riesgo: { texto: string; task: GateTask }
 }
 
 export const LEVELS: Level[] = [
@@ -277,10 +295,11 @@ export const LEVELS: Level[] = [
     avance: 'Evidencia externa + testimonios de clientes + tu aprobación del diagnóstico.',
     badge: { name: 'Nace el Gemelo', icon: '🧬', meaning: 'Tu empresa existe en ADÁN, con su primera decisión registrada.' },
     tasks: [
-      { id: 'l1-guion', label: 'Conversar los 7 temas del dolor', agent: 'ceo', zone: 'memoria', xp: 40, done: 'Guion del dolor completo (7 de 7)' },
+      { id: 'l1-guion', label: 'Conversar y cargar la documentación', agent: 'ceo', zone: 'memoria', xp: 40, done: 'Guion 7 de 7 y documentos leídos' },
       { id: 'l1-csi', label: 'Buscar evidencia externa', agent: 'csi', zone: 'csi', xp: 60, done: '3 fuentes externas verificadas' },
       { id: 'l1-entrevistas', label: 'Entrevistar clientes del segmento', agent: 'investigador', zone: 'mercado', xp: 80, done: '5 testimonios de clientes registrados' },
     ],
+    riesgo: { texto: 'Los testimonios vienen de conocidos: hay sesgo. Hay que oír a desconocidos del segmento.', task: { id: 'l1-blindar', label: 'Encuesta por WhatsApp a 10 desconocidos', agent: 'investigador', zone: 'mercado', xp: 70, done: '10 respuestas de personas del segmento' } },
     focus: { ceo: 'Te escucho: problema, a quién le duele, cuánto cuesta.', csi: 'Busco estudios y cifras que confirmen o desmientan el dolor.',
       cmo: 'Quiero saber si le duele a un segmento concreto, no a "todo el mundo".', investigador: 'Preparo el guion de entrevistas.' },
   },
@@ -298,6 +317,7 @@ export const LEVELS: Level[] = [
       { id: 'l2-propuesta', label: 'Redactar la propuesta en una frase', agent: 'cmo', zone: 'board', xp: 50, done: 'Propuesta de valor v1' },
       { id: 'l2-validacion', label: 'Validar la propuesta con clientes', agent: 'investigador', zone: 'mercado', xp: 80, done: 'Validación con 8 clientes potenciales' },
     ],
+    riesgo: { texto: 'La competencia puede copiar el diferenciador en tres meses.', task: { id: 'l2-blindar', label: 'Prueba de humo de la propuesta con precio', agent: 'cmo', zone: 'simulador', xp: 70, done: 'Página con precio y 30 interesados reales' } },
     focus: { cmo: 'Busco el diferenciador que el cliente sí nota.', csi: 'Comparo con lo que ya existe: precio, cercanía, calidad.',
       producto: 'Ajusto la solución a lo que dijeron los clientes.' },
   },
@@ -311,11 +331,12 @@ export const LEVELS: Level[] = [
     avance: 'Proyecciones validadas contra benchmarks externos + tu aprobación.',
     badge: { name: 'Números con suelo', icon: '🏛️', meaning: 'Tu plan financiero resiste la comparación con el sector.' },
     tasks: [
-      { id: 'l3-legal', label: 'Definir la estructura legal', agent: 'legal', zone: 'board', xp: 50, done: 'Ruta legal y tributaria' },
-      { id: 'l3-finanzas', label: 'Proyectar 12 meses contra benchmarks', agent: 'cfo', zone: 'csi', xp: 70, done: 'Proyección financiera auditada' },
+      { id: 'l3-legal', label: 'Nombre, país, ruta legal y estatutos', agent: 'legal', zone: 'board', xp: 50, done: 'Ruta legal y estatutos' },
+      { id: 'l3-finanzas', label: 'Flujo de caja a 24 meses con benchmarks', agent: 'cfo', zone: 'csi', xp: 70, done: 'Flujo de caja y escenarios' },
       { id: 'l3-organigrama', label: 'Diseñar el organigrama híbrido', agent: 'operaciones', zone: 'memoria', xp: 50, done: 'Organigrama: humanos y agentes' },
       { id: 'l3-modelo', label: 'Construir el modelo de caja', agent: 'analista', zone: 'mercado', xp: 40, done: 'Modelo de caja mensual' },
     ],
+    riesgo: { texto: 'Si las ventas tardan, la caja se acaba en el mes 7.', task: { id: 'l3-blindar', label: 'Escenario pesimista y plan de capital', agent: 'cfo', zone: 'memoria', xp: 70, done: 'Plan para aguantar 12 meses sin ventas' } },
     focus: { cfo: 'Contrasto cada cifra con datos del sector.', legal: 'Elijo la figura legal y los permisos que aplican.',
       operaciones: 'Defino qué hace una persona y qué hace un agente.', analista: 'Armo el flujo de caja mes a mes.' },
   },
@@ -333,6 +354,7 @@ export const LEVELS: Level[] = [
       { id: 'l4-blueprint', label: 'Diseñar el blueprint técnico', agent: 'cto', zone: 'genexis', xp: 60, done: 'Blueprint y mockups' },
       { id: 'l4-construir', label: 'Construir con Genexis', agent: 'genexis', zone: 'genexis', xp: 90, done: 'MVP construido y listo para probar' },
     ],
+    riesgo: { texto: 'El alcance del MVP es demasiado grande para la caja que hay.', task: { id: 'l4-blindar', label: 'Recortar el MVP a lo esencial', agent: 'producto', zone: 'genexis', xp: 70, done: 'MVP de 3 funciones, no de 12' } },
     focus: { producto: 'Recorto el alcance a lo mínimo que prueba la propuesta.', cto: 'Diseño cómo se construye y con qué.',
       genexis: 'Espero tu aprobación del blueprint para construir.' },
   },
@@ -350,6 +372,7 @@ export const LEVELS: Level[] = [
       { id: 'l5-competidor', label: 'Simular la reacción de la competencia', agent: 'csi', zone: 'simulador', xp: 50, done: 'Escenario de guerra de precios' },
       { id: 'l5-inversionista', label: 'Pitch a inversionistas simulados', agent: 'cfo', zone: 'simulador', xp: 60, done: 'Preguntas difíciles respondidas' },
     ],
+    riesgo: { texto: 'Los inversionistas verán un costo de adquisición sin probar.', task: { id: 'l5-blindar', label: 'Medir el CAC con una campaña real pequeña', agent: 'eva', zone: 'eva', xp: 70, done: 'CAC medido con USD 200 de pauta' } },
     focus: { cmo: 'Pongo el MVP frente a 200 clientes simulados.', cfo: 'Defiendo los números frente a inversionistas simulados.',
       csi: 'Simulo cómo respondería la competencia.', operaciones: 'Busco dónde se rompe la operación.' },
   },
@@ -367,6 +390,7 @@ export const LEVELS: Level[] = [
       { id: 'l6-venta', label: 'Registrar la primera venta real', agent: 'operaciones', zone: 'gemelo', xp: 100, done: 'Primer ingreso real verificado' },
       { id: 'l6-ciclo', label: 'Documentar el primer ciclo', agent: 'ceo', zone: 'memoria', xp: 50, done: 'Ingresos, gastos y lecciones del mes' },
     ],
+    riesgo: { texto: 'Un solo cliente concentra las ventas.', task: { id: 'l6-blindar', label: 'Conseguir cinco clientes más', agent: 'eva', zone: 'mercado', xp: 70, done: 'Seis clientes pagando' } },
     focus: { eva: 'Llevo la oferta a los canales donde está el cliente.', operaciones: 'Cuido que cada entrega salga bien.',
       ceo: 'Hago check-ins regulares: sin urgencias, sin picos.' },
   },
@@ -384,6 +408,7 @@ export const LEVELS: Level[] = [
       { id: 'l7-capital', label: 'Evaluar opciones de capital', agent: 'cfo', zone: 'mercado', xp: 60, done: 'Opciones de capital comparadas' },
       { id: 'l7-plan', label: 'Diseñar el plan de reestructuración', agent: 'ceo', zone: 'board', xp: 70, done: 'Plan de escalamiento aprobado' },
     ],
+    riesgo: { texto: 'El fundador es el cuello de botella de todas las decisiones.', task: { id: 'l7-blindar', label: 'Delegar con agentes y un nuevo cargo', agent: 'operaciones', zone: 'gemelo', xp: 70, done: 'Tres procesos sin el fundador' } },
     focus: { ceo: 'Vuelve el comité completo, ahora para pensar en grande.', operaciones: 'Mido dónde se atasca el crecimiento.',
       cfo: 'Comparo crecer con caja propia, deuda o capital.' },
   },
@@ -405,3 +430,26 @@ export const ECOSYSTEM = [
 export function cop(n: number): string {
   return 'COP ' + Math.round(n).toLocaleString('es-CO')
 }
+
+export interface Investor {
+  id: string
+  name: string
+  role: string
+  color: string
+  look: Look
+}
+
+export const INVESTORS: Investor[] = [
+  { id: 'angel', name: 'Ángela', role: 'Ángel', color: '#f472b6', look: { skin: '#e9b48f', hair: 'largo', hairColor: '#2a1a12', outfit: 'vestido' } },
+  { id: 'vc', name: 'Horizonte', role: 'Fondo de capital', color: '#38bdf8', look: { skin: '#d4a37f', hair: 'corto', hairColor: '#9ca3af', outfit: 'traje', glasses: true } },
+  { id: 'banca', name: 'Banca Pyme', role: 'Crédito', color: '#4ade80', look: { skin: '#b7835f', hair: 'calvo', hairColor: '#000', outfit: 'traje', mustache: true } },
+  { id: 'estrategico', name: 'Estratégico', role: 'Corporativo', color: '#fbbf24', look: { skin: '#f0c9a8', hair: 'mono', hairColor: '#4b2e1a', outfit: 'falda', glasses: true } },
+]
+
+// Lo que se conversa en la cafetería: el equipo también es humano
+export const CAFE_LINES = [
+  '¿Otro café antes del Board? ☕', 'El CFO dice que no hay caja ni para galletas 😅', '¡Ese Problem Score me dejó loco! 🤯',
+  'Hoy el abogado del diablo soy yo 😈', 'Ayer La Arena estuvo durísima…', 'Si no hay evidencia, no hay Nivel 🙅',
+  '¿Viste la encuesta? 7 de 10 dijeron que sí 🙌', 'Necesito vacaciones en la empresa de turismo 🏝️',
+  'ADÁN quiere el informe para hoy 📊', 'Jajaja, ¿te acuerdas del MVP de 12 funciones? 😂',
+]

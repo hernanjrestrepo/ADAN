@@ -13,6 +13,7 @@ import WelcomePage from './pages/WelcomePage'
 import ConstitucionPage from './pages/constitucion/ConstitucionPage'
 import SurveyPublicPage from './pages/SurveyPublicPage'
 import FinanzasPage from './pages/finanzas/FinanzasPage'
+import ComunidadPage from './pages/comunidad/ComunidadPage'
 
 // La oficina 3D pesa (three.js): se carga solo al entrar a /universo
 const UniversoPage = lazy(() => import('./universo/UniversoPage'))
@@ -22,9 +23,12 @@ function Private({ children }: { children: ReactNode }) {
   return user ? children : <Navigate to="/login" replace />
 }
 
+// `?next=/universo` vuelve a donde estaba la persona tras entrar o registrarse (solo rutas internas)
 function PublicOnly({ children }: { children: ReactNode }) {
   const { user } = useAuth()
-  return user ? <Navigate to="/dashboard" replace /> : children
+  const next = new URLSearchParams(window.location.search).get('next') ?? ''
+  const safe = next.startsWith('/') && !next.startsWith('//') ? next : '/dashboard'
+  return user ? <Navigate to={safe} replace /> : children
 }
 
 export default function App() {
@@ -47,6 +51,7 @@ export default function App() {
       <Route path="/gemelo/:companyId" element={<Private><GemeloPage /></Private>} />
       <Route path="/constitucion/:companyId" element={<Private><ConstitucionPage /></Private>} />
       <Route path="/finanzas/:companyId" element={<Private><FinanzasPage /></Private>} />
+      <Route path="/comunidad" element={<Private><ComunidadPage /></Private>} />
       <Route path="*" element={<Navigate to={user ? '/dashboard' : '/login'} replace />} />
     </Routes>
   )

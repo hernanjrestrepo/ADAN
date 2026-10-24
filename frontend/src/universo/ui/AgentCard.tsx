@@ -1,5 +1,5 @@
 import { AGENT_BY_ID, ZONES } from '../data'
-import { levelOf, taskById, useUniverso } from '../store'
+import { levelOf, taskById, tasksOf, useUniverso } from '../store'
 import Avatar from './Avatar'
 
 // Al tocar a alguien en la oficina: quién es, qué hace ahora y qué se le puede pedir
@@ -9,6 +9,7 @@ export default function AgentCard() {
   const inBoard = useUniverso((s) => Boolean(s.board))
   const levelNumber = useUniverso((s) => s.level)
   const done = useUniverso((s) => s.doneTasks)
+  const revealed = useUniverso((s) => s.revealed)
   const select = useUniverso((s) => s.select)
   const say = useUniverso((s) => s.say)
   const assign = useUniverso((s) => s.assign)
@@ -16,7 +17,7 @@ export default function AgentCard() {
   if (!id) return null
   const a = AGENT_BY_ID[id]
   const level = levelOf(levelNumber)
-  const pending = level.tasks.find((t) => t.agent === id && !done.includes(t.id))
+  const pending = tasksOf(level, revealed).find((t) => t.agent === id && !done.includes(t.id))
   const task = job ? taskById(job.taskId) : undefined
   const status = task
     ? `${job?.phase === 'working' ? 'Trabajando en' : job?.phase === 'going' ? 'Va a' : 'Terminó'}: ${task.label.toLowerCase()} · ${ZONES[task.zone].name}`

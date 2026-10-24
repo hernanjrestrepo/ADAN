@@ -5,6 +5,7 @@ import { Color, Object3D, type Group, type InstancedMesh, type Mesh, type MeshSt
 import { AGENTS, ZONES, type ZoneId } from '../data'
 import { levelOf, useUniverso } from '../store'
 import { BOARD_CENTER, BOARD_RADIUS, TABLE_RADIUS, seatFacing, seatPosition } from './layout'
+import { Arena, Cafeteria } from './Lounge'
 
 function useActive(zone: ZoneId): boolean {
   return useUniverso((s) => levelOf(s.level).zones.includes(zone))
@@ -429,6 +430,10 @@ export default function Zones() {
       <Eva />
       <ZoneBase zone="mercado" radius={3.6} />
       <Mercado />
+      <ZoneBase zone="cafeteria" radius={3.4} />
+      <Cafeteria />
+      <ZoneBase zone="arena" radius={3.6} />
+      <Arena />
     </>
   )
 }
