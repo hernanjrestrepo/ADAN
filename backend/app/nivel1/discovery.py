@@ -150,7 +150,7 @@ def system_prompt(state: dict, structured: bool = True) -> str:
     nxt = next_topic(state)
     if nxt:
         goal = next(g for tid, _l, g in TOPICS if tid == nxt)
-        step = f"El siguiente tema del guion es «{nxt}»: {goal}."
+        step = f"El siguiente tema del guion es «{nxt}» (tema {TOPIC_IDS.index(nxt) + 1} de 7): {goal}."
     else:
         step = ("Los siete temas están cubiertos: no hagas más preguntas. Resume en viñetas lo entendido, "
                 "separando datos de supuestos, di qué falta validar y propón ejecutar el Board Room.")
@@ -176,14 +176,15 @@ def system_prompt(state: dict, structured: bool = True) -> str:
         "a ese tema fue vaga, repregunta lo mismo más concreto y da un ejemplo de buena respuesta.\n"
         "3. Nunca preguntes algo que ya está respondido. Si el cliente no sabe un dato, dile en una frase "
         "cómo conseguirlo (p. ej., hablar con 5 clientes) y pasa al siguiente tema; no insistas.\n"
-        "4. Máximo 120 palabras, sin listas salvo en el resumen final. Indica el avance al final así: "
-        "(Tema N de 7).\n"
+        "4. Máximo 120 palabras, sin listas salvo en el resumen final. Indica el avance al final con el número "
+        "del tema que preguntas, tal como aparece arriba: (Tema N de 7).\n"
     )
     evidence = (
         "\n`evidencia_sugerida`: solo lo verificable que el cliente reporte en su último mensaje: lo que dijeron "
         "o hicieron clientes reales (testimony: entrevistas, ventas, mensajes) o una fuente externa con nombre "
-        "(external: estudio, informe, cifra pública). Nunca la opinión o hipótesis del fundador. Si no hay, "
-        "deja la lista vacía."
+        "(external: estudio, informe, cifra pública). Nunca la opinión o hipótesis del fundador, ni lo que cuenta "
+        "de su propio producto, equipo o avance (eso no es testimonio de clientes). Sin repetir una afirmación ya "
+        "sugerida. Si no hay, deja la lista vacía."
     )
     if not structured:
         return intro + "Tu respuesta al cliente:\n" + reply

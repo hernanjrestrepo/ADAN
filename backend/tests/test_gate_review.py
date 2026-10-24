@@ -48,9 +48,17 @@ def test_level_1_gate_requires_external_evidence():
     assert not only_testimony.sufficient
     assert any("dato verificable" in m for m in only_testimony.missing)
 
-    enough = evaluate_gate(1, [E(EXTERNAL)] * 3 + [E(TESTIMONY)] * 2)
+    enough = evaluate_gate(1, [E(EXTERNAL)] * 3 + [E(TESTIMONY)] * 5)
     assert enough.sufficient, enough.missing
     assert enough.missing == []
+
+
+def test_level_1_gate_requires_client_testimonies():
+    """Piloto de Xmart Travel: cuatro cifras de mercado y ningún cliente no validan el dolor."""
+    market_only = evaluate_gate(1, [E(EXTERNAL)] * 4)
+    assert not market_only.sufficient
+    assert any("5 testimonios" in m and "tienes 0" in m for m in market_only.missing)
+    assert not evaluate_gate(1, [E(EXTERNAL)] * 3 + [E(TESTIMONY)] * 4).sufficient
 
 
 def test_gate_says_exactly_what_is_missing():
