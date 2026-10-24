@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { Link } from 'react-router'
 import AiDisclaimer from './AiDisclaimer'
 import Logo from './Logo'
 
@@ -30,6 +31,9 @@ export default function AuthLayout({ subtitle, children }: { subtitle: string; c
               </li>
             ))}
           </ul>
+          <Link to="/universo" className="mt-10 inline-flex items-center gap-2 rounded-xl border border-adan-accent/50 bg-adan-accent/10 px-5 py-3 font-semibold hover:bg-adan-accent/20">
+            🌌 Recorre el Universo ADÁN en 3D →
+          </Link>
         </div>
         <p className="text-xs text-adan-muted">Paradixe · Sistema Operativo Empresarial</p>
       </aside>
@@ -42,6 +46,7 @@ export default function AuthLayout({ subtitle, children }: { subtitle: string; c
           <div className="bg-adan-surface/70 border border-adan-border rounded-2xl p-6 sm:p-8 shadow-xl shadow-black/30">
             {children}
           </div>
+          <Link to="/universo" className="lg:hidden mt-6 block text-center text-sm text-adan-accent hover:underline">🌌 Recorre el Universo ADÁN en 3D →</Link>
           <AiDisclaimer className="mt-6" />
         </main>
       </div>
