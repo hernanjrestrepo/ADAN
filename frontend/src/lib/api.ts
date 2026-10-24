@@ -1,5 +1,5 @@
 import type {
-  PublicSurvey, SurveyAnswer, SurveyInsights, SurveyResults, SurveySummary, ArenaSession, AgentContract, LegalGuide, NameCheck, Statutes, StatutesInput, AgentOffering, AgentTask, ContractReport, HirePeriod,
+  ExecutiveReport, FinancialModel, OrgChart, PublicSurvey, SurveyAnswer, SurveyInsights, SurveyResults, SurveySummary, ArenaSession, AgentContract, LegalGuide, NameCheck, Statutes, StatutesInput, AgentOffering, AgentTask, ContractReport, HirePeriod,
   BoardConsensus, BoardRoomInput, ChatResponse, Company, CompanyInput, DecideInput, Decision, DocumentRecord,
   Evidence, EvidenceInput, GatePreview, GateReviewResult, LevelView, Nivel1Status, OnboardingState, Score,
   ScoreOverview, TimelineEvent, TokenResponse, TwinKind, TwinOverview, UploadResult, User,
@@ -116,6 +116,29 @@ export const api = {
       throw new ApiError(detail || `HTTP ${response.status}`, response.status)
     }
     return response.json() as Promise<UploadResult>
+  },
+  // Finanzas y estrategia
+  buildOrg: (companyId: string) =>
+    request<OrgChart>(`/finanzas/${companyId}/organigrama`, { method: 'POST', signal: AbortSignal.timeout(CHAT_TIMEOUT_MS) }),
+  getOrg: (companyId: string) => request<OrgChart>(`/finanzas/${companyId}/organigrama`),
+  buildFinancialModel: (companyId: string) =>
+    request<FinancialModel>(`/finanzas/${companyId}/modelo`, { method: 'POST', signal: AbortSignal.timeout(CHAT_TIMEOUT_MS * 2) }),
+  recomputeFinancialModel: (companyId: string, assumptions: FinancialModel['assumptions']) =>
+    post<FinancialModel>(`/finanzas/${companyId}/modelo/calcular`, { assumptions }),
+  getFinancialModel: (companyId: string) => request<FinancialModel>(`/finanzas/${companyId}/modelo`),
+  buildReport: (companyId: string) =>
+    request<ExecutiveReport>(`/finanzas/${companyId}/informe`, { method: 'POST', signal: AbortSignal.timeout(CHAT_TIMEOUT_MS * 2) }),
+  getReport: (companyId: string) => request<ExecutiveReport>(`/finanzas/${companyId}/informe`),
+  // Descarga autenticada de un archivo generado (Excel, Word)
+  downloadFile: async (path: string, filename: string) => {
+    const response = await fetch(`${API_BASE}${path}`, { credentials: 'same-origin', headers: { 'X-Requested-With': 'adan' } })
+    if (!response.ok) throw new ApiError('No se pudo descargar el archivo', response.status)
+    const url = URL.createObjectURL(await response.blob())
+    const a = document.createElement('a')
+    a.href = url
+    a.download = filename
+    a.click()
+    URL.revokeObjectURL(url)
   },
   // Encuestas: el fundador las crea; quien responde entra sin cuenta
   createSurvey: (companyId: string, objective: string) =>

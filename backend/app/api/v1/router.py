@@ -3,6 +3,7 @@ from fastapi import APIRouter
 
 from app.api.v1 import auth, companies, nivel1, cognitive
 from app.constitucion import api as constitucion
+from app.finanzas import api as finanzas
 from app.hire import api as hire
 from app.surveys import api as surveys
 from app.onboarding import api as onboarding
@@ -21,3 +22,4 @@ router.include_router(onboarding.router)
 router.include_router(hire.router)
 router.include_router(constitucion.router)
 router.include_router(surveys.router)
+router.include_router(finanzas.router)
