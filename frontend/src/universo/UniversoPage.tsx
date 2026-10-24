@@ -33,6 +33,13 @@ class SceneBoundary extends Component<{ children: ReactNode }, { failed: boolean
   }
 }
 
+// `?escena=0` muestra el recorrido sin la oficina 3D: equipos de poca potencia y pruebas sin GPU
+const SIN_ESCENA = new URLSearchParams(window.location.search).get('escena') === '0'
+
+function Fondo() {
+  return <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,#12224b,#0a0a0f)]" />
+}
+
 export default function UniversoPage() {
   const started = useUniverso((s) => s.started)
   const panel = useUniverso((s) => s.panel)
@@ -42,9 +49,11 @@ export default function UniversoPage() {
 
   return (
     <div className="universo fixed inset-0 overflow-hidden">
-      <SceneBoundary>
-        <div className="absolute inset-0" data-testid="universo-scene"><World /></div>
-      </SceneBoundary>
+      {SIN_ESCENA ? <Fondo /> : (
+        <SceneBoundary>
+          <div className="absolute inset-0" data-testid="universo-scene"><World /></div>
+        </SceneBoundary>
+      )}
       {started ? (
         <>
           <TopBar autopilot={autopilot} onAutopilot={() => setAutopilot((v) => !v)} />

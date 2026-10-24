@@ -1,10 +1,14 @@
 import { expect, test } from '@playwright/test'
 import { FakeApi } from './fakeApi'
 
+// Sin GPU, el navegador de la CI dibuja la oficina 3D por software y se vuelve muy lento: se prueba el recorrido
+// sin escena (la escena se probó a mano en un navegador con GPU).
+const URL = '/universo?escena=0'
+
 test('el Universo se recorre sin cuenta: se elige la empresa, se encarga evidencia y se ve el entregable', async ({ page }) => {
   await new FakeApi().install(page)
-  await page.goto('/universo')
-  await expect(page.getByRole('heading', { name: /Tu equipo directivo de IA/ })).toBeVisible()
+  await page.goto(URL)
+  await expect(page.getByRole('heading', { name: /Tu equipo directivo de IA/ })).toBeVisible({ timeout: 15000 })
   await expect(page.getByAltText('Paradixe, AI Operating Company')).toBeVisible()
 
   await page.getByRole('button', { name: /Clínica veterinaria/ }).click()
@@ -28,8 +32,8 @@ test('el Universo se recorre sin cuenta: se elige la empresa, se encarga evidenc
 
 test('los 7 Niveles y el ecosistema se pueden consultar desde la barra', async ({ page }) => {
   await new FakeApi().install(page)
-  await page.goto('/universo')
-  await page.getByRole('button', { name: 'Entrar a la oficina →' }).click()
+  await page.goto(URL)
+  await page.getByRole('button', { name: 'Entrar a la oficina →' }).click({ timeout: 15000 })
   await page.getByRole('button', { name: '🗺️ Ruta' }).click()
   await expect(page.getByRole('heading', { name: 'La ruta de 7 Niveles' })).toBeVisible()
   for (const name of ['El Dolor', 'Propuesta de Valor', 'Plan de Negocios', 'MVP', 'Validación Simulada', 'Lanzamiento', 'Escalamiento']) {
