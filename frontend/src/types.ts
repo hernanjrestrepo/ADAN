@@ -518,3 +518,81 @@ export interface ArenaSession {
   total_usd?: number
   verdict?: string
 }
+
+// Constitución de la empresa: nombre, dominios, ruta legal por país y estatutos
+export interface DomainCheck {
+  domain: string
+  tld: string
+  status: 'disponible' | 'probable_libre' | 'registrado' | 'sin_confirmar'
+  usd_min: number
+  usd_max: number
+  nota: string
+}
+
+export interface NameCheck {
+  name: string
+  country: string
+  searched: boolean
+  veredicto: 'libre_probable' | 'conflicto' | 'incierto'
+  explicacion: string
+  coincidencias: { nombre: string; tipo: string; donde: string; fuente: string }[]
+  registros_oficiales: { nombre: string; url: string; que_verificar: string }[]
+  alternativas: string[]
+  slug: string
+  domains: DomainCheck[]
+  registrars: { name: string; url: string; nota: string }[]
+  prices_note: string
+}
+
+export interface LegalStep {
+  titulo: string
+  que_es: string
+  donde: string
+  url: string
+  documentos: string[]
+  costo: string
+  tiempo: string
+  errores_comunes: string[]
+}
+
+export interface LegalGuide {
+  id: string
+  pais: string
+  resumen: string
+  searched: boolean
+  tipos_sociedad: { nombre: string; para_quien: string; ventajas: string[]; desventajas: string[]; socios: string; responsabilidad: string }[]
+  recomendada: { nombre: string; por_que: string }
+  regimenes: { nombre: string; quien_puede: string; como_funciona: string; conviene_si: string }[]
+  regimen_recomendado: { nombre: string; por_que: string }
+  pasos: LegalStep[]
+  done: boolean[]
+  obligaciones: string[]
+  costo_total: string
+  tiempo_total: string
+  fuentes: { nombre: string; url: string }[]
+  disclaimer: string
+}
+
+export interface Partner {
+  nombre: string
+  documento: string
+  aporte: string
+  porcentaje: number | null
+}
+
+export interface StatutesInput {
+  pais: string
+  tipo: string
+  nombre: string
+  domicilio: string
+  objeto: string
+  capital: string
+  administracion: string
+  socios: Partner[]
+}
+
+export interface Statutes {
+  id: string
+  title: string
+  markdown: string
+}

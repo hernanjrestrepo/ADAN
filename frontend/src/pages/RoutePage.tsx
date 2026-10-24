@@ -90,6 +90,12 @@ export default function RoutePage() {
                           Continuar el Nivel 1 →
                         </Link>
                       )}
+                      {level.number === 3 && (
+                        <Link to={`/constitucion/${companyId}`}
+                          className="inline-block mt-3 mr-3 rounded-lg border border-adan-accent/60 px-4 py-2 text-sm font-medium hover:bg-adan-accent/10">
+                          ⚖️ Constituye tu empresa: nombre, país, ruta legal y estatutos →
+                        </Link>
+                      )}
                       {level.status === 'active' && level.number > 1 && (
                         <p className="mt-3 text-sm text-adan-muted">
                           Este Nivel ya está abierto; su espacio de trabajo llega en una próxima versión de ADÁN.

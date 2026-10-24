@@ -1,5 +1,5 @@
 import type {
-  ArenaSession, AgentContract, AgentOffering, AgentTask, ContractReport, HirePeriod,
+  ArenaSession, AgentContract, LegalGuide, NameCheck, Statutes, StatutesInput, AgentOffering, AgentTask, ContractReport, HirePeriod,
   BoardConsensus, BoardRoomInput, ChatResponse, Company, CompanyInput, DecideInput, Decision, DocumentRecord,
   Evidence, EvidenceInput, GatePreview, GateReviewResult, LevelView, Nivel1Status, OnboardingState, Score,
   ScoreOverview, TimelineEvent, TokenResponse, TwinKind, TwinOverview, UploadResult, User,
@@ -116,6 +116,34 @@ export const api = {
       throw new ApiError(detail || `HTTP ${response.status}`, response.status)
     }
     return response.json() as Promise<UploadResult>
+  },
+  // Constitución de la empresa: investigar en internet toma tiempo
+  checkName: (companyId: string, name: string, country: string) =>
+    request<NameCheck>(`/constitucion/${companyId}/nombre`, {
+      method: 'POST', body: JSON.stringify({ name, country }), signal: AbortSignal.timeout(CHAT_TIMEOUT_MS),
+    }),
+  buildLegalGuide: (companyId: string, country: string) =>
+    request<LegalGuide>(`/constitucion/${companyId}/guia`, {
+      method: 'POST', body: JSON.stringify({ country }), signal: AbortSignal.timeout(CHAT_TIMEOUT_MS * 2),
+    }),
+  getLegalGuide: (companyId: string) => request<LegalGuide>(`/constitucion/${companyId}/guia`),
+  markLegalStep: (companyId: string, index: number, done: boolean) =>
+    post<LegalGuide>(`/constitucion/${companyId}/guia/pasos/${index}`, { done }),
+  draftStatutes: (companyId: string, input: StatutesInput) =>
+    request<Statutes>(`/constitucion/${companyId}/estatutos`, {
+      method: 'POST', body: JSON.stringify(input), signal: AbortSignal.timeout(CHAT_TIMEOUT_MS * 2),
+    }),
+  downloadStatutes: async (companyId: string, docId: string) => {
+    const response = await fetch(`${API_BASE}/constitucion/${companyId}/estatutos/${docId}.docx`, {
+      credentials: 'same-origin', headers: { 'X-Requested-With': 'adan' },
+    })
+    if (!response.ok) throw new ApiError('No se pudo descargar el documento', response.status)
+    const url = URL.createObjectURL(await response.blob())
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'estatutos.docx'
+    a.click()
+    URL.revokeObjectURL(url)
   },
   // La Arena (inversionistas simulados): leer y deliberar toma tiempo
   startArena: (companyId: string, pitch: string) =>

@@ -91,6 +91,20 @@ class TieredLLM(LLMAdapter):
         return await self._route("generate", lambda llm, m: llm.generate(
             prompt, model=model or m, system=system, temperature=temperature, max_tokens=max_tokens))
 
+    async def chat_search(self, messages, max_tokens=4096) -> LLMResponse:
+        """Responder investigando en internet (Kimi). Si el proveedor no sabe buscar o falla, responde sin
+        búsqueda y lo deja dicho en `metadata["searched"] = False`: nunca se presenta como verificado."""
+        if self.claude is not None and hasattr(self.claude, "chat_search"):
+            try:
+                response = await self.claude.chat_search(messages, model=tier_model(self.tier), max_tokens=max_tokens)
+                record_usage(response, self.tier, "chat_search")
+                return response
+            except Exception as exc:  # noqa: BLE001
+                logger.warning("Búsqueda web no disponible (%s): se responde sin buscar", type(exc).__name__)
+        response = await self._route("chat", lambda llm, m: llm.chat(messages, model=m, max_tokens=max_tokens))
+        response.metadata["searched"] = False
+        return response
+
     async def chat_stream(self, messages, model=None, temperature=0.7, max_tokens=2048):
         llm = self.claude or self.local
         started = False

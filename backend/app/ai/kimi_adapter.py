@@ -18,6 +18,18 @@ from app.ai.base import LLMAdapter, LLMMessage, LLMResponse
 from app.core.config import settings
 
 KIMI_TEMPERATURE = 0.6
+MAX_SEARCH_ROUNDS = 8
+SEARCH_INSTRUCTION = ("Antes de responder, investiga con la herramienta $web_search: no respondas de memoria. Haz "
+                      "varias búsquedas si hace falta (fuentes oficiales primero) y cita la URL de cada dato.")
+SEARCH_COST_USD = 0.004
+MAX_NUDGES = 2
+NUDGE = ("Continúa: haz ya las búsquedas que hagan falta con $web_search y luego entrega la respuesta final completa, "
+         "con las URL de las fuentes. No anuncies lo que vas a hacer: hazlo.")
+
+
+def _unfinished(text: str) -> bool:
+    """Respuesta que se quedó en anunciar lo que iba a hacer, en vez de responder."""
+    return len(text) < 600 and (text.endswith(":") or text.endswith("…") or "voy a " in text.lower()[:200])
 
 
 def cost_usd(input_tokens: int, output_tokens: int) -> float:
@@ -110,6 +122,47 @@ class KimiAdapter(LLMAdapter):
         self.last_stream_response = self._to_response(
             {"model": model, "choices": [{"message": {"content": "".join(parts) or " "}}], "usage": usage},
             model, start)
+
+    async def chat_search(self, messages, model=None, max_tokens=4096) -> LLMResponse:
+        """Responde investigando en internet con la búsqueda integrada de Moonshot ($web_search): el modelo
+        pide buscar, se le devuelve la llamada y Moonshot hace la búsqueda (unos USD 0,004 cada una)."""
+        model = model or self._default_model
+        start = time.monotonic()
+        # Sin una orden explícita, Kimi suele responder de memoria aunque tenga la búsqueda disponible
+        convo = [{"role": "system", "content": SEARCH_INSTRUCTION}] + [{"role": m.role, "content": m.content} for m in messages]
+        if convo[-1]["role"] == "user":  # la orden también al final: con instrucciones largas, la del sistema se diluye
+            convo[-1] = {**convo[-1], "content": convo[-1]["content"] + "\n\n" + SEARCH_INSTRUCTION}
+        body = {"model": model, "messages": convo, "temperature": KIMI_TEMPERATURE, "max_tokens": max_tokens,
+                "thinking": {"type": "disabled"},
+                "tools": [{"type": "builtin_function", "function": {"name": "$web_search"}}]}
+        prompt_tokens = completion_tokens = searches = nudges = 0
+        data: dict = {}
+        for _ in range(MAX_SEARCH_ROUNDS):
+            data = await self._post(body)
+            usage = data.get("usage") or {}
+            prompt_tokens += int(usage.get("prompt_tokens") or 0)
+            completion_tokens += int(usage.get("completion_tokens") or 0)
+            choice = (data.get("choices") or [{}])[0]
+            if choice.get("finish_reason") != "tool_calls":
+                # Kimi a veces termina anunciando una búsqueda que no hizo ("Voy a buscar…:") o sin buscar:
+                # se le pide continuar hasta la respuesta completa
+                text = ((choice.get("message") or {}).get("content") or "").strip()
+                if (searches == 0 or _unfinished(text)) and nudges < MAX_NUDGES:
+                    nudges += 1
+                    convo += [{"role": "assistant", "content": text or "…"}, {"role": "user", "content": NUDGE}]
+                    continue
+                break
+            message = choice.get("message") or {}
+            convo.append(message)
+            for call in message.get("tool_calls") or []:
+                searches += 1
+                convo.append({"role": "tool", "tool_call_id": call["id"], "name": call["function"]["name"],
+                              "content": call["function"]["arguments"]})
+        response = self._to_response({**data, "usage": {"prompt_tokens": prompt_tokens,
+                                                        "completion_tokens": completion_tokens}}, model, start)
+        response.cost_usd += searches * SEARCH_COST_USD
+        response.metadata.update({"searched": searches > 0, "searches": searches})
+        return response
 
     async def generate(self, prompt, model=None, system=None, temperature=0.7, max_tokens=2048) -> LLMResponse:
         messages = ([LLMMessage("system", system)] if system else []) + [LLMMessage("user", prompt)]
