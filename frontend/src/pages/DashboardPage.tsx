@@ -122,6 +122,7 @@ function CompanyCard({ company }: { company: Company }) {
           </Link>
           <Link to={`/ruta/${company.id}`} className="text-sm text-adan-muted hover:text-adan-text">Ruta</Link>
           <Link to={`/agentes/${company.id}`} className="text-sm text-adan-muted hover:text-adan-text">Agentes</Link>
+          <Link to={`/constitucion/${company.id}`} className="text-sm text-adan-muted hover:text-adan-text">Constitución</Link>
         </span>
         {/* Enlace aparte: un enlace no puede ir dentro de un botón */}
         <Link to={`/gemelo/${company.id}`} className="text-sm text-adan-accent hover:underline">
