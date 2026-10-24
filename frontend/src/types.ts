@@ -596,3 +596,48 @@ export interface Statutes {
   title: string
   markdown: string
 }
+
+// Encuestas de validación
+export type SurveyAnswer = string | number | string[]
+
+export interface PublicSurvey {
+  token: string
+  company: string
+  titulo: string
+  intro: string
+  open: boolean
+  preguntas: { id: string; texto: string; tipo: 'opcion' | 'multiple' | 'escala' | 'numero' | 'texto'; opciones: string[] }[]
+}
+
+export interface SurveySummary {
+  token: string
+  titulo: string
+  created_at: string
+  open: boolean
+  responses: number
+}
+
+export interface SurveyResults {
+  token: string
+  titulo: string
+  open: boolean
+  responses: number
+  questions: {
+    id: string
+    texto: string
+    tipo: string
+    opciones: string[]
+    por_que: string
+    answered: number
+    counts?: Record<string, number>
+    average?: number | null
+    texts?: string[]
+  }[]
+}
+
+export interface SurveyInsights {
+  resumen: string
+  hallazgos: string[]
+  alertas: string[]
+  evidencia_sugerida: { afirmacion: string; tipo: 'testimony'; polaridad: EvidencePolarity; fuente: string }[]
+}

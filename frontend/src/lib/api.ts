@@ -1,5 +1,5 @@
 import type {
-  ArenaSession, AgentContract, LegalGuide, NameCheck, Statutes, StatutesInput, AgentOffering, AgentTask, ContractReport, HirePeriod,
+  PublicSurvey, SurveyAnswer, SurveyInsights, SurveyResults, SurveySummary, ArenaSession, AgentContract, LegalGuide, NameCheck, Statutes, StatutesInput, AgentOffering, AgentTask, ContractReport, HirePeriod,
   BoardConsensus, BoardRoomInput, ChatResponse, Company, CompanyInput, DecideInput, Decision, DocumentRecord,
   Evidence, EvidenceInput, GatePreview, GateReviewResult, LevelView, Nivel1Status, OnboardingState, Score,
   ScoreOverview, TimelineEvent, TokenResponse, TwinKind, TwinOverview, UploadResult, User,
@@ -117,6 +117,18 @@ export const api = {
     }
     return response.json() as Promise<UploadResult>
   },
+  // Encuestas: el fundador las crea; quien responde entra sin cuenta
+  createSurvey: (companyId: string, objective: string) =>
+    request<SurveySummary & { preguntas: unknown[] }>(`/nivel1/${companyId}/surveys`, {
+      method: 'POST', body: JSON.stringify({ objective }), signal: AbortSignal.timeout(CHAT_TIMEOUT_MS),
+    }),
+  listSurveys: (companyId: string) => request<SurveySummary[]>(`/nivel1/${companyId}/surveys`),
+  getSurveyResults: (companyId: string, token: string) => request<SurveyResults>(`/nivel1/${companyId}/surveys/${token}/results`),
+  getSurveyInsights: (companyId: string, token: string) =>
+    request<SurveyInsights>(`/nivel1/${companyId}/surveys/${token}/insights`, { method: 'POST', signal: AbortSignal.timeout(CHAT_TIMEOUT_MS) }),
+  getPublicSurvey: (token: string) => request<PublicSurvey>(`/encuestas/${token}`),
+  answerSurvey: (token: string, answers: Record<string, SurveyAnswer>, consent: boolean) =>
+    post<{ ok: boolean }>(`/encuestas/${token}`, { answers, consent }),
   // Constitución de la empresa: investigar en internet toma tiempo
   checkName: (companyId: string, name: string, country: string) =>
     request<NameCheck>(`/constitucion/${companyId}/nombre`, {
