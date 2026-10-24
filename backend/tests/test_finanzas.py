@@ -43,11 +43,11 @@ def test_bad_inputs_are_sanitized():
     assert a["gastos_fijos"] == [{"concepto": "Luz", "monto_mensual": 0.0, "desde_mes": 24, "tipo": None, "base": None}]
 
 
-ORG = {"moneda": "cop", "resumen": "Equipo pequeño con agentes.", "roles": [
+ORG = {"moneda": "cop", "tasa_usd": 4000, "resumen": "Equipo pequeño con agentes.", "roles": [
     {"area": "Dirección", "cargo": "Gerente", "tipo": "humano", "servicio": "", "responsabilidades": ["Dirigir"],
-     "desde_mes": 1, "costo_mensual": 5000000, "costo_humano_equivalente": 5000000, "por_que": "Responsabilidad legal"},
+     "desde_mes": 1, "minutos_mes": 0, "costo_mensual": 5000000, "costo_humano_equivalente": 5000000, "por_que": "Responsabilidad legal"},
     {"area": "Comercial", "cargo": "Ventas y marketing", "tipo": "servicio_paradixe", "servicio": "EVA", "responsabilidades": ["Campañas"],
-     "desde_mes": 2, "costo_mensual": 1500000, "costo_humano_equivalente": 4000000, "por_que": "Campañas 24/7"}]}
+     "desde_mes": 2, "minutos_mes": 3000, "costo_mensual": 999, "costo_humano_equivalente": 4000000, "por_que": "Campañas 24/7"}]}
 ASSUMPTIONS = {"moneda": "USD", "unidad": "suscripción", "precio_unitario": 100000, "mes_inicio_ventas": 1, "unidades_mes_1": 0,
                "crecimiento_mensual_pct": 15, "unidades_max_mes": 500, "costo_variable_pct": 35, "comision_pagos_pct": 3,
                "marketing_mensual": 800000, "impuesto_renta_pct": 35, "capital_inicial": 0,
@@ -92,15 +92,20 @@ def test_org_chart_feeds_the_cash_flow_and_the_report(client):
     cid, headers = _setup(client, "finanzas@example.com")
     llm = _use(client, CfoLLM())
     org = client.post(f"/api/v1/finanzas/{cid}/organigrama", headers=headers).json()
-    assert org["costo_mensual_total"] == 6_500_000 and org["ahorro_mensual"] == 2_500_000
-    assert org["roles"][1]["precio"].startswith("estimado de mercado")
+    # EVA: 3.000 min × USD 0,10 × 4.000 = COP 1.200.000 (precio real de Paradixe, no el estimado del modelo);
+    # la membresía de USD 100 (COP 400.000) entra una vez, desde el primer mes con servicios de Paradixe
+    eva = org["roles"][1]
+    assert eva["costo_mensual"] == 1_200_000 and "USD 0.10 por minuto × 3,000 min" in eva["precio"]
+    membership = org["roles"][-1]
+    assert membership["servicio"] == "Membresía Paradixe" and membership["costo_mensual"] == 400_000 and membership["desde_mes"] == 2
+    assert org["costo_mensual_total"] == 6_600_000 and org["ahorro_mensual"] == 2_800_000
     assert "EVA" in llm.prompts[0] and "BPO Paradixe" in llm.prompts[0]
 
     model = client.post(f"/api/v1/finanzas/{cid}/modelo", headers=headers).json()
     concepts = [g["concepto"] for g in model["assumptions"]["gastos_fijos"]]
     assert "Gerente (persona)" in concepts and "Ventas y marketing (EVA)" in concepts and "Arriendo" in concepts
-    assert model["base"]["rows"][0]["gastos_fijos"] == 5_000_000 + 1_200_000  # EVA entra en el mes 2
-    assert model["base"]["rows"][1]["gastos_fijos"] == 6_500_000 + 1_200_000
+    assert model["base"]["rows"][0]["gastos_fijos"] == 5_000_000 + 1_200_000  # EVA y la membresía entran en el mes 2
+    assert model["base"]["rows"][1]["gastos_fijos"] == 6_600_000 + 1_200_000
     assert model["advertencias"] == ["Precio sin validar"] and "organigrama ya cuesta" in llm.prompts[-1]
     # Una sola moneda: la del organigrama manda aunque el CFO proponga otra
     assert org["moneda"] == "COP" and model["assumptions"]["moneda"] == "COP" and "MONEDA OBLIGATORIA: COP" in llm.prompts[-1]

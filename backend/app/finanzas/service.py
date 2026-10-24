@@ -14,12 +14,23 @@ from app.ai.router import for_tier
 from app.finanzas import modelo
 from app.models.models import Company, Document, Project
 
-# Servicios del ecosistema Paradixe que pueden ocupar un rol de la empresa (AD-000 v2.0). Los precios se
-# cotizan con Paradixe: en el modelo va un estimado de mercado marcado como tal.
+# Servicios del ecosistema Paradixe que pueden ocupar un rol de la empresa (AD-000 v2.0).
+# Precios de Paradixe (Hernán, 2026-10-24): EVA, BPO y Omnicanal cobran USD 0,10 por minuto, con descuento por volumen,
+# e incluyen LLM, marcador, PBX, análisis inteligente, voz, transcripción, grabaciones y asesoría. La membresía mensual
+# de USD 100 incluye el CRM y las demás plataformas. Agentes por tiempo, Genexis y CSI van como estimado de mercado.
+PER_MINUTE_USD = 0.10
+PER_MINUTE_SERVICES = ("EVA", "BPO Paradixe", "Omnicanal")
+MEMBERSHIP_USD = 100.0
+MEMBERSHIP = "Membresía Paradixe"
+# Respaldo si el modelo no da la tasa de cambio (moneda local por 1 USD, referencia de octubre de 2026)
+FX_FALLBACK = {"USD": 1.0, "COP": 4000.0, "MXN": 18.5, "EUR": 0.92, "PEN": 3.75, "CLP": 950.0, "ARS": 1200.0, "BRL": 5.5}
 PARADIXE_SERVICES = {
-    "EVA": "Ventas y marketing con IA: campañas inbound y outbound, voz, agentes conversacionales y seguimiento comercial.",
-    "Omnicanal": "Atención al cliente en WhatsApp, web, redes y teléfono con un mismo agente de IA, 24/7, que escala a una persona.",
-    "BPO Paradixe": "Procesos tercerizados operados por agentes y personas: contabilidad, facturación, nómina, cobranza, soporte.",
+    "EVA": "Ventas y marketing con IA: campañas inbound y outbound, voz, agentes conversacionales y seguimiento comercial. "
+           "USD 0,10 por minuto.",
+    "Omnicanal": "Atención al cliente en WhatsApp, web, redes y teléfono con un mismo agente de IA, 24/7, que escala a una "
+                 "persona. USD 0,10 por minuto.",
+    "BPO Paradixe": "Procesos tercerizados operados por agentes y personas: contabilidad, facturación, nómina, cobranza, "
+                    "soporte, llamadas. USD 0,10 por minuto.",
     "Agentes por tiempo": "Agentes de ADÁN por hora, día, semana o mes: investigación, análisis financiero, redacción, operaciones.",
     "Genexis": "Construcción del MVP y del software de la empresa (Nivel 4).",
     "CSI": "Inteligencia de mercado: competencia, regulación, tendencias y benchmarks.",
@@ -27,18 +38,20 @@ PARADIXE_SERVICES = {
 ROLE_TYPES = ("humano", "agente_adan", "servicio_paradixe")
 
 ORG_SCHEMA = {
-    "type": "object", "additionalProperties": False, "required": ["moneda", "resumen", "roles"],
+    "type": "object", "additionalProperties": False, "required": ["moneda", "tasa_usd", "resumen", "roles"],
     "properties": {
         "moneda": {"type": "string"},
+        "tasa_usd": {"type": "number"},
         "resumen": {"type": "string"},
         "roles": {"type": "array", "items": {
             "type": "object", "additionalProperties": False,
-            "required": ["area", "cargo", "tipo", "servicio", "responsabilidades", "desde_mes", "costo_mensual",
-                         "costo_humano_equivalente", "por_que"],
+            "required": ["area", "cargo", "tipo", "servicio", "responsabilidades", "desde_mes", "minutos_mes",
+                         "costo_mensual", "costo_humano_equivalente", "por_que"],
             "properties": {"area": {"type": "string"}, "cargo": {"type": "string"},
                            "tipo": {"type": "string", "enum": list(ROLE_TYPES)},
                            "servicio": {"type": "string"}, "responsabilidades": {"type": "array", "items": {"type": "string"}},
-                           "desde_mes": {"type": "integer"}, "costo_mensual": {"type": "number"},
+                           "desde_mes": {"type": "integer"}, "minutos_mes": {"type": "number"},
+                           "costo_mensual": {"type": "number"},
                            "costo_humano_equivalente": {"type": "number"}, "por_que": {"type": "string"}}}},
     },
 }
@@ -157,31 +170,54 @@ class Finanzas:
                   "responsabilidad legal, oficio físico). `servicio`: el nombre exacto del servicio de Paradixe, o vacío. "
                   "`desde_mes`: cuándo hace falta el rol (1 a 24): no contrates todo desde el día uno. `moneda`: el código "
                   "ISO de la moneda del país donde opera la empresa (COP, MXN, USD…); TODOS los costos van en esa moneda. "
-                  "`costo_mensual`: salario con prestaciones para humanos y un estimado de mercado para agentes y servicios. "
+                  "`tasa_usd`: cuántas unidades de esa moneda vale 1 USD hoy. `minutos_mes`: para EVA, BPO Paradixe y "
+                  "Omnicanal, los minutos de atención, llamadas o voz que el rol consumiría al mes (realista para el volumen "
+                  "de esta empresa; 0 en los demás roles): su costo lo calcula el sistema a USD 0,10 por minuto. "
+                  "`costo_mensual`: salario con prestaciones para humanos y un estimado de mercado para agentes por tiempo, "
+                  "Genexis y CSI. La membresía de Paradixe (USD 100 al mes, CRM y plataformas) la agrega el sistema: no la "
+                  "pongas como rol. "
                   "`costo_humano_equivalente`: lo que costaría ese rol con una persona (igual al costo si es humano). "
                   "`por_que`: una frase. `resumen`: cómo queda la organización y cuánto ahorra frente a hacerlo todo con "
                   "personas, en 3 frases. Entre 6 y 14 roles.")
         resp = await self.llm.chat_json([LLMMessage("system", CFO), LLMMessage("user", prompt)], ORG_SCHEMA,
                                         temperature=0.3, max_tokens=5000)
         data = resp.parsed if isinstance(resp.parsed, dict) else {}
+        currency = (normalize_string(data.get("moneda")) or "COP")[:5].upper()
+        fx = float(data.get("tasa_usd") or 0) or FX_FALLBACK.get(currency, 0.0) or 1.0
         roles = []
         for r in data.get("roles") or []:
             if not isinstance(r, dict) or not normalize_string(r.get("cargo")):
                 continue
             kind = r.get("tipo") if r.get("tipo") in ROLE_TYPES else "humano"
             service = normalize_string(r.get("servicio")) if kind == "servicio_paradixe" else ""
-            cost = max(0.0, float(r.get("costo_mensual") or 0))
+            if service.lower().startswith("membres"):
+                continue  # la membresía la agrega el sistema una sola vez
+            per_minute = next((s for s in PER_MINUTE_SERVICES if s.lower() in service.lower()), None)
+            minutes = max(0.0, float(r.get("minutos_mes") or 0)) if per_minute else 0.0
+            if per_minute:
+                cost = minutes * PER_MINUTE_USD * fx
+                price = f"USD {PER_MINUTE_USD:.2f} por minuto × {minutes:,.0f} min al mes (descuento por volumen)"
+            else:
+                cost = max(0.0, float(r.get("costo_mensual") or 0))
+                price = "salario de mercado con prestaciones" if kind == "humano" else "estimado de mercado; se cotiza con Paradixe"
             roles.append({"area": normalize_string(r.get("area")) or "General", "cargo": normalize_string(r.get("cargo")),
                           "tipo": kind, "servicio": service, "responsabilidades": normalize_list(r.get("responsabilidades"))[:5],
-                          "desde_mes": int(min(24, max(1, int(r.get("desde_mes") or 1)))), "costo_mensual": cost,
-                          "costo_humano_equivalente": max(cost, float(r.get("costo_humano_equivalente") or cost)),
-                          "por_que": normalize_string(r.get("por_que")),
-                          "precio": "estimado de mercado; se cotiza con Paradixe" if kind != "humano" else "salario de mercado con prestaciones"})
+                          "desde_mes": int(min(24, max(1, int(r.get("desde_mes") or 1)))), "minutos_mes": minutes,
+                          "costo_mensual": round(cost), "por_que": normalize_string(r.get("por_que")), "precio": price,
+                          "costo_humano_equivalente": round(max(cost, float(r.get("costo_humano_equivalente") or cost)))})
         if not roles:
             raise ValueError("No se pudo diseñar el organigrama esta vez; intenta de nuevo en un momento.")
+        paradixe = [r for r in roles if r["tipo"] != "humano"]
+        if paradixe:
+            fee = round(MEMBERSHIP_USD * fx)
+            roles.append({"area": "Plataformas", "cargo": "Membresía Paradixe: CRM y plataformas", "tipo": "servicio_paradixe",
+                          "servicio": MEMBERSHIP, "responsabilidades": ["CRM", "Acceso a las plataformas de Paradixe"],
+                          "desde_mes": min(r["desde_mes"] for r in paradixe), "minutos_mes": 0.0, "costo_mensual": fee,
+                          "costo_humano_equivalente": fee, "por_que": "Incluye el CRM y todas las plataformas del ecosistema.",
+                          "precio": f"USD {MEMBERSHIP_USD:.0f} al mes"})
         hybrid = sum(r["costo_mensual"] for r in roles)
         human = sum(r["costo_humano_equivalente"] for r in roles)
-        org = {"moneda": (normalize_string(data.get("moneda")) or "COP")[:5].upper(),
+        org = {"moneda": currency, "tasa_usd": fx,
                "resumen": normalize_string(data.get("resumen")), "roles": roles, "generated_at": _now(),
                "costo_mensual_total": round(hybrid), "costo_todo_humano": round(human),
                "ahorro_mensual": round(human - hybrid), "ahorro_pct": round(100 * (human - hybrid) / human, 1) if human else 0}

@@ -650,6 +650,7 @@ export interface OrgRole {
   servicio: string
   responsabilidades: string[]
   desde_mes: number
+  minutos_mes: number
   costo_mensual: number
   costo_humano_equivalente: number
   por_que: string

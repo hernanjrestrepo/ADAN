@@ -67,13 +67,18 @@ function OrgSection({ companyId, org, setOrg, onError }: { companyId: string; or
                       <p className="text-xs mt-2">{money(r.costo_mensual)}/mes desde el mes {r.desde_mes}
                         {r.tipo !== 'humano' && r.costo_humano_equivalente > r.costo_mensual && <span className="text-adan-success"> · con una persona: {money(r.costo_humano_equivalente)}</span>}</p>
                       <p className="text-[11px] text-adan-muted mt-1">{r.por_que}</p>
+                      {r.tipo !== 'humano' && <p className="text-[11px] mt-1 text-orange-200">{r.precio}</p>}
                     </div>
                   ))}
                 </div>
               </div>
             ))}
           </div>
-          <p className="text-xs text-adan-muted">Los costos de agentes y servicios son estimados de mercado: Paradixe los cotiza para tu empresa.</p>
+          <p className="text-xs text-adan-muted">
+            Precios de Paradixe: EVA, BPO y Omnicanal a USD 0,10 por minuto (descuento por volumen; incluye LLM, marcador, PBX, análisis, voz,
+            transcripción, grabaciones y asesoría) y membresía de USD 100 al mes con el CRM y todas las plataformas. Agentes por tiempo, Genexis
+            y CSI van como estimado de mercado.
+          </p>
         </>
       )}
     </div>
