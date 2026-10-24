@@ -58,7 +58,9 @@ app = FastAPI(
 async def security_guards(request: Request, call_next):
     """Límite de tamaño del cuerpo, límite de peticiones por IP y cabeceras de seguridad (WO-097)."""
     length = request.headers.get("content-length")
-    if length and length.isdigit() and int(length) > settings.MAX_BODY_BYTES:
+    # La carga de documentación del cliente admite más (10 archivos de hasta 15 MB los recibe el endpoint)
+    limit = settings.MAX_UPLOAD_BODY_BYTES if request.url.path.endswith("/documents/upload") else settings.MAX_BODY_BYTES
+    if length and length.isdigit() and int(length) > limit:
         RATE_LIMITED.labels("body").inc()
         return JSONResponse(status_code=413, content={"detail": "La solicitud es demasiado grande"})
     wait = limiter.hit(f"ip:{client_ip(request)}", settings.RATE_LIMIT_PER_MINUTE, 60)

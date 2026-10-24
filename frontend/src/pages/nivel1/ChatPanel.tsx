@@ -10,6 +10,8 @@ interface ChatPanelProps {
   sending: boolean
   discovery?: DiscoveryProgress
   onSend: (message: string) => Promise<void>
+  uploading?: boolean
+  onUpload?: (files: File[]) => Promise<void>
   onRegisterEvidence: (suggestion: EvidenceSuggestion) => Promise<void>
   onBoardRoom: () => void
   onDiagnosis: () => void
@@ -17,6 +19,7 @@ interface ChatPanelProps {
 }
 
 const MAX_MESSAGE_CHARS = 8000  // mismo límite que el backend (WO-097)
+const ACCEPTED_DOCS = '.pdf,.docx,.xlsx,.pptx,.txt,.md,.csv,.json'
 
 const TOPIC_ICON: Record<DiscoveryTopic['estado'], { icon: string; label: string; className: string }> = {
   respondido: { icon: '✓', label: 'Entendido', className: 'bg-adan-success/20 text-adan-success' },
@@ -114,16 +117,19 @@ function DiscoveryPanel({ discovery, onRegisterEvidence, onBoardRoom }: {
 }
 
 export default function ChatPanel({
-  messages, sending, discovery, onSend, onRegisterEvidence, onBoardRoom, onDiagnosis, onGateReview,
+  messages, sending, discovery, onSend, onRegisterEvidence, onBoardRoom, onDiagnosis, onGateReview, uploading = false, onUpload,
 }: ChatPanelProps) {
   const [input, setInput] = useState('')
+  const fileInput = useRef<HTMLInputElement>(null)
+  const busy = sending || uploading
+  const pickFiles = () => fileInput.current?.click()
   const [showProgress, setShowProgress] = useState(false)
   const endRef = useRef<HTMLDivElement>(null)
-  const elapsed = useElapsed(sending)
+  const elapsed = useElapsed(busy)
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages, sending])
+  }, [messages, busy])
 
   const submit = async () => {
     const text = input.trim()
@@ -168,6 +174,16 @@ export default function ChatPanel({
               muestra lo que va entendiendo.
             </EmptyState>
           )}
+          {onUpload && messages.length < 4 && !uploading && (
+            <button type="button" onClick={pickFiles} data-testid="upload-invite"
+              className="w-full rounded-xl border border-dashed border-adan-accent/50 bg-adan-accent/5 p-4 text-left hover:bg-adan-accent/10">
+              <p className="text-sm font-semibold">📎 ¿Ya tienes documentos? Súbelos y ADÁN aprende de tu idea o de tu empresa</p>
+              <p className="text-xs text-adan-muted mt-1">
+                Plan de negocio, estados financieros, presentaciones, estudios de mercado, cotizaciones, actas… en PDF, Word,
+                Excel, PowerPoint o texto (hasta 10 archivos de 15 MB). ADÁN distingue lo que está respaldado de lo que es supuesto.
+              </p>
+            </button>
+          )}
           {messages.map((msg) => (
             <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
               <div className={`max-w-[85%] rounded-xl px-4 py-3 ${
@@ -182,17 +198,17 @@ export default function ChatPanel({
                 {msg.metadata_json?.degraded && (
                   <p className="mt-2 text-xs text-adan-warning" data-testid="degraded-note">
                     ⚠️ Respondió el modelo local de respaldo ({msg.metadata_json.degraded}). La calidad es baja y esta
-                    respuesta no avanzó el guion: revisa la clave de Anthropic y vuelve a enviar tu mensaje.
+                    respuesta no avanzó el guion: el modelo principal (Claude o Kimi) no respondió; vuelve a enviar tu mensaje.
                   </p>
                 )}
               </div>
             </div>
           ))}
-          {sending && (
+          {busy && (
             <div className="flex justify-start">
               <div className="bg-adan-surface border border-adan-border rounded-xl px-4 py-3">
                 <div className="text-sm text-adan-muted animate-pulse">
-                  ADÁN está leyendo tu respuesta…{elapsed >= 5 ? ` (${elapsed} s)` : ''}
+                  {uploading ? 'ADÁN está leyendo tus documentos' : 'ADÁN está leyendo tu respuesta'}…{elapsed >= 5 ? ` (${elapsed} s)` : ''}
                 </div>
               </div>
             </div>
@@ -210,9 +226,21 @@ export default function ChatPanel({
             maxLength={MAX_MESSAGE_CHARS}
             rows={Math.min(6, Math.max(2, input.split('\n').length))}
             className="flex-1 resize-none px-4 py-3 bg-adan-surface border border-adan-border rounded-xl text-adan-text focus:outline-hidden focus:border-adan-accent"
-            disabled={sending}
+            disabled={busy}
           />
-          <Button type="submit" disabled={sending || !input.trim()}>Enviar</Button>
+          {onUpload && (
+            <>
+              <input ref={fileInput} type="file" multiple accept={ACCEPTED_DOCS} className="hidden" data-testid="upload-input"
+                aria-label="Cargar documentos"
+                onChange={async (e) => {
+                  const files = Array.from(e.target.files ?? [])
+                  e.target.value = ''
+                  if (files.length) await onUpload(files)
+                }} />
+              <Button type="button" variant="secondary" onClick={pickFiles} disabled={busy} title="Cargar documentos">📎</Button>
+            </>
+          )}
+          <Button type="submit" disabled={busy || !input.trim()}>Enviar</Button>
         </form>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-4">

@@ -112,14 +112,31 @@ def merge(state: dict, parsed: dict) -> dict:
             continue
         new["temas"][tid] = {"estado": item["estado"], "resumen": summary or old["resumen"],
                              "base": item.get("base") if item.get("base") in BASES else old["base"]}
-    seen = {e["afirmacion"].strip().lower() for e in new["evidencia_sugerida"]}
+    seen = [_words(e["afirmacion"]) for e in new["evidencia_sugerida"]]
     for ev in parsed.get("evidencia_sugerida") or []:
         claim = (ev.get("afirmacion") or "").strip()
-        if len(claim) >= 10 and ev.get("tipo") in ("testimony", "external") and claim.lower() not in seen:
+        words = _words(claim)
+        if len(claim) >= 10 and ev.get("tipo") in ("testimony", "external") and not any(_same(words, s) for s in seen):
             new["evidencia_sugerida"].append({"afirmacion": claim[:1000], "tipo": ev["tipo"],
                                               "fuente": (ev.get("fuente") or "").strip()[:500]})
-            seen.add(claim.lower())
+            seen.append(words)
     return new
+
+
+def _words(text: str) -> set[str]:
+    """Palabras con contenido (sin tildes ni signos) para reconocer la misma afirmación dicha distinto."""
+    import unicodedata
+
+    plain = unicodedata.normalize("NFKD", text.lower()).encode("ascii", "ignore").decode()
+    tokens = "".join(c if c.isalnum() else " " for c in plain).split()
+    return {t for t in tokens if len(t) > 2 or t.isdigit()}
+
+
+def _same(a: set[str], b: set[str]) -> bool:
+    """Misma evidencia si casi todas las palabras de la más corta están en la otra."""
+    if not a or not b:
+        return False
+    return len(a & b) / min(len(a), len(b)) >= 0.75
 
 
 def brief(state: dict) -> str:

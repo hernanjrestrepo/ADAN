@@ -159,7 +159,8 @@ export class FakeApi {
     const url = new URL(request.url())
     const path = url.pathname.replace('/api/v1', '')
     const method = request.method()
-    const body = request.postData() ? JSON.parse(request.postData() as string) : null
+    const isMultipart = (request.headers()['content-type'] ?? '').startsWith('multipart/')
+    const body = request.postData() && !isMultipart ? JSON.parse(request.postData() as string) : null
     this.calls.push({ method, path, body, headers: request.headers() })
 
     const forced = this.overrides.get(`${method} ${path}`)
@@ -231,6 +232,16 @@ export class FakeApi {
         agent_name: 'ADÁN', metadata_json: { degraded: this.chatDegraded } }
       this.messages.push(reply)
       return this.json(route, 200, { message: reply, conversation_id: 'conv1', card_id: null, disclaimer: 'aviso' })
+    }
+    if (method === 'POST' && path.endsWith('/documents/upload')) {
+      const now = new Date().toISOString()
+      this.discoveryDone = Math.max(this.discoveryDone, 3)
+      const reply = { id: `m${this.messages.length}`, role: 'assistant', agent_name: 'ADÁN', created_at: now,
+        content: '📎 Leí 1 documento(s): plan.pdf.\n\nVendes pan por suscripción. Lo más débil: no hay ventas reales.' }
+      this.messages.push(reply)
+      return this.json(route, 200, { documents: [{ id: 'd1', title: 'plan.pdf', kind: 'PDF', pages: 3, chars: 5000, truncated: false }],
+        errors: [], reply: reply.content, degraded: null, conversation_id: 'conv1', learning: { resumen: 'Panadería' },
+        discovery: this.discovery() })
     }
     if (method === 'GET' && path.endsWith('/board-room/last')) {
       return this.lastBoard ? this.json(route, 200, this.lastBoard) : this.json(route, 404, { detail: 'Todavía no hay sesiones' })

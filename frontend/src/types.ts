@@ -462,3 +462,23 @@ export interface ContractReport {
   tools: string[]
   price_note: string
 }
+
+// Documentación del cliente: lo que se cargó y lo que ADÁN aprendió de ella
+export interface UploadedDocument {
+  id: string
+  title: string
+  kind: string
+  pages: number
+  chars: number
+  truncated: boolean
+}
+
+export interface UploadResult {
+  documents: UploadedDocument[]
+  errors: string[]
+  reply: string
+  degraded?: string | null
+  conversation_id: string
+  learning: { resumen?: string; etapa?: string; vacios?: string[]; riesgos?: string[] }
+  discovery: DiscoveryProgress
+}

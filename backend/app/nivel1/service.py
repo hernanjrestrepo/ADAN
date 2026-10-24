@@ -18,6 +18,7 @@ from datetime import datetime, timezone
 from sqlalchemy.orm import Session
 
 from app.ai.router import for_tier
+from app.documents import learn as doc_learning
 from app.nivel1 import discovery
 from app.nivel1.context import ContextLayers
 from app.ai.base import LLMAdapter, LLMMessage
@@ -157,6 +158,45 @@ class Nivel1Service:
 
         return assistant_msg, conversation
 
+    # --- Documentación del cliente ---
+
+    async def learn_from_documents(self, project: Project, level: Level, docs: list[tuple[str, str]]) -> dict:
+        """ADÁN lee la documentación cargada: actualiza el guion del dolor, propone evidencia verificable y
+        deja escrito qué entendió, qué falta y qué riesgos ve. El resultado queda en la conversación
+        (Registro Permanente) y en un Documento que el Board lee antes de votar."""
+        card = self.get_or_create_pain_card(project, level)
+        conversation = self.get_or_create_conversation(card)
+        state = discovery.current_state(self._history(conversation))
+        context = ContextLayers(self.db).for_conversation(conversation)
+        response = await doc_learning.learn(self.llm, state, docs, context)
+        degraded = response.metadata.get("degraded")
+        parsed = response.parsed if isinstance(response.parsed, dict) else {}
+        names = ", ".join(name for name, _ in docs)
+        reply = parsed.get("respuesta") if isinstance(parsed.get("respuesta"), str) else ""
+        if reply.strip() and not degraded:
+            state = discovery.merge(state, parsed)
+            content = f"📎 Leí {len(docs)} documento(s): {names}.\n\n{reply.strip()}"
+        else:
+            content = (f"📎 Recibí {len(docs)} documento(s): {names}. Quedaron guardados en la memoria de tu empresa, "
+                       "pero esta vez no pude analizarlos a fondo"
+                       + (" (el modelo principal no respondió)." if degraded else ".")
+                       + " Pídeme que los revise de nuevo en un momento.")
+            parsed = {}
+        digest = {k: parsed.get(k) for k in ("resumen", "etapa", "hechos", "vacios", "riesgos")} if parsed else {}
+        self.db.add(Message(conversation_id=conversation.id, role="assistant", agent_name="ADÁN", content=content,
+                            metadata_json={"model": response.model, "degraded": degraded, "discovery": state,
+                                           "documents": [name for name, _ in docs], "learning": digest}))
+        if digest.get("resumen"):
+            lines = [f"Documentos: {names}", f"Etapa: {digest.get('etapa') or 'no_claro'}", f"Resumen: {digest['resumen']}"]
+            lines += [f"Hecho ({h.get('base')}): {h.get('dato')} [{h.get('fuente')}]" for h in (digest.get("hechos") or [])[:15]
+                      if isinstance(h, dict)]
+            lines += [f"Vacío: {v}" for v in (digest.get("vacios") or [])[:10]]
+            lines += [f"Riesgo: {r}" for r in (digest.get("riesgos") or [])[:10]]
+            self.db.add(Document(project_id=project.id, title=f"Lo que ADÁN aprendió de: {names}"[:255],
+                                 content="\n".join(lines), doc_type="client_docs_digest", origin="generated_by_adan"))
+        self.db.commit()
+        return {"reply": content, "degraded": degraded, "learning": digest}
+
     def _history(self, conversation: Conversation) -> list[Message]:
         return self.db.query(Message).filter(
             Message.conversation_id == conversation.id
@@ -254,10 +294,16 @@ class Nivel1Service:
                 + (f" (fuente: {e.source})" if e.source else "") for e in evidence[:15]))
         else:
             parts.append("Evidencia registrada: ninguna.")
+        digests = self.db.query(Document).filter(Document.project_id == project.id,
+                                                 Document.doc_type == "client_docs_digest").order_by(
+            Document.created_at.desc()).limit(3).all()
+        if digests:
+            parts.append("Lo que ADÁN aprendió de la documentación del cliente:\n"
+                         + "\n\n".join((d.content or "")[:2500] for d in digests))
         words = [m.content.strip()[:800] for m in history if m.role == "user" and len(m.content.strip()) >= 10]
         if words:
             parts.append("Palabras del cliente (lo más reciente):\n" + "\n".join(f"- {w}" for w in words[-6:]))
-        return "\n\n".join(parts) if (understood or words) else ""
+        return "\n\n".join(parts) if (understood or words or digests) else ""
 
     def get_last_board_consensus(self, project: Project) -> BoardConsensus:
         """Último Board Room guardado: recomendaciones y Gate Review no lo vuelven a ejecutar."""
