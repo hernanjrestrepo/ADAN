@@ -1,5 +1,5 @@
 import type {
-  AdminCompany, AdminMovement, AdminPurchase, AdminSummary, AdminUser, AppleCompanyLevel, AppleNetwork, ApplePrices, ApplePurchase, AppleWallet, CommunityConnection, CommunityListing, CommunityProfile, ExecutiveReport, FinancialModel, OrgChart, PublicSurvey, SurveyAnswer, SurveyInsights, SurveyResults, SurveySummary, ArenaSession, AgentContract, LegalGuide, NameCheck, Statutes, StatutesInput, AgentOffering, AgentTask, ContractReport, HirePeriod,
+  BoardDialogue, BoardDialogueTurn, AdminCompany, AdminMovement, AdminPurchase, AdminSummary, AdminUser, AppleCompanyLevel, AppleNetwork, ApplePrices, ApplePurchase, AppleWallet, CommunityConnection, CommunityListing, CommunityProfile, ExecutiveReport, FinancialModel, OrgChart, PublicSurvey, SurveyAnswer, SurveyInsights, SurveyResults, SurveySummary, ArenaSession, AgentContract, LegalGuide, NameCheck, Statutes, StatutesInput, AgentOffering, AgentTask, ContractReport, HirePeriod,
   BoardConsensus, BoardRoomInput, ChatResponse, Company, CompanyInput, DecideInput, Decision, DocumentRecord,
   Evidence, EvidenceInput, GatePreview, GateReviewResult, LevelView, Nivel1Status, OnboardingState, Score,
   ScoreOverview, TimelineEvent, TokenResponse, TwinKind, TwinOverview, UploadResult, User,
@@ -228,6 +228,11 @@ export const api = {
       method: 'POST', body: JSON.stringify({ answers }), signal: AbortSignal.timeout(CHAT_TIMEOUT_MS * 2),
     }),
   getLastArena: (companyId: string) => request<ArenaSession>(`/nivel1/${companyId}/arena/last`),
+  getBoardDialogue: (companyId: string) => request<BoardDialogue>(`/nivel1/${companyId}/board-room/dialogo`),
+  talkToBoard: (companyId: string, message: string, agent: string | null) =>
+    request<BoardDialogue & { turn: BoardDialogueTurn }>(`/nivel1/${companyId}/board-room/dialogo`, {
+      method: 'POST', body: JSON.stringify({ message, agent }), signal: AbortSignal.timeout(CHAT_TIMEOUT_MS),
+    }),
   runBoardRoom: (companyId: string, input?: BoardRoomInput) =>
     post<BoardConsensus>(`/nivel1/${companyId}/board-room`, input ?? {}),
   getLastBoardRoom: (companyId: string) => request<BoardConsensus>(`/nivel1/${companyId}/board-room/last`),

@@ -945,3 +945,33 @@ export interface AdminCompany {
   created_at: string
   levels_paid: number[]
 }
+
+// Diálogo con el Board después de votar
+export interface BoardDialogueReply {
+  agent: string
+  reply: string
+  vote: Vote
+  changed: boolean
+  reason: string
+}
+
+export interface BoardDialogueTurn {
+  message: string
+  agent: string | null
+  replies: BoardDialogueReply[]
+  ceo: string
+  consensus: string
+  at: string
+}
+
+export interface BoardTally {
+  votes: Record<string, Vote>
+  proceed: number
+  total: number
+  recommendation: Vote
+}
+
+export interface BoardDialogue {
+  thread: BoardDialogueTurn[]
+  tally: BoardTally
+}

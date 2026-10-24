@@ -10,6 +10,7 @@ from app.ai.base import LLMAdapter
 from app.apples import service as apples
 from app.ai.factory import get_llm_adapter
 from app.arena.service import Arena
+from app.nivel1 import board_dialogue
 from app.documents import extract as doc_extract
 from app.ems.memory import EnterpriseMemorySystem
 from app.ems.store import embedding_provider, get_vector_store
@@ -364,6 +365,45 @@ def last_board_room(company_id: str, db: Session = Depends(get_db), user: User =
         return _board_out(Nivel1Service(llm=None, db=db).get_last_board_consensus(project))
     except ValueError:
         raise HTTPException(status_code=404, detail="Todavía no hay sesiones del Board Room")
+
+
+class BoardDialogueBody(BaseModel):
+    message: str = Field(..., min_length=1, max_length=4000)
+    agent: str | None = Field(None, max_length=20)  # None: al Board en general
+
+
+@router.get("/{company_id}/board-room/dialogo")
+def board_dialogue_thread(company_id: str, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
+    """El diálogo con el Board desde su última sesión y el voto vigente de cada especialista."""
+    get_owned_company(db, company_id, user)
+    project = db.query(Project).filter(Project.company_id == company_id).first()
+    try:
+        consensus = Nivel1Service(llm=None, db=db).get_last_board_consensus(project)
+    except ValueError:
+        raise HTTPException(status_code=404, detail="Todavía no hay sesiones del Board Room")
+    turns = board_dialogue.thread(db, project)
+    return {"thread": turns, "tally": board_dialogue.tally(board_dialogue.current_votes(consensus, turns))}
+
+
+@router.post("/{company_id}/board-room/dialogo")
+async def board_dialogue_reply(company_id: str, body: BoardDialogueBody, db: Session = Depends(get_db),
+                               user: User = Depends(llm_user), llm: LLMAdapter = Depends(get_llm),
+                               _usage: None = Depends(track_llm_usage)):
+    """Hablarle al Board o responderle a un especialista: profundiza, aporta evidencia o llega a un consenso."""
+    get_owned_company(db, company_id, user)
+    project = db.query(Project).filter(Project.company_id == company_id).first()
+    service = Nivel1Service(llm, db)
+    try:
+        consensus = service.get_last_board_consensus(project)
+    except ValueError:
+        raise HTTPException(status_code=404, detail="Primero ejecuta una sesión del Board Room")
+    try:
+        return await board_dialogue.reply(llm, db, project, consensus, service.board_brief(project),
+                                          body.message.strip(), body.agent)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except RuntimeError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
 
 
 def _board_out(consensus) -> dict:

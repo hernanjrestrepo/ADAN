@@ -227,7 +227,7 @@ export default function Nivel1Page() {
           )}
           {activeTab === 'surveys' && <SurveysPanel companyId={companyId} onError={showError} onChanged={bump} />}
           {activeTab === 'arena' && <ArenaPanel companyId={companyId} onError={showError} />}
-          {activeTab === 'boardroom' && <BoardRoomPanel result={board} running={boardRunning} onRun={handleBoardRoom} onNewSession={() => setBoard(null)} />}
+          {activeTab === 'boardroom' && <BoardRoomPanel companyId={companyId} result={board} running={boardRunning} onRun={handleBoardRoom} onNewSession={() => setBoard(null)} />}
           {activeTab === 'diagnosis' && (
             <DiagnosisPanel diagnosis={diagnosis} running={diagnosing} onGenerate={handleDiagnosis} />
           )}
