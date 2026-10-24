@@ -160,7 +160,7 @@ export default function AdanChat({ open, onToggle }: { open: boolean; onToggle: 
 
   return (
     <section aria-label="Conversación con ADÁN"
-      className="u-no-print u-glass u-rise fixed z-40 flex flex-col rounded-3xl inset-x-2 bottom-2 top-24 md:inset-x-auto md:right-3 md:top-20 md:bottom-3 md:w-[420px]">
+      className="u-no-print u-glass u-rise fixed z-40 flex flex-col rounded-3xl inset-x-2 bottom-2 top-36 md:inset-x-auto md:right-3 md:top-32 2xl:top-20 md:bottom-3 md:w-[420px]">
       <header className="flex items-center gap-3 border-b border-white/10 px-4 py-3">
         <AdanMark size={38} />
         <div className="min-w-0 flex-1 leading-tight">
