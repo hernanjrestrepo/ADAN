@@ -1,5 +1,6 @@
 """Companies & Projects endpoints."""
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
 from app.core.auth import get_current_user
@@ -37,6 +38,27 @@ def list_companies(
 ):
     companies = owned_companies(db, user).filter(Company.status == "active").all()
     return [CompanyResponse.model_validate(c) for c in companies]
+
+
+class BrandBody(BaseModel):
+    brand_color: str | None = Field(None, pattern=r"^#[0-9a-fA-F]{6}$")
+    brand_accent: str | None = Field(None, pattern=r"^#[0-9a-fA-F]{6}$")
+    logo: str | None = Field(None, max_length=300_000)
+
+
+@router.put("/{company_id}/marca", response_model=CompanyResponse)
+def set_brand(company_id: str, body: BrandBody, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
+    """La identidad visual de la empresa: colores y logo que el entorno de ADÁN usa al trabajar en ella."""
+    company = get_owned_company(db, company_id, user)
+    if body.logo and not body.logo.startswith(("data:image/png;base64,", "data:image/jpeg;base64,",
+                                               "data:image/webp;base64,", "data:image/svg+xml;base64,")):
+        raise HTTPException(status_code=422, detail="El logo debe ser una imagen PNG, JPG, WebP o SVG")
+    company.brand_color = body.brand_color
+    company.brand_accent = body.brand_accent
+    company.logo = body.logo
+    db.commit()
+    db.refresh(company)
+    return CompanyResponse.model_validate(company)
 
 
 @router.get("/{company_id}", response_model=CompanyResponse)

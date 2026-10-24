@@ -60,6 +60,22 @@ class Settings:
     CSI_API_KEY: str = os.getenv("CSI_API_KEY", "")
     # Comunidad: correos de los curadores de Paradixe que marcan las Selecciones Paradixe (separados por comas)
     PARADIXE_CURATORS: str = os.getenv("PARADIXE_CURATORS", "")
+
+    # @pples (1 @pple = USD 1) y su pasarela. "simulador" mientras no haya llaves de Wompi; con llaves de producción
+    # (pub_prod_) no se cobra hasta encender PAYMENTS_LIVE, con aprobación de Hernán.
+    PUBLIC_URL: str = os.getenv("PUBLIC_URL", "http://localhost:5173").rstrip("/")
+    PAYMENTS_PROVIDER: str = os.getenv("PAYMENTS_PROVIDER", "simulador")
+    PAYMENTS_LIVE: bool = os.getenv("PAYMENTS_LIVE", "false").lower() in ("1", "true", "yes")
+    WOMPI_PUBLIC_KEY: str = os.getenv("WOMPI_PUBLIC_KEY", "")
+    WOMPI_PRIVATE_KEY: str = os.getenv("WOMPI_PRIVATE_KEY", "")
+    WOMPI_INTEGRITY_SECRET: str = os.getenv("WOMPI_INTEGRITY_SECRET", "")
+    WOMPI_EVENTS_SECRET: str = os.getenv("WOMPI_EVENTS_SECRET", "")
+    WOMPI_FEE_RATE: float = float(os.getenv("WOMPI_FEE_RATE", "0.0265"))
+    WOMPI_FEE_FIXED_COP: int = int(os.getenv("WOMPI_FEE_FIXED_COP", "700"))
+    IVA_RATE: float = float(os.getenv("IVA_RATE", "0.19"))
+    APPLE_TRM: int = int(os.getenv("APPLE_TRM", "4000"))  # COP por USD para cobrar las @pples
+    # Exigir el pago del Nivel con @pples antes de trabajarlo (se enciende cuando la pasarela esté lista)
+    APPLES_REQUIRED: bool = os.getenv("APPLES_REQUIRED", "false").lower() in ("1", "true", "yes")
     LLM_MODEL_STANDARD: str = os.getenv("LLM_MODEL_STANDARD", "claude-sonnet-5")
     LLM_MODEL_COMPLEX: str = os.getenv("LLM_MODEL_COMPLEX", "claude-opus-5")
     LLM_MODEL_FAST: str = os.getenv("LLM_MODEL_FAST", "claude-haiku-4-5")

@@ -10,6 +10,7 @@ from app.core.config import settings
 from app.core.database import get_db
 from app.core.ratelimit import client_ip, limiter, too_many
 from app.core import privacy
+from app.apples import service as apples
 from app.models.models import Consent, User, UserRole
 from app.schemas.schemas import (
     TokenResponse, UserLogin, UserRegister, UserResponse,
@@ -49,6 +50,7 @@ def register(body: UserRegister, request: Request, response: Response, db: Sessi
                    policy_version=privacy.POLICY_VERSION))
     db.add(Consent(user_id=user.id, purpose=privacy.AGGREGATED_INTELLIGENCE, granted=body.share_aggregated,
                    policy_version=privacy.POLICY_VERSION))
+    apples.ensure_profile(db, user, body.referral_code)
     db.commit()
     db.refresh(user)
     return _issue_session(user, response)

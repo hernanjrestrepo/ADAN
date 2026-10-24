@@ -20,8 +20,8 @@ router = APIRouter(prefix="/onboarding", tags=["Onboarding (WO-108)"])
 class StartBody(BaseModel):
     """Lo mínimo antes de la primera pregunta (AD-FUNC-06 §2): una señal de que hay Empresa o intención."""
     model_config = ConfigDict(extra="forbid")
-    company_name: str = Field(..., min_length=1, max_length=255)
-    stage: Literal["idea", "existing"] = "idea"
+    company_name: str = Field("", max_length=255)
+    stage: Literal["idea", "existing", "explore"] = "idea"
 
 
 class ConsentBody(BaseModel):
@@ -39,8 +39,12 @@ def me(db: Session = Depends(get_db), user: User = Depends(get_current_user)):
 @router.post("/start", status_code=201)
 def start(body: StartBody, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
     """Nace la Empresa con lo mínimo y ADÁN hace su primera pregunta real (AD-FUNC-06 §1, §3)."""
+    name = body.company_name.strip()
+    if not name and body.stage != "explore":
+        raise HTTPException(status_code=422, detail="Escribe el nombre de tu empresa o de tu idea")
     origin = {"onboarding": True, "stage": body.stage}
-    company = lifecycle.birth(db, user, body.company_name.strip(), origin=origin)
+    company = lifecycle.birth(db, user, name or "Mi próxima empresa", origin=origin)
+    company.origin_stage = body.stage
     message = service.seed_first_question(db, user, company)
     db.commit()
     return {"company_id": company.id, "first_question": message.content if message else None}

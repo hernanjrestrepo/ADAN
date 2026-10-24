@@ -7,10 +7,12 @@ test('sin empresas, el onboarding hace una sola pregunta y lleva a la primera pr
   await api.install(page)
   await page.goto('/dashboard')
   await expect(page).toHaveURL(/\/bienvenida$/)
-  await expect(page.getByRole('heading', { name: '¿Cómo se llama tu empresa o tu idea?' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: '¿Desde dónde arrancamos?' })).toBeVisible()
+  // Tres caminos: idea, empresa que ya existe, o explorar sin idea
+  await expect(page.getByRole('radio', { name: /Quiero explorar opciones/ })).toBeVisible()
 
-  await page.getByLabel('Nombre de la empresa o de la idea').fill('Nueva SAS')
-  await page.getByRole('radio', { name: 'Ya existe' }).check()
+  await page.getByRole('radio', { name: /Ya tengo una empresa/ }).check()
+  await page.getByLabel('Nombre de la empresa').fill('Nueva SAS')
   await page.getByRole('button', { name: 'Empezar con ADÁN' }).click()
 
   await expect(page).toHaveURL(/\/nivel1\/c-new$/)

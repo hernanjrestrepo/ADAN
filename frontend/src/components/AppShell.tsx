@@ -1,6 +1,9 @@
-import type { ReactNode } from 'react'
-import { Link, useNavigate } from 'react-router'
+import { useEffect, useState, type CSSProperties, type ReactNode } from 'react'
+import { Link, useNavigate, useParams } from 'react-router'
 import { useAuth } from '../auth/context'
+import { api } from '../lib/api'
+import type { Company } from '../types'
+import CompanyBar from './CompanyBar'
 import AiDisclaimer from './AiDisclaimer'
 import Logo from './Logo'
 import Button from './ui/Button'
@@ -21,10 +24,33 @@ function initials(name = '') {
   return name.split(/\s+/).filter(Boolean).slice(0, 2).map((p) => p[0]?.toUpperCase()).join('') || '·'
 }
 
-// Marco común de las páginas autenticadas: marca, migas de pan, usuario, salir y aviso de IA
+// Los colores de la empresa reemplazan los de ADÁN mientras trabajas en ella
+function brandStyle(company: Company | null): CSSProperties | undefined {
+  if (!company?.brand_color) return undefined
+  return { '--color-adan-accent': company.brand_color, '--color-adan-secondary': company.brand_accent ?? company.brand_color } as CSSProperties
+}
+
+// Marco común de las páginas autenticadas: marca, migas de pan, usuario, salir y aviso de IA. Dentro de una empresa
+// muestra su identidad, el selector de empresas y la checklist de los 7 Niveles.
 export default function AppShell({ crumbs = [], status, toolbar, children }: AppShellProps) {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
+  const { companyId } = useParams()
+  const [company, setCompany] = useState<Company | null>(null)
+  const [apples, setApples] = useState<number | null>(null)
+
+  useEffect(() => {
+    if (!companyId) return
+    let cancelled = false
+    api.getCompany(companyId).then((c) => { if (!cancelled) setCompany(c) }).catch(() => undefined)
+    return () => { cancelled = true }
+  }, [companyId])
+
+  useEffect(() => {
+    let cancelled = false
+    api.getAppleWallet().then((w) => { if (!cancelled) setApples(w.balance) }).catch(() => undefined)
+    return () => { cancelled = true }
+  }, [])
 
   const handleLogout = async () => {
     await logout()
@@ -32,7 +58,7 @@ export default function AppShell({ crumbs = [], status, toolbar, children }: App
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col" style={companyId ? brandStyle(company) : undefined}>
       <a href="#contenido" className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:rounded-lg focus:bg-adan-accent focus:px-4 focus:py-2 focus:text-white">
         Saltar al contenido
       </a>
@@ -57,6 +83,11 @@ export default function AppShell({ crumbs = [], status, toolbar, children }: App
           </nav>
           <div className="flex items-center gap-3 shrink-0">
             {status}
+            <Link to="/apples" title="Tu billetera de @pples (1 @pple = USD 1)"
+              className="flex items-center gap-1 rounded-full border border-adan-border px-3 py-1 text-sm hover:border-adan-accent">
+              <span aria-hidden="true">🍎</span><span className="font-semibold">{apples === null ? '…' : apples.toLocaleString('es-CO', { maximumFractionDigits: 2 })}</span>
+              <span className="hidden lg:inline text-adan-muted">@pples</span>
+            </Link>
             <Link to="/comunidad" className="hidden md:inline text-sm text-adan-muted hover:text-adan-text" title="La red de empresas e inversionistas">🤝 Comunidad</Link>
             <Link to="/universo" className="hidden md:inline text-sm text-adan-muted hover:text-adan-text" title="La oficina 3D de ADÁN">🌌 Universo</Link>
             <span className="hidden sm:flex items-center gap-2" title={user?.email}>
@@ -70,6 +101,7 @@ export default function AppShell({ crumbs = [], status, toolbar, children }: App
           </div>
         </div>
       </header>
+      {companyId && <CompanyBar companyId={companyId} company={company} onCompany={setCompany} />}
       {toolbar && (
         <div className="border-b border-adan-border px-4 sm:px-6 bg-adan-bg/60">
           <div className="max-w-7xl mx-auto">{toolbar}</div>

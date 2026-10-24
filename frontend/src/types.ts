@@ -23,6 +23,10 @@ export interface Company {
   status: string
   version: number
   created_at: string
+  brand_color?: string | null
+  brand_accent?: string | null
+  logo?: string | null
+  origin_stage?: string | null
 }
 
 export interface Project {
@@ -805,4 +809,79 @@ export interface CommunityConnection {
   other_headline: string
   listing_name: string | null
   other_email: string | null
+}
+
+// @pples (1 @pple = USD 1)
+export interface AppleMovement {
+  id: string
+  kind: 'compra' | 'nivel' | 'referido' | 'bienvenida' | 'ajuste' | string
+  amount: number
+  detail: string
+  level: number | null
+  depth: number | null
+  created_at: string
+}
+
+export interface AppleWallet {
+  balance: number
+  movements: AppleMovement[]
+  provider: 'simulador' | 'wompi' | string
+  required: boolean
+}
+
+export interface ApplePurchase {
+  id: string
+  apples: number
+  amount_cop: number
+  provider: string
+  status: 'pendiente' | 'aprobada' | 'rechazada'
+  checkout_url: string
+  created_at: string
+  balance?: number
+}
+
+export interface AppleLevelPrice {
+  level: number
+  name: string
+  llm_usd: number
+  infra_usd: number
+  cost_usd: number
+  apples: number
+  profit_usd: number
+  margin: number
+  gateway_usd: number
+  referral_usd: number
+  margin_after_fees: number
+}
+
+export interface ApplePrices {
+  levels: AppleLevelPrice[]
+  total_apples: number
+  total_cost_usd: number
+  total_profit_usd: number
+  margin: number
+  margin_after_fees: number
+  apart: string[]
+  mvp_examples: Record<string, { cost_usd: number; apples: number }>
+  packs: number[]
+  trm: number
+  provider: string
+}
+
+export interface AppleCompanyLevel {
+  level: number
+  name: string
+  apples: number
+  paid: boolean
+  paid_at: string | null
+}
+
+export interface AppleNetwork {
+  code: string
+  link: string
+  sponsor: string | null
+  levels: { depth: number; people: number; earned: number }[]
+  rate_per_level: number
+  depth: number
+  total_earned: number
 }

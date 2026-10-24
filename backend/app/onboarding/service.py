@@ -36,6 +36,16 @@ SUSTAINED_DAYS = 30
 
 def first_question(user: User, company: Company) -> str:
     first_name = (user.name or "").split(" ")[0] or "hola"
+    if company.origin_stage == "explore":
+        # Sin idea todavía: ADÁN empieza por la persona para proponerle oportunidades que le calcen
+        return (f"Hola, {first_name}. Soy ADÁN. No necesitas tener una idea para empezar: vamos a encontrar juntos "
+                "la oportunidad que mejor te calce. Primero cuéntame de ti: ¿a qué te dedicas o te has dedicado, qué "
+                "sabes hacer muy bien y qué problemas ves en tu día a día que nadie resuelve bien? Después hablamos "
+                "de tu tiempo, tu capital y si tienes socios.")
+    if company.origin_stage == "existing":
+        return (f"Hola, {first_name}. Soy ADÁN y voy a acompañarte con «{company.name}». Para conocerla bien: ¿qué "
+                "vende hoy, a quién y cuánto tiempo lleva? Y si tienes documentos (estados financieros, plan de "
+                "negocio, presentaciones, actas), súbelos con 📎 y los leo antes de seguir.")
     return (f"Hola, {first_name}. Soy ADÁN y voy a acompañarte con «{company.name}». Empecemos por lo "
             "importante: ¿qué problema quieres resolver y a quién le duele? Cuéntamelo con tus palabras, "
             "no hace falta que esté pulido.")

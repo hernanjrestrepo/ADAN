@@ -7,6 +7,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
 from app.ai.base import LLMAdapter
+from app.apples import service as apples
 from app.ai.factory import get_llm_adapter
 from app.arena.service import Arena
 from app.documents import extract as doc_extract
@@ -115,6 +116,13 @@ def get_nivel1_status(
     }
 
 
+def require_level_paid(db: Session, company_id: str, level: int) -> None:
+    """Con APPLES_REQUIRED encendido, el Nivel se trabaja después de pagarlo con @pples (402)."""
+    if not apples.is_unlocked(db, company_id, level):
+        raise HTTPException(status_code=402, detail=(
+            f"El Nivel {level} se activa con @pples. Cárgalas en tu billetera y paga el Nivel para seguir."))
+
+
 @router.post("/{company_id}/chat", response_model=ChatResponse)
 async def chat(
     company_id: str,
@@ -126,6 +134,7 @@ async def chat(
 ):
     """Send a message in the Level 1 conversation."""
     get_owned_company(db, company_id, user)
+    require_level_paid(db, company_id, 1)
 
     project = db.query(Project).filter(Project.company_id == company_id).first()
     level = db.query(Level).filter(
@@ -159,6 +168,7 @@ async def chat_stream(
 ):
     """Stream chat response token by token via SSE."""
     get_owned_company(db, company_id, user)
+    require_level_paid(db, company_id, 1)
 
     project = db.query(Project).filter(Project.company_id == company_id).first()
     level = db.query(Level).filter(

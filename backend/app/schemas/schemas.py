@@ -25,6 +25,7 @@ class UserRegister(BaseModel):
     # Consentimiento explícito (AD-DEC-0002 decisión 8, Ley 1581 de 2012): sin él no hay cuenta
     accept_data_policy: bool = Field(default=False, validate_default=True)
     share_aggregated: bool = False  # inteligencia agregada y anonimizada: opcional
+    referral_code: str | None = Field(default=None, max_length=8)  # quien invitó (red de @pples)
 
     @field_validator("accept_data_policy")
     @classmethod
@@ -88,6 +89,10 @@ class CompanyResponse(BaseModel):
     status: str
     version: int
     created_at: datetime
+    brand_color: str | None = None
+    brand_accent: str | None = None
+    logo: str | None = None
+    origin_stage: str | None = None
 
     model_config = {"from_attributes": True}
 

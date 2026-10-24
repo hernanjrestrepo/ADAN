@@ -15,14 +15,17 @@ export default function WelcomePage() {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
   const [resumeTo, setResumeTo] = useState<string | null>(null)
-  const [checking, setChecking] = useState(true)
+  // ?nueva=1: crear otra empresa aunque ya tenga una en curso
+  const nueva = new URLSearchParams(window.location.search).get('nueva') === '1'
+  const [checking, setChecking] = useState(!nueva)
   const [name, setName] = useState('')
-  const [stage, setStage] = useState<'idea' | 'existing'>('idea')
+  const [stage, setStage] = useState<'idea' | 'existing' | 'explore'>('idea')
   const [starting, setStarting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     let cancelled = false
+    if (nueva) return
     api.getOnboarding()
       .then((state) => {
         if (cancelled) return
@@ -31,7 +34,7 @@ export default function WelcomePage() {
       .catch((err: unknown) => { if (!cancelled) setError(errorMessage(err)) })
       .finally(() => { if (!cancelled) setChecking(false) })
     return () => { cancelled = true }
-  }, [])
+  }, [nueva])
 
   const start = async (e: FormEvent) => {
     e.preventDefault()
@@ -59,25 +62,36 @@ export default function WelcomePage() {
       <div className="flex-1 flex items-center justify-center p-4">
       <main className="w-full max-w-lg">
         <div className="mb-8"><Logo size="lg" /></div>
-        <p className="text-adan-muted">Hola{firstName ? `, ${firstName}` : ''}. Solo una pregunta antes de empezar.</p>
-        <h1 className="text-3xl font-bold mt-2 mb-6">¿Cómo se llama tu empresa o tu idea?</h1>
+        <p className="text-adan-muted">Hola{firstName ? `, ${firstName}` : ''}. Soy ADÁN. Solo una pregunta antes de empezar.</p>
+        <h1 className="text-3xl font-bold mt-2 mb-6">¿Desde dónde arrancamos?</h1>
         <form onSubmit={start} className="space-y-5">
-          <Field label="Nombre de la empresa o de la idea" value={name} onChange={(e) => setName(e.target.value)}
-            required maxLength={255} autoFocus placeholder="Ej.: Café Andino" />
           <fieldset>
-            <legend className="sr-only">¿Ya existe?</legend>
-            <div className="grid grid-cols-2 gap-3">
-              {([['idea', 'Es una idea'], ['existing', 'Ya existe']] as const).map(([value, label]) => (
-                <label key={value} className={`flex items-center gap-2 p-3 rounded-lg border cursor-pointer text-sm ${
-                  stage === value ? 'border-adan-accent bg-adan-accent/5' : 'border-adan-border'}`}>
-                  <input type="radio" name="stage" checked={stage === value} onChange={() => setStage(value)} />
-                  {label}
-                </label>
-              ))}
+            <legend className="sr-only">¿Desde dónde arrancamos?</legend>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              {([['idea', '💡', 'Tengo una idea'], ['existing', '🏢', 'Ya tengo una empresa'], ['explore', '🧭', 'Quiero explorar opciones']] as const)
+                .map(([value, icon, label]) => (
+                  <label key={value} className={`flex flex-col gap-1 p-3 rounded-lg border cursor-pointer text-sm ${
+                    stage === value ? 'border-adan-accent bg-adan-accent/5' : 'border-adan-border'}`}>
+                    <span className="flex items-center gap-2">
+                      <input type="radio" name="stage" checked={stage === value} onChange={() => setStage(value)} />
+                      <span aria-hidden="true">{icon}</span>
+                    </span>
+                    {label}
+                  </label>
+                ))}
             </div>
           </fieldset>
+          {stage === 'explore' ? (
+            <p className="rounded-lg bg-adan-surface p-3 text-sm text-adan-muted">
+              No necesitas una idea. ADÁN te pregunta por tu experiencia, lo que sabes hacer, tu tiempo y tu capital, y te
+              propone oportunidades que te calcen. Si quieres, ponle un nombre a esta exploración.
+            </p>
+          ) : null}
+          <Field label={stage === 'explore' ? 'Nombre de la exploración (opcional)' : stage === 'existing' ? 'Nombre de la empresa' : 'Nombre de la idea'}
+            value={name} onChange={(e) => setName(e.target.value)} required={stage !== 'explore'} maxLength={255}
+            placeholder={stage === 'explore' ? 'Ej.: Mi próxima empresa' : 'Ej.: Café Andino'} />
           <Alert message={error} />
-          <Button type="submit" block loading={starting} disabled={!name.trim()}>Empezar con ADÁN</Button>
+          <Button type="submit" block loading={starting} disabled={stage !== 'explore' && !name.trim()}>Empezar con ADÁN</Button>
           <p className="text-xs text-adan-muted text-center">
             Lo demás (industria, país, equipo, finanzas) lo iremos completando juntos cuando haga falta.
           </p>
