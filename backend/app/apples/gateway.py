@@ -3,7 +3,7 @@ pasarela (ADÁN nunca ve la tarjeta) y el resultado llega por webhook firmado o 
 
 - `simulador`: sin llaves. La "página de pago" es una pantalla de ADÁN que aprueba o rechaza: sirve para probar.
 - `wompi`: Web Checkout de Wompi (Bancolombia) con firma de integridad; eventos `transaction.updated` verificados con
-  el secreto de eventos. Con llaves de producción no se cobra mientras PAYMENTS_LIVE esté apagado.
+  el secreto de eventos. Con llaves de producción se sigue en el simulador mientras PAYMENTS_LIVE esté apagado.
 """
 from __future__ import annotations
 
@@ -21,12 +21,17 @@ class GatewayError(RuntimeError):
     pass
 
 
-def provider() -> str:
-    return "wompi" if settings.PAYMENTS_PROVIDER == "wompi" and settings.WOMPI_PUBLIC_KEY else "simulador"
-
-
 def is_production_key() -> bool:
     return settings.WOMPI_PUBLIC_KEY.startswith("pub_prod_")
+
+
+def provider() -> str:
+    """Wompi con llaves de pruebas, o de producción solo con PAYMENTS_LIVE; si no, el simulador (nunca cobra)."""
+    if settings.PAYMENTS_PROVIDER != "wompi" or not settings.WOMPI_PUBLIC_KEY:
+        return "simulador"
+    if is_production_key() and not settings.PAYMENTS_LIVE:
+        return "simulador"
+    return "wompi"
 
 
 def _api_base() -> str:
@@ -42,8 +47,6 @@ def checkout_url(reference: str, amount_cop: int, redirect: str) -> str:
     """Enlace a la página de pago. En el simulador, a la pantalla de prueba de ADÁN."""
     if provider() == "simulador":
         return f"{settings.PUBLIC_URL}/apples?compra={reference}&simulador=1"
-    if is_production_key() and not settings.PAYMENTS_LIVE:
-        raise GatewayError("El cobro real todavía no está encendido (PAYMENTS_LIVE).")
     cents = amount_cop * 100
     params = {
         "public-key": settings.WOMPI_PUBLIC_KEY, "currency": "COP", "amount-in-cents": cents, "reference": reference,

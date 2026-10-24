@@ -99,3 +99,16 @@ def test_levels_require_apples_only_when_enabled(client, monkeypatch):
     assert client.post(f"/api/v1/nivel1/{cid}/chat", headers=h, json={"message": "Hola"}).status_code == 402
     levels = client.get(f"/api/v1/apples/niveles/{cid}", headers=h).json()
     assert levels["required"] is True and levels["levels"][0]["paid"] is False
+
+
+def test_production_keys_do_not_charge_until_live(client, monkeypatch):
+    from app.apples import gateway
+    monkeypatch.setattr(settings, "PAYMENTS_PROVIDER", "wompi")
+    monkeypatch.setattr(settings, "WOMPI_PUBLIC_KEY", "pub_prod_abc")
+    monkeypatch.setattr(settings, "WOMPI_INTEGRITY_SECRET", "prod_integrity_abc")
+    assert gateway.provider() == "simulador"
+    h = _user(client, "vivo@example.com")
+    assert "simulador=1" in client.post("/api/v1/apples/compras", headers=h, json={"apples": 10}).json()["checkout_url"]
+    monkeypatch.setattr(settings, "PAYMENTS_LIVE", True)
+    url = client.post("/api/v1/apples/compras", headers=h, json={"apples": 10}).json()["checkout_url"]
+    assert url.startswith("https://checkout.wompi.co/p/?") and "signature%3Aintegrity=" in url
