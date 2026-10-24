@@ -6,7 +6,8 @@
 set -euo pipefail
 TAG="${1:-$(git rev-parse --short HEAD)}"
 ENV_FILE="${ENV_FILE:-.env.prod}"
-COMPOSE="docker compose -f docker-compose.prod.yml --env-file $ENV_FILE"
+# COMPOSE_OVERRIDE agrega un archivo para un servidor concreto (p. ej. docker-compose.paradixe.yml)
+COMPOSE="docker compose -f docker-compose.prod.yml ${COMPOSE_OVERRIDE:+-f $COMPOSE_OVERRIDE} --env-file $ENV_FILE"
 export ADAN_TAG="$TAG"
 
 echo "1/5 Construyendo imágenes $TAG"

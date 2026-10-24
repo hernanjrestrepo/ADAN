@@ -10,7 +10,7 @@ set -euo pipefail
 TARGET="${1:?Uso: scripts/rollback.sh <etiqueta-anterior> [revision]}"
 REVISION="${2:-}"
 ENV_FILE="${ENV_FILE:-.env.prod}"
-COMPOSE="docker compose -f docker-compose.prod.yml --env-file $ENV_FILE"
+COMPOSE="docker compose -f docker-compose.prod.yml ${COMPOSE_OVERRIDE:+-f $COMPOSE_OVERRIDE} --env-file $ENV_FILE"
 
 if [ -n "$REVISION" ]; then
   echo "Revirtiendo migraciones hasta $REVISION con la versión actual"
