@@ -125,5 +125,6 @@ test('La Arena: los inversionistas preguntan, el cliente responde y sale el vere
   await page.getByRole('button', { name: 'Responder a los inversionistas' }).click()
   await expect(page.getByTestId('arena-verdict')).toContainText('Pasaste La Arena')
   expect(api.callsTo('POST', '/nivel1/c1/arena/start')[0]?.body).toEqual({ pitch: 'Pan de masa madre por suscripción' })
-  expect(api.callsTo('POST', '/nivel1/c1/arena/a1/answer')[0]?.body.answers.angel).toBe('Ya vendí 30 suscripciones')
+  const answer = api.callsTo('POST', '/nivel1/c1/arena/a1/answer')[0]?.body as { answers: Record<string, string> } | undefined
+  expect(answer?.answers.angel).toBe('Ya vendí 30 suscripciones')
 })
