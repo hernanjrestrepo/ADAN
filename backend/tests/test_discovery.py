@@ -193,3 +193,15 @@ def test_last_board_is_404_before_any_session_and_private(client):
     assert client.get(f"/api/v1/nivel1/{cid}/board-room/last", headers=headers).status_code == 404
     _other, other_headers = _setup(client, "otroboard@example.com")
     assert client.get(f"/api/v1/nivel1/{cid}/board-room/last", headers=other_headers).status_code == 404
+
+
+def test_the_same_evidence_said_differently_is_suggested_once():
+    state = discovery.empty_state()
+    parsed = {"temas": [], "evidencia_sugerida": [
+        {"afirmacion": "El 70,5% de las ventas de agencias es vacacional, 21% corporativo y 8,5% eventos", "tipo": "external", "fuente": "ANATO"},
+        {"afirmacion": "Según ANATO, el 70,5% de las ventas de agencias es vacacional, 21% corporativo y 8,5% eventos", "tipo": "external", "fuente": "ANATO"},
+        {"afirmacion": "70,5% de ventas de agencias es vacacional, 21% corporativo, 8,5% eventos", "tipo": "external", "fuente": "ANATO"},
+        {"afirmacion": "Despegar dice que la mitad de las conversaciones de SOFIA ocurre después de la compra", "tipo": "external", "fuente": "Despegar"},
+    ]}
+    merged = discovery.merge(state, parsed)
+    assert [e["fuente"] for e in merged["evidencia_sugerida"]] == ["ANATO", "Despegar"]

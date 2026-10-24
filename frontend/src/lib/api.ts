@@ -2,7 +2,7 @@ import type {
   AgentContract, AgentOffering, AgentTask, ContractReport, HirePeriod,
   BoardConsensus, BoardRoomInput, ChatResponse, Company, CompanyInput, DecideInput, Decision, DocumentRecord,
   Evidence, EvidenceInput, GatePreview, GateReviewResult, LevelView, Nivel1Status, OnboardingState, Score,
-  ScoreOverview, TimelineEvent, TokenResponse, TwinKind, TwinOverview, User,
+  ScoreOverview, TimelineEvent, TokenResponse, TwinKind, TwinOverview, UploadResult, User,
 } from '../types'
 
 const API_BASE = '/api/v1'
@@ -102,6 +102,21 @@ export const api = {
       method: 'POST', body: JSON.stringify({ message, conversation_id: conversationId }),
       signal: AbortSignal.timeout(CHAT_TIMEOUT_MS),
     }),
+  // Documentación del cliente: multipart, sin Content-Type (el navegador pone el boundary)
+  uploadDocuments: async (companyId: string, files: File[]): Promise<UploadResult> => {
+    const form = new FormData()
+    files.forEach((f) => form.append('files', f))
+    const response = await fetch(`${API_BASE}/nivel1/${companyId}/documents/upload`, {
+      method: 'POST', body: form, credentials: 'same-origin', headers: { 'X-Requested-With': 'adan' },
+      signal: AbortSignal.timeout(CHAT_TIMEOUT_MS * 2),
+    })
+    if (!response.ok) {
+      const body: ErrorBody = await response.json().catch(() => ({ detail: 'No se pudieron cargar los documentos' }))
+      const detail = Array.isArray(body.detail) ? body.detail.map((d) => d.msg).join('. ') : body.detail
+      throw new ApiError(detail || `HTTP ${response.status}`, response.status)
+    }
+    return response.json() as Promise<UploadResult>
+  },
   runBoardRoom: (companyId: string, input?: BoardRoomInput) =>
     post<BoardConsensus>(`/nivel1/${companyId}/board-room`, input ?? {}),
   getLastBoardRoom: (companyId: string) => request<BoardConsensus>(`/nivel1/${companyId}/board-room/last`),

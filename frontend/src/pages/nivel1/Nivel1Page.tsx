@@ -39,6 +39,7 @@ export default function Nivel1Page() {
   const [error, setError] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<Tab>('chat')
   const [sending, setSending] = useState(false)
+  const [uploading, setUploading] = useState(false)
   const [board, setBoard] = useState<BoardConsensus | null>(null)
   const [boardRunning, setBoardRunning] = useState(false)
   const [diagnosis, setDiagnosis] = useState<DocumentRecord | null>(null)
@@ -92,6 +93,20 @@ export default function Nivel1Page() {
       await loadStatus()  // el backend pudo guardar el mensaje aunque la respuesta no llegara
     } finally {
       setSending(false)
+    }
+  }
+
+  // Documentación del cliente: ADÁN la lee, la guarda en la memoria de la empresa y aprende de ella
+  const handleUpload = async (files: File[]) => {
+    setUploading(true)
+    try {
+      const result = await api.uploadDocuments(companyId, files)
+      if (result.errors.length) setError(result.errors.join(' '))
+      await loadStatus()
+    } catch (err) {
+      setError(errorMessage(err))
+    } finally {
+      setUploading(false)
     }
   }
 
@@ -203,6 +218,7 @@ export default function Nivel1Page() {
         <>
           {activeTab === 'chat' && (
             <ChatPanel messages={messages} sending={sending} discovery={status?.discovery} onSend={handleSend}
+              uploading={uploading} onUpload={handleUpload}
               onRegisterEvidence={handleRegisterEvidence} onBoardRoom={() => handleBoardRoom()} onDiagnosis={handleDiagnosis} onGateReview={handleGateReview} />
           )}
           {activeTab === 'boardroom' && <BoardRoomPanel result={board} running={boardRunning} onRun={handleBoardRoom} onNewSession={() => setBoard(null)} />}

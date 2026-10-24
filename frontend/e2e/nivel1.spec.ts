@@ -105,3 +105,12 @@ test('un error del backend se muestra en la página, sin diálogos del navegador
   await page.getByRole('button', { name: /Ejecutar Board Room/ }).click()
   await expect(page.getByRole('alert')).toContainText('Demasiadas solicitudes al modelo')
 })
+
+test('el cliente carga su documentación y ADÁN cuenta lo que aprendió', async ({ page }) => {
+  const api = await openNivel1(page)
+  await expect(page.getByTestId('upload-invite')).toBeVisible()
+  await page.getByTestId('upload-input').setInputFiles({ name: 'plan.pdf', mimeType: 'application/pdf', buffer: Buffer.from('%PDF-1.4 plan') })
+  await expect(page.getByText('Lo más débil: no hay ventas reales.')).toBeVisible()
+  expect(api.callsTo('POST', '/nivel1/c1/documents/upload')).toHaveLength(1)
+  expect(api.callsTo('POST', '/nivel1/c1/documents/upload')[0]?.headers['x-requested-with']).toBe('adan')
+})

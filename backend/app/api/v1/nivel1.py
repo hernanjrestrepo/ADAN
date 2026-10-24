@@ -1,12 +1,15 @@
 """Nivel 1 endpoints — the complete Level 1 flow with real intelligence."""
 import json
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 
 from app.ai.base import LLMAdapter
 from app.ai.factory import get_llm_adapter
+from app.documents import extract as doc_extract
+from app.ems.memory import EnterpriseMemorySystem
+from app.ems.store import embedding_provider, get_vector_store
 from app.core.auth import get_current_user
 from app.core.authz import get_owned_company, get_owned_project
 from app.core.ratelimit import llm_user
@@ -205,6 +208,65 @@ async def chat_stream(
                 db.commit()
 
     return StreamingResponse(generate(), media_type="text/event-stream")
+
+
+MAX_UPLOAD_FILES = 10
+MAX_EMS_CHARS = 80_000
+
+
+@router.post("/{company_id}/documents/upload")
+async def upload_documents(
+    company_id: str,
+    files: list[UploadFile] = File(...),
+    db: Session = Depends(get_db),
+    user: User = Depends(llm_user),
+    llm: LLMAdapter = Depends(get_llm),
+    _usage: None = Depends(track_llm_usage),
+):
+    """El cliente carga su documentación (idea o empresa existente): ADÁN extrae el texto, lo guarda en la
+    memoria de la empresa y aprende de él (guion del dolor, evidencia verificable, vacíos y riesgos)."""
+    get_owned_company(db, company_id, user)
+    project = db.query(Project).filter(Project.company_id == company_id).first()
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+    level = db.query(Level).filter(Level.project_id == project.id, Level.number == 1).first()
+    if len(files) > MAX_UPLOAD_FILES:
+        raise HTTPException(status_code=400, detail=f"Sube máximo {MAX_UPLOAD_FILES} archivos a la vez.")
+
+    extracted, errors = [], []
+    for f in files:
+        data = await f.read(doc_extract.MAX_FILE_BYTES + 1)
+        try:
+            extracted.append(doc_extract.extract(f.filename or "documento", data))
+        except doc_extract.ExtractionError as exc:
+            errors.append(str(exc))
+    if not extracted:
+        raise HTTPException(status_code=400, detail=" ".join(errors) or "No se pudo leer ningún archivo.")
+
+    saved = []
+    ems = EnterpriseMemorySystem(db, embedding_provider, get_vector_store(db))
+    for doc in extracted:
+        record = Document(project_id=project.id, title=doc.filename[:255], content=doc.text,
+                          doc_type="client_upload", origin="received_from_client", updated_by=user.name)
+        db.add(record)
+        db.commit()
+        db.refresh(record)
+        try:  # la memoria no debe frenar la carga: si falla, el Documento queda igual
+            await ems.ingest(company_id=company_id, text=doc.text[:MAX_EMS_CHARS], title=doc.filename,
+                             source_type="client_upload", source_name=doc.filename,
+                             metadata={"document_id": record.id, "kind": doc.kind})
+        except Exception:  # noqa: BLE001
+            errors.append(f"{doc.filename}: quedó guardado, pero no entró a la memoria semántica esta vez.")
+        saved.append({"id": record.id, "title": doc.filename, "kind": doc.kind, "pages": doc.pages,
+                      "chars": len(doc.text), "truncated": doc.truncated})
+
+    service = Nivel1Service(llm, db)
+    result = await service.learn_from_documents(project, level, [(d.filename, d.text) for d in extracted])
+    card = service.get_or_create_pain_card(project, level)
+    conversation = service.get_or_create_conversation(card)
+    return {"documents": saved, "errors": errors, "reply": result["reply"], "degraded": result["degraded"],
+            "learning": result["learning"], "conversation_id": conversation.id,
+            "discovery": discovery_progress(db, conversation, project)}
 
 
 @router.post("/{company_id}/board-room")

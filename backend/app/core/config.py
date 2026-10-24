@@ -79,6 +79,7 @@ class Settings:
     RATE_LIMIT_PER_MINUTE: int = int(os.getenv("RATE_LIMIT_PER_MINUTE", "600"))     # por IP
     LLM_RATE_LIMIT_PER_MINUTE: int = int(os.getenv("LLM_RATE_LIMIT_PER_MINUTE", "30"))  # por usuario
     MAX_BODY_BYTES: int = int(os.getenv("MAX_BODY_BYTES", str(1024 * 1024)))
+    MAX_UPLOAD_BODY_BYTES: int = int(os.getenv("MAX_UPLOAD_BODY_BYTES", str(60 * 1024 * 1024)))
     LOGIN_MAX_FAILURES: int = int(os.getenv("LOGIN_MAX_FAILURES", "5"))  # por IP + email, en 15 min
     REGISTER_PER_IP_PER_HOUR: int = int(os.getenv("REGISTER_PER_IP_PER_HOUR", "20"))
 
