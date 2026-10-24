@@ -144,22 +144,31 @@ export default function ApplesPage() {
             <div className="mt-3 overflow-x-auto">
               <table className="w-full text-sm">
                 <thead className="text-left text-xs text-adan-muted">
-                  <tr><th className="py-2">Nivel</th>{showCosts && <><th>IA</th><th>Infra</th><th>Pasarela</th><th>Red 3,5 %</th><th>Costo total</th><th>Margen</th></>}<th className="text-right">@pples</th></tr>
+                  <tr><th className="py-2">Nivel</th>{showCosts && <><th>Costo</th><th>Utilidad</th><th>Margen</th></>}<th className="text-right">@pples</th></tr>
                 </thead>
                 <tbody>
                   {prices.levels.map((l) => (
                     <tr key={l.level} className="border-t border-adan-border">
-                      <td className="py-2">{l.level}. {l.name}</td>
+                      <td className="py-2">{l.level}. {l.name}{l.level === 4 ? ' (planeación)' : ''}</td>
                       {showCosts && <>
-                        <td>${l.llm_usd.toFixed(2)}</td><td>${l.infra_usd.toFixed(2)}</td><td>${l.gateway_usd.toFixed(2)}</td>
-                        <td>${l.referral_usd.toFixed(2)}</td><td>${l.total_cost_usd.toFixed(2)}</td><td>{(l.margin * 100).toFixed(1)} %</td>
+                        <td>${l.cost_usd.toFixed(1)}</td><td>${l.profit_usd.toFixed(1)}</td><td>{(l.margin * 100).toFixed(1)} %</td>
                       </>}
                       <td className="text-right font-bold">🍎 {l.apples}</td>
                     </tr>
                   ))}
+                  {showCosts && (
+                    <tr className="border-t border-adan-border font-semibold">
+                      <td className="py-2">Total</td><td>${prices.total_cost_usd.toFixed(1)}</td><td>${prices.total_profit_usd.toFixed(1)}</td>
+                      <td>{(prices.margin * 100).toFixed(1)} %</td><td className="text-right">🍎 {prices.total_apples}</td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
             </div>
+            <p className="mt-3 text-xs text-adan-muted">
+              Se cotiza aparte: {prices.apart.join(', ').toLowerCase()}. Ejemplo de MVP listo: una landing ~🍎 {prices.mvp_examples.landing?.apples},
+              una app sencilla ~🍎 {prices.mvp_examples.app?.apples}; ADÁN te cotiza antes de construir.
+            </p>
           </Card>
 
           <section className="grid gap-4 md:grid-cols-2">

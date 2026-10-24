@@ -845,17 +845,24 @@ export interface AppleLevelPrice {
   name: string
   llm_usd: number
   infra_usd: number
-  direct_usd: number
+  cost_usd: number
+  apples: number
+  profit_usd: number
+  margin: number
   gateway_usd: number
   referral_usd: number
-  total_cost_usd: number
-  apples: number
-  margin: number
+  margin_after_fees: number
 }
 
 export interface ApplePrices {
   levels: AppleLevelPrice[]
   total_apples: number
+  total_cost_usd: number
+  total_profit_usd: number
+  margin: number
+  margin_after_fees: number
+  apart: string[]
+  mvp_examples: Record<string, { cost_usd: number; apples: number }>
   packs: number[]
   trm: number
   provider: string

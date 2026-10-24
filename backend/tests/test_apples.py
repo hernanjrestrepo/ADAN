@@ -18,13 +18,13 @@ def _buy(client, h, apples):
     return client.post(f"/api/v1/apples/compras/{p['id']}/simular", headers=h, json={"approve": True}).json()
 
 
-def test_each_level_costs_ten_percent_of_its_price():
+def test_level_prices_and_margin():
     table = pricing.price_table()
-    assert len(table["levels"]) == 7
-    for lv in table["levels"]:
-        # Todo costo (IA, infraestructura, pasarela y referidos) es como máximo el 10 % del precio
-        assert lv["total_cost_usd"] <= lv["apples"] * 0.10 + 1e-9
-        assert lv["margin"] >= 0.90
+    assert [lv["apples"] for lv in table["levels"]] == [5, 10, 20, 15, 15, 15, 15]
+    assert [lv["cost_usd"] for lv in table["levels"]] == [1.5, 1.4, 1.7, 1.4, 1.6, 1.5, 1.5]  # hacia arriba, 1 decimal
+    assert table["total_apples"] == 95 and table["total_cost_usd"] == 10.6
+    assert 0.88 <= table["margin"] < 0.90
+    assert table["mvp_examples"]["landing"]["apples"] >= 10 * table["mvp_examples"]["landing"]["cost_usd"]
 
 
 def test_a_purchase_credits_once_even_if_confirmed_twice(client):

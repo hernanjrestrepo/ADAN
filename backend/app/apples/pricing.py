@@ -1,12 +1,11 @@
-"""Precio de cada Nivel en @pples: todo el costo de prestarlo dividido entre 0,10 (margen bruto del 90 %).
+"""Precio de cada Nivel en @pples (1 @pple = USD 1).
 
-El costo por llamada sale de lo medido con Kimi en el piloto de Xmart Travel (tabla `llm_usage`, oct-2026): una
-llamada estructurada cuesta ~USD 0,0061, una con búsqueda en internet ~USD 0,034 y un documento largo ~USD 0,05.
-Cada Nivel se estima con las llamadas que de verdad hace ADÁN en él (conversación, Board de 7 roles dos veces,
-búsquedas, documentos), con un factor de holgura por reintentos y segundas vueltas.
+Costo: lo que cuesta prestar el Nivel, redondeado hacia arriba a un decimal. El costo por llamada sale de lo medido
+con Kimi en el piloto de Xmart Travel (tabla `llm_usage`, oct-2026): una llamada estructurada ~USD 0,0061, una con
+búsqueda en internet ~USD 0,034 y un documento largo ~USD 0,05, con holgura por reintentos y segundas vueltas.
 
-"Todo costo" incluye lo que se va con cada venta: la comisión de Wompi y el 3,5 % de referidos. Como esos dos son
-un porcentaje del precio, el precio se despeja así:  precio = (costo directo + fijo de pasarela) / (0,10 − % variables).
+Precio: lo fija Hernán (2026-10-24). El Dolor es barato para que no haya resistencia a la entrada; el resto deja un
+margen del orden del 90 %. El desarrollo del MVP, el dominio, el servidor y demás servicios se cotizan aparte.
 """
 from __future__ import annotations
 
@@ -33,7 +32,8 @@ LEVEL_NAMES = {1: "El Dolor", 2: "Propuesta de Valor", 3: "Plan de Negocios", 4:
 
 SAFETY_FACTOR = 1.5          # reintentos, segundas sesiones del Board, preguntas de más
 INFRA_USD_PER_LEVEL = 0.60   # servidor, base de datos, memoria vectorial y almacenamiento de documentos
-TARGET_COST_SHARE = 0.10     # el costo es el 10 % del precio: margen del 90 %
+TARGET_COST_SHARE = 0.10     # el costo es el 10 % del precio en lo que se cotiza aparte (MVP construido)
+LEVEL_APPLES = {1: 5, 2: 10, 3: 20, 4: 15, 5: 15, 6: 15, 7: 15}
 REFERRAL_RATE = 0.005        # por nivel de la red
 REFERRAL_DEPTH = 7           # el nivel 1 es quien invitó directamente
 
@@ -53,42 +53,60 @@ class LevelPrice:
     name: str
     llm_usd: float
     infra_usd: float
-    direct_usd: float
-    gateway_usd: float
-    referral_usd: float
-    total_cost_usd: float
+    cost_usd: float          # redondeado hacia arriba a un decimal
     apples: int
-    margin: float
+    profit_usd: float
+    margin: float            # sobre el costo de prestar el Nivel
+    gateway_usd: float       # comisión de Wompi si el Nivel se pagara en una compra aparte
+    referral_usd: float      # 3,5 % de la red
+    margin_after_fees: float
+
+
+def level_cost(level: int) -> tuple[float, float]:
+    calls = LEVEL_CALLS[level]
+    llm = sum(CALL_COST_USD[k] * n for k, n in calls.items()) * SAFETY_FACTOR
+    return llm, math.ceil(round((llm + INFRA_USD_PER_LEVEL) * 10, 6)) / 10
 
 
 def level_price(level: int) -> LevelPrice:
-    calls = LEVEL_CALLS[level]
-    llm = sum(CALL_COST_USD[k] * n for k, n in calls.items()) * SAFETY_FACTOR
-    direct = llm + INFRA_USD_PER_LEVEL
-    variable = gateway_rate() + REFERRAL_RATE * REFERRAL_DEPTH
-    raw = (direct + gateway_fixed_usd()) / (TARGET_COST_SHARE - variable)
-    apples = int(math.ceil(raw))
+    llm, cost = level_cost(level)
+    apples = LEVEL_APPLES[level]
     gateway = apples * gateway_rate() + gateway_fixed_usd()
     referral = apples * REFERRAL_RATE * REFERRAL_DEPTH
-    total = direct + gateway + referral
     return LevelPrice(level=level, name=LEVEL_NAMES[level], llm_usd=round(llm, 3), infra_usd=INFRA_USD_PER_LEVEL,
-                      direct_usd=round(direct, 3), gateway_usd=round(gateway, 3), referral_usd=round(referral, 3),
-                      total_cost_usd=round(total, 3), apples=apples, margin=round(1 - total / apples, 4))
+                      cost_usd=cost, apples=apples, profit_usd=round(apples - cost, 2),
+                      margin=round(1 - cost / apples, 4), gateway_usd=round(gateway, 3), referral_usd=round(referral, 3),
+                      margin_after_fees=round(1 - (cost + gateway + referral) / apples, 4))
+
+
+def mvp_quote(input_tokens: int, output_tokens: int) -> dict:
+    """Cotización del MVP construido (aparte del Nivel 4): costo de tokens con holgura, dividido entre 0,10."""
+    from app.core.config import settings as s
+    cost = (input_tokens * s.KIMI_PRICE_INPUT + output_tokens * s.KIMI_PRICE_OUTPUT) / 1_000_000 * SAFETY_FACTOR
+    return {"cost_usd": round(cost, 2), "apples": int(math.ceil(cost / TARGET_COST_SHARE))}
 
 
 def price_table() -> dict:
     levels = [level_price(n) for n in range(1, 8)]
+    revenue = sum(p.apples for p in levels)
+    cost = round(sum(p.cost_usd for p in levels), 2)
+    fees = sum(p.gateway_usd + p.referral_usd for p in levels)
     return {
         "levels": [asdict(p) for p in levels],
-        "total_apples": sum(p.apples for p in levels),
+        "total_apples": revenue,
+        "total_cost_usd": cost,
+        "total_profit_usd": round(revenue - cost, 2),
+        "margin": round(1 - cost / revenue, 4),
+        "margin_after_fees": round(1 - (cost + fees) / revenue, 4),
+        "apart": ["Desarrollo del MVP listo (según tokens, costo ÷ 0,10)", "Dominio", "Servidor", "Otros servicios de Paradixe"],
+        "mvp_examples": {"landing": mvp_quote(2_000_000, 300_000), "app": mvp_quote(10_000_000, 1_500_000)},
         "assumptions": {
             "call_cost_usd": CALL_COST_USD, "safety_factor": SAFETY_FACTOR, "infra_usd_per_level": INFRA_USD_PER_LEVEL,
-            "target_cost_share": TARGET_COST_SHARE, "gateway_rate": round(gateway_rate(), 4),
-            "gateway_fixed_usd": round(gateway_fixed_usd(), 3), "referral_rate": REFERRAL_RATE,
-            "referral_depth": REFERRAL_DEPTH, "trm": settings.APPLE_TRM,
+            "gateway_rate": round(gateway_rate(), 4), "gateway_fixed_usd": round(gateway_fixed_usd(), 3),
+            "referral_rate": REFERRAL_RATE, "referral_depth": REFERRAL_DEPTH, "trm": settings.APPLE_TRM,
         },
     }
 
 
 def apples_for(level: int) -> int:
-    return level_price(level).apples
+    return LEVEL_APPLES[level]
