@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import { lazy, Suspense, type ReactNode } from 'react'
 import { Navigate, Route, Routes } from 'react-router'
 import { useAuth } from './auth/context'
 import DashboardPage from './pages/DashboardPage'
@@ -10,6 +10,9 @@ import AgentsPage from './pages/AgentsPage'
 import PrivacyPage from './pages/PrivacyPage'
 import RoutePage from './pages/RoutePage'
 import WelcomePage from './pages/WelcomePage'
+
+// La oficina 3D pesa (three.js): se carga solo al entrar a /universo
+const UniversoPage = lazy(() => import('./universo/UniversoPage'))
 
 function Private({ children }: { children: ReactNode }) {
   const { user } = useAuth()
@@ -28,6 +31,10 @@ export default function App() {
       <Route path="/login" element={<PublicOnly><LoginPage /></PublicOnly>} />
       <Route path="/register" element={<PublicOnly><RegisterPage /></PublicOnly>} />
       <Route path="/privacidad" element={<PrivacyPage />} />
+      <Route path="/universo" element={
+        <Suspense fallback={<div className="fixed inset-0 flex items-center justify-center bg-[#0a0a0f] text-sm text-slate-400">Abriendo la oficina de ADÁN…</div>}>
+          <UniversoPage />
+        </Suspense>} />
       <Route path="/bienvenida" element={<Private><WelcomePage /></Private>} />
       <Route path="/dashboard" element={<Private><DashboardPage /></Private>} />
       <Route path="/ruta/:companyId" element={<Private><RoutePage /></Private>} />
