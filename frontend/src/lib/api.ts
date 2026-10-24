@@ -1,5 +1,5 @@
 import type {
-  CommunityConnection, CommunityListing, CommunityProfile, ExecutiveReport, FinancialModel, OrgChart, PublicSurvey, SurveyAnswer, SurveyInsights, SurveyResults, SurveySummary, ArenaSession, AgentContract, LegalGuide, NameCheck, Statutes, StatutesInput, AgentOffering, AgentTask, ContractReport, HirePeriod,
+  AppleCompanyLevel, AppleNetwork, ApplePrices, ApplePurchase, AppleWallet, CommunityConnection, CommunityListing, CommunityProfile, ExecutiveReport, FinancialModel, OrgChart, PublicSurvey, SurveyAnswer, SurveyInsights, SurveyResults, SurveySummary, ArenaSession, AgentContract, LegalGuide, NameCheck, Statutes, StatutesInput, AgentOffering, AgentTask, ContractReport, HirePeriod,
   BoardConsensus, BoardRoomInput, ChatResponse, Company, CompanyInput, DecideInput, Decision, DocumentRecord,
   Evidence, EvidenceInput, GatePreview, GateReviewResult, LevelView, Nivel1Status, OnboardingState, Score,
   ScoreOverview, TimelineEvent, TokenResponse, TwinKind, TwinOverview, UploadResult, User,
@@ -52,13 +52,15 @@ const post = <T>(path: string, body?: unknown) =>
 
 export const api = {
   // Auth
-  register: (email: string, name: string, password: string, consent: { acceptDataPolicy: boolean; shareAggregated: boolean }) =>
+  register: (email: string, name: string, password: string, consent: { acceptDataPolicy: boolean; shareAggregated: boolean },
+    referralCode?: string) =>
     post<TokenResponse>('/auth/register', {
       email, name, password, accept_data_policy: consent.acceptDataPolicy, share_aggregated: consent.shareAggregated,
+      referral_code: referralCode || undefined,
     }),
   // Onboarding y consentimiento (WO-108)
   getOnboarding: () => request<OnboardingState>('/onboarding/me'),
-  startOnboarding: (companyName: string, stage: 'idea' | 'existing') =>
+  startOnboarding: (companyName: string, stage: 'idea' | 'existing' | 'explore') =>
     post<{ company_id: string; first_question: string | null }>('/onboarding/start', { company_name: companyName, stage }),
   setConsent: (purpose: 'data_processing' | 'aggregated_intelligence', granted: boolean) =>
     post<OnboardingState['consents']>('/onboarding/consents', { purpose, granted }),
@@ -117,6 +119,19 @@ export const api = {
     }
     return response.json() as Promise<UploadResult>
   },
+  // @pples
+  getApplePrices: () => request<ApplePrices>('/apples/precios'),
+  getAppleWallet: () => request<AppleWallet>('/apples/billetera'),
+  buyApples: (apples: number) => post<ApplePurchase>('/apples/compras', { apples }),
+  getApplePurchase: (id: string) => request<ApplePurchase>(`/apples/compras/${id}`),
+  simulateApplePurchase: (id: string, approve: boolean) => post<ApplePurchase>(`/apples/compras/${id}/simular`, { approve }),
+  getAppleLevels: (companyId: string) =>
+    request<{ levels: AppleCompanyLevel[]; balance: number; required: boolean }>(`/apples/niveles/${companyId}`),
+  payLevel: (companyId: string, level: number) =>
+    post<{ level: number; apples: number; balance: number }>(`/apples/niveles/${companyId}/${level}`),
+  getAppleNetwork: () => request<AppleNetwork>('/apples/red'),
+  setCompanyBrand: (companyId: string, brand: { brand_color: string | null; brand_accent: string | null; logo: string | null }) =>
+    request<Company>(`/companies/${companyId}/marca`, { method: 'PUT', body: JSON.stringify(brand) }),
   // Comunidad ADÁN
   listCommunityCompanies: (f: { q: string; stage: string; looking_for: string; seleccion: boolean }) => {
     const params = new URLSearchParams({ q: f.q, stage: f.stage, looking_for: f.looking_for, seleccion: String(f.seleccion) })

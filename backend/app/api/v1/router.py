@@ -5,6 +5,7 @@ from app.api.v1 import auth, companies, nivel1, cognitive
 from app.constitucion import api as constitucion
 from app.finanzas import api as finanzas
 from app.community import api as comunidad
+from app.apples import api as apples
 from app.hire import api as hire
 from app.surveys import api as surveys
 from app.onboarding import api as onboarding
@@ -25,3 +26,4 @@ router.include_router(constitucion.router)
 router.include_router(surveys.router)
 router.include_router(finanzas.router)
 router.include_router(comunidad.router)
+router.include_router(apples.router)

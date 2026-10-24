@@ -14,6 +14,7 @@ import ConstitucionPage from './pages/constitucion/ConstitucionPage'
 import SurveyPublicPage from './pages/SurveyPublicPage'
 import FinanzasPage from './pages/finanzas/FinanzasPage'
 import ComunidadPage from './pages/comunidad/ComunidadPage'
+import ApplesPage from './pages/ApplesPage'
 
 // La oficina 3D pesa (three.js): se carga solo al entrar a /universo
 const UniversoPage = lazy(() => import('./universo/UniversoPage'))
@@ -52,6 +53,7 @@ export default function App() {
       <Route path="/constitucion/:companyId" element={<Private><ConstitucionPage /></Private>} />
       <Route path="/finanzas/:companyId" element={<Private><FinanzasPage /></Private>} />
       <Route path="/comunidad" element={<Private><ComunidadPage /></Private>} />
+      <Route path="/apples" element={<Private><ApplesPage /></Private>} />
       <Route path="*" element={<Navigate to={user ? '/dashboard' : '/login'} replace />} />
     </Routes>
   )

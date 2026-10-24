@@ -22,7 +22,9 @@ export default function RegisterPage() {
     setError(null)
     setLoading(true)
     try {
-      const data = await api.register(email, name, password, { acceptDataPolicy, shareAggregated })
+      // ?ref=CODIGO: quien te invitó queda como el nivel 1 de tu red de @pples
+      const ref = new URLSearchParams(window.location.search).get('ref') ?? undefined
+      const data = await api.register(email, name, password, { acceptDataPolicy, shareAggregated }, ref)
       setUser(data.user)
     } catch (err) {
       setError(errorMessage(err))
