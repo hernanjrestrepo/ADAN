@@ -1,5 +1,5 @@
 import type {
-  AppleCompanyLevel, AppleNetwork, ApplePrices, ApplePurchase, AppleWallet, CommunityConnection, CommunityListing, CommunityProfile, ExecutiveReport, FinancialModel, OrgChart, PublicSurvey, SurveyAnswer, SurveyInsights, SurveyResults, SurveySummary, ArenaSession, AgentContract, LegalGuide, NameCheck, Statutes, StatutesInput, AgentOffering, AgentTask, ContractReport, HirePeriod,
+  AdminCompany, AdminMovement, AdminPurchase, AdminSummary, AdminUser, AppleCompanyLevel, AppleNetwork, ApplePrices, ApplePurchase, AppleWallet, CommunityConnection, CommunityListing, CommunityProfile, ExecutiveReport, FinancialModel, OrgChart, PublicSurvey, SurveyAnswer, SurveyInsights, SurveyResults, SurveySummary, ArenaSession, AgentContract, LegalGuide, NameCheck, Statutes, StatutesInput, AgentOffering, AgentTask, ContractReport, HirePeriod,
   BoardConsensus, BoardRoomInput, ChatResponse, Company, CompanyInput, DecideInput, Decision, DocumentRecord,
   Evidence, EvidenceInput, GatePreview, GateReviewResult, LevelView, Nivel1Status, OnboardingState, Score,
   ScoreOverview, TimelineEvent, TokenResponse, TwinKind, TwinOverview, UploadResult, User,
@@ -132,6 +132,14 @@ export const api = {
   getAppleNetwork: () => request<AppleNetwork>('/apples/red'),
   setCompanyBrand: (companyId: string, brand: { brand_color: string | null; brand_accent: string | null; logo: string | null }) =>
     request<Company>(`/companies/${companyId}/marca`, { method: 'PUT', body: JSON.stringify(brand) }),
+  // Consola de Paradixe (superadministradores)
+  adminSummary: () => request<AdminSummary>('/admin/resumen'),
+  adminUsers: (q: string) => request<AdminUser[]>(`/admin/usuarios?q=${encodeURIComponent(q)}`),
+  adminGift: (userId: string, apples: number, reason: string) =>
+    post<{ balance: number }>(`/admin/usuarios/${userId}/regalo`, { apples, reason }),
+  adminPurchases: () => request<AdminPurchase[]>('/admin/compras'),
+  adminMovements: () => request<AdminMovement[]>('/admin/movimientos'),
+  adminCompanies: () => request<AdminCompany[]>('/admin/empresas'),
   // Comunidad ADÁN
   listCommunityCompanies: (f: { q: string; stage: string; looking_for: string; seleccion: boolean }) => {
     const params = new URLSearchParams({ q: f.q, stage: f.stage, looking_for: f.looking_for, seleccion: String(f.seleccion) })

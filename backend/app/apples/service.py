@@ -53,6 +53,10 @@ def ensure_profile(db: Session, user: User, sponsor_code: str | None = None) -> 
                            sponsor_id=sponsor.user_id if sponsor and sponsor.user_id != user.id else None)
     db.add(prof)
     db.flush()
+    if prof.sponsor_id and settings.APPLES_WELCOME_REFERRAL > 0:
+        # Regalo a quien llega invitado (no a quien invita: inscribir no paga), solo para usar en ADÁN
+        _move(db, user.id, "bienvenida", settings.APPLES_WELCOME_REFERRAL, f"bienvenida:{user.id}",
+              "Regalo de bienvenida por llegar con un enlace de invitación")
     return prof
 
 
@@ -86,6 +90,27 @@ def network(db: Session, user: User) -> dict:
 
 
 # ---------- Billetera ----------
+
+GIFT_KINDS = ("bienvenida", "regalo", "nivel_bono")
+
+
+def gift_balance(db: Session, user_id: str) -> Decimal:
+    """Lo que queda de @pples regaladas (bienvenida y regalos de Paradixe): se gastan primero y no generan comisión."""
+    total = db.query(func.coalesce(func.sum(AppleMovement.amount), 0)).filter(
+        AppleMovement.user_id == user_id, AppleMovement.kind.in_(GIFT_KINDS)).scalar()
+    return max(_q(total or 0), Decimal("0"))
+
+
+def gift(db: Session, admin: User, user: User, apples: int, reason: str) -> AppleMovement:
+    """Un superadministrador regala @pples (pruebas, soporte, campañas). Queda escrito quién y por qué."""
+    if not 1 <= apples <= 10000:
+        raise AppleError("Se regalan entre 1 y 10.000 @pples por vez.")
+    ensure_profile(db, user)
+    m = _move(db, user.id, "regalo", apples, f"regalo:{secrets.token_hex(8)}",
+              f"Regalo de Paradixe ({admin.email}): {reason or 'pruebas'}")
+    db.commit()
+    return m
+
 
 def balance(db: Session, user_id: str) -> Decimal:
     total = db.query(func.coalesce(func.sum(AppleMovement.amount), 0)).filter(AppleMovement.user_id == user_id).scalar()
@@ -182,11 +207,17 @@ def unlock_level(db: Session, user: User, company: Company, level: int) -> dict:
         raise AppleError(f"Te faltan @pples: el Nivel {level} cuesta {price} y tienes {balance(db, user.id)}.")
     reference = f"{company.id}:{level}"
     db.add(LevelUnlock(company_id=company.id, level_number=level, user_id=user.id, apples=price))
-    _move(db, user.id, "nivel", -price, reference, f"Nivel {level} · {pricing.LEVEL_NAMES[level]} · {company.name}",
-          company_id=company.id, level_number=level)
-    # Comisiones de la red sobre este consumo real
-    for depth, sponsor_id in enumerate(upline(db, user.id), start=1):
-        _move(db, sponsor_id, "referido", price * pricing.REFERRAL_RATE, reference,
+    from_gift = min(gift_balance(db, user.id), Decimal(price))
+    paid = Decimal(price) - from_gift
+    label = f"Nivel {level} · {pricing.LEVEL_NAMES[level]} · {company.name}"
+    if from_gift > 0:
+        _move(db, user.id, "nivel_bono", -from_gift, reference, f"{label} (con @pples regaladas)",
+              company_id=company.id, level_number=level)
+    if paid > 0:
+        _move(db, user.id, "nivel", -paid, reference, label, company_id=company.id, level_number=level)
+    # Comisiones de la red solo sobre lo pagado con @pples compradas (consumo real)
+    for depth, sponsor_id in enumerate(upline(db, user.id) if paid > 0 else [], start=1):
+        _move(db, sponsor_id, "referido", paid * Decimal(str(pricing.REFERRAL_RATE)), reference,
               f"Red nivel {depth}: {user.name.split(' ')[0]} pagó el Nivel {level}", company_id=company.id,
               level_number=level, depth=depth, source_user_id=user.id)
     try:

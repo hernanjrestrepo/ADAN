@@ -11,7 +11,8 @@ import type { AppleNetwork, ApplePrices, ApplePurchase, AppleWallet } from '../t
 // ADÁN y Paradixe; no se convierten de vuelta en dinero. También la red: 0,5 % por cada uno de 7 niveles hacia arriba.
 
 const KIND_LABEL: Record<string, string> = {
-  compra: '💳 Compra', nivel: '🏁 Nivel', referido: '🌳 Red', bienvenida: '🎁 Bienvenida', ajuste: '⚙️ Ajuste',
+  compra: '💳 Compra', nivel: '🏁 Nivel', nivel_bono: '🏁 Nivel (regaladas)', referido: '🌳 Red', bienvenida: '🎁 Bienvenida',
+  regalo: '🎁 Regalo de Paradixe', ajuste: '⚙️ Ajuste',
 }
 
 function cop(n: number) {

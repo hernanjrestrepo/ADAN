@@ -39,7 +39,8 @@ def test_a_purchase_credits_once_even_if_confirmed_twice(client):
     assert client.get(f"/api/v1/apples/compras/{p['id']}", headers=other).status_code == 404
 
 
-def test_paying_a_level_pays_seven_levels_up_and_nothing_for_signing_up(client):
+def test_paying_a_level_pays_seven_levels_up_and_nothing_for_signing_up(client, monkeypatch):
+    monkeypatch.setattr(settings, "APPLES_WELCOME_REFERRAL", 0)  # aquí se mide solo la comisión
     heads = [_user(client, "u0@example.com")]
     codes = [client.get("/api/v1/apples/red", headers=heads[0]).json()["code"]]
     for i in range(1, 9):  # cadena de 9 personas: u8 paga, ganan u7 (nivel 1) … u1 (nivel 7); u0 no
@@ -112,3 +113,35 @@ def test_production_keys_do_not_charge_until_live(client, monkeypatch):
     monkeypatch.setattr(settings, "PAYMENTS_LIVE", True)
     url = client.post("/api/v1/apples/compras", headers=h, json={"apples": 10}).json()["checkout_url"]
     assert url.startswith("https://checkout.wompi.co/p/?") and "signature%3Aintegrity=" in url
+
+
+def test_invited_people_get_a_welcome_gift_that_pays_level_one_without_commissions(client):
+    sponsor = _user(client, "padrino@example.com")
+    code = client.get("/api/v1/apples/red", headers=sponsor).json()["code"]
+    guest = _user(client, "invitada@example.com", ref=code)
+    wallet = client.get("/api/v1/apples/billetera", headers=guest).json()
+    assert wallet["balance"] == settings.APPLES_WELCOME_REFERRAL >= pricing.apples_for(1)
+    cid = client.post("/api/v1/companies/", json={"name": "Huerta"}, headers=guest).json()["id"]
+    assert client.post(f"/api/v1/apples/niveles/{cid}/1", headers=guest).status_code == 200
+    # Lo regalado no genera comisión: invitar no paga, solo el consumo real
+    assert client.get("/api/v1/apples/billetera", headers=sponsor).json()["balance"] == 0
+    # Sin enlace no hay regalo
+    assert client.get("/api/v1/apples/billetera", headers=_user(client, "solo@example.com")).json()["balance"] == 0
+
+
+def test_only_superadmins_see_the_console_and_gift_apples(client, monkeypatch):
+    monkeypatch.setattr(settings, "PARADIXE_SUPERADMINS", "jefe@paradixe.xyz")
+    admin = _user(client, "jefe@paradixe.xyz")
+    tester = _user(client, "tester@example.com")
+    assert client.get("/api/v1/auth/me", headers=admin).json()["is_superadmin"] is True
+    assert client.get("/api/v1/auth/me", headers=tester).json()["is_superadmin"] is False
+    assert client.get("/api/v1/admin/resumen", headers=tester).status_code == 403
+    users = client.get("/api/v1/admin/usuarios?q=tester", headers=admin).json()
+    assert [u["email"] for u in users] == ["tester@example.com"]
+    url = f"/api/v1/admin/usuarios/{users[0]['id']}/regalo"
+    assert client.post(url, headers=tester, json={"apples": 50}).status_code == 403
+    assert client.post(url, headers=admin, json={"apples": 50, "reason": "pruebas"}).json()["balance"] == 50
+    summary = client.get("/api/v1/admin/resumen", headers=admin).json()
+    assert summary["apples_gifted"] == 50 and summary["users"] >= 2 and len(summary["levels"]) == 7
+    moves = client.get("/api/v1/admin/movimientos", headers=admin).json()
+    assert moves[0]["kind"] == "regalo" and "jefe@paradixe.xyz" in moves[0]["detail"]

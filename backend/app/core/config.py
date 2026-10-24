@@ -76,6 +76,10 @@ class Settings:
     APPLE_TRM: int = int(os.getenv("APPLE_TRM", "4000"))  # COP por USD para cobrar las @pples
     # Exigir el pago del Nivel con @pples antes de trabajarlo (se enciende cuando la pasarela esté lista)
     APPLES_REQUIRED: bool = os.getenv("APPLES_REQUIRED", "false").lower() in ("1", "true", "yes")
+    # Regalo de bienvenida a quien se registra con un enlace de invitación (alcanza para el Nivel 1)
+    APPLES_WELCOME_REFERRAL: int = int(os.getenv("APPLES_WELCOME_REFERRAL", "5"))
+    # Superadministradores de Paradixe (correos separados por comas): ven todo y regalan @pples para pruebas
+    PARADIXE_SUPERADMINS: str = os.getenv("PARADIXE_SUPERADMINS", "ceo@paradixe.xyz")
     LLM_MODEL_STANDARD: str = os.getenv("LLM_MODEL_STANDARD", "claude-sonnet-5")
     LLM_MODEL_COMPLEX: str = os.getenv("LLM_MODEL_COMPLEX", "claude-opus-5")
     LLM_MODEL_FAST: str = os.getenv("LLM_MODEL_FAST", "claude-haiku-4-5")
