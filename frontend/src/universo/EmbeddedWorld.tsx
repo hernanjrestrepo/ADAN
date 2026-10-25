@@ -57,6 +57,17 @@ export default function EmbeddedWorld({ level = 1, companyId }: { level?: number
     <div className="universo relative h-full w-full overflow-hidden rounded-2xl">
       <Boundary><World embedded floor={floor} identity={identity} /></Boundary>
       <Subtitle />
+      {/* La marca que el fundador va construyendo, como letrero de neón de la oficina */}
+      <div className="u-brand-sign pointer-events-none absolute left-1/2 top-11 -translate-x-1/2"
+        style={{ ['--brand' as string]: identity?.color || info.color, ['--brand-accent' as string]: identity?.acento || '#ffffff' }}>
+        {identity?.logo
+          ? <img src={identity.logo} alt="" className="u-brand-logo" />
+          : <span className="u-brand-initial">{(identity?.nombre || 'T').slice(0, 1).toUpperCase()}</span>}
+        <span className="u-brand-text">
+          <b>{identity?.nombre || 'Tu empresa'}</b>
+          <i>{identity?.slogan || 'Elige tu marca en 🏷️ Marca'}</i>
+        </span>
+      </div>
       <div key={floor} className="u-elevator" aria-hidden="true">
         <div className="u-elevator-doors"><i /><i /></div>
         <div className="u-elevator-card relative"><b>PISO {floor}</b><span>{info.name}</span></div>
@@ -67,8 +78,8 @@ export default function EmbeddedWorld({ level = 1, companyId }: { level?: number
         </span>
         <label className="sr-only" htmlFor="u-floor">Visitar otro piso</label>
         <select id="u-floor" value={floor} onChange={(e) => setVisit({ level, floor: Number(e.target.value) })}
-          title="Visitar otro piso del edificio" className="rounded-full bg-black/60 px-2 py-1 text-[11px] text-slate-200">
-          {Object.entries(FLOORS).map(([n, f]) => <option key={n} value={n}>🛗 {n}{Number(n) === level ? ' (tu Nivel)' : ''} · {f.name}</option>)}
+          title="Visitar otro piso del edificio" className="w-24 rounded-full bg-black/60 px-2 py-1 text-[11px] text-slate-200">
+          {Object.entries(FLOORS).map(([n, f]) => <option key={n} value={n}>🛗 Piso {n}{Number(n) === level ? ' (tu Nivel)' : ''} · {f.name}</option>)}
         </select>
       </div>
  <div className="absolute bottom-3 right-3 flex gap-1" aria-label="Controles de la cámara">

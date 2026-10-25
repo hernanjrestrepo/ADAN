@@ -212,28 +212,19 @@ function Plant({ x, z }: { x: number; z: number }) {
   )
 }
 
-// Letrero de neón en la pared del fondo con el nombre, logo y slogan que el fundador eligió
+// Panel de neón con el color de la marca en la pared del fondo (el letrero con nombre, logo y slogan va encima
+// de la escena, en EmbeddedWorld, para que siempre se vea)
 function BrandSign({ identity, color }: { identity: Identity | null; color: string }) {
-  const name = identity?.nombre || 'Tu empresa'
   const tint = identity?.color || color
   return (
-    <group position={[0, 0, -18.7]}>
-      <mesh position-y={4.2}><boxGeometry args={[13, 3.6, 0.2]} /><meshStandardMaterial color="#050814" metalness={0.8} roughness={0.3} /></mesh>
-      <mesh position={[0, 2.35, 0.12]}><boxGeometry args={[13, 0.06, 0.06]} /><meshStandardMaterial color={tint} emissive={tint} emissiveIntensity={2.4} toneMapped={false} /></mesh>
-      <mesh position={[0, 6.05, 0.12]}><boxGeometry args={[13, 0.06, 0.06]} /><meshStandardMaterial color={tint} emissive={tint} emissiveIntensity={2.4} toneMapped={false} /></mesh>
-      <pointLight position={[0, 4.2, 2]} color={tint} intensity={10} distance={10} decay={1.6} />
-      <Html position={[0, 4.2, 0.15]} center transform distanceFactor={6} pointerEvents="none" zIndexRange={[4, 0]}>
-        <div className="u-brand-sign" style={{ ['--brand' as string]: tint, ['--brand-accent' as string]: identity?.acento || '#ffffff' }}>
-          {identity?.logo
-            ? <img src={identity.logo} alt="" className="u-brand-logo" />
-            : <span className="u-brand-initial">{name.slice(0, 1).toUpperCase()}</span>}
-          <span className="u-brand-text">
-            <b>{name}</b>
-            <i>{identity?.slogan || 'Elige tu marca en 🏷️ Marca'}</i>
-          </span>
-        </div>
-      </Html>
-    </group>
+    <>
+      <group position={[0, 0, -18.7]}>
+        <mesh position-y={4.2}><boxGeometry args={[13, 3.6, 0.2]} /><meshStandardMaterial color="#050814" metalness={0.8} roughness={0.3} /></mesh>
+        <mesh position={[0, 2.35, 0.12]}><boxGeometry args={[13, 0.06, 0.06]} /><meshStandardMaterial color={tint} emissive={tint} emissiveIntensity={2.4} toneMapped={false} /></mesh>
+        <mesh position={[0, 6.05, 0.12]}><boxGeometry args={[13, 0.06, 0.06]} /><meshStandardMaterial color={tint} emissive={tint} emissiveIntensity={2.4} toneMapped={false} /></mesh>
+        <pointLight position={[0, 4.2, 2]} color={tint} intensity={10} distance={10} decay={1.6} />
+      </group>
+    </>
   )
 }
 

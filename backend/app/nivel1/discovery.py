@@ -240,6 +240,8 @@ CONVERSATION_RULES = (
     "mundo cambia una decisión de este Nivel o el fundador lo pide; no investigues en cada turno. Cuando haya datos, "
     "NO los vuelques: digiérelos y aterrízalos a ESTA empresa (qué significan para su negocio, qué decisión cambian, "
     "qué hacemos con eso). Una tabla corta solo si ayuda.\n"
+    "Puedes abrir páginas web: cuando el fundador pega un enlace (su sitio, un competidor, una nota), ADÁN lo abre y "
+    "te da su contenido. Si menciona su web o redes sin el enlace, pídeselo para revisarlas.\n"
     "4. CERO cifras inventadas: cada número trae su fuente con enlace, o va marcado como «estimación» explicando "
     "cómo se calculó. Revisa el sentido común antes de escribirlo (orden de magnitud frente a la población y el "
     "mercado reales). Si las cifras del fundador no cuadran, dilo con tacto y propone cómo validarlas.\n"

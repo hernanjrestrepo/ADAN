@@ -16,6 +16,7 @@ from app.core.database import get_db
 from app.core.ratelimit import llm_user
 from app.documents import extract as doc_extract
 from app.documents import media
+from app.empresa import biblioteca
 from app.empresa.catalog import COUNTRIES, items_for
 from app.empresa.service import STATUSES, Expediente, Marca
 from app.models.models import Document, Project, User
@@ -291,3 +292,39 @@ async def numbers_in_room(company_id: str, db: Session = Depends(get_db), user: 
     Expediente(None, db).set_status(project, "organigrama", "validado", "Organigrama con IA y Paradixe construido.")
     db.commit()
     return {"ok": True, "kpis": k}
+
+
+# --- Biblioteca: todo lo construido, en un solo lugar --------------------------------------------------------------
+
+@router.get("/{company_id}/biblioteca")
+def library(company_id: str, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
+    company, project = _ctx(db, company_id, user)
+    return biblioteca.catalog(db, project, company)
+
+
+def _library_doc(db: Session, project: Project, doc_id: str) -> tuple[str, str]:
+    if doc_id == "manual":
+        text = Marca(None, db).view(project).get("manual") or ""
+        if text:
+            return "Manual de marca", text
+    else:
+        doc = biblioteca.read(db, project, doc_id)
+        if doc is not None:
+            return doc.title, doc.content or ""
+    raise HTTPException(status_code=404, detail="Documento no encontrado")
+
+
+@router.get("/{company_id}/biblioteca/{doc_id}.docx")
+def library_docx(company_id: str, doc_id: str, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
+    _, project = _ctx(db, company_id, user)
+    title, text = _library_doc(db, project, doc_id)
+    return Response(markdown_to_docx(text, title),
+                    media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                    headers={"Content-Disposition": 'attachment; filename="documento.docx"'})
+
+
+@router.get("/{company_id}/biblioteca/{doc_id}")
+def library_doc(company_id: str, doc_id: str, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
+    _, project = _ctx(db, company_id, user)
+    title, text = _library_doc(db, project, doc_id)
+    return {"id": doc_id, "titulo": title, "markdown": text}

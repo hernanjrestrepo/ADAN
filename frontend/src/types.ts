@@ -1070,3 +1070,35 @@ export interface Dossier {
   total: number
   identificacion: Record<string, string>
 }
+
+export interface LibraryDoc {
+  id: string
+  titulo: string
+  tipo: string
+  seccion: 'marca' | 'legal' | 'numeros' | 'estrategia' | 'board' | 'cliente'
+  nivel: number | null
+  origen: 'adan' | 'tuyo'
+  creado: string | null
+  actualizado: string | null
+  legible: boolean
+  herramienta: string | null
+  descarga: string | null
+  ext: string
+  palabras: number | null
+}
+
+export interface Library {
+  marca: {
+    nombre: string
+    slogan: string
+    logo: string | null
+    logo_concepto: string
+    tipografia: string
+    paleta: { nombre: string; hex: string }[]
+    manual: boolean
+    nombres_considerados: string[]
+    slogans_considerados: string[]
+  }
+  secciones: Record<LibraryDoc['seccion'], string>
+  documentos: LibraryDoc[]
+}

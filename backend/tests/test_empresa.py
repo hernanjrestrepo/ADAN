@@ -125,3 +125,31 @@ def test_camila_builds_the_numbers_inside_the_level_three_room(client, monkeypat
     assert camila and "mes 14" in camila[-1]["content"] and "```chart" in camila[-1]["content"]
     states = {i["id"]: i["estado"] for i in client.get(f"/api/v1/empresa/{cid}/expediente", headers=h).json()["items"]}
     assert states["presupuesto"] == "validado" and states["organigrama"] == "validado"
+
+
+def test_the_library_gathers_brand_palette_and_documents(client, monkeypatch):
+    from app.constitucion import dominios
+
+    async def fake_check(name, client=None):
+        return {"domains": []}
+    monkeypatch.setattr(dominios, "check", fake_check)
+    cid, h = _setup(client, "biblioteca@example.com")
+    _use(client, BrandLLM())
+    client.put(f"/api/v1/empresa/{cid}/expediente/pais", headers=h, json={"pais": "CO"})
+    pack = client.post(f"/api/v1/empresa/{cid}/expediente/rut/preparar", headers=h).json()
+    client.post(f"/api/v1/empresa/{cid}/marca/logos", headers=h)
+    client.post(f"/api/v1/empresa/{cid}/marca/logo", headers=h, json={"concepto": "c1", "imagen": "data:image/svg+xml;base64,PHN2Zy8+"})
+    client.post(f"/api/v1/empresa/{cid}/marca/manual", headers=h)
+    lib = client.get(f"/api/v1/empresa/{cid}/biblioteca", headers=h).json()
+    assert [p["hex"] for p in lib["marca"]["paleta"]] == ["#0f766e", "#f59e0b", "#ffffff"]
+    assert lib["marca"]["tipografia"] == "Poppins" and lib["marca"]["manual"] is True
+    ids = {d["id"]: d for d in lib["documentos"]}
+    assert ids["manual"]["descarga"].endswith("/marca/manual.docx")
+    assert ids[pack["id"]]["seccion"] == "legal" and ids[pack["id"]]["legible"] is True
+    assert not any(d["tipo"] == "Documento" and d["titulo"] == "Marca de la empresa" for d in lib["documentos"])
+    doc = client.get(f"/api/v1/empresa/{cid}/biblioteca/{pack['id']}", headers=h).json()
+    assert "Estatutos firmados" in doc["markdown"]
+    assert client.get(f"/api/v1/empresa/{cid}/biblioteca/{pack['id']}.docx", headers=h).status_code == 200
+    assert client.get(f"/api/v1/empresa/{cid}/biblioteca/manual", headers=h).status_code == 200
+    other, h2 = _setup(client, "ajeno@example.com")
+    assert client.get(f"/api/v1/empresa/{cid}/biblioteca/{pack['id']}", headers=h2).status_code in (403, 404)

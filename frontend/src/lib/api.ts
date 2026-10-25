@@ -1,5 +1,5 @@
 import type {
-  BrandData, CompanyIdentity, Dossier, LevelRoom, Message, SurveySimulation, BoardDialogue, BoardDialogueTurn, AdminCompany, AdminMovement, AdminPurchase, AdminSummary, AdminUser, AppleCompanyLevel, AppleNetwork, ApplePrices, ApplePurchase, AppleWallet, CommunityConnection, CommunityListing, CommunityProfile, ExecutiveReport, FinancialModel, OrgChart, PublicSurvey, SurveyAnswer, SurveyInsights, SurveyResults, SurveySummary, ArenaSession, AgentContract, LegalGuide, NameCheck, Statutes, StatutesInput, AgentOffering, AgentTask, ContractReport, HirePeriod,
+  BrandData, CompanyIdentity, Dossier, Library, LevelRoom, Message, SurveySimulation, BoardDialogue, BoardDialogueTurn, AdminCompany, AdminMovement, AdminPurchase, AdminSummary, AdminUser, AppleCompanyLevel, AppleNetwork, ApplePrices, ApplePurchase, AppleWallet, CommunityConnection, CommunityListing, CommunityProfile, ExecutiveReport, FinancialModel, OrgChart, PublicSurvey, SurveyAnswer, SurveyInsights, SurveyResults, SurveySummary, ArenaSession, AgentContract, LegalGuide, NameCheck, Statutes, StatutesInput, AgentOffering, AgentTask, ContractReport, HirePeriod,
   BoardConsensus, BoardRoomInput, ChatResponse, Company, CompanyInput, DecideInput, Decision, DocumentRecord,
   Evidence, EvidenceInput, GatePreview, GateReviewResult, LevelView, Nivel1Status, OnboardingState, Score,
   ScoreOverview, TimelineEvent, TokenResponse, TwinKind, TwinOverview, UploadResult, User,
@@ -269,6 +269,9 @@ export const api = {
   brandSlogans: (companyId: string) => request<BrandData>(`/empresa/${companyId}/marca/slogans`, { method: 'POST', signal: AbortSignal.timeout(CHAT_TIMEOUT_MS) }),
   chooseBrandSlogan: (companyId: string, texto: string) => post<BrandData>(`/empresa/${companyId}/marca/slogan`, { texto }),
   brandManual: (companyId: string) => request<BrandData>(`/empresa/${companyId}/marca/manual`, { method: 'POST', signal: AbortSignal.timeout(CHAT_TIMEOUT_MS) }),
+  getLibrary: (companyId: string) => request<Library>(`/empresa/${companyId}/biblioteca`),
+  getLibraryDoc: (companyId: string, docId: string) =>
+    request<{ id: string; titulo: string; markdown: string }>(`/empresa/${companyId}/biblioteca/${docId}`),
   getIdentity: (companyId: string) => request<CompanyIdentity>(`/empresa/${companyId}/identidad`),
   buildNumbers: (companyId: string) => request<{ ok: boolean }>(`/empresa/${companyId}/numeros`, { method: 'POST', signal: AbortSignal.timeout(CHAT_TIMEOUT_MS * 2) }),
   // La Sala de los Niveles 2 a 7

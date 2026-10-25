@@ -150,23 +150,25 @@
 .u-brand-sign {
   display: flex;
   align-items: center;
-  gap: 18px;
-  padding: 14px 26px;
-  border-radius: 18px;
+  gap: 10px;
+  padding: 5px 12px;
+  max-width: calc(100% - 24px);
+  overflow: hidden;
+  border-radius: 12px;
   background: rgba(5, 8, 20, 0.85);
   border: 2px solid var(--brand);
-  box-shadow: 0 0 28px var(--brand), inset 0 0 18px rgba(255, 255, 255, 0.05);
+  box-shadow: 0 0 18px var(--brand), inset 0 0 12px rgba(255, 255, 255, 0.05);
   font-family: 'Space Grotesk Variable', ui-sans-serif, system-ui, sans-serif;
   white-space: nowrap;
 }
-.u-brand-logo { height: 92px; max-width: 220px; object-fit: contain; border-radius: 12px; background: #fff; padding: 4px; }
+.u-brand-logo { height: 36px; max-width: 100px; object-fit: contain; border-radius: 8px; background: #fff; padding: 2px; }
 .u-brand-initial {
-  display: grid; place-items: center; width: 84px; height: 84px; border-radius: 22px;
-  background: var(--brand); color: #fff; font-size: 52px; font-weight: 700;
+  display: grid; place-items: center; width: 40px; height: 40px; border-radius: 10px;
+  background: var(--brand); color: #fff; font-size: 24px; font-weight: 700;
 }
 .u-brand-text { display: flex; flex-direction: column; }
-.u-brand-text b { font-size: 46px; color: #fff; text-shadow: 0 0 16px var(--brand); letter-spacing: 0.02em; }
-.u-brand-text i { font-size: 20px; font-style: normal; color: var(--brand-accent); opacity: 0.9; }
+.u-brand-text b { font-size: 18px; color: #fff; text-shadow: 0 0 16px var(--brand); letter-spacing: 0.02em; }
+.u-brand-text i { font-size: 11px; font-style: normal; color: var(--brand-accent); opacity: 0.9; }
 .u-floor-tag {
   white-space: nowrap; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 600;
   background: rgba(6, 10, 22, 0.8); border: 1px solid #4ade80; color: #bbf7d0;
