@@ -1,7 +1,9 @@
 import '@fontsource-variable/space-grotesk'
 import './universo.css'
-import { Component, useState, type ReactNode } from 'react'
+import { Component, useEffect, useState, type ReactNode } from 'react'
 import { Link } from 'react-router'
+import { api } from '../lib/api'
+import { FLOORS, type Identity } from './scene/pisos'
 import World from './scene/World'
 import { useUniverso } from './store'
 import { setVoiceOn, voiceOn } from './voice'
@@ -32,14 +34,53 @@ function Subtitle() {
   )
 }
 
-export default function EmbeddedWorld() {
+// Cada Nivel es un piso del edificio: se puede visitar otro piso, y al cambiar se ve el ascensor
+export default function EmbeddedWorld({ level = 1, companyId }: { level?: number; companyId?: string }) {
   const [voice, setVoice] = useState(voiceOn)
+  const [visit, setVisit] = useState<{ level: number; floor: number } | null>(null)
+  const [identity, setIdentity] = useState<Identity | null>(null)
+  const floor = visit && visit.level === level ? visit.floor : level
+  const info = FLOORS[floor] ?? FLOORS[1]!
+
+  useEffect(() => {
+    if (!companyId) return
+    let cancelled = false
+    const load = () => api.getIdentity(companyId).then((i) => { if (!cancelled) setIdentity(i) }).catch(() => undefined)
+    void load()
+    // La marca se construye en otras pantallas: al volver a la pestaña el letrero se actualiza
+    const onFocus = () => { void load() }
+    window.addEventListener('focus', onFocus)
+    return () => { cancelled = true; window.removeEventListener('focus', onFocus) }
+  }, [companyId])
+
   return (
     <div className="universo relative h-full w-full overflow-hidden rounded-2xl">
-      <Boundary><World embedded /></Boundary>
+      <Boundary><World embedded floor={floor} identity={identity} /></Boundary>
       <Subtitle />
-      <div className="pointer-events-none absolute left-3 top-3 rounded-full bg-black/50 px-3 py-1 text-[11px] font-semibold tracking-wider text-cyan-200">
-        TU EQUIPO EN LA OFICINA
+      {/* La marca que el fundador va construyendo, como letrero de neón de la oficina */}
+      <div className="u-brand-sign pointer-events-none absolute left-1/2 top-11 -translate-x-1/2"
+        style={{ ['--brand' as string]: identity?.color || info.color, ['--brand-accent' as string]: identity?.acento || '#ffffff' }}>
+        {identity?.logo
+          ? <img src={identity.logo} alt="" className="u-brand-logo" />
+          : <span className="u-brand-initial">{(identity?.nombre || 'T').slice(0, 1).toUpperCase()}</span>}
+        <span className="u-brand-text">
+          <b>{identity?.nombre || 'Tu empresa'}</b>
+          <i>{identity?.slogan || 'Elige tu marca en 🏷️ Marca'}</i>
+        </span>
+      </div>
+      <div key={floor} className="u-elevator" aria-hidden="true">
+        <div className="u-elevator-doors"><i /><i /></div>
+        <div className="u-elevator-card relative"><b>PISO {floor}</b><span>{info.name}</span></div>
+      </div>
+      <div className="absolute left-3 top-3 flex items-center gap-2">
+        <span className="pointer-events-none rounded-full bg-black/50 px-3 py-1 text-[11px] font-semibold tracking-wider" style={{ color: info.color }}>
+          PISO {floor} · {info.name.toUpperCase()}
+        </span>
+        <label className="sr-only" htmlFor="u-floor">Visitar otro piso</label>
+        <select id="u-floor" value={floor} onChange={(e) => setVisit({ level, floor: Number(e.target.value) })}
+          title="Visitar otro piso del edificio" className="w-24 rounded-full bg-black/60 px-2 py-1 text-[11px] text-slate-200">
+          {Object.entries(FLOORS).map(([n, f]) => <option key={n} value={n}>🛗 Piso {n}{Number(n) === level ? ' (tu Nivel)' : ''} · {f.name}</option>)}
+        </select>
       </div>
  <div className="absolute bottom-3 right-3 flex gap-1" aria-label="Controles de la cámara">
         <button type="button" onClick={() => { setVoiceOn(!voice); setVoice(!voice) }} aria-pressed={voice}

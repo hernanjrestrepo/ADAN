@@ -1014,3 +1014,91 @@ export interface LevelRoom {
   messages: Message[]
   discovery: DiscoveryProgress | null
 }
+
+// Construcción de la empresa: marca y Expediente de creación
+export interface BrandName {
+  nombre: string
+  tipo: string
+  por_que: string
+  sonido: string
+  fluidez: number
+  memorabilidad: number
+  distintividad: number
+  puntaje: number
+  dominios_libres: string[]
+}
+
+export interface BrandData {
+  nombres?: BrandName[]
+  nombre_elegido?: string
+  logos?: import('./lib/logo').LogoConcept[]
+  logo_elegido?: import('./lib/logo').LogoConcept
+  slogans?: { texto: string; por_que: string }[]
+  slogan?: string
+  manual?: string
+  identidad?: CompanyIdentity
+}
+
+export interface CompanyIdentity {
+  nombre: string
+  slogan: string
+  logo: string | null
+  color: string | null
+  acento: string | null
+  expediente?: { hechos: number; total: number }
+}
+
+export interface DossierItem {
+  id: string
+  grupo: 'identidad' | 'numeros' | 'legal' | 'operacion'
+  titulo: string
+  que_es: string
+  modo: 'adan' | 'cliente_presencial' | 'cliente_en_linea'
+  documento: string
+  herramienta: string
+  estado: 'pendiente' | 'en_curso' | 'preparado' | 'validado' | 'observado' | 'no_aplica'
+  nota: string
+  preparado_doc: string | null
+  validacion: { valido: boolean; tipo_detectado: string; nombre_en_documento: string; numero_identificacion: string; fecha: string; observaciones: string[]; archivo: string } | null
+}
+
+export interface Dossier {
+  pais: 'CO' | 'US' | 'OTRO'
+  pais_nombre: string
+  items: DossierItem[]
+  hechos: number
+  total: number
+  identificacion: Record<string, string>
+}
+
+export interface LibraryDoc {
+  id: string
+  titulo: string
+  tipo: string
+  seccion: 'marca' | 'legal' | 'numeros' | 'estrategia' | 'board' | 'cliente'
+  nivel: number | null
+  origen: 'adan' | 'tuyo'
+  creado: string | null
+  actualizado: string | null
+  legible: boolean
+  herramienta: string | null
+  descarga: string | null
+  ext: string
+  palabras: number | null
+}
+
+export interface Library {
+  marca: {
+    nombre: string
+    slogan: string
+    logo: string | null
+    logo_concepto: string
+    tipografia: string
+    paleta: { nombre: string; hex: string }[]
+    manual: boolean
+    nombres_considerados: string[]
+    slogans_considerados: string[]
+  }
+  secciones: Record<LibraryDoc['seccion'], string>
+  documentos: LibraryDoc[]
+}

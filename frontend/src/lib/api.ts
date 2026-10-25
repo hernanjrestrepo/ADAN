@@ -1,5 +1,5 @@
 import type {
-  LevelRoom, Message, SurveySimulation, BoardDialogue, BoardDialogueTurn, AdminCompany, AdminMovement, AdminPurchase, AdminSummary, AdminUser, AppleCompanyLevel, AppleNetwork, ApplePrices, ApplePurchase, AppleWallet, CommunityConnection, CommunityListing, CommunityProfile, ExecutiveReport, FinancialModel, OrgChart, PublicSurvey, SurveyAnswer, SurveyInsights, SurveyResults, SurveySummary, ArenaSession, AgentContract, LegalGuide, NameCheck, Statutes, StatutesInput, AgentOffering, AgentTask, ContractReport, HirePeriod,
+  BrandData, CompanyIdentity, Dossier, Library, LevelRoom, Message, SurveySimulation, BoardDialogue, BoardDialogueTurn, AdminCompany, AdminMovement, AdminPurchase, AdminSummary, AdminUser, AppleCompanyLevel, AppleNetwork, ApplePrices, ApplePurchase, AppleWallet, CommunityConnection, CommunityListing, CommunityProfile, ExecutiveReport, FinancialModel, OrgChart, PublicSurvey, SurveyAnswer, SurveyInsights, SurveyResults, SurveySummary, ArenaSession, AgentContract, LegalGuide, NameCheck, Statutes, StatutesInput, AgentOffering, AgentTask, ContractReport, HirePeriod,
   BoardConsensus, BoardRoomInput, ChatResponse, Company, CompanyInput, DecideInput, Decision, DocumentRecord,
   Evidence, EvidenceInput, GatePreview, GateReviewResult, LevelView, Nivel1Status, OnboardingState, Score,
   ScoreOverview, TimelineEvent, TokenResponse, TwinKind, TwinOverview, UploadResult, User,
@@ -240,6 +240,40 @@ export const api = {
     post<{ recorded: boolean; open_objections: string[]; penalty_confidence: number }>(`/nivel1/${companyId}/board-room/continuar${nivel > 1 ? `?nivel=${nivel}` : ''}`, { reason }),
   runBoardRoom: (companyId: string, input?: BoardRoomInput, nivel = 1) =>
     post<BoardConsensus>(`/nivel1/${companyId}/board-room${nivel > 1 ? `?nivel=${nivel}` : ''}`, input ?? {}),
+  // Construcción de la empresa: Expediente y marca
+  getDossier: (companyId: string) => request<Dossier>(`/empresa/${companyId}/expediente`),
+  setDossierCountry: (companyId: string, pais: string) =>
+    request<Dossier>(`/empresa/${companyId}/expediente/pais`, { method: 'PUT', body: JSON.stringify({ pais }) }),
+  setDossierStatus: (companyId: string, item: string, estado: string, nota = '') =>
+    post<Dossier>(`/empresa/${companyId}/expediente/${item}/estado`, { estado, nota }),
+  prepareDossierItem: (companyId: string, item: string) =>
+    request<{ id: string; title: string; markdown: string }>(`/empresa/${companyId}/expediente/${item}/preparar`, {
+      method: 'POST', signal: AbortSignal.timeout(CHAT_TIMEOUT_MS) }),
+  getDossierPack: (companyId: string, docId: string) =>
+    request<{ id: string; title: string; markdown: string }>(`/empresa/${companyId}/expediente/paquete/${docId}`),
+  uploadDossierDoc: async (companyId: string, item: string, file: File) => {
+    const form = new FormData()
+    form.append('file', file)
+    const response = await fetch(`${API_BASE}/empresa/${companyId}/expediente/${item}/documento`, {
+      method: 'POST', body: form, credentials: 'same-origin', headers: { 'X-Requested-With': 'adan' },
+    })
+    if (!response.ok) throw new ApiError((await response.json().catch(() => ({}))).detail ?? 'No se pudo validar el documento', response.status)
+    return response.json() as Promise<{ validacion: NonNullable<Dossier['items'][number]['validacion']>; expediente: Dossier }>
+  },
+  getBrand: (companyId: string) => request<BrandData>(`/empresa/${companyId}/marca`),
+  brandNames: (companyId: string, ideas: string) =>
+    request<BrandData>(`/empresa/${companyId}/marca/nombres`, { method: 'POST', body: JSON.stringify({ ideas }), signal: AbortSignal.timeout(CHAT_TIMEOUT_MS) }),
+  chooseBrandName: (companyId: string, nombre: string, adoptar: boolean) => post<BrandData>(`/empresa/${companyId}/marca/nombre`, { nombre, adoptar }),
+  brandLogos: (companyId: string) => request<BrandData>(`/empresa/${companyId}/marca/logos`, { method: 'POST', signal: AbortSignal.timeout(CHAT_TIMEOUT_MS) }),
+  chooseBrandLogo: (companyId: string, concepto: string, imagen: string) => post<BrandData>(`/empresa/${companyId}/marca/logo`, { concepto, imagen }),
+  brandSlogans: (companyId: string) => request<BrandData>(`/empresa/${companyId}/marca/slogans`, { method: 'POST', signal: AbortSignal.timeout(CHAT_TIMEOUT_MS) }),
+  chooseBrandSlogan: (companyId: string, texto: string) => post<BrandData>(`/empresa/${companyId}/marca/slogan`, { texto }),
+  brandManual: (companyId: string) => request<BrandData>(`/empresa/${companyId}/marca/manual`, { method: 'POST', signal: AbortSignal.timeout(CHAT_TIMEOUT_MS) }),
+  getLibrary: (companyId: string) => request<Library>(`/empresa/${companyId}/biblioteca`),
+  getLibraryDoc: (companyId: string, docId: string) =>
+    request<{ id: string; titulo: string; markdown: string }>(`/empresa/${companyId}/biblioteca/${docId}`),
+  getIdentity: (companyId: string) => request<CompanyIdentity>(`/empresa/${companyId}/identidad`),
+  buildNumbers: (companyId: string) => request<{ ok: boolean }>(`/empresa/${companyId}/numeros`, { method: 'POST', signal: AbortSignal.timeout(CHAT_TIMEOUT_MS * 2) }),
   // La Sala de los Niveles 2 a 7
   getLevelStatus: (nivel: number, companyId: string) => request<LevelRoom>(`/nivel/${nivel}/${companyId}/status`),
   chatLevel: (nivel: number, companyId: string, message: string) =>

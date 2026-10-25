@@ -145,3 +145,51 @@
 }
 .u-holo-close { position: absolute; top: 4px; right: 8px; color: #94a3b8; font-size: 16px; }
 .u-md table { font-size: 11px; }
+
+/* Letrero de la marca en la pared del fondo de cada piso */
+.u-brand-sign {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 5px 12px;
+  max-width: calc(100% - 24px);
+  overflow: hidden;
+  border-radius: 12px;
+  background: rgba(5, 8, 20, 0.85);
+  border: 2px solid var(--brand);
+  box-shadow: 0 0 18px var(--brand), inset 0 0 12px rgba(255, 255, 255, 0.05);
+  font-family: 'Space Grotesk Variable', ui-sans-serif, system-ui, sans-serif;
+  white-space: nowrap;
+}
+.u-brand-logo { height: 36px; max-width: 100px; object-fit: contain; border-radius: 8px; background: #fff; padding: 2px; }
+.u-brand-initial {
+  display: grid; place-items: center; width: 40px; height: 40px; border-radius: 10px;
+  background: var(--brand); color: #fff; font-size: 24px; font-weight: 700;
+}
+.u-brand-text { display: flex; flex-direction: column; }
+.u-brand-text b { font-size: 18px; color: #fff; text-shadow: 0 0 16px var(--brand); letter-spacing: 0.02em; }
+.u-brand-text i { font-size: 11px; font-style: normal; color: var(--brand-accent); opacity: 0.9; }
+.u-floor-tag {
+  white-space: nowrap; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 600;
+  background: rgba(6, 10, 22, 0.8); border: 1px solid #4ade80; color: #bbf7d0;
+  font-family: 'Space Grotesk Variable', ui-sans-serif, system-ui, sans-serif;
+}
+
+/* El ascensor: al cambiar de Nivel se ve el paso al piso nuevo */
+.u-elevator {
+  position: absolute; inset: 0; display: grid; place-items: center; pointer-events: none;
+  background: linear-gradient(180deg, #020617 0%, #0b1222 50%, #020617 100%);
+  animation: u-elevator 2.2s ease-in-out forwards;
+}
+.u-elevator-card { text-align: center; color: #e2e8f0; font-family: 'Space Grotesk Variable', ui-sans-serif, system-ui, sans-serif; }
+.u-elevator-card b { display: block; font-size: 44px; letter-spacing: 0.08em; }
+.u-elevator-card span { font-size: 14px; opacity: 0.8; }
+.u-elevator-doors { position: absolute; inset: 0; display: flex; }
+.u-elevator-doors i { flex: 1; background: #111827; border: 1px solid #334155; animation: u-door 2.2s ease-in-out forwards; }
+.u-elevator-doors i:first-child { transform-origin: left; }
+.u-elevator-doors i:last-child { transform-origin: right; }
+@keyframes u-elevator { 0%, 70% { opacity: 1; } 100% { opacity: 0; visibility: hidden; } }
+@keyframes u-door { 0%, 25% { transform: scaleX(1); } 60%, 100% { transform: scaleX(0); } }
+@media (prefers-reduced-motion: reduce) {
+  .u-elevator, .u-elevator-doors i { animation-duration: 0.01s; }
+}

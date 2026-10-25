@@ -16,11 +16,13 @@ import re
 import time
 from difflib import SequenceMatcher
 from datetime import datetime, timezone
+from urllib.parse import urlparse
 
 from sqlalchemy.orm import Session
 
 from app.ai.router import for_tier
 from app.documents import learn as doc_learning
+from app.documents import web
 from app.levels.scripts import script_for
 from app.nivel1 import board_dialogue, discovery, timeline
 from app.nivel1.context import ContextLayers
@@ -161,6 +163,26 @@ class Nivel1Service:
 
         return conv
 
+    async def read_links(self, project: Project, text: str) -> str:
+        """Abre los enlaces que el fundador pegó: quedan en la Biblioteca y el equipo los lee en este turno."""
+        urls = web.find_urls(text)
+        if not urls:
+            return ""
+        pages = await web.fetch_all(urls)
+        blocks = []
+        for page in pages:
+            if page.get("error"):
+                blocks.append(f"- {page['url']}: NO se pudo abrir ({page['error']}). Díselo con honestidad y pide el texto.")
+                continue
+            host = urlparse(page["url"]).hostname or page["url"]
+            content = web.as_markdown(page)
+            self.db.add(Document(project_id=project.id, title=f"Página web: {page.get('titulo') or host}"[:255],
+                                 content=content, doc_type="web_page", origin="received_from_client"))
+            blocks.append(content[:7000])
+        self.db.commit()
+        return ("El fundador compartió enlaces y TÚ ABRISTE LAS PÁGINAS (sí puedes ver páginas web). Esto es lo que "
+                "contienen; úsalo, cita lo que dicen y no le pidas que te lo describa:\n\n" + "\n\n---\n\n".join(blocks))
+
     # --- Step 2: Chat with ADÁN ---
 
     async def chat(
@@ -196,6 +218,9 @@ class Nivel1Service:
             messages[0] = LLMMessage(role="system", content=messages[0].content + (
                 "\n\nYa investigaste en internet (no repitas estas búsquedas; usa lo encontrado, que está en tus "
                 "respuestas anteriores): " + " | ".join(q[:160] for q in done[-6:])))
+        pages = await self.read_links(project, user_message)
+        if pages:
+            messages[0] = LLMMessage(role="system", content=messages[0].content + "\n\n" + pages)
         last_reply = next((m.content for m in reversed(history) if m.role == "assistant"), "")
         response = await self.llm.chat_json(messages, schema, temperature=0.4, max_tokens=2048)
 
