@@ -224,7 +224,7 @@ export default function Nivel1Page() {
             <ChatPanel companyId={companyId} messages={messages} sending={sending} researching={researching}
               discovery={status?.discovery} onSend={handleSend} onReload={loadStatus} uploading={uploading} onUpload={handleUpload}
               onDiagnosis={handleDiagnosis} onClose={handleGateReview} onError={showError}
-              world={<Suspense fallback={<div className="h-full rounded-2xl bg-adan-surface animate-pulse" />}><EmbeddedWorld /></Suspense>} />
+              world={<Suspense fallback={<div className="h-full rounded-2xl bg-adan-surface animate-pulse" />}><EmbeddedWorld level={1} companyId={companyId} /></Suspense>} />
           )}
           {activeTab === 'diagnosis' && (
             <DiagnosisPanel diagnosis={diagnosis} running={diagnosing} onGenerate={handleDiagnosis} />

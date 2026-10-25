@@ -7,6 +7,7 @@ from app.finanzas import api as finanzas
 from app.community import api as comunidad
 from app.apples import admin_api as consola
 from app.levels import api as niveles
+from app.empresa import api as empresa
 from app.apples import api as apples
 from app.hire import api as hire
 from app.surveys import api as surveys
@@ -31,3 +32,4 @@ router.include_router(comunidad.router)
 router.include_router(apples.router)
 router.include_router(consola.router)
 router.include_router(niveles.router)
+router.include_router(empresa.router)

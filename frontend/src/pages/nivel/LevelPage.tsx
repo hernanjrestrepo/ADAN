@@ -19,7 +19,10 @@ const EmbeddedWorld = lazy(() => import('../../universo/EmbeddedWorld'))
 
 // Herramientas que ya existen y alimentan los entregables del Nivel
 const TOOLS: Record<number, { label: string; to: (id: string) => string }[]> = {
-  3: [{ label: '🧮 Flujo de caja y organigrama', to: (id) => `/finanzas/${id}` },
+  2: [{ label: '🏷️ Nombre, logo y slogan', to: (id) => `/marca/${id}` }],
+  3: [{ label: '🏷️ Marca', to: (id) => `/marca/${id}` },
+      { label: '📁 Expediente de creación', to: (id) => `/expediente/${id}` },
+      { label: '🧮 Flujo de caja y organigrama', to: (id) => `/finanzas/${id}` },
       { label: '⚖️ Nombre, ruta legal y estatutos', to: (id) => `/constitucion/${id}` }],
   4: [{ label: '🤖 Agentes por tiempo', to: (id) => `/agentes/${id}` }],
 }
@@ -37,6 +40,7 @@ export default function LevelPage() {
   const [closing, setClosing] = useState(false)
   const [reason, setReason] = useState('')
   const [closingBusy, setClosingBusy] = useState(false)
+  const [numbers, setNumbers] = useState(false)
 
   const load = useCallback(async () => {
     try {
@@ -112,6 +116,22 @@ export default function LevelPage() {
     }
   }
 
+  // Camila arma presupuesto y flujo de caja y los presenta en la misma Sala del Nivel 3
+  const buildNumbers = async () => {
+    setNumbers(true)
+    try {
+      await api.buildNumbers(companyId)
+      const fresh = await api.getLevelStatus(nivel, companyId)
+      setRoom(fresh)
+      const last = fresh.messages[fresh.messages.length - 1]
+      if (last) reactTo(last)
+    } catch (err) {
+      setError(errorMessage(err))
+    } finally {
+      setNumbers(false)
+    }
+  }
+
   const level = room?.level
   const complete = room?.discovery?.complete ?? false
   const prevPath = nivel - 1 === 1 ? `/nivel1/${companyId}` : `/nivel/${nivel - 1}/${companyId}`
@@ -143,13 +163,19 @@ export default function LevelPage() {
             {(TOOLS[nivel] ?? []).map((t) => (
               <Link key={t.label} to={t.to(companyId)} className="rounded-full bg-adan-accent/15 px-2 py-0.5 font-semibold text-adan-accent hover:bg-adan-accent/25">{t.label}</Link>
             ))}
+            {nivel === 3 && room.status === 'active' && (
+              <button type="button" onClick={buildNumbers} disabled={numbers}
+                className="rounded-full bg-adan-success/15 px-2 py-0.5 font-semibold text-adan-success hover:bg-adan-success/25 disabled:opacity-50">
+                {numbers ? 'Camila está armando los números… (1-2 min)' : '🧮 Construir presupuesto y flujo de caja aquí'}
+              </button>
+            )}
             {room.status === 'completed' && <span className="ml-auto rounded-full bg-adan-success/15 px-2 py-0.5 font-semibold text-adan-success">✓ Nivel cerrado</span>}
           </div>
           <div className="flex-1 min-h-0">
             <ChatPanel companyId={companyId} level={nivel} messages={room.messages} sending={sending} researching={researching}
               discovery={room.discovery ?? undefined} onSend={send} onReload={load} uploading={uploading} onUpload={upload}
               onClose={() => setClosing(true)} onError={setError}
-              world={<Suspense fallback={<div className="h-full rounded-2xl bg-adan-surface animate-pulse" />}><EmbeddedWorld /></Suspense>} />
+              world={<Suspense fallback={<div className="h-full rounded-2xl bg-adan-surface animate-pulse" />}><EmbeddedWorld level={nivel} companyId={companyId} /></Suspense>} />
           </div>
         </div>
       )}

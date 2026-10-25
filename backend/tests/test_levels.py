@@ -5,12 +5,14 @@ from tests.test_discovery import TURN_1, ScriptLLM, _setup, _use
 
 def _open_level(db_session, cid, n):
     project = db_session.query(Project).filter(Project.company_id == cid).first()
-    for lv in db_session.query(Level).filter(Level.project_id == project.id).all():
-        if lv.number < n:
-            lv.status = NivelStatus.COMPLETED
-        elif lv.number == n:
+    # Las transiciones válidas son bloqueado → activo → cerrado (Patrón B)
+    for lv in sorted(db_session.query(Level).filter(Level.project_id == project.id).all(), key=lambda x: x.number):
+        if lv.number <= n and lv.status == NivelStatus.BLOCKED:
             lv.status = NivelStatus.ACTIVE
-    db_session.commit()
+            db_session.commit()
+        if lv.number < n and lv.status == NivelStatus.ACTIVE:
+            lv.status = NivelStatus.COMPLETED
+            db_session.commit()
 
 
 def test_a_blocked_level_waits_for_the_previous_one(client):

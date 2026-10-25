@@ -5,6 +5,8 @@ import { useEffect, useRef } from 'react'
 import { AGENTS, ZONES } from '../data'
 import { useUniverso } from '../store'
 import AgentFigure from './AgentFigure'
+import LevelDecor from './Floors'
+import type { Identity } from './pisos'
 import Holo from './Holo'
 import { livePositions } from './layout'
 import Office from './Office'
@@ -67,8 +69,9 @@ function Director({ embedded = false }: { embedded?: boolean }) {
   )
 }
 
-export default function World({ embedded = false }: { embedded?: boolean }) {
+export default function World({ embedded = false, floor, identity = null }: { embedded?: boolean; floor?: number; identity?: Identity | null }) {
   const select = useUniverso((s) => s.select)
+  const level = useUniverso((s) => s.level)
   return (
     <Canvas shadows dpr={[1, 1.75]} camera={{ fov: 40, position: [30, 34, 46], near: 0.1, far: 300 }}
       onPointerMissed={() => select(null)} gl={{ antialias: true, powerPreference: 'high-performance' }}>
@@ -83,6 +86,7 @@ export default function World({ embedded = false }: { embedded?: boolean }) {
       ))}
       <Stars radius={120} depth={40} count={2500} factor={4} saturation={0.4} fade speed={0.6} />
       <Office />
+      <LevelDecor floor={floor ?? level} identity={identity} />
       <Zones />
       <Holo />
       {AGENTS.map((a) => (
