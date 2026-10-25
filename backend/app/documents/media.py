@@ -14,6 +14,7 @@ import logging
 
 import httpx
 
+from app.ai.kimi_adapter import KIMI_TEMPERATURE
 from app.core.config import settings
 
 logger = logging.getLogger(__name__)
@@ -43,7 +44,9 @@ async def ocr_image(data: bytes, mime: str, prompt: str | None = None) -> str:
     """Texto y descripción de una imagen con la visión de Kimi (o lo que pida `prompt`)."""
     if not can_see():
         raise MediaError("La lectura de imágenes no está disponible en este momento.")
-    body = {"model": settings.KIMI_MODEL, "max_tokens": 3000, "temperature": 0.1, "messages": [{"role": "user", "content": [
+    # Como en el adaptador: sin «thinking» Kimi k2.6 acepta temperatura distinta de 1
+    body = {"model": settings.KIMI_MODEL, "max_tokens": 3000, "temperature": KIMI_TEMPERATURE, "thinking": {"type": "disabled"},
+            "messages": [{"role": "user", "content": [
         {"type": "image_url", "image_url": {"url": f"data:{mime};base64,{base64.b64encode(data).decode()}"}},
         {"type": "text", "text": prompt or OCR_PROMPT}]}]}
     async with httpx.AsyncClient(timeout=120) as client:
