@@ -19,7 +19,7 @@ from sqlalchemy.orm import Session
 
 from app.ai.router import for_tier
 from app.documents import learn as doc_learning
-from app.nivel1 import discovery
+from app.nivel1 import board_dialogue, discovery
 from app.nivel1.context import ContextLayers
 from app.ai.base import LLMAdapter, LLMMessage
 from app.ai.normalize import normalize_string, normalize_list
@@ -244,6 +244,8 @@ class Nivel1Service:
 
         # El Board también ve lo que ya se sabe de la empresa (capa Proyecto, AD-CMP-04)
         conversation_context += "\n\nLo que ya se sabe de la empresa:\n" + ContextLayers(self.db).project_layer(project)
+        # Y lo que el fundador le explicó al Board después de la sesión anterior
+        conversation_context += board_dialogue.as_context(self.db, project)
 
         # Cuántas sesiones van: el abogado del diablo rota entre los especialistas
         sessions = self.db.query(Document).filter(Document.project_id == project.id,

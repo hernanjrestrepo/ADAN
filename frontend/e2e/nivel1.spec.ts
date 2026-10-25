@@ -71,6 +71,29 @@ test('la última sesión del Board se ve al entrar y se puede abrir una nueva', 
   await expect(page.getByLabel('Tu pregunta para el Board')).toBeVisible()
 })
 
+test('se conversa con el Board en general y con cada especialista hasta llegar a un consenso', async ({ page }) => {
+  const api = new FakeApi().withCompany()
+  api.loggedIn = true
+  api.lastBoard = BOARD_PROCEED
+  await api.install(page)
+  await page.goto('/nivel1/c1')
+  await page.getByRole('tab', { name: 'Board Room' }).click()
+  const dialogue = page.getByTestId('board-dialogue')
+  await expect(dialogue.getByText(/5 de 6/)).toBeVisible()
+  await dialogue.getByLabel('Escríbele al Board…').fill('Ya tengo 20 preventas pagadas')
+  await dialogue.getByRole('button', { name: 'Enviar' }).click()
+  await expect(dialogue.getByText('El CFO queda conforme: ahora son 6 de 6.')).toBeVisible()
+  await expect(dialogue.getByText('6 de 6', { exact: true })).toBeVisible()
+  expect(api.callsTo('POST', '/nivel1/c1/board-room/dialogo')[0]?.body).toEqual({ message: 'Ya tengo 20 preventas pagadas', agent: null })
+
+  // Responderle a un especialista en su tarjeta
+  await page.getByRole('button', { name: '💬 Responder a Legal' }).click()
+  await page.getByLabel(/Responder a Legal/).fill('¿Qué registro necesito?')
+  await page.getByRole('button', { name: 'Enviar' }).last().click()
+  await expect.poll(() => api.callsTo('POST', '/nivel1/c1/board-room/dialogo')[1]?.body)
+    .toEqual({ message: '¿Qué registro necesito?', agent: 'Legal' })
+})
+
 test('el Nivel se cierra solo cuando el cliente lo aprueba', async ({ page }) => {
   const api = await openNivel1(page)
   await page.getByRole('button', { name: /Gate Review/ }).click()

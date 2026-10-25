@@ -259,6 +259,16 @@ export class FakeApi {
         errors: [], reply: reply.content, degraded: null, conversation_id: 'conv1', learning: { resumen: 'Panadería' },
         discovery: this.discovery() })
     }
+    if (path.endsWith('/board-room/dialogo')) {
+      const votes = { CTO: 'PROCEED', CFO: 'PIVOT', CMO: 'PROCEED', Legal: 'PROCEED', Producto: 'PROCEED', Operaciones: 'PROCEED' }
+      if (method === 'GET') return this.json(route, 200, { thread: [], tally: { votes, proceed: 5, total: 6, recommendation: 'PROCEED' } })
+      const b = body as { message: string; agent: string | null }
+      const agent = b.agent ?? 'CFO'
+      const turn = { message: b.message, agent: b.agent, at: new Date().toISOString(), consensus: 'Hay acuerdo en el precio',
+        replies: [{ agent, reply: `Respuesta de ${agent}: con esas preventas cambio mi voto.`, vote: 'PROCEED', changed: true, reason: '20 preventas' }],
+        ceo: b.agent ? '' : 'El CFO queda conforme: ahora son 6 de 6.' }
+      return this.json(route, 200, { turn, thread: [turn], tally: { votes: { ...votes, [agent]: 'PROCEED' }, proceed: 6, total: 6, recommendation: 'PROCEED' } })
+    }
     if (method === 'GET' && path.endsWith('/board-room/last')) {
       return this.lastBoard ? this.json(route, 200, this.lastBoard) : this.json(route, 404, { detail: 'Todavía no hay sesiones' })
     }

@@ -1,12 +1,16 @@
-import { useState, type FormEvent } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
+import ReactMarkdown from 'react-markdown'
+import MicButton from '../../components/MicButton'
 import VoteBadge from '../../components/VoteBadge'
 import Button from '../../components/ui/Button'
 import Card from '../../components/ui/Card'
 import { Field, TextAreaField } from '../../components/ui/Field'
 import { LoadingState } from '../../components/ui/States'
-import type { BoardConsensus, BoardRoomInput } from '../../types'
+import { api, errorMessage } from '../../lib/api'
+import type { BoardConsensus, BoardDialogue, BoardDialogueTurn, BoardRoomInput } from '../../types'
 
 interface BoardRoomPanelProps {
+  companyId: string
   result: BoardConsensus | null
   running: boolean
   onRun: (input: BoardRoomInput) => void
@@ -51,7 +55,69 @@ function SessionForm({ onRun }: { onRun: (input: BoardRoomInput) => void }) {
 }
 
 // Voto de un especialista: lo esencial a la vista, el análisis completo al desplegar
-function VoteCard({ vote }: { vote: BoardConsensus['votes'][number] }) {
+// Caja para escribir o dictar: se usa en el diálogo general y en cada especialista
+function Composer({ placeholder, busy, onSend, autoFocus = false }: {
+  placeholder: string; busy: boolean; onSend: (text: string) => Promise<boolean>; autoFocus?: boolean
+}) {
+  const [text, setText] = useState('')
+  const send = async (e?: FormEvent) => {
+    e?.preventDefault()
+    const t = text.trim()
+    if (!t || busy) return
+    if (await onSend(t)) setText('')
+  }
+  return (
+    <form onSubmit={send} className="mt-3 flex items-end gap-2">
+      <textarea value={text} onChange={(e) => setText(e.target.value)} rows={2} maxLength={4000} placeholder={placeholder}
+        aria-label={placeholder} autoFocus={autoFocus} disabled={busy}
+        onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) { e.preventDefault(); void send() } }}
+        className="flex-1 resize-none rounded-xl border border-adan-border bg-adan-bg px-3 py-2 text-sm focus:border-adan-accent focus:outline-hidden" />
+      <MicButton onText={(t) => setText((v) => (v ? `${v} ${t}` : t))} disabled={busy}
+        className="rounded-xl border border-adan-border px-3 py-2 hover:border-adan-accent disabled:opacity-40" />
+      <Button type="submit" loading={busy} disabled={!text.trim()}>Enviar</Button>
+    </form>
+  )
+}
+
+// Un intercambio del diálogo: lo que dijo el fundador, lo que respondió el Board y la moderación del CEO
+function Turn({ turn, only }: { turn: BoardDialogueTurn; only?: string }) {
+  const replies = only ? turn.replies.filter((r) => r.agent === only) : turn.replies
+  return (
+    <div className="space-y-2 text-sm">
+      <div className="flex justify-end">
+        <p className="max-w-[85%] rounded-2xl bg-adan-accent px-3 py-2 text-white whitespace-pre-wrap">
+          {turn.agent && !only && <span className="block text-[11px] opacity-80">A {turn.agent}</span>}{turn.message}
+        </p>
+      </div>
+      {replies.map((r, i) => (
+        <div key={i} className="max-w-[90%] rounded-2xl border border-adan-border bg-adan-bg px-3 py-2">
+          <p className="text-xs font-bold text-adan-accent">{r.agent}
+            {r.changed && <span className="ml-2 font-normal text-adan-success">cambió su voto a {r.vote === 'PROCEED' ? 'A FAVOR' : r.vote}{r.reason ? `: ${r.reason}` : ''}</span>}
+          </p>
+          <div className="markdown"><ReactMarkdown>{r.reply}</ReactMarkdown></div>
+        </div>
+      ))}
+      {!only && turn.ceo && (
+        <div className="max-w-[90%] rounded-2xl border border-adan-accent/40 bg-adan-accent/5 px-3 py-2">
+          <p className="text-xs font-bold">CEO (modera)</p>
+          <p>{turn.ceo}</p>
+          {turn.consensus && <p className="mt-1 text-xs text-adan-muted">Consenso: {turn.consensus}</p>}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function VoteCard({ vote, current, turns, busy, onReply }: {
+  vote: BoardConsensus['votes'][number]
+  current?: BoardConsensus['votes'][number]['vote']
+  turns: BoardDialogueTurn[]
+  busy: boolean
+  onReply: (agent: string, text: string) => Promise<boolean>
+}) {
+  const [open, setOpen] = useState(false)
+  const mine = turns.filter((t) => t.agent === vote.agent || t.replies.some((r) => r.agent === vote.agent))
+  const changed = current && current !== vote.vote
   return (
     <Card data-testid="agent-vote">
       <div className="flex items-center gap-3">
@@ -71,7 +137,10 @@ function VoteCard({ vote }: { vote: BoardConsensus['votes'][number] }) {
               : <span className="ml-2 text-adan-warning">· su área todavía no está a prueba de balas</span>)}
           </p>
         </div>
-        <VoteBadge vote={vote.vote} />
+        <div className="text-right">
+          <VoteBadge vote={current ?? vote.vote} />
+          {changed && <p className="mt-1 text-[11px] text-adan-muted">antes: {vote.vote === 'PROCEED' ? 'a favor' : vote.vote.toLowerCase()}</p>}
+        </div>
       </div>
       <p className="text-sm mt-3">{vote.justification}</p>
       {vote.failure_mode && (
@@ -85,11 +154,55 @@ function VoteCard({ vote }: { vote: BoardConsensus['votes'][number] }) {
           <p className="mt-2 whitespace-pre-wrap text-adan-text/90">{vote.analysis}</p>
         </details>
       )}
+      {mine.length > 0 && (
+        <div className="mt-4 space-y-3 border-t border-adan-border pt-3">
+          {mine.map((t, i) => <Turn key={i} turn={t} only={vote.agent} />)}
+        </div>
+      )}
+      {open ? (
+        <Composer placeholder={`Responder a ${vote.agent}: explica, pregunta o aporta evidencia…`} busy={busy} autoFocus
+          onSend={(t) => onReply(vote.agent, t)} />
+      ) : (
+        <button type="button" onClick={() => setOpen(true)} className="mt-3 text-sm font-semibold text-adan-accent hover:underline">
+          💬 Responder a {vote.agent}
+        </button>
+      )}
     </Card>
   )
 }
 
-export default function BoardRoomPanel({ result, running, onRun, onNewSession }: BoardRoomPanelProps) {
+export default function BoardRoomPanel({ companyId, result, running, onRun, onNewSession }: BoardRoomPanelProps) {
+  const [dialogue, setDialogue] = useState<BoardDialogue | null>(null)
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  // El hilo es el de la última sesión: se recarga cuando hay un resultado nuevo
+  useEffect(() => {
+    if (!result) return
+    let cancelled = false
+    api.getBoardDialogue(companyId).then((d) => { if (!cancelled) setDialogue(d) }).catch(() => undefined)
+    return () => { cancelled = true }
+  }, [companyId, result])
+
+  const talk = async (text: string, agent: string | null) => {
+    setBusy(true)
+    setError(null)
+    try {
+      const d = await api.talkToBoard(companyId, text, agent)
+      setDialogue({ thread: d.thread, tally: d.tally })
+      return true
+    } catch (err) {
+      setError(errorMessage(err))
+      return false
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  const turns = dialogue?.thread ?? []
+  const tally = dialogue?.tally
+  const general = turns.filter((t) => !t.agent)
+
   return (
     <div className="max-w-4xl mx-auto p-6 overflow-y-auto h-full">
       <div className="flex items-center justify-between gap-3 mb-6">
@@ -147,7 +260,30 @@ export default function BoardRoomPanel({ result, running, onRun, onNewSession }:
             <List title="Próximos pasos" items={result.next_steps ?? []} />
             <p className="text-xs text-adan-muted mt-4">Es una propuesta del Board: la decisión final es tuya.</p>
           </Card>
-          {result.votes.map((vote) => <VoteCard key={vote.agent} vote={vote} />)}
+          <Card data-testid="board-dialogue">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <h3 className="font-bold">💬 Conversa con el Board</h3>
+              {tally && (
+                <span className="text-xs text-adan-muted">
+                  Consenso actual: <b className="text-adan-text">{tally.proceed} de {tally.total}</b> a favor ·{' '}
+                  <VoteBadge vote={tally.recommendation} />
+                </span>
+              )}
+            </div>
+            <p className="mt-1 text-sm text-adan-muted">
+              Pregunta lo que no entiendas, explica tu posición o aporta evidencia. Responde el especialista al que le
+              toca y el CEO modera. Un voto solo cambia con datos verificables, no por insistencia. Para responderle a
+              uno en particular, usa “Responder” en su tarjeta.
+            </p>
+            {general.length > 0 && <div className="mt-4 space-y-4">{general.map((t, i) => <Turn key={i} turn={t} />)}</div>}
+            {busy && <p className="mt-3 text-sm text-adan-muted animate-pulse">El Board está pensando su respuesta…</p>}
+            {error && <p role="alert" className="mt-3 text-sm text-adan-danger">{error}</p>}
+            <Composer placeholder="Escríbele al Board…" busy={busy} onSend={(t) => talk(t, null)} />
+          </Card>
+          {result.votes.map((vote) => (
+            <VoteCard key={vote.agent} vote={vote} current={tally?.votes[vote.agent]} turns={turns} busy={busy}
+              onReply={(agent, t) => talk(t, agent)} />
+          ))}
         </div>
       )}
     </div>
