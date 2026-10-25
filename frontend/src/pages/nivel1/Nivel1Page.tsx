@@ -88,6 +88,10 @@ export default function Nivel1Page() {
       setMessages((prev) => [...prev.filter((m) => m.id !== tempId), data.message])
       reactTo(data.message)
       await loadStatus()
+      const fresh = await api.getNivel1Status(companyId)
+      const at = fresh.messages.findIndex((m) => m.id === data.message.id)
+      fresh.messages.slice(at + 1).filter((m) => m.role !== 'user')
+        .forEach((m, i) => window.setTimeout(() => reactTo(m), 2600 * (i + 1)))
       if (data.message.metadata_json?.investigando) {
         setResearching(true)
         void waitForResearch(companyId, data.message.id).then((msgs) => {

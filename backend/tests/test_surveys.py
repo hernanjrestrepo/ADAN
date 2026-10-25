@@ -95,3 +95,26 @@ def test_results_of_another_company_are_off_limits(client):
     _, _, _, survey = _survey(client, "duenaenc@example.com")
     cid2, other = _setup(client, "intrusaenc@example.com")
     assert client.get(f"/api/v1/nivel1/{cid2}/surveys/{survey['token']}/results", headers=other).status_code == 404
+
+
+class SimulatorLLM(DesignerLLM):
+    async def chat_json(self, messages, schema, model=None, temperature=0.3, max_tokens=2048):
+        if "respuestas" in schema["properties"]:
+            self.prompts.append(messages[-1].content)
+            ids = [q["id"] for q in json.loads(messages[-1].content.split("Encuesta:\n")[1].split("\n\n")[0])]
+            data = {"perfil": "Adultos que desayunan fuera", "supuestos": ["Basado en hábitos urbanos"], "respuestas": [
+                {"id": ids[0], "conteos": {"Sí": 30, "No": 20}, "promedio": 0, "textos": []},
+                {"id": ids[1], "conteos": {"1": 5, "2": 5, "3": 10, "4": 15, "5": 15}, "promedio": 3.6, "textos": []}]}
+            return LLMResponse(content=json.dumps(data), model="fake", parsed=data)
+        return await super().chat_json(messages, schema, model, temperature, max_tokens)
+
+
+def test_a_simulated_survey_keeps_momentum_and_is_compared_with_the_real_one(client):
+    cid, headers, _, survey = _survey(client, "simulada@example.com")
+    _use(client, SimulatorLLM())
+    sim = client.post(f"/api/v1/nivel1/{cid}/surveys/{survey['token']}/simular", headers=headers).json()
+    assert sim["size"] == 50 and sim["questions"][0]["counts"] == {"Sí": 30, "No": 20}
+    assert sim["questions"][1]["average"] == 3.6
+    # Los resultados reales traen la simulación para compararlas
+    results = client.get(f"/api/v1/nivel1/{cid}/surveys/{survey['token']}/results", headers=headers).json()
+    assert results["responses"] == 0 and results["simulation"]["questions"][0]["counts"]["Sí"] == 30

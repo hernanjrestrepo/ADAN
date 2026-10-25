@@ -93,9 +93,25 @@ function MaturityBar({ value }: { value: number }) {
   )
 }
 
-function CompanyCard({ company }: { company: Company }) {
+function CompanyCard({ company, onArchived }: { company: Company; onArchived: (id: string) => void }) {
   const navigate = useNavigate()
   const meta = [company.industry, company.country].filter(Boolean).join(' · ')
+  const [menu, setMenu] = useState(false)
+  const [archiving, setArchiving] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  // Archivar: la empresa sale de la lista y queda guardada (ADÁN nunca borra la historia de una empresa)
+  const archive = async () => {
+    if (!window.confirm(`¿Archivar «${company.name}»? Sale de tu lista; su historia queda guardada.`)) return
+    setArchiving(true)
+    setError(null)
+    try {
+      await api.archiveCompany(company.id, 'El fundador archivó la empresa desde Mis Empresas')
+      onArchived(company.id)
+    } catch (err) {
+      setError(errorMessage(err))
+      setArchiving(false)
+    }
+  }
   return (
     <Card className="flex flex-col gap-4 hover:border-adan-accent/60 transition-colors">
       <button type="button" onClick={() => navigate(`/nivel1/${company.id}`)} className="text-left flex-1 group">
@@ -110,13 +126,27 @@ function CompanyCard({ company }: { company: Company }) {
               {meta && <p className="text-xs text-adan-muted truncate">{meta}</p>}
             </div>
           </div>
-          <Badge tone="blue">Nivel 1</Badge>
+          <span className="flex items-center gap-1">
+            <Badge tone="blue">Nivel 1</Badge>
+            <span className="relative" onClick={(e) => e.stopPropagation()}>
+              <span role="button" tabIndex={0} aria-label="Opciones de la empresa" aria-expanded={menu}
+                onClick={() => setMenu((v) => !v)} onKeyDown={(e) => { if (e.key === 'Enter') setMenu((v) => !v) }}
+                className="grid h-7 w-7 place-items-center rounded-lg text-adan-muted hover:bg-adan-surface-2 hover:text-adan-text">⋯</span>
+              {menu && (
+                <span className="absolute right-0 top-8 z-20 w-44 rounded-xl border border-adan-border bg-adan-surface p-1 shadow-xl">
+                  <span role="button" tabIndex={0} onClick={archive} onKeyDown={(e) => { if (e.key === 'Enter') void archive() }}
+                    className="block rounded-lg px-3 py-2 text-sm hover:bg-adan-bg">{archiving ? 'Archivando…' : '🗄️ Archivar empresa'}</span>
+                </span>
+              )}
+            </span>
+          </span>
         </div>
         {company.description && <p className="text-adan-muted text-sm mt-3 line-clamp-2">{company.description}</p>}
       </button>
       <MaturityBar value={company.maturity} />
-      <div className="flex items-center justify-between gap-3 pt-3 border-t border-adan-border">
-        <span className="flex gap-4">
+      {error && <p role="alert" className="text-xs text-adan-danger">{error}</p>}
+      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 pt-3 border-t border-adan-border">
+        <span className="flex flex-wrap gap-x-4 gap-y-1">
           <Link to={`/nivel1/${company.id}`} className="text-sm font-medium text-adan-text hover:text-adan-accent">
             Continuar Nivel 1
           </Link>
@@ -126,7 +156,7 @@ function CompanyCard({ company }: { company: Company }) {
           <Link to={`/finanzas/${company.id}`} className="text-sm text-adan-muted hover:text-adan-text">Finanzas</Link>
         </span>
         {/* Enlace aparte: un enlace no puede ir dentro de un botón */}
-        <Link to={`/gemelo/${company.id}`} className="text-sm text-adan-accent hover:underline">
+        <Link to={`/gemelo/${company.id}`} className="text-sm text-adan-accent hover:underline whitespace-nowrap">
           Gemelo Digital →
         </Link>
       </div>
@@ -183,7 +213,7 @@ export default function DashboardPage() {
           <Navigate to="/bienvenida" replace />
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {companies.map((company) => <CompanyCard key={company.id} company={company} />)}
+            {companies.map((company) => <CompanyCard key={company.id} company={company} onArchived={(id) => setCompanies((cs) => cs.filter((c) => c.id !== id))} />)}
           </div>
         )}
       </main>

@@ -1,12 +1,12 @@
 import { useEffect, useRef, useState, useSyncExternalStore, type FormEvent, type KeyboardEvent, type ReactNode } from 'react'
 import MicButton from '../../components/MicButton'
+import Portrait from '../../components/Portrait'
 import RichMessage from '../../components/RichMessage'
 import VoteBadge from '../../components/VoteBadge'
 import Button from '../../components/ui/Button'
 import { api, errorMessage } from '../../lib/api'
 import { FILE_ICON, pastedFiles } from '../../lib/clipboard'
 import type { DiscoveryProgress, Message } from '../../types'
-import { AGENT_BY_ID, INVESTORS, type AgentId } from '../../universo/data'
 import { reactTo } from '../../universo/react'
 import { useUniverso } from '../../universo/store'
 import SurveysPanel from './SurveysPanel'
@@ -28,6 +28,8 @@ interface ChatPanelProps {
   onDiagnosis: () => void
   onClose: () => void
   onError: (message: string) => void
+  // Nivel en que se trabaja: define qué espacios se abren (Board desde el 3, Arena en el 5)
+  level?: number
   world?: ReactNode
   researching?: boolean
 }
@@ -66,19 +68,9 @@ function useElapsed(running: boolean) {
   return seconds
 }
 
-// Foto (iniciales con el color del personaje) de quien habla
+// Retrato del personaje de la oficina que habla
 function Speaker({ message }: { message: Message }) {
-  const agent = String(message.metadata_json?.agente ?? 'ceo')
-  const inv = agent.startsWith('inv-') ? INVESTORS.find((i) => `inv-${i.id}` === agent) : undefined
-  const a = AGENT_BY_ID[agent as AgentId]
-  const color = inv?.color ?? a?.color ?? '#60a5fa'
-  const name = inv?.name ?? a?.name ?? 'ADÁN'
-  return (
-    <span aria-hidden="true" className="grid h-9 w-9 shrink-0 place-items-center rounded-full text-xs font-bold text-white shadow"
-      style={{ background: color }}>
-      {name.slice(0, 2).toUpperCase()}
-    </span>
-  )
+  return <Portrait agent={String(message.metadata_json?.agente ?? 'ceo')} size={36} />
 }
 
 const SCENE_CHIP: Record<string, string> = { board: '🏛️ Board Room', arena: '🥊 La Arena' }
@@ -99,7 +91,7 @@ function setWorldScene(scene: Scene) {
 
 export default function ChatPanel({
   companyId, messages, sending, discovery, onSend, onReload, uploading = false, onUpload, onDiagnosis, onClose, onError, world,
-  researching = false,
+  researching = false, level = 1,
 }: ChatPanelProps) {
   const [input, setInput] = useState('')
   const desktop = useDesktop()
@@ -360,12 +352,15 @@ export default function ChatPanel({
       </form>
 
       <div className="mt-2 flex flex-wrap gap-2 text-sm">
-        <Button size="sm" variant="secondary" onClick={runBoard} disabled={busy}>🏛️ {scene === 'board' ? 'Nueva sesión del Board' : 'Board Room'}</Button>
+        {/* Metodología: el Board entra desde el Nivel 3 y La Arena en el 5; el Nivel 1 se valida con encuestas */}
+        <Button size="sm" onClick={() => setSurveys(true)} disabled={busy}>📋 Validar: encuesta simulada y real</Button>
+        {level >= 3 && (
+          <Button size="sm" variant="secondary" onClick={runBoard} disabled={busy}>🏛️ {scene === 'board' ? 'Nueva sesión del Board' : 'Board Room'}</Button>
+        )}
         {scene === 'board' && (
           <Button size="sm" variant="secondary" onClick={() => setContinuing(true)} disabled={busy}>⚖️ Continuar bajo mi responsabilidad</Button>
         )}
-        <Button size="sm" variant="secondary" onClick={enterArena} disabled={busy}>🥊 La Arena</Button>
-        <Button size="sm" variant="secondary" onClick={() => setSurveys(true)} disabled={busy}>📋 Encuesta</Button>
+        {level >= 5 && <Button size="sm" variant="secondary" onClick={enterArena} disabled={busy}>🥊 La Arena</Button>}
         <Button size="sm" variant="secondary" onClick={onDiagnosis} disabled={busy}>📄 Diagnóstico</Button>
         <Button size="sm" variant="secondary" className="border-adan-success/50! text-adan-success!" onClick={onClose} disabled={busy}>✅ Cerrar el Nivel</Button>
       </div>
@@ -374,7 +369,7 @@ export default function ChatPanel({
         <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/60 p-3 overflow-y-auto" role="dialog" aria-label="Encuesta">
           <div className="w-full max-w-3xl rounded-2xl border border-adan-border bg-adan-bg">
             <div className="flex items-center justify-between border-b border-adan-border px-4 py-3">
-              <p className="font-bold">📋 Encuesta: el equipo la diseña; tú pones los contactos</p>
+              <p className="font-bold">📋 Validar el dolor: encuesta simulada ya y real en paralelo</p>
               <button type="button" onClick={() => setSurveys(false)} aria-label="Cerrar" className="text-adan-muted hover:text-adan-text">✕</button>
             </div>
             <SurveysPanel companyId={companyId} onError={onError} onChanged={() => void onReload()} />

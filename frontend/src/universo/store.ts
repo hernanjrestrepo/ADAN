@@ -57,6 +57,10 @@ interface State {
   report: number | null
   panel: 'mision' | 'ruta' | 'ecosistema' | 'insignias' | null
   holo: ChartSpec | null
+  // Órdenes a la cámara desde los botones: vista general, acercar, alejar
+  cam: { n: number; op: 'reset' | 'in' | 'out' }
+  // Subtítulo de quien habla, debajo de la oficina
+  subtitle: { who: string; text: string; color: string } | null
   start: (archetypeId: string, name: string, mode: 'crear' | 'reinventar') => void
   reset: () => void
   goToLevel: (n: number) => void
@@ -79,6 +83,8 @@ interface State {
   setPanel: (panel: State['panel']) => void
   log: (text: string, color?: string) => void
   showHolo: (chart: ChartSpec | null) => void
+  camera: (op: 'reset' | 'in' | 'out') => void
+  caption: (who: string, text: string, color: string, ms: number) => void
 }
 
 const STORAGE_KEY = 'adan-universo-v2'
@@ -221,6 +227,8 @@ export const useUniverso = create<State>((set, get) => ({
   report: null,
   panel: 'mision',
   holo: null,
+  cam: { n: 0, op: 'reset' },
+  subtitle: null,
 
   start: (archetypeId, name, mode) => {
     const a = archetypeOf(archetypeId)
@@ -374,6 +382,12 @@ export const useUniverso = create<State>((set, get) => ({
   openReport: (level) => set({ report: level }),
   setPanel: (panel) => set({ panel }),
   showHolo: (chart) => set({ holo: chart }),
+  caption: (who, text, color, ms) => {
+    const subtitle = { who, text, color }
+    set({ subtitle })
+    setTimeout(() => { if (get().subtitle === subtitle) set({ subtitle: null }) }, ms)
+  },
+  camera: (op) => set({ cam: { n: get().cam.n + 1, op }, ...(op === 'reset' ? { selected: null, focusZone: null } : {}) }),
   log: (text, color = '#94a3b8') => {
     feedId += 1
     set({ feed: [{ id: feedId, text, color, at: Date.now() }, ...get().feed].slice(0, 30) })
