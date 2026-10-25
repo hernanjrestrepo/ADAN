@@ -1,9 +1,11 @@
 import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react'
-import ReactMarkdown from 'react-markdown'
 import { Link } from 'react-router'
 import { useAuth } from '../../auth/context'
 import { AdanMark } from '../../components/Logo'
 import MicButton from '../../components/MicButton'
+import RichMessage from '../../components/RichMessage'
+import { lastChart } from '../../lib/chart'
+import { useUniverso } from '../store'
 import { api, errorMessage } from '../../lib/api'
 import type { Company, Message } from '../../types'
 
@@ -40,6 +42,28 @@ function rememberCompany(id: string | null): void {
   } catch {
     // sin almacenamiento: se vuelve a elegir la empresa la próxima vez
   }
+}
+
+// El equipo de la oficina reacciona a lo que se habla: quien responde, su emoción y una frase corta
+const AGENT_IDS = new Set(['ceo', 'cto', 'cfo', 'cmo', 'legal', 'producto', 'operaciones', 'csi', 'eva', 'investigador', 'analista'])
+type Mood = 'feliz' | 'riendo' | 'preocupado' | 'estresado' | 'celebrando' | 'pensando' | 'hablando'
+const MOODS = new Set<Mood>(['feliz', 'riendo', 'preocupado', 'estresado', 'celebrando', 'pensando', 'hablando'])
+
+function react(message: Message) {
+  const u = useUniverso.getState()
+  const r = message.metadata_json?.reaccion
+  const chart = lastChart(message.content)
+  if (chart) u.showHolo(chart)
+  if (message.metadata_json?.investigado) {
+    u.say('csi', '🔎 Investigué en internet: ' + message.metadata_json.investigado.consulta.slice(0, 60), 5000, 'info')
+    u.feel('csi', 'feliz', 4000)
+  }
+  if (r && AGENT_IDS.has(r.agente)) {
+    const mood = MOODS.has(r.emocion as Mood) ? (r.emocion as Mood) : 'hablando'
+    u.feel(r.agente, mood, 5000)
+    if (r.frase) u.say(r.agente, r.frase, 5000)
+  }
+  u.feel('ceo', 'hablando', 3000)
 }
 
 function toLines(messages: Message[]): Line[] {
@@ -119,10 +143,12 @@ export default function AdanChat({ open, onToggle }: { open: boolean; onToggle: 
     const tempId = `t-${lines.length}-${text.length}`
     setLines((prev) => [...prev, { id: tempId, from: 'tu', text }])
     setBusy('pensando')
+    useUniverso.getState().feel('ceo', 'pensando', 60000)
     try {
       const data = await api.chat(companyId, text, conversationId)
       setConversationId(data.conversation_id)
       setLines((prev) => [...prev, { id: data.message.id, from: 'adan', text: data.message.content }])
+      react(data.message)
     } catch (err) {
       setLines((prev) => prev.filter((l) => l.id !== tempId))
       setInput(text)
@@ -160,7 +186,7 @@ export default function AdanChat({ open, onToggle }: { open: boolean; onToggle: 
 
   return (
     <section aria-label="Conversación con ADÁN"
-      className="u-no-print u-glass u-rise fixed z-40 flex flex-col rounded-3xl inset-x-2 bottom-2 top-36 md:inset-x-auto md:right-3 md:top-32 2xl:top-20 md:bottom-3 md:w-[420px]">
+      className="u-no-print u-glass u-rise fixed z-40 flex flex-col rounded-3xl inset-x-1 bottom-1 h-[52dvh] md:h-auto md:inset-x-auto md:right-3 md:top-32 2xl:top-20 md:bottom-3 md:w-[420px]">
       <header className="flex items-center gap-3 border-b border-white/10 px-4 py-3">
         <AdanMark size={38} />
         <div className="min-w-0 flex-1 leading-tight">
@@ -256,7 +282,7 @@ function Bubble({ from, text }: { from: Line['from']; text: string }) {
   return (
     <div className={`flex ${from === 'tu' ? 'justify-end' : 'justify-start'}`}>
       <div className={`max-w-[90%] rounded-2xl px-3 py-2 ${from === 'tu' ? 'bg-[#3e6bff] text-white' : 'bg-white/[0.05] border border-white/10'}`}>
-        {from === 'tu' ? <p className="whitespace-pre-wrap">{text}</p> : <div className="u-md"><ReactMarkdown>{text}</ReactMarkdown></div>}
+        {from === 'tu' ? <p className="whitespace-pre-wrap">{text}</p> : <div className="u-md"><RichMessage text={text} /></div>}
       </div>
     </div>
   )

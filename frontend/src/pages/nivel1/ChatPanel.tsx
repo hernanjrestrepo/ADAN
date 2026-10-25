@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from 'react'
-import ReactMarkdown from 'react-markdown'
+import RichMessage from '../../components/RichMessage'
 import Badge from '../../components/ui/Badge'
 import Button from '../../components/ui/Button'
 import MicButton from '../../components/MicButton'
@@ -194,7 +194,7 @@ export default function ChatPanel({
                 {msg.role === 'user' ? (
                   <div className="text-sm whitespace-pre-wrap">{msg.content}</div>
                 ) : (
-                  <div className="text-sm markdown"><ReactMarkdown>{msg.content}</ReactMarkdown></div>
+                  <div className="text-sm markdown"><RichMessage text={msg.content} /></div>
                 )}
                 {msg.metadata_json?.degraded && (
                   <p className="mt-2 text-xs text-adan-warning" data-testid="degraded-note">
