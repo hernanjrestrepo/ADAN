@@ -255,6 +255,10 @@ async def upload_documents(
             errors.append(str(exc))
     if not extracted:
         raise HTTPException(status_code=400, detail=" ".join(errors) or "No se pudo leer ningún archivo.")
+    for doc in extracted:
+        if doc.kind == "PDF" and len(doc.text.strip()) < 40 * max(doc.pages or 1, 1):
+            errors.append(f"{doc.filename}: parece un PDF escaneado como imagen y casi no tiene texto; súbelo en una "
+                          "versión con texto (Word, o un PDF exportado desde el original).")
 
     saved = []
     ems = EnterpriseMemorySystem(db, embedding_provider, get_vector_store(db))

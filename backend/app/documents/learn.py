@@ -58,9 +58,13 @@ INSTRUCTIONS = (
     "- `vacios`: lo que falta para que el modelo sea a prueba de balas (cifras sin fuente, segmentos sin "
     "validar, costos ausentes, temas legales sin resolver).\n"
     "- `riesgos`: los riesgos más serios que ves, concretos para esta empresa.\n"
-    "- `respuesta`: lo que le dices al cliente, de tú, en máximo 150 palabras: qué entendiste (con datos de "
-    "sus documentos), lo más débil que encontraste y UNA pregunta sobre el primer tema del guion que siga "
-    "pendiente o parcial."
+    "- `respuesta`: lo que le dices al cliente, de tú, en máximo 150 palabras y sin empezar con «Entendí»: lo "
+    "esencial de su empresa en una o dos frases, lo más débil que encontraste y UNA pregunta sobre algo que solo él "
+    "puede saber (sus clientes, sus decisiones, su operación). Si lo que falta es un dato del mundo (tamaño de "
+    "mercado, horas o dinero que pierde un viajero promedio, competencia, temporadas, regulación) o los documentos "
+    "dicen que el cliente no lo tiene, NO se lo preguntes: dile que tú lo vas a investigar en internet. Nunca "
+    "preguntes algo que los documentos ya responden. Si un documento llegó vacío o casi vacío (PDF escaneado como "
+    "imagen), díselo y pídele una versión con texto."
 )
 
 
