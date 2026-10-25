@@ -10,6 +10,7 @@ import zipfile
 from dataclasses import dataclass
 
 MAX_FILE_BYTES = 15 * 1024 * 1024
+MAX_MEDIA_BYTES = 50 * 1024 * 1024  # grabaciones de audio y video
 MAX_TEXT_CHARS = 200_000
 MAX_XLSX_CELLS = 60_000
 # Un .docx/.xlsx/.pptx es un ZIP: se rechaza si descomprimido pasa de esto (bomba de compresión)
@@ -18,7 +19,13 @@ MAX_UNZIPPED_BYTES = 120 * 1024 * 1024
 SUPPORTED = {
     ".pdf": "PDF", ".docx": "Word", ".xlsx": "Excel", ".pptx": "PowerPoint",
     ".txt": "Texto", ".md": "Texto", ".csv": "CSV", ".json": "Texto",
+    # Imágenes y capturas (OCR), audio y video (transcripción): ver media.py
+    ".png": "Imagen", ".jpg": "Imagen", ".jpeg": "Imagen", ".webp": "Imagen", ".gif": "Imagen",
+    ".mp3": "Audio", ".m4a": "Audio", ".wav": "Audio", ".ogg": "Audio", ".opus": "Audio", ".aac": "Audio",
+    ".flac": "Audio", ".amr": "Audio",
+    ".mp4": "Video", ".mov": "Video", ".webm": "Video", ".mkv": "Video", ".avi": "Video", ".3gp": "Video",
 }
+MEDIA_KINDS = ("Imagen", "Audio", "Video")
 
 
 class ExtractionError(ValueError):
@@ -32,6 +39,9 @@ class Extracted:
     text: str
     pages: int
     truncated: bool
+    # Lo que falta por hacer fuera de aquí: "ocr" (imagen o PDF escaneado) o "transcribir" (audio o video)
+    pending: str = ""
+    data: bytes = b""
 
 
 def extension(filename: str) -> str:
@@ -42,11 +52,17 @@ def extension(filename: str) -> str:
 def extract(filename: str, data: bytes) -> Extracted:
     ext = extension(filename)
     if ext not in SUPPORTED:
-        raise ExtractionError(f"{filename}: formato no admitido. Sube PDF, Word, Excel, PowerPoint, CSV o texto.")
-    if len(data) > MAX_FILE_BYTES:
-        raise ExtractionError(f"{filename}: pesa más de {MAX_FILE_BYTES // (1024 * 1024)} MB.")
+        raise ExtractionError(f"{filename}: formato no admitido. Sube PDF, Word, Excel, PowerPoint, CSV, texto, "
+                              "imágenes, audio o video.")
+    kind = SUPPORTED[ext]
+    limit = MAX_MEDIA_BYTES if kind in ("Audio", "Video") else MAX_FILE_BYTES
+    if len(data) > limit:
+        raise ExtractionError(f"{filename}: pesa más de {limit // (1024 * 1024)} MB.")
     if not data:
         raise ExtractionError(f"{filename}: el archivo está vacío.")
+    if kind in MEDIA_KINDS:
+        return Extracted(filename=filename, kind=kind, text="", pages=1, truncated=False,
+                         pending="ocr" if kind == "Imagen" else "transcribir", data=data)
     if ext in (".docx", ".xlsx", ".pptx"):
         _check_zip(filename, data)
     try:
@@ -56,6 +72,9 @@ def extract(filename: str, data: bytes) -> Extracted:
     except Exception as exc:  # archivo dañado o protegido con clave
         raise ExtractionError(f"{filename}: no se pudo leer ({type(exc).__name__}). ¿Está dañado o protegido?") from exc
     text = _clean(text)
+    if ext == ".pdf" and len(text.strip()) < 40 * max(pages, 1):
+        # PDF escaneado: sus páginas son imágenes; se leen con OCR
+        return Extracted(filename=filename, kind="PDF", text=text, pages=pages, truncated=False, pending="ocr", data=data)
     if len(text) < 20:
         raise ExtractionError(f"{filename}: no tiene texto legible (¿es una imagen escaneada?).")
     truncated = len(text) > MAX_TEXT_CHARS

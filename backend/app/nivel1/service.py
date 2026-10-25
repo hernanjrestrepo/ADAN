@@ -12,7 +12,9 @@ Implements the complete Level 1 flow per AD-FUNC-01:
 from __future__ import annotations
 
 import json
+import re
 import time
+from difflib import SequenceMatcher
 from datetime import datetime, timezone
 
 from sqlalchemy.orm import Session
@@ -45,6 +47,38 @@ def discovery_progress(db: Session, conversation: Conversation | None, project: 
     known = {e.claim.strip().lower() for e in scoring.active_evidence(db, project, "problem", include_unconfirmed=True)}
     state["evidencia_sugerida"] = [e for e in state["evidencia_sugerida"] if e["afirmacion"].strip().lower() not in known]
     return discovery.progress(state)
+
+
+# Lo que es una tarea por conseguir (no un hecho) no entra como evidencia
+_PENDING = re.compile(r"\b(describa|describan|conseguir|consigue|deber[ií]a|necesitas|pide|pedir|graba|grabar|"
+                      r"haz|hacer|realiza|realizar|por validar|pendiente)\b", re.IGNORECASE)
+
+
+def auto_register_evidence(db: Session, project: Project, user, message: Message) -> int:
+    """La evidencia que el cliente menciona o que ADÁN encuentra investigando se registra sola, sin confirmar
+    (decisión de Hernán, 2026-10-24). Solo entran hechos con fuente; lo que es una tarea por conseguir, no."""
+    state = (message.metadata_json or {}).get("discovery") or {}
+    known = {e.claim.strip().lower() for e in scoring.active_evidence(db, project, "problem", include_unconfirmed=True)}
+    added = 0
+    for s in state.get("evidencia_sugerida") or []:
+        claim, kind, source = (s.get("afirmacion") or "").strip(), s.get("tipo"), (s.get("fuente") or "").strip()
+        if not claim or claim.lower() in known or _PENDING.search(claim) or kind not in ("external", "testimony"):
+            continue
+        if kind == "external" and not source:
+            continue
+        try:
+            scoring.record_evidence(db, project, user, dimension="problem", claim=claim, kind=kind, source=source or None)
+            known.add(claim.lower())
+            added += 1
+        except scoring.EvidenceError:
+            db.rollback()
+    return added
+
+
+def _similar(a: str, b: str) -> float:
+    """Qué tanto se parecen dos textos (0 a 1), sin mayúsculas ni espacios de más."""
+    a, b = " ".join(a.lower().split())[:1500], " ".join(b.lower().split())[:1500]
+    return SequenceMatcher(None, a, b).ratio() if a and b else 0.0
 
 
 class Nivel1Service:
@@ -122,28 +156,37 @@ class Nivel1Service:
         self.db.add(Message(conversation_id=conversation.id, role="user", content=user_message))
         self.db.commit()
 
-        state = discovery.current_state(self._history(conversation))
+        history = self._history(conversation)
+        state = discovery.current_state(history)
         messages = self.build_llm_messages(conversation, state)
+        # Lo ya investigado en esta conversación: no se vuelve a buscar (cada búsqueda tarda) ni se repite
+        done = [m.metadata_json["investigado"]["consulta"] for m in history
+                if m.role == "assistant" and isinstance(m.metadata_json, dict)
+                and isinstance(m.metadata_json.get("investigado"), dict)]
+        if done:
+            messages[0] = LLMMessage(role="system", content=messages[0].content + (
+                "\n\nYa investigaste en internet (no repitas estas búsquedas; usa lo encontrado, que está en tus "
+                "respuestas anteriores): " + " | ".join(q[:160] for q in done[-6:])))
+        last_reply = next((m.content for m in reversed(history) if m.role == "assistant"), "")
         response = await self.llm.chat_json(messages, discovery.SCHEMA, temperature=0.4, max_tokens=2048)
 
         degraded = response.metadata.get("degraded")
         parsed = response.parsed if isinstance(response.parsed, dict) else {}
-        research = None
         query = parsed.get("investigar") if isinstance(parsed.get("investigar"), str) else ""
-        if query.strip() and not degraded:
-            # ADÁN investiga en internet y vuelve a responder con lo que encontró (con fuentes)
-            research = await self._research(query.strip())
-            if research["text"]:
-                messages = messages + [LLMMessage(role="assistant", content=parsed.get("respuesta") or ""),
-                                       LLMMessage(role="user", content=(
-                    "[Investigación hecha por ADÁN en internet"
-                    + ("" if research["searched"] else ", SIN búsqueda verificada: márcalo como estimación")
-                    + f" sobre «{query.strip()}»]\n{research['text'][:6000]}\n\n"
-                    "Responde ahora al cliente con esos hallazgos: cifras clave en una tabla, un gráfico si ayuda, "
-                    "y las fuentes (URL) al final. Luego tu pregunta. Deja `investigar` vacío."))]
-                second = await self.llm.chat_json(messages, discovery.SCHEMA, temperature=0.3, max_tokens=3000)
-                if isinstance(second.parsed, dict) and second.parsed.get("respuesta"):
-                    parsed, response = second.parsed, second
+        if query.strip() and any(_similar(query, q) > 0.6 for q in done):
+            query = ""  # ya se buscó algo equivalente: se responde con lo que hay, sin esperar otra búsqueda
+        pending = query.strip() if query.strip() and not degraded else ""
+        # Nunca repetir la respuesta anterior: si sale casi igual, se pide una nueva que atienda lo que dijo el cliente
+        draft = parsed.get("respuesta") if isinstance(parsed.get("respuesta"), str) else ""
+        if draft and last_reply and _similar(draft, last_reply) > 0.8 and not degraded:
+            retry = await self.llm.chat_json(messages + [
+                LLMMessage(role="assistant", content=draft),
+                LLMMessage(role="user", content=(
+                    "[Nota interna: ese borrador repite casi igual tu respuesta anterior. Responde a lo NUEVO que "
+                    "acaba de decir el cliente, sin repetir datos ni tablas que ya le diste. Deja `investigar` vacío.]")),
+            ], discovery.SCHEMA, temperature=0.6, max_tokens=2048)
+            if isinstance(retry.parsed, dict) and retry.parsed.get("respuesta"):
+                parsed, response = retry.parsed, retry
         reply = parsed.get("respuesta") if isinstance(parsed.get("respuesta"), str) else ""
         if reply.strip():
             content = reply.strip()
@@ -167,7 +210,9 @@ class Nivel1Service:
                 "degraded": degraded,
                 "discovery": state,
                 "reaccion": parsed.get("reaccion") if isinstance(parsed.get("reaccion"), dict) else None,
-                "investigado": {"consulta": research["query"], "verificado": research["searched"]} if research else None,
+                "investigado": None,
+                # La búsqueda en internet corre aparte (tarda); sus hallazgos llegan en el siguiente mensaje
+                "investigando": {"consulta": pending} if pending else None,
             },
         )
         self.db.add(assistant_msg)
@@ -176,18 +221,48 @@ class Nivel1Service:
 
         return assistant_msg, conversation
 
+    async def complete_research(self, conversation: Conversation, query: str) -> Message | None:
+        """Investiga en internet lo que ADÁN anunció y responde con los hallazgos en un mensaje nuevo."""
+        history = self._history(conversation)
+        state = discovery.current_state(history)
+        research = await self._research(query)
+        if not research["text"]:
+            return None
+        messages = self.build_llm_messages(conversation, state) + [LLMMessage(role="user", content=(
+            "[Investigación hecha por ADÁN en internet"
+            + ("" if research["searched"] else ", SIN búsqueda verificada: márcalo como estimación")
+            + f" sobre «{query}»]\n{research['text'][:6000]}\n\n"
+            "Responde ahora al cliente con esos hallazgos, sin repetir lo que ya le dijiste: cifras clave en una "
+            "tabla, un gráfico si ayuda y las fuentes (URL) al final. Luego tu pregunta. Deja `investigar` vacío."))]
+        response = await self.llm.chat_json(messages, discovery.SCHEMA, temperature=0.3, max_tokens=3000)
+        parsed = response.parsed if isinstance(response.parsed, dict) else {}
+        reply = parsed.get("respuesta") if isinstance(parsed.get("respuesta"), str) else ""
+        if not reply.strip():
+            return None
+        state = discovery.merge(state, parsed)
+        msg = Message(conversation_id=conversation.id, role="assistant", agent_name="ADÁN", content=reply.strip(),
+                      metadata_json={"model": response.model, "duration_s": response.duration_s,
+                                     "tokens": response.prompt_tokens + response.completion_tokens, "discovery": state,
+                                     "reaccion": parsed.get("reaccion") if isinstance(parsed.get("reaccion"), dict) else None,
+                                     "investigado": {"consulta": query, "verificado": research["searched"]}})
+        self.db.add(msg)
+        self.db.commit()
+        self.db.refresh(msg)
+        return msg
+
     async def _research(self, query: str) -> dict:
         """Búsqueda en internet (Kimi $web_search). Sin búsqueda disponible, responde con lo que sabe y lo marca."""
         search = getattr(self.llm, "chat_search", None)
         msgs = [LLMMessage(role="system", content=(
             "Eres el investigador de ADÁN. Busca en internet datos actuales y verificables para responder. Da cifras "
-            "con año y la URL de cada fuente. Si hay estimaciones distintas, muestra el rango. Español, conciso.")),
+            "con año y la URL de cada fuente. Si hay estimaciones distintas, muestra el rango. Español, máximo 250 "
+            "palabras.")),
             LLMMessage(role="user", content=query)]
         try:
             if search is None:
                 resp = await self.llm.chat(msgs, max_tokens=2500)
                 return {"query": query, "text": resp.content or "", "searched": False}
-            resp = await search(msgs, max_tokens=4000)
+            resp = await search(msgs, max_tokens=2500)
             return {"query": query, "text": resp.content or "", "searched": bool(resp.metadata.get("searched", True))}
         except Exception:  # noqa: BLE001 - la conversación sigue aunque la búsqueda falle
             return {"query": query, "text": "", "searched": False}

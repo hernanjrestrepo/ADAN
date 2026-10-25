@@ -23,6 +23,7 @@ CMD ["./start.sh"]
 # el servicio `migrate` antes de arrancar (AUTO_MIGRATE=false).
 FROM base AS production
 RUN useradd --uid 10001 --create-home --shell /usr/sbin/nologin adan
+RUN mkdir -p /home/adan/.cache/huggingface && chown -R adan:adan /home/adan/.cache
 COPY --from=deps /install /usr/local
 COPY --chown=adan:adan alembic.ini ./
 COPY --chown=adan:adan migrations ./migrations

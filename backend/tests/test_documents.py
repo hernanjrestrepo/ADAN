@@ -166,3 +166,26 @@ def test_documents_of_another_company_are_off_limits(client):
     resp = client.post(f"/api/v1/nivel1/{cid}/documents/upload", headers=other,
                        files=[("files", ("plan.docx", _docx("Plan"), "application/octet-stream"))])
     assert resp.status_code == 404
+
+
+def test_screenshots_are_read_with_ocr_and_recordings_are_transcribed(client, monkeypatch):
+    from app.documents import media
+    cid, headers = _setup(client, "media@example.com")
+    llm = _use(client, ScriptLLM([LEARNING, LEARNING]))
+
+    async def fake_ocr(data, mime):
+        return "Ventas 2025: 150 clientes en Barranquilla (captura del CRM)"
+    monkeypatch.setattr(media, "ocr_image", fake_ocr)
+    monkeypatch.setattr(media, "transcribe", lambda path: "[00:00] La cliente dice que planear el viaje le tomó tres semanas")
+    files = [("files", ("captura.png", b"\x89PNG fake", "image/png")),
+             ("files", ("entrevista.m4a", b"audio fake", "audio/mp4"))]
+    body = client.post(f"/api/v1/nivel1/{cid}/documents/upload", files=files, headers=headers).json()
+    assert [d["title"] for d in body["documents"]] == ["captura.png"]
+    assert "transcribiendo" in body["reply"]
+    assert "150 clientes" in llm.calls[0][1].content  # ADÁN leyó la captura
+    msgs = client.get(f"/api/v1/nivel1/{cid}/status", headers=headers).json()["messages"]
+    # Lo adjuntado se ve en la conversación y la transcripción llega después
+    assert any(m["role"] == "user" and "🖼️ captura.png" in m["content"] and "🎙️ entrevista.m4a" in m["content"] for m in msgs)
+    assert "tres semanas" in llm.calls[1][1].content
+    docs = client.get(f"/api/v1/nivel1/{cid}/status", headers=headers).json()["documents"]
+    assert any(d["title"] == "Transcripción de entrevista.m4a" for d in docs)

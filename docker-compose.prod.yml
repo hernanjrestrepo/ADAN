@@ -122,6 +122,9 @@ services:
         condition: service_healthy
       migrate:
         condition: service_completed_successfully
+    # El modelo de transcripción (Whisper) se descarga una vez y se conserva entre despliegues
+    volumes:
+      - whisper-models:/home/adan/.cache/huggingface
     networks: [web, data, sandbox, llm]
     restart: always
 
@@ -149,3 +152,4 @@ networks:
 volumes:
   postgres-data:
   ollama-models:
+  whisper-models:

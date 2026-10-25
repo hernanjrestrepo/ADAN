@@ -229,7 +229,10 @@ def system_prompt(state: dict, structured: bool = True) -> str:
     )
     reply = CONVERSATION_RULES
     evidence = (
-        "\n`evidencia_sugerida`: solo lo verificable que el cliente reporte en su último mensaje: lo que dijeron "
+        "\n`evidencia_sugerida`: se registra AUTOMÁTICAMENTE como evidencia, así que solo HECHOS que ya existen, "
+        "nunca evidencia por conseguir ni tareas (nada de 'un mensaje donde alguien describa…'). Incluye lo que "
+        "encontraste investigando en internet (external, con la URL o el informe en `fuente`) y lo verificable que el "
+        "cliente reporte en su último mensaje: lo que dijeron "
         "o hicieron clientes reales (testimony: entrevistas, ventas, mensajes) o una fuente externa con nombre "
         "(external: estudio, informe, cifra pública). Nunca la opinión o hipótesis del fundador, ni lo que cuenta "
         "de su propio producto, equipo o avance (eso no es testimonio de clientes). Sin repetir una afirmación ya "

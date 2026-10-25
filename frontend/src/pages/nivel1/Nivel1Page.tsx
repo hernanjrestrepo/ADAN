@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { Suspense, lazy, useCallback, useEffect, useState } from 'react'
 import { useParams } from 'react-router'
 import AppShell from '../../components/AppShell'
 import Alert from '../../components/ui/Alert'
@@ -7,11 +7,13 @@ import Tabs from '../../components/ui/Tabs'
 import { LoadingState } from '../../components/ui/States'
 import { api, errorMessage } from '../../lib/api'
 import type {
-  BoardConsensus, BoardRoomInput, Decision, EvidenceSuggestion, DocumentRecord, GateReviewResult, LevelStatus, Message, Nivel1Status,
+  BoardConsensus, BoardRoomInput, Decision, DocumentRecord, GateReviewResult, LevelStatus, Message, Nivel1Status,
 } from '../../types'
 import BoardRoomPanel from './BoardRoomPanel'
 import ArenaPanel from './ArenaPanel'
 import ChatPanel from './ChatPanel'
+import { reactTo } from '../../universo/react'
+import { waitForResearch } from '../../lib/research'
 import SurveysPanel from './SurveysPanel'
 import DiagnosisPanel from './DiagnosisPanel'
 import EvidencePanel from './EvidencePanel'
@@ -35,6 +37,8 @@ const LEVEL_BADGE: Record<LevelStatus, { text: string; tone: 'green' | 'blue' | 
   blocked: { text: 'Bloqueado', tone: 'gray' },
 }
 
+const EmbeddedWorld = lazy(() => import('../../universo/EmbeddedWorld'))
+
 export default function Nivel1Page() {
   const { companyId = '' } = useParams()
   const [status, setStatus] = useState<Nivel1Status | null>(null)
@@ -43,6 +47,7 @@ export default function Nivel1Page() {
   const [error, setError] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<Tab>('chat')
   const [sending, setSending] = useState(false)
+  const [researching, setResearching] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [board, setBoard] = useState<BoardConsensus | null>(null)
   const [boardRunning, setBoardRunning] = useState(false)
@@ -90,7 +95,18 @@ export default function Nivel1Page() {
     try {
       const data = await api.chat(companyId, text, status?.conversation?.id)
       setMessages((prev) => [...prev.filter((m) => m.id !== tempId), data.message])
+      reactTo(data.message)
       await loadStatus()
+      if (data.message.metadata_json?.investigando) {
+        setResearching(true)
+        void waitForResearch(companyId, data.message.id).then((msgs) => {
+          setResearching(false)
+          if (!msgs) return
+          const found = msgs[msgs.length - 1]
+          if (found) reactTo(found)
+          void loadStatus()
+        })
+      }
     } catch (err) {
       setError(errorMessage(err))
       setMessages((prev) => prev.filter((m) => m.id !== tempId))
@@ -107,21 +123,22 @@ export default function Nivel1Page() {
       const result = await api.uploadDocuments(companyId, files)
       if (result.errors.length) setError(result.errors.join(' '))
       await loadStatus()
+      // Audio y video se transcriben aparte: lo que entendió ADÁN llega en un momento
+      const status = await api.getNivel1Status(companyId)
+      const last = status.messages[status.messages.length - 1]
+      if (last?.metadata_json?.investigando) {
+        setResearching(true)
+        void waitForResearch(companyId, last.id, 600_000).then((msgs) => {
+          setResearching(false)
+          const found = msgs?.[msgs.length - 1]
+          if (found) reactTo(found)
+          void loadStatus()
+        })
+      }
     } catch (err) {
       setError(errorMessage(err))
     } finally {
       setUploading(false)
-    }
-  }
-
-  // Evidencia que el cliente mencionó en la conversación: entra solo si él la registra (AD-CMP-05)
-  const handleRegisterEvidence = async (s: EvidenceSuggestion) => {
-    try {
-      await api.addEvidence(companyId, { claim: s.afirmacion, kind: s.tipo, polarity: 'supports', source: s.fuente || undefined })
-      bump()
-      await loadStatus()
-    } catch (err) {
-      setError(errorMessage(err))
     }
   }
 
@@ -210,6 +227,7 @@ export default function Nivel1Page() {
         { label: 'Nivel 1 — El Dolor' }]}
       status={<Badge tone={levelBadge.tone}>{levelBadge.text}</Badge>}
       toolbar={<Tabs tabs={TABS} active={activeTab} onChange={setActiveTab} />}
+      fixedHeight={activeTab === 'chat'}
     >
       {error && (
         <div className="max-w-4xl mx-auto px-4 pt-4">
@@ -221,9 +239,10 @@ export default function Nivel1Page() {
       ) : (
         <>
           {activeTab === 'chat' && (
-            <ChatPanel messages={messages} sending={sending} discovery={status?.discovery} onSend={handleSend}
+            <ChatPanel messages={messages} sending={sending} researching={researching} discovery={status?.discovery} onSend={handleSend}
               uploading={uploading} onUpload={handleUpload}
-              onRegisterEvidence={handleRegisterEvidence} onBoardRoom={() => handleBoardRoom()} onDiagnosis={handleDiagnosis} onGateReview={handleGateReview} />
+              onBoardRoom={() => handleBoardRoom()} onDiagnosis={handleDiagnosis} onGateReview={handleGateReview}
+              world={<Suspense fallback={<div className="h-full rounded-2xl bg-adan-surface animate-pulse" />}><EmbeddedWorld /></Suspense>} />
           )}
           {activeTab === 'surveys' && <SurveysPanel companyId={companyId} onError={showError} onChanged={bump} />}
           {activeTab === 'arena' && <ArenaPanel companyId={companyId} onError={showError} />}

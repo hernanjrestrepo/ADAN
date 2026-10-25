@@ -87,17 +87,10 @@ def test_each_answer_is_understood_and_the_script_advances(client):
     progress = client.get(f"/api/v1/nivel1/{cid}/status", headers=headers).json()["discovery"]
     assert progress["topics"][0]["estado"] == "respondido"  # no retrocede
     assert progress["done"] == 3 and progress["next"] == "costo"
-    assert progress["evidence_suggestions"][0]["tipo"] == "testimony"
-
-
-def test_a_suggested_evidence_is_not_suggested_again_once_registered(client):
-    cid, headers = _setup(client, "sugerida@example.com")
-    _use(client, ScriptLLM([TURN_2]))
-    client.post(f"/api/v1/nivel1/{cid}/chat", json={"message": "Entrevisté 15 familias"}, headers=headers)
-    suggestion = client.get(f"/api/v1/nivel1/{cid}/status", headers=headers).json()["discovery"]["evidence_suggestions"][0]
-    assert client.post(f"/api/v1/scoring/{cid}/evidence", headers=headers, json={
-        "claim": suggestion["afirmacion"], "kind": suggestion["tipo"], "source": suggestion["fuente"]}).status_code == 201
-    assert client.get(f"/api/v1/nivel1/{cid}/status", headers=headers).json()["discovery"]["evidence_suggestions"] == []
+    # La evidencia mencionada se registra sola: no queda nada por confirmar
+    assert progress["evidence_suggestions"] == []
+    evidence = client.get(f"/api/v1/scoring/{cid}/evidence", headers=headers).json()
+    assert [e["kind"] for e in evidence] == ["testimony"]
 
 
 def test_when_all_topics_are_covered_adan_stops_asking():
@@ -229,10 +222,43 @@ def test_adan_researches_the_internet_instead_of_asking_the_client(client):
         {**TURN_1, "respuesta": "| Mercado | USD |\n|---|---|\n| Global 2025 | 1,9 billones |\n\nFuente: https://wttc.org",
          "investigar": "", "reaccion": {"agente": "cmo", "emocion": "feliz", "frase": "¡Mercado gigante!"}},
     ]))
-    msg = client.post(f"/api/v1/nivel1/{cid}/chat", json={"message": "Busca tú el tamaño del mercado"}, headers=headers).json()["message"]
+    first = client.post(f"/api/v1/nivel1/{cid}/chat", json={"message": "Busca tú el tamaño del mercado"}, headers=headers).json()["message"]
+    # La respuesta sale sin esperar la búsqueda (tarda); la investigación sigue aparte
+    assert first["content"] == "Lo busco ya."
+    assert first["metadata_json"]["investigando"] == {"consulta": "tamaño del mercado global de viajes 2025"}
     assert llm.searches == ["tamaño del mercado global de viajes 2025"]
-    assert "1,9 billones" in msg["content"] and "wttc.org" in msg["content"]
-    assert msg["metadata_json"]["reaccion"]["agente"] == "cmo"
-    assert msg["metadata_json"]["investigado"] == {"consulta": "tamaño del mercado global de viajes 2025", "verificado": True}
-    # La segunda vuelta recibe lo investigado
-    assert "1,9 billones" in llm.calls[1][-1].content
+    msgs = client.get(f"/api/v1/nivel1/{cid}/status", headers=headers).json()["messages"]
+    found = msgs[-1]
+    assert "1,9 billones" in found["content"] and "wttc.org" in found["content"]
+    assert found["metadata_json"]["reaccion"]["agente"] == "cmo"
+    assert found["metadata_json"]["investigado"] == {"consulta": "tamaño del mercado global de viajes 2025", "verificado": True}
+    assert "1,9 billones" in llm.calls[1][-1].content  # la segunda vuelta recibe lo investigado
+    # La fuente encontrada queda registrada como evidencia sin confirmar nada
+
+
+def test_evidence_is_registered_automatically_but_not_pending_tasks(client):
+    cid, headers = _setup(client, "autoevidencia@example.com")
+    _use(client, ScriptLLM([{**TURN_2, "evidencia_sugerida": [
+        TURN_2["evidencia_sugerida"][0],
+        {"afirmacion": "El 67 % de los viajeros DIY quedan insatisfechos", "tipo": "external", "fuente": "https://asta.org/estudio"},
+        {"afirmacion": "Mensaje donde alguien describa su frustración al planear", "tipo": "testimony", "fuente": "Cliente"},
+        {"afirmacion": "Un dato externo sin fuente que no debe entrar", "tipo": "external", "fuente": ""},
+    ]}]))
+    client.post(f"/api/v1/nivel1/{cid}/chat", json={"message": "Entrevisté a 15 familias"}, headers=headers)
+    claims = {e["claim"] for e in client.get(f"/api/v1/scoring/{cid}/evidence", headers=headers).json()}
+    assert claims == {TURN_2["evidencia_sugerida"][0]["afirmacion"], "El 67 % de los viajeros DIY quedan insatisfechos"}
+    # Nada queda pendiente de confirmar en el panel
+    status = client.get(f"/api/v1/nivel1/{cid}/status", headers=headers).json()
+    assert [s["afirmacion"] for s in status["discovery"]["evidence_suggestions"]] == [
+        "Mensaje donde alguien describa su frustración al planear", "Un dato externo sin fuente que no debe entrar"]
+
+
+def test_adan_does_not_repeat_its_previous_answer(client):
+    cid, headers = _setup(client, "norepite@example.com")
+    same = {**TURN_1, "respuesta": "Hernán, encontré que el 78 % de los colombianos viaja por cuenta propia.", "investigar": "",
+            "reaccion": {"agente": "cmo", "emocion": "pensando", "frase": "Hmm"}}
+    llm = _use(client, ScriptLLM([same, same, {**same, "respuesta": "Tienes razón: es lógica del mercado. Pasemos a la urgencia."}]))
+    client.post(f"/api/v1/nivel1/{cid}/chat", json={"message": "uno"}, headers=headers)
+    second = client.post(f"/api/v1/nivel1/{cid}/chat", json={"message": "dos"}, headers=headers).json()["message"]
+    assert second["content"].startswith("Tienes razón") and len(llm.calls) == 3
+    assert "repite casi igual" in llm.calls[2][-1].content
