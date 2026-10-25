@@ -1,7 +1,8 @@
 """Nivel 1 endpoints — the complete Level 1 flow with real intelligence."""
 import json
+import logging
 
-from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
+from fastapi import APIRouter, BackgroundTasks, Depends, File, HTTPException, UploadFile
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
@@ -22,7 +23,7 @@ from app.core.disclaimer import AI_DISCLAIMER
 from app.models.models import (
     Card, Conversation, Decision, Document, Level, Message, Project, Score, User,
 )
-from app.nivel1.service import Nivel1Service, discovery_progress
+from app.nivel1.service import Nivel1Service, discovery_progress, auto_register_evidence
 from app.services.gemelo_digital import GemeloDigitalService
 from app.ai.router import for_tier
 from app.ai.usage import usage_scope
@@ -31,6 +32,7 @@ from app.schemas.schemas import (
     DocumentResponse, GateReviewResponse, LevelResponse, MessageResponse, ScoreResponse,
 )
 
+logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/nivel1", tags=["nivel1"])
 
 
@@ -124,10 +126,30 @@ def require_level_paid(db: Session, company_id: str, level: int) -> None:
             f"El Nivel {level} se activa con @pples. Cárgalas en tu billetera y paga el Nivel para seguir."))
 
 
+async def research_later(bind, llm: LLMAdapter, company_id: str, conversation_id: str, query: str, user_id: str) -> None:
+    """Termina la investigación anunciada en un turno, con su propia sesión de base de datos."""
+    db = Session(bind=bind)
+    try:
+        conversation = db.get(Conversation, conversation_id)
+        user = db.get(User, user_id)
+        project = db.query(Project).filter(Project.company_id == company_id).first()
+        if not conversation or not user or not project:
+            return
+        with usage_scope(db, company_id, 1):
+            msg = await Nivel1Service(llm, db).complete_research(conversation, query)
+        if msg is not None:
+            auto_register_evidence(db, project, user, msg)
+    except Exception:  # noqa: BLE001 - una búsqueda fallida no debe tumbar nada; el cliente puede volver a pedirla
+        logger.exception("La investigación en segundo plano falló")
+    finally:
+        db.close()
+
+
 @router.post("/{company_id}/chat", response_model=ChatResponse)
 async def chat(
     company_id: str,
     body: ChatRequest,
+    background: BackgroundTasks,
     db: Session = Depends(get_db),
     user: User = Depends(llm_user),
     llm: LLMAdapter = Depends(get_llm),
@@ -151,6 +173,11 @@ async def chat(
         conversation = get_owned_conversation(db, body.conversation_id, project)
 
     msg, conv = await service.chat(project, level, body.message, conversation)
+    auto_register_evidence(db, project, user, msg)
+    pending = (msg.metadata_json or {}).get("investigando")
+    if pending:
+        # La respuesta sale ya; la búsqueda en internet sigue aparte y llega como otro mensaje
+        background.add_task(research_later, db.get_bind(), llm, company_id, conv.id, pending["consulta"], user.id)
 
     return ChatResponse(
         message=MessageResponse.model_validate(msg),

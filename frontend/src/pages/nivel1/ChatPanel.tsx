@@ -4,7 +4,7 @@ import Badge from '../../components/ui/Badge'
 import Button from '../../components/ui/Button'
 import MicButton from '../../components/MicButton'
 import { EmptyState } from '../../components/ui/States'
-import type { DiscoveryProgress, DiscoveryTopic, EvidenceSuggestion, Message } from '../../types'
+import type { DiscoveryProgress, DiscoveryTopic, Message } from '../../types'
 
 interface ChatPanelProps {
   messages: Message[]
@@ -13,11 +13,11 @@ interface ChatPanelProps {
   onSend: (message: string) => Promise<void>
   uploading?: boolean
   onUpload?: (files: File[]) => Promise<void>
-  onRegisterEvidence: (suggestion: EvidenceSuggestion) => Promise<void>
   onBoardRoom: () => void
   onDiagnosis: () => void
   onGateReview: () => void
   world?: ReactNode
+  researching?: boolean
 }
 
 const MAX_MESSAGE_CHARS = 8000  // mismo límite que el backend (WO-097)
@@ -51,12 +51,10 @@ function useElapsed(running: boolean) {
 }
 
 // Lo que ADÁN ya entendió: el guion de siete temas con su avance (Nivel 1)
-function DiscoveryPanel({ discovery, onRegisterEvidence, onBoardRoom }: {
+function DiscoveryPanel({ discovery, onBoardRoom }: {
   discovery: DiscoveryProgress
-  onRegisterEvidence: (s: EvidenceSuggestion) => Promise<void>
   onBoardRoom: () => void
 }) {
-  const [registering, setRegistering] = useState<string | null>(null)
   const pct = Math.round((discovery.done / discovery.total) * 100)
   return (
     <aside className="space-y-4" aria-label="Lo que ADÁN ya entendió">
@@ -99,36 +97,16 @@ function DiscoveryPanel({ discovery, onRegisterEvidence, onBoardRoom }: {
         )}
       </div>
 
-      {discovery.evidence_suggestions.length > 0 && (
-        <div className="rounded-xl border border-adan-border bg-adan-surface p-4" aria-label="Evidencia detectada">
-          <h2 className="text-sm font-bold">Evidencia que mencionaste</h2>
-          <p className="text-xs text-adan-muted mt-1">Regístrala para que cuente en el Gate del Nivel 1. Tú decides.</p>
-          <ul className="mt-3 space-y-3">
-            {discovery.evidence_suggestions.map((s) => (
-              <li key={s.afirmacion} className="text-xs border-t border-adan-border pt-3 first:border-0 first:pt-0"
-                data-testid="evidence-suggestion">
-                <p className="text-adan-text">{s.afirmacion}</p>
-                <p className="text-adan-muted mt-1">
-                  {s.tipo === 'testimony' ? 'Testimonio de clientes' : 'Fuente externa'}{s.fuente ? ` · ${s.fuente}` : ''}
-                </p>
-                <Button size="sm" variant="secondary" className="mt-2" loading={registering === s.afirmacion}
-                  onClick={async () => {
-                    setRegistering(s.afirmacion)
-                    try { await onRegisterEvidence(s) } finally { setRegistering(null) }
-                  }}>
-                  Registrar como evidencia
-                </Button>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
+      <p className="rounded-xl border border-adan-border bg-adan-surface p-3 text-xs text-adan-muted">
+        ✓ La evidencia que mencionas o que ADÁN encuentra investigando se registra sola. La ves completa en la pestaña
+        Evidencia.
+      </p>
     </aside>
   )
 }
 
 export default function ChatPanel({
-  messages, sending, discovery, onSend, onRegisterEvidence, onBoardRoom, onDiagnosis, onGateReview, uploading = false, onUpload, world,
+  messages, sending, discovery, onSend, onBoardRoom, onDiagnosis, onGateReview, uploading = false, onUpload, world, researching = false,
 }: ChatPanelProps) {
   const [input, setInput] = useState('')
   const desktop = useDesktop()
@@ -144,7 +122,7 @@ export default function ChatPanel({
     // El último mensaje y la caja de texto siempre a la vista (en el celular la página baja hasta la caja)
     endRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
     if (!desktop) formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' })
-  }, [messages, busy, desktop])
+  }, [messages, busy, desktop, researching])
 
   const submit = async () => {
     const text = input.trim()
@@ -179,7 +157,7 @@ export default function ChatPanel({
         )}
         {discovery && showProgress && (
           <div className="lg:hidden mb-3 max-h-[50vh] overflow-y-auto">
-            <DiscoveryPanel discovery={discovery} onRegisterEvidence={onRegisterEvidence} onBoardRoom={onBoardRoom} />
+            <DiscoveryPanel discovery={discovery} onBoardRoom={onBoardRoom} />
           </div>
         )}
 
@@ -224,8 +202,15 @@ export default function ChatPanel({
             <div className="flex justify-start">
               <div className="bg-adan-surface border border-adan-border rounded-xl px-4 py-3">
                 <div className="text-sm text-adan-muted animate-pulse">
-                  {uploading ? 'ADÁN está leyendo tus documentos' : 'ADÁN está leyendo tu respuesta'}…{elapsed >= 5 ? ` (${elapsed} s)` : ''}
+                  {uploading ? 'ADÁN está leyendo tus documentos' : 'ADÁN está pensando tu respuesta'}…{elapsed >= 5 ? ` (${elapsed} s)` : ''}
                 </div>
+              </div>
+            </div>
+          )}
+          {researching && !busy && (
+            <div className="flex justify-start" data-testid="researching">
+              <div className="rounded-xl border border-adan-accent/40 bg-adan-accent/5 px-4 py-3 text-sm animate-pulse">
+                🔎 ADÁN está investigando en internet; los datos te llegan aquí en un momento. Puedes seguir escribiendo.
               </div>
             </div>
           )}
@@ -275,7 +260,7 @@ export default function ChatPanel({
           {world && desktop && <div className="flex-1 min-h-[280px]">{world}</div>}
           {discovery && (
             <div className={`${world ? 'max-h-[42%]' : 'flex-1'} min-h-0 overflow-y-auto`}>
-              <DiscoveryPanel discovery={discovery} onRegisterEvidence={onRegisterEvidence} onBoardRoom={onBoardRoom} />
+              <DiscoveryPanel discovery={discovery} onBoardRoom={onBoardRoom} />
             </div>
           )}
         </div>

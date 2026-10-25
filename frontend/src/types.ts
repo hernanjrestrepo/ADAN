@@ -68,6 +68,7 @@ export interface Message {
     degraded?: string | null
     reaccion?: { agente: string; emocion: string; frase: string } | null
     investigado?: { consulta: string; verificado: boolean } | null
+    investigando?: { consulta: string } | null
   } | null
 }
 

@@ -7,12 +7,13 @@ import Tabs from '../../components/ui/Tabs'
 import { LoadingState } from '../../components/ui/States'
 import { api, errorMessage } from '../../lib/api'
 import type {
-  BoardConsensus, BoardRoomInput, Decision, EvidenceSuggestion, DocumentRecord, GateReviewResult, LevelStatus, Message, Nivel1Status,
+  BoardConsensus, BoardRoomInput, Decision, DocumentRecord, GateReviewResult, LevelStatus, Message, Nivel1Status,
 } from '../../types'
 import BoardRoomPanel from './BoardRoomPanel'
 import ArenaPanel from './ArenaPanel'
 import ChatPanel from './ChatPanel'
 import { reactTo } from '../../universo/react'
+import { waitForResearch } from '../../lib/research'
 import SurveysPanel from './SurveysPanel'
 import DiagnosisPanel from './DiagnosisPanel'
 import EvidencePanel from './EvidencePanel'
@@ -46,6 +47,7 @@ export default function Nivel1Page() {
   const [error, setError] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<Tab>('chat')
   const [sending, setSending] = useState(false)
+  const [researching, setResearching] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [board, setBoard] = useState<BoardConsensus | null>(null)
   const [boardRunning, setBoardRunning] = useState(false)
@@ -95,6 +97,16 @@ export default function Nivel1Page() {
       setMessages((prev) => [...prev.filter((m) => m.id !== tempId), data.message])
       reactTo(data.message)
       await loadStatus()
+      if (data.message.metadata_json?.investigando) {
+        setResearching(true)
+        void waitForResearch(companyId, data.message.id).then((msgs) => {
+          setResearching(false)
+          if (!msgs) return
+          const found = msgs[msgs.length - 1]
+          if (found) reactTo(found)
+          void loadStatus()
+        })
+      }
     } catch (err) {
       setError(errorMessage(err))
       setMessages((prev) => prev.filter((m) => m.id !== tempId))
@@ -115,17 +127,6 @@ export default function Nivel1Page() {
       setError(errorMessage(err))
     } finally {
       setUploading(false)
-    }
-  }
-
-  // Evidencia que el cliente mencionó en la conversación: entra solo si él la registra (AD-CMP-05)
-  const handleRegisterEvidence = async (s: EvidenceSuggestion) => {
-    try {
-      await api.addEvidence(companyId, { claim: s.afirmacion, kind: s.tipo, polarity: 'supports', source: s.fuente || undefined })
-      bump()
-      await loadStatus()
-    } catch (err) {
-      setError(errorMessage(err))
     }
   }
 
@@ -226,9 +227,9 @@ export default function Nivel1Page() {
       ) : (
         <>
           {activeTab === 'chat' && (
-            <ChatPanel messages={messages} sending={sending} discovery={status?.discovery} onSend={handleSend}
+            <ChatPanel messages={messages} sending={sending} researching={researching} discovery={status?.discovery} onSend={handleSend}
               uploading={uploading} onUpload={handleUpload}
-              onRegisterEvidence={handleRegisterEvidence} onBoardRoom={() => handleBoardRoom()} onDiagnosis={handleDiagnosis} onGateReview={handleGateReview}
+              onBoardRoom={() => handleBoardRoom()} onDiagnosis={handleDiagnosis} onGateReview={handleGateReview}
               world={<Suspense fallback={<div className="h-full rounded-2xl bg-adan-surface animate-pulse" />}><EmbeddedWorld /></Suspense>} />
           )}
           {activeTab === 'surveys' && <SurveysPanel companyId={companyId} onError={showError} onChanged={bump} />}

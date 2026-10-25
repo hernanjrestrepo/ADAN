@@ -4,6 +4,7 @@ import { useAuth } from '../../auth/context'
 import { AdanMark } from '../../components/Logo'
 import MicButton from '../../components/MicButton'
 import RichMessage from '../../components/RichMessage'
+import { waitForResearch } from '../../lib/research'
 import { reactTo } from '../react'
 import { useUniverso } from '../store'
 import { api, errorMessage } from '../../lib/api'
@@ -127,6 +128,17 @@ export default function AdanChat({ open, onToggle }: { open: boolean; onToggle: 
       setConversationId(data.conversation_id)
       setLines((prev) => [...prev, { id: data.message.id, from: 'adan', text: data.message.content }])
       reactTo(data.message)
+      if (data.message.metadata_json?.investigando) {
+        useUniverso.getState().say('csi', '🔎 Voy a investigar eso en internet…', 6000, 'info')
+        useUniverso.getState().feel('csi', 'pensando', 60000)
+        const cid = companyId
+        void waitForResearch(cid, data.message.id).then((msgs) => {
+          if (!msgs) return
+          setLines(toLines(msgs))
+          const found = msgs[msgs.length - 1]
+          if (found) reactTo(found)
+        })
+      }
     } catch (err) {
       setLines((prev) => prev.filter((l) => l.id !== tempId))
       setInput(text)
