@@ -20,3 +20,4 @@ openpyxl==3.1.5
 python-pptx==1.0.2
 # Transcripción de audio y video en el servidor (el audio no sale de ADÁN)
 faster-whisper==1.1.1
+requests==2.33.0  # faster-whisper la necesita para descargar el modelo

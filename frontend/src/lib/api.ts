@@ -233,6 +233,8 @@ export const api = {
     request<BoardDialogue & { turn: BoardDialogueTurn }>(`/nivel1/${companyId}/board-room/dialogo`, {
       method: 'POST', body: JSON.stringify({ message, agent }), signal: AbortSignal.timeout(CHAT_TIMEOUT_MS),
     }),
+  continueDespiteBoard: (companyId: string, reason: string) =>
+    post<{ recorded: boolean; open_objections: string[]; penalty_confidence: number }>(`/nivel1/${companyId}/board-room/continuar`, { reason }),
   runBoardRoom: (companyId: string, input?: BoardRoomInput) =>
     post<BoardConsensus>(`/nivel1/${companyId}/board-room`, input ?? {}),
   getLastBoardRoom: (companyId: string) => request<BoardConsensus>(`/nivel1/${companyId}/board-room/last`),

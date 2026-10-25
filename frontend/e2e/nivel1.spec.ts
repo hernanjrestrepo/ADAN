@@ -1,12 +1,12 @@
 import { expect, test } from '@playwright/test'
-import { BOARD_PROCEED, FakeApi } from './fakeApi'
+import { FakeApi } from './fakeApi'
 
 async function openNivel1(page: import('@playwright/test').Page) {
   const api = new FakeApi().withCompany()
   api.loggedIn = true
   await api.install(page)
   await page.goto('/nivel1/c1')
-  await expect(page.getByRole('tab', { name: 'Conversación' })).toHaveAttribute('aria-selected', 'true')
+  await expect(page.getByRole('tab', { name: 'Sala' })).toHaveAttribute('aria-selected', 'true')
   return api
 }
 
@@ -18,21 +18,16 @@ test('la conversación envía el mensaje y muestra la respuesta', async ({ page 
   expect(api.callsTo('POST', '/nivel1/c1/chat')[0]?.body).toMatchObject({ message: 'Las panaderías pierden pan cada día' })
 })
 
-test('ADÁN muestra lo que entendió de cada respuesta y la evidencia se registra sola', async ({ page }) => {
+test('el avance del guion se ve en una línea y la evidencia se registra sola', async ({ page }) => {
   await openNivel1(page)
   await page.setViewportSize({ width: 1400, height: 900 })
-  const panel = page.getByRole('complementary', { name: 'Lo que ADÁN ya entendió' })
-  await expect(panel.getByTestId('discovery-count')).toHaveText('0 de 7')
+  await expect(page.getByText('0/7')).toBeVisible()
   await page.getByLabel('Mensaje para ADÁN').fill('Las panaderías botan pan cada día')
   await page.getByLabel('Mensaje para ADÁN').press('Enter')
   await expect(page.getByText('¿Cuánto pan se pierde al día?')).toBeVisible()
-  await expect(panel.getByTestId('discovery-count')).toHaveText('2 de 7')
-  await expect(panel.getByText('Las panaderías botan pan cada día')).toBeVisible()
-  await expect(panel.getByTestId('discovery-topic').nth(2)).toContainText('Siguiente')
-
-  // Sin botones ni confirmaciones: el backend la registra al responder
+  await expect(page.getByText('2/7')).toBeVisible()
+  // Sin paneles ni botones de confirmar evidencia
   await expect(page.getByRole('button', { name: 'Registrar como evidencia' })).toHaveCount(0)
-  await expect(panel.getByText(/se registra sola/)).toBeVisible()
 })
 
 test('si responde el modelo de respaldo, ADÁN lo dice y el guion no avanza', async ({ page }) => {
@@ -43,58 +38,26 @@ test('si responde el modelo de respaldo, ADÁN lo dice y el guion no avanza', as
   await expect(page.getByTestId('degraded-note')).toContainText('AuthenticationError')
 })
 
-test('el Board Room muestra la propuesta, las abstenciones y el disenso', async ({ page }) => {
-  await openNivel1(page)
-  await page.getByRole('button', { name: /Ejecutar Board Room/ }).click()
-  await expect(page.getByRole('tab', { name: 'Board Room' })).toHaveAttribute('aria-selected', 'true')
-  await expect(page.getByText('Sin consenso')).toBeVisible()
-  await expect(page.getByTestId('agent-vote')).toHaveCount(2)
-  // CEO, CTO, CFO y CMO empiezan por "C": el avatar muestra el rol, no solo la inicial
-  await expect(page.getByTestId('agent-vote').nth(0)).toContainText('CEO')
-  await expect(page.getByTestId('agent-avatar')).toHaveText(['CEO', 'CFO'])
-  await expect(page.getByText('Abstención')).toBeVisible()
-  await expect(page.getByText('CFO: STOP — El margen es bajo')).toBeVisible()
-  await expect(page.getByText('la decisión final es tuya')).toBeVisible()
-})
-
-test('la última sesión del Board se ve al entrar y se puede abrir una nueva', async ({ page }) => {
-  const api = new FakeApi().withCompany()
-  api.loggedIn = true
-  api.lastBoard = BOARD_PROCEED
-  await api.install(page)
-  await page.goto('/nivel1/c1')
-  await page.getByRole('tab', { name: 'Board Room' }).click()
-  await expect(page.getByTestId('board-synthesis')).toBeVisible()
-  await page.getByRole('button', { name: 'Nueva sesión' }).click()
-  await expect(page.getByLabel('Tu pregunta para el Board')).toBeVisible()
-})
-
-test('se conversa con el Board en general y con cada especialista hasta llegar a un consenso', async ({ page }) => {
-  const api = new FakeApi().withCompany()
-  api.loggedIn = true
-  api.lastBoard = BOARD_PROCEED
-  await api.install(page)
-  await page.goto('/nivel1/c1')
-  await page.getByRole('tab', { name: 'Board Room' }).click()
-  const dialogue = page.getByTestId('board-dialogue')
-  await expect(dialogue.getByText(/5 de 6/)).toBeVisible()
-  await dialogue.getByLabel('Escríbele al Board…').fill('Ya tengo 20 preventas pagadas')
-  await dialogue.getByRole('button', { name: 'Enviar' }).click()
-  await expect(dialogue.getByText('El CFO queda conforme: ahora son 6 de 6.')).toBeVisible()
-  await expect(dialogue.getByText('6 de 6', { exact: true })).toBeVisible()
-  expect(api.callsTo('POST', '/nivel1/c1/board-room/dialogo')[0]?.body).toEqual({ message: 'Ya tengo 20 preventas pagadas', agent: null })
-
-  // Responderle a un especialista en su tarjeta
-  await page.getByRole('button', { name: '💬 Responder a Legal' }).click()
-  await page.getByLabel(/Responder a Legal/).fill('¿Qué registro necesito?')
-  await page.getByRole('button', { name: 'Enviar' }).last().click()
+test('el Board Room pasa dentro de la misma conversación y se le responde ahí, a todos o a uno', async ({ page }) => {
+  const api = await openNivel1(page)
+  await page.getByRole('button', { name: /Board Room/ }).click()
+  await expect.poll(() => api.callsTo('POST', '/nivel1/c1/board-room').length).toBe(1)
+  await expect(page.getByText('🏛️ Board Room').first()).toBeVisible()
+  await page.getByLabel('Mensaje para ADÁN').fill('Ya tengo 20 preventas pagadas')
+  await page.getByRole('button', { name: 'Enviar' }).click()
+  await expect.poll(() => api.callsTo('POST', '/nivel1/c1/board-room/dialogo')[0]?.body)
+    .toEqual({ message: 'Ya tengo 20 preventas pagadas', agent: null })
+  await page.getByLabel('Mensaje para ADÁN').fill('Camila, ¿qué cifra te falta?')
+  await page.getByRole('button', { name: 'Enviar' }).click()
   await expect.poll(() => api.callsTo('POST', '/nivel1/c1/board-room/dialogo')[1]?.body)
-    .toEqual({ message: '¿Qué registro necesito?', agent: 'Legal' })
+    .toEqual({ message: 'Camila, ¿qué cifra te falta?', agent: 'CFO' })
+  await page.getByRole('button', { name: /Volver a la oficina/ }).click()
+  await expect(page.getByText('🏢 Oficina')).toBeVisible()
 })
 
 test('el Nivel se cierra solo cuando el cliente lo aprueba', async ({ page }) => {
   const api = await openNivel1(page)
-  await page.getByRole('button', { name: /Gate Review/ }).click()
+  await page.getByRole('button', { name: /Cerrar el Nivel/ }).click()
   await expect(page.getByText('Falta tu aprobación para cerrar el Nivel 1.')).toBeVisible()
   await page.getByRole('button', { name: 'Aprobar cierre del Nivel 1' }).click()
 
@@ -103,27 +66,11 @@ test('el Nivel se cierra solo cuando el cliente lo aprueba', async ({ page }) =>
   expect(api.callsTo('POST', '/nivel1/c1/decisions/d1')[0]?.body).toEqual({ action: 'approve' })
 })
 
-test('el cliente participa en el Board: pregunta, posición, síntesis y evidencia pedida', async ({ page }) => {
-  const api = await openNivel1(page)
-  api.overrides.set('POST /nivel1/c1/board-room', [200, BOARD_PROCEED])
-  await page.getByRole('tab', { name: 'Board Room' }).click()
-  await page.getByLabel('Tu pregunta para el Board').fill('¿Empiezo en Medellín?')
-  await page.getByLabel('Tu posición').fill('Quiero lanzar ya')
-  await page.getByRole('button', { name: 'Ejecutar Board Room' }).click()
-
-  await expect(page.getByTestId('agent-vote')).toHaveCount(6)
-  await expect(page.getByTestId('board-opening')).toContainText('Tu posición: Quiero lanzar ya')
-  await expect(page.getByTestId('board-synthesis')).toContainText('El Board recomienda avanzar')
-  await expect(page.getByText('Ventas de pan de los últimos 3 meses')).toBeVisible()
-  expect(api.callsTo('POST', '/nivel1/c1/board-room')[0]?.body)
-    .toEqual({ question: '¿Empiezo en Medellín?', position: 'Quiero lanzar ya' })
-})
-
 test('un error del backend se muestra en la página, sin diálogos del navegador', async ({ page }) => {
   const api = await openNivel1(page)
   api.overrides.set('POST /nivel1/c1/board-room', [429, { detail: 'Demasiadas solicitudes al modelo; espera un momento' }])
   page.on('dialog', () => { throw new Error('No debe abrirse un diálogo del navegador') })
-  await page.getByRole('button', { name: /Ejecutar Board Room/ }).click()
+  await page.getByRole('button', { name: /Board Room/ }).click()
   await expect(page.getByRole('alert')).toContainText('Demasiadas solicitudes al modelo')
 })
 
@@ -136,16 +83,12 @@ test('el cliente carga su documentación y ADÁN cuenta lo que aprendió', async
   expect(api.callsTo('POST', '/nivel1/c1/documents/upload')[0]?.headers['x-requested-with']).toBe('adan')
 })
 
-test('La Arena: los inversionistas preguntan, el cliente responde y sale el veredicto', async ({ page }) => {
+test('La Arena pasa dentro de la conversación: los inversionistas preguntan y se les responde ahí', async ({ page }) => {
   const api = await openNivel1(page)
-  await page.getByRole('tab', { name: 'La Arena' }).click()
-  await page.getByLabel('Tu pitch').fill('Pan de masa madre por suscripción')
-  await page.getByRole('button', { name: 'Entrar a La Arena' }).click()
-  await expect(page.getByTestId('arena-investor')).toHaveCount(4)
-  await page.getByLabel('Tu respuesta a Ángela Ruiz').fill('Ya vendí 30 suscripciones')
-  await page.getByRole('button', { name: 'Responder a los inversionistas' }).click()
-  await expect(page.getByTestId('arena-verdict')).toContainText('Pasaste La Arena')
-  expect(api.callsTo('POST', '/nivel1/c1/arena/start')[0]?.body).toEqual({ pitch: 'Pan de masa madre por suscripción' })
-  const answer = api.callsTo('POST', '/nivel1/c1/arena/a1/answer')[0]?.body as { answers: Record<string, string> } | undefined
-  expect(answer?.answers.angel).toBe('Ya vendí 30 suscripciones')
+  await page.getByRole('button', { name: /La Arena/ }).click()
+  await expect.poll(() => api.callsTo('POST', '/nivel1/c1/arena/start')[0]?.body).toEqual({ pitch: '' })
+  await page.getByLabel('Mensaje para ADÁN').fill('Ya vendí 30 suscripciones')
+  await page.getByRole('button', { name: 'Enviar' }).click()
+  await expect.poll(() => (api.callsTo('POST', '/nivel1/c1/arena/a1/answer')[0]?.body as { answers: Record<string, string> } | undefined)?.answers.angel)
+    .toBe('Ya vendí 30 suscripciones')
 })

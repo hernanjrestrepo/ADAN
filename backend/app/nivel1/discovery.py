@@ -32,9 +32,11 @@ MAX_SUMMARY = 300
 SCHEMA = {
     "type": "object",
     "additionalProperties": False,
-    "required": ["respuesta", "temas", "evidencia_sugerida", "investigar", "reaccion"],
+    "required": ["respuesta", "habla", "temas", "evidencia_sugerida", "investigar", "reaccion"],
     "properties": {
         "respuesta": {"type": "string"},
+        # Quién del equipo responde este turno (habla en primera persona)
+        "habla": {"type": "string", "enum": ["ceo", "cto", "cfo", "cmo", "legal", "producto", "operaciones"]},
         # Si hace falta un dato del mundo (mercado, competencia, cifras), qué buscar en internet; vacío si no
         "investigar": {"type": "string"},
         # Cómo reacciona el equipo en el Universo a lo que se está hablando
@@ -189,6 +191,11 @@ CONVERSATION_RULES = (
     "\"data\":[1,2]}]}\n```\n(type: bar, line o pie). Solo con números reales o explícitamente marcados como supuesto.\n"
     "6. Máximo 120 palabras (más solo si presentas datos investigados). No pongas «(Tema N de 7)»: el avance se ve en "
     "pantalla. Cuando los siete temas estén cubiertos, propón directamente el Board Room.\n"
+    "8. `habla`: responde el especialista al que le toca el tema, en primera persona y con su nombre: cfo Camila "
+    "(dinero, precios, costos, caja), cmo Santiago (mercado, clientes, competencia, canales), legal Lucía (leyes, "
+    "contratos, permisos, datos), producto Andrés (solución, experiencia, alcance), operaciones Sofía (proveedores, "
+    "procesos, equipo), cto Mateo (tecnología). ceo ADÁN cuando el tema es general, cuando saluda o cuando modera. "
+    "Si el cliente le habla a alguien por su nombre («Camila, …»), responde esa persona.\n"
     "7. `reaccion`: quién del equipo reacciona a este turno en la oficina (el especialista del tema: cfo si es dinero, "
     "cmo si es mercado, legal si es ley, csi o investigador si se investiga…), con su emoción y una frase de máximo 10 "
     "palabras, humana y con algo de humor cuando cabe.\n"

@@ -175,6 +175,8 @@ export default function BoardRoomPanel({ companyId, result, running, onRun, onNe
   const [dialogue, setDialogue] = useState<BoardDialogue | null>(null)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [override, setOverride] = useState<'closed' | 'open' | { objections: number }>('closed')
+  const [reason, setReason] = useState('')
 
   // El hilo es el de la última sesión: se recarga cuando hay un resultado nuevo
   useEffect(() => {
@@ -194,6 +196,20 @@ export default function BoardRoomPanel({ companyId, result, running, onRun, onNe
     } catch (err) {
       setError(errorMessage(err))
       return false
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  // El fundador decide seguir aunque el Board no aprobó: queda escrito y baja la calificación
+  const continueAnyway = async () => {
+    setBusy(true)
+    setError(null)
+    try {
+      const r = await api.continueDespiteBoard(companyId, reason.trim())
+      setOverride({ objections: r.open_objections.length })
+    } catch (err) {
+      setError(errorMessage(err))
     } finally {
       setBusy(false)
     }
@@ -279,6 +295,31 @@ export default function BoardRoomPanel({ companyId, result, running, onRun, onNe
             {busy && <p className="mt-3 text-sm text-adan-muted animate-pulse">El Board está pensando su respuesta…</p>}
             {error && <p role="alert" className="mt-3 text-sm text-adan-danger">{error}</p>}
             <Composer placeholder="Escríbele al Board…" busy={busy} onSend={(t) => talk(t, null)} />
+            {tally && tally.recommendation !== 'PROCEED' && (
+              <div className="mt-4 border-t border-adan-border pt-3 text-sm" data-testid="continue-anyway">
+                {typeof override === 'object' ? (
+                  <p className="rounded-lg bg-adan-warning/10 p-3 text-adan-warning">
+                    Quedó registrado: decidiste continuar con {override.objections} objeción(es) abiertas del Board. Afecta la
+                    calificación de la empresa (Problem Score). Para cerrar el Nivel, ve a Scores y aprueba el cierre.
+                  </p>
+                ) : override === 'open' ? (
+                  <div className="space-y-2">
+                    <p className="text-adan-muted">Escribe por qué decides seguir. Queda en el acta junto con las objeciones abiertas y baja la calificación.</p>
+                    <textarea value={reason} onChange={(e) => setReason(e.target.value)} rows={2} maxLength={2000}
+                      aria-label="Motivo para continuar" placeholder="Ya expliqué los tres temas; el mercado solo se valida lanzando…"
+                      className="w-full rounded-xl border border-adan-border bg-adan-bg px-3 py-2" />
+                    <div className="flex gap-2">
+                      <Button onClick={continueAnyway} loading={busy} disabled={reason.trim().length < 3}>Continuar bajo mi responsabilidad</Button>
+                      <Button variant="ghost" onClick={() => setOverride('closed')}>Cancelar</Button>
+                    </div>
+                  </div>
+                ) : (
+                  <button type="button" onClick={() => setOverride('open')} className="font-semibold text-adan-warning hover:underline">
+                    ⚖️ No tengo más que aportar: continuar bajo mi responsabilidad
+                  </button>
+                )}
+              </div>
+            )}
           </Card>
           {result.votes.map((vote) => (
             <VoteCard key={vote.agent} vote={vote} current={tally?.votes[vote.agent]} turns={turns} busy={busy}

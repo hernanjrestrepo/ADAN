@@ -69,6 +69,9 @@ export interface Message {
     reaccion?: { agente: string; emocion: string; frase: string } | null
     investigado?: { consulta: string; verificado: boolean } | null
     investigando?: { consulta: string } | null
+    agente?: string
+    escena?: string
+    voto?: string
   } | null
 }
 

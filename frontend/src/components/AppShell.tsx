@@ -40,6 +40,8 @@ export default function AppShell({ crumbs = [], status, toolbar, children, fixed
   const { companyId } = useParams()
   const [company, setCompany] = useState<Company | null>(null)
   const [apples, setApples] = useState<number | null>(null)
+  const [invite, setInvite] = useState<string | null>(null)
+  const [copied, setCopied] = useState(false)
 
   useEffect(() => {
     if (!companyId) return
@@ -51,6 +53,7 @@ export default function AppShell({ crumbs = [], status, toolbar, children, fixed
   useEffect(() => {
     let cancelled = false
     api.getAppleWallet().then((w) => { if (!cancelled) setApples(w.balance) }).catch(() => undefined)
+    api.getAppleNetwork().then((n) => { if (!cancelled) setInvite(n.link) }).catch(() => undefined)
     return () => { cancelled = true }
   }, [])
 
@@ -85,6 +88,15 @@ export default function AppShell({ crumbs = [], status, toolbar, children, fixed
           </nav>
           <div className="flex items-center gap-3 shrink-0">
             {status}
+            {invite && (
+              <button type="button" data-testid="invite-link"
+                onClick={() => { void navigator.clipboard.writeText(invite).then(() => { setCopied(true); window.setTimeout(() => setCopied(false), 2500) }) }}
+                title={`Copiar tu enlace de invitación: ${invite}`} aria-label="Copiar mi enlace de invitación"
+                className={`relative flex items-center gap-1 rounded-full px-3 py-1 text-sm font-semibold transition ${copied ? 'bg-adan-success text-white' : 'bg-adan-accent/15 text-adan-accent hover:bg-adan-accent/25'}`}>
+                <span aria-hidden="true">{copied ? '✓' : '🔗'}</span>
+                <span className="hidden sm:inline">{copied ? '¡Enlace copiado!' : 'Invitar'}</span>
+              </button>
+            )}
             <Link to="/apples" title="Tu billetera de @pples (1 @pple = USD 1)"
               className="flex items-center gap-1 rounded-full border border-adan-border px-3 py-1 text-sm hover:border-adan-accent">
               <span aria-hidden="true">🍎</span><span className="font-semibold">{apples === null ? '…' : apples.toLocaleString('es-CO', { maximumFractionDigits: 2 })}</span>
