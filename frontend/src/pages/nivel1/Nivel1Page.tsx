@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { Suspense, lazy, useCallback, useEffect, useState } from 'react'
 import { useParams } from 'react-router'
 import AppShell from '../../components/AppShell'
 import Alert from '../../components/ui/Alert'
@@ -12,6 +12,7 @@ import type {
 import BoardRoomPanel from './BoardRoomPanel'
 import ArenaPanel from './ArenaPanel'
 import ChatPanel from './ChatPanel'
+import { reactTo } from '../../universo/react'
 import SurveysPanel from './SurveysPanel'
 import DiagnosisPanel from './DiagnosisPanel'
 import EvidencePanel from './EvidencePanel'
@@ -34,6 +35,8 @@ const LEVEL_BADGE: Record<LevelStatus, { text: string; tone: 'green' | 'blue' | 
   completed: { text: 'Completado', tone: 'blue' },
   blocked: { text: 'Bloqueado', tone: 'gray' },
 }
+
+const EmbeddedWorld = lazy(() => import('../../universo/EmbeddedWorld'))
 
 export default function Nivel1Page() {
   const { companyId = '' } = useParams()
@@ -90,6 +93,7 @@ export default function Nivel1Page() {
     try {
       const data = await api.chat(companyId, text, status?.conversation?.id)
       setMessages((prev) => [...prev.filter((m) => m.id !== tempId), data.message])
+      reactTo(data.message)
       await loadStatus()
     } catch (err) {
       setError(errorMessage(err))
@@ -210,6 +214,7 @@ export default function Nivel1Page() {
         { label: 'Nivel 1 — El Dolor' }]}
       status={<Badge tone={levelBadge.tone}>{levelBadge.text}</Badge>}
       toolbar={<Tabs tabs={TABS} active={activeTab} onChange={setActiveTab} />}
+      fixedHeight={activeTab === 'chat'}
     >
       {error && (
         <div className="max-w-4xl mx-auto px-4 pt-4">
@@ -223,7 +228,8 @@ export default function Nivel1Page() {
           {activeTab === 'chat' && (
             <ChatPanel messages={messages} sending={sending} discovery={status?.discovery} onSend={handleSend}
               uploading={uploading} onUpload={handleUpload}
-              onRegisterEvidence={handleRegisterEvidence} onBoardRoom={() => handleBoardRoom()} onDiagnosis={handleDiagnosis} onGateReview={handleGateReview} />
+              onRegisterEvidence={handleRegisterEvidence} onBoardRoom={() => handleBoardRoom()} onDiagnosis={handleDiagnosis} onGateReview={handleGateReview}
+              world={<Suspense fallback={<div className="h-full rounded-2xl bg-adan-surface animate-pulse" />}><EmbeddedWorld /></Suspense>} />
           )}
           {activeTab === 'surveys' && <SurveysPanel companyId={companyId} onError={showError} onChanged={bump} />}
           {activeTab === 'arena' && <ArenaPanel companyId={companyId} onError={showError} />}

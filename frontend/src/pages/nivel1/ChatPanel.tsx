@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from 'react'
+import { useEffect, useRef, useState, useSyncExternalStore, type FormEvent, type KeyboardEvent, type ReactNode } from 'react'
 import RichMessage from '../../components/RichMessage'
 import Badge from '../../components/ui/Badge'
 import Button from '../../components/ui/Button'
@@ -17,6 +17,7 @@ interface ChatPanelProps {
   onBoardRoom: () => void
   onDiagnosis: () => void
   onGateReview: () => void
+  world?: ReactNode
 }
 
 const MAX_MESSAGE_CHARS = 8000  // mismo límite que el backend (WO-097)
@@ -27,6 +28,15 @@ const TOPIC_ICON: Record<DiscoveryTopic['estado'], { icon: string; label: string
   parcial: { icon: '◐', label: 'Falta precisar', className: 'bg-yellow-500/20 text-yellow-400' },
   sin_dato: { icon: '?', label: 'Sin dato: por validar', className: 'bg-gray-500/20 text-gray-300' },
   pendiente: { icon: '○', label: 'Pendiente', className: 'bg-adan-bg text-adan-muted' },
+}
+
+// Escritorio o celular: la oficina 3D se dibuja una sola vez, al lado (escritorio) o arriba (celular)
+const DESKTOP = '(min-width: 1024px)'
+function useDesktop() {
+  return useSyncExternalStore(
+    (cb) => { const m = window.matchMedia(DESKTOP); m.addEventListener('change', cb); return () => m.removeEventListener('change', cb) },
+    () => window.matchMedia(DESKTOP).matches,
+  )
 }
 
 function useElapsed(running: boolean) {
@@ -118,19 +128,23 @@ function DiscoveryPanel({ discovery, onRegisterEvidence, onBoardRoom }: {
 }
 
 export default function ChatPanel({
-  messages, sending, discovery, onSend, onRegisterEvidence, onBoardRoom, onDiagnosis, onGateReview, uploading = false, onUpload,
+  messages, sending, discovery, onSend, onRegisterEvidence, onBoardRoom, onDiagnosis, onGateReview, uploading = false, onUpload, world,
 }: ChatPanelProps) {
   const [input, setInput] = useState('')
+  const desktop = useDesktop()
   const fileInput = useRef<HTMLInputElement>(null)
   const busy = sending || uploading
   const pickFiles = () => fileInput.current?.click()
   const [showProgress, setShowProgress] = useState(false)
   const endRef = useRef<HTMLDivElement>(null)
+  const formRef = useRef<HTMLFormElement>(null)
   const elapsed = useElapsed(busy)
 
   useEffect(() => {
-    endRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages, busy])
+    // El último mensaje y la caja de texto siempre a la vista (en el celular la página baja hasta la caja)
+    endRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+    if (!desktop) formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' })
+  }, [messages, busy, desktop])
 
   const submit = async () => {
     const text = input.trim()
@@ -153,8 +167,9 @@ export default function ChatPanel({
   }
 
   return (
-    <div className="h-full flex gap-6 max-w-6xl mx-auto p-4">
-      <div className="flex-1 min-w-0 flex flex-col">
+    <div className="h-full min-h-0 flex flex-col lg:flex-row gap-4 max-w-[1600px] mx-auto p-3 sm:p-4">
+      {world && !desktop && <div className="h-[30vh] shrink-0">{world}</div>}
+      <div className="flex-1 min-w-0 min-h-0 flex flex-col">
         {discovery && (
           <button type="button" onClick={() => setShowProgress((v) => !v)} aria-expanded={showProgress}
             className="lg:hidden mb-3 text-left text-sm rounded-xl border border-adan-border bg-adan-surface px-4 py-2">
@@ -168,7 +183,7 @@ export default function ChatPanel({
           </div>
         )}
 
-        <div className="flex-1 overflow-y-auto space-y-4 mb-4" aria-live="polite">
+        <div className="flex-1 min-h-0 max-lg:min-h-[45vh] max-lg:max-h-[60vh] overflow-y-auto space-y-4 mb-3 pr-1" aria-live="polite">
           {messages.length === 0 && (
             <EmptyState icon="💬" title="Comienza la conversación">
               Cuéntale a ADÁN sobre el problema que quieres resolver. ADÁN sigue un guion de siete temas y te
@@ -217,7 +232,7 @@ export default function ChatPanel({
           <div ref={endRef} />
         </div>
 
-        <form onSubmit={handleSubmit} className="flex gap-3 items-end">
+        <form ref={formRef} onSubmit={handleSubmit} className="flex gap-3 items-end">
           <textarea
             aria-label="Mensaje para ADÁN"
             value={input}
@@ -246,7 +261,7 @@ export default function ChatPanel({
           <Button type="submit" disabled={busy || !input.trim()}>Enviar</Button>
         </form>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-4">
+        <div className="grid grid-cols-3 gap-2 mt-3 text-sm">
           <Button variant="secondary" className="flex-1" onClick={onBoardRoom}>🏛️ Ejecutar Board Room</Button>
           <Button variant="secondary" className="flex-1" onClick={onDiagnosis}>📋 Generar Diagnóstico</Button>
           <Button variant="secondary" className="flex-1 border-adan-success/50! text-adan-success!" onClick={onGateReview}>
@@ -255,9 +270,14 @@ export default function ChatPanel({
         </div>
       </div>
 
-      {discovery && (
-        <div className="hidden lg:block w-80 shrink-0 overflow-y-auto">
-          <DiscoveryPanel discovery={discovery} onRegisterEvidence={onRegisterEvidence} onBoardRoom={onBoardRoom} />
+      {(world || discovery) && (
+        <div className="hidden lg:flex w-[44%] max-w-[720px] shrink-0 min-h-0 flex-col gap-3">
+          {world && desktop && <div className="flex-1 min-h-[280px]">{world}</div>}
+          {discovery && (
+            <div className={`${world ? 'max-h-[42%]' : 'flex-1'} min-h-0 overflow-y-auto`}>
+              <DiscoveryPanel discovery={discovery} onRegisterEvidence={onRegisterEvidence} onBoardRoom={onBoardRoom} />
+            </div>
+          )}
         </div>
       )}
     </div>

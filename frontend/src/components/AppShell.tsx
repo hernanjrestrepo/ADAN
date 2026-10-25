@@ -18,6 +18,8 @@ interface AppShellProps {
   status?: ReactNode
   toolbar?: ReactNode
   children: ReactNode
+  // Altura de la pantalla: el contenido maneja su propio scroll (chat con historial y caja de texto visibles)
+  fixedHeight?: boolean
 }
 
 function initials(name = '') {
@@ -32,7 +34,7 @@ function brandStyle(company: Company | null): CSSProperties | undefined {
 
 // Marco común de las páginas autenticadas: marca, migas de pan, usuario, salir y aviso de IA. Dentro de una empresa
 // muestra su identidad, el selector de empresas y la checklist de los 7 Niveles.
-export default function AppShell({ crumbs = [], status, toolbar, children }: AppShellProps) {
+export default function AppShell({ crumbs = [], status, toolbar, children, fixedHeight = false }: AppShellProps) {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
   const { companyId } = useParams()
@@ -58,7 +60,7 @@ export default function AppShell({ crumbs = [], status, toolbar, children }: App
   }
 
   return (
-    <div className="min-h-screen flex flex-col" style={companyId ? brandStyle(company) : undefined}>
+    <div className={`${fixedHeight ? 'min-h-screen lg:h-dvh lg:min-h-0' : 'min-h-screen'} flex flex-col`} style={companyId ? brandStyle(company) : undefined}>
       <a href="#contenido" className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:rounded-lg focus:bg-adan-accent focus:px-4 focus:py-2 focus:text-white">
         Saltar al contenido
       </a>
@@ -110,7 +112,7 @@ export default function AppShell({ crumbs = [], status, toolbar, children }: App
           <div className="max-w-7xl mx-auto">{toolbar}</div>
         </div>
       )}
-      <div id="contenido" className="flex-1 overflow-hidden">{children}</div>
+      <div id="contenido" className={`flex-1 ${fixedHeight ? 'lg:min-h-0' : ''} overflow-hidden`}>{children}</div>
       <footer className="border-t border-adan-border px-4 sm:px-6 py-2">
         <AiDisclaimer className="max-w-7xl mx-auto" />
       </footer>

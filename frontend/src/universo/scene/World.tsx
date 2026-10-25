@@ -17,11 +17,11 @@ const MOBILE = typeof window !== 'undefined' && window.innerWidth < 768
 const OVERVIEW_MOBILE: [number, number, number, number, number, number] = [0, 28, 25, 0, 0, 7]
 
 // Cámara cinematográfica: vista general, o vuelo a la zona que se enfoca
-function Director() {
+function Director({ embedded = false }: { embedded?: boolean }) {
   const controls = useRef<CameraControls>(null)
   const focusZone = useUniverso((s) => s.focusZone)
   const selected = useUniverso((s) => s.selected)
-  const started = useUniverso((s) => s.started)
+  const started = useUniverso((s) => s.started) || embedded
 
   useEffect(() => {
     const c = controls.current
@@ -57,7 +57,7 @@ function Director() {
   )
 }
 
-export default function World() {
+export default function World({ embedded = false }: { embedded?: boolean }) {
   const select = useUniverso((s) => s.select)
   return (
     <Canvas shadows dpr={[1, 1.75]} camera={{ fov: 40, position: [30, 34, 46], near: 0.1, far: 300 }}
@@ -78,7 +78,7 @@ export default function World() {
       {AGENTS.map((a) => (
         <AgentFigure key={a.id} agent={a} />
       ))}
-      <Director />
+      <Director embedded={embedded} />
       <EffectComposer multisampling={0}>
         <Bloom mipmapBlur luminanceThreshold={0.9} luminanceSmoothing={0.2} intensity={1.15} />
         <Vignette eskil={false} offset={0.2} darkness={0.75} />

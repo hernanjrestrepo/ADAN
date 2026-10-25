@@ -4,7 +4,7 @@ import { useAuth } from '../../auth/context'
 import { AdanMark } from '../../components/Logo'
 import MicButton from '../../components/MicButton'
 import RichMessage from '../../components/RichMessage'
-import { lastChart } from '../../lib/chart'
+import { reactTo } from '../react'
 import { useUniverso } from '../store'
 import { api, errorMessage } from '../../lib/api'
 import type { Company, Message } from '../../types'
@@ -42,28 +42,6 @@ function rememberCompany(id: string | null): void {
   } catch {
     // sin almacenamiento: se vuelve a elegir la empresa la próxima vez
   }
-}
-
-// El equipo de la oficina reacciona a lo que se habla: quien responde, su emoción y una frase corta
-const AGENT_IDS = new Set(['ceo', 'cto', 'cfo', 'cmo', 'legal', 'producto', 'operaciones', 'csi', 'eva', 'investigador', 'analista'])
-type Mood = 'feliz' | 'riendo' | 'preocupado' | 'estresado' | 'celebrando' | 'pensando' | 'hablando'
-const MOODS = new Set<Mood>(['feliz', 'riendo', 'preocupado', 'estresado', 'celebrando', 'pensando', 'hablando'])
-
-function react(message: Message) {
-  const u = useUniverso.getState()
-  const r = message.metadata_json?.reaccion
-  const chart = lastChart(message.content)
-  if (chart) u.showHolo(chart)
-  if (message.metadata_json?.investigado) {
-    u.say('csi', '🔎 Investigué en internet: ' + message.metadata_json.investigado.consulta.slice(0, 60), 5000, 'info')
-    u.feel('csi', 'feliz', 4000)
-  }
-  if (r && AGENT_IDS.has(r.agente)) {
-    const mood = MOODS.has(r.emocion as Mood) ? (r.emocion as Mood) : 'hablando'
-    u.feel(r.agente, mood, 5000)
-    if (r.frase) u.say(r.agente, r.frase, 5000)
-  }
-  u.feel('ceo', 'hablando', 3000)
 }
 
 function toLines(messages: Message[]): Line[] {
@@ -148,7 +126,7 @@ export default function AdanChat({ open, onToggle }: { open: boolean; onToggle: 
       const data = await api.chat(companyId, text, conversationId)
       setConversationId(data.conversation_id)
       setLines((prev) => [...prev, { id: data.message.id, from: 'adan', text: data.message.content }])
-      react(data.message)
+      reactTo(data.message)
     } catch (err) {
       setLines((prev) => prev.filter((l) => l.id !== tempId))
       setInput(text)
