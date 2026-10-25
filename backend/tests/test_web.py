@@ -42,3 +42,43 @@ def test_the_team_reads_a_shared_link_in_the_chat(client, monkeypatch):
     assert "ABRISTE LAS PÁGINAS" in system and "Un solo pago para vuelos" in system
     lib = client.get(f"/api/v1/empresa/{cid}/biblioteca", headers=h).json()
     assert any(d["tipo"] == "Página web leída" and "Xmart Travel" in d["titulo"] for d in lib["documentos"])
+
+
+@pytest.mark.asyncio
+async def test_a_javascript_page_is_opened_in_the_real_browser(monkeypatch):
+    from app.documents import media, navegador
+
+    async def fake_render(url, subpages=3):
+        return {"main": {"url": url, "status": 200, "title": "Xmart Travel", "text": "Cuéntale a Aura el viaje que sueñas. " * 20,
+                         "heads": ["H1: Cuéntale a Aura"], "buttons": ["Conversar con Aura", "Vuelos"], "forms": ["Escribe tu viaje"],
+                         "links": [], "screenshot": b"jpeg"}, "internal": [], "subpages": []}
+
+    async def fake_ocr(data, mime, prompt=None):
+        assert "captura de una página web" in prompt
+        return "Portada con foto de San Andrés y un chat con Aura."
+    monkeypatch.setattr(navegador, "available", lambda: True)
+    monkeypatch.setattr(navegador, "render", fake_render)
+    monkeypatch.setattr(media, "can_see", lambda: True)
+    monkeypatch.setattr(media, "ocr_image", fake_ocr)
+    shell = {"url": "https://xmartravel.com/", "titulo": "Xmart Travel", "descripcion": "Viaja mejor", "encabezados": [],
+             "texto": "", "enlaces": [], "aviso": "casi no tiene texto"}
+    page = await web.see(shell)
+    md = web.as_markdown(page)
+    assert page["navegador"] and "aviso" not in page
+    assert "Conversar con Aura" in md and "San Andrés" in md and "Cuéntale a Aura" in md
+
+
+def test_pages_already_read_are_remembered_and_not_reopened(client, monkeypatch):
+    calls = []
+
+    async def fake_fetch_all(urls):
+        calls.append(urls)
+        return [{"url": urls[0], **web.parse_html(HTML, urls[0])}]
+    monkeypatch.setattr(web, "fetch_all", fake_fetch_all)
+    cid, h = _setup(client, "memoria-web@example.com")
+    llm = _use(client, ScriptLLM([TURN_1] * 6))
+    client.post(f"/api/v1/nivel1/{cid}/chat", headers=h, json={"message": "Revisa https://xmart.travel/"})
+    client.post(f"/api/v1/nivel1/{cid}/chat", headers=h, json={"message": "Otra vez https://xmart.travel/"})
+    assert len(calls) == 1  # la segunda vez usa lo que ya leyó hace un momento
+    client.post(f"/api/v1/nivel1/{cid}/chat", headers=h, json={"message": "¿Qué te pareció el precio?"})
+    assert "YA ABRISTE" in llm.calls[-1][0].content and "Un solo pago para vuelos" in llm.calls[-1][0].content
