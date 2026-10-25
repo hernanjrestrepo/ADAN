@@ -646,6 +646,7 @@ export interface SurveyResults {
     average?: number | null
     texts?: string[]
   }[]
+  simulation?: SurveySimulation | null
 }
 
 export interface SurveyInsights {
@@ -982,4 +983,13 @@ export interface BoardTally {
 export interface BoardDialogue {
   thread: BoardDialogueTurn[]
   tally: BoardTally
+}
+
+// Encuesta simulada con el Simulador de Mercado (se contrasta con la real)
+export interface SurveySimulation {
+  size: number
+  perfil: string
+  supuestos: string[]
+  questions: { id: string; texto: string; tipo: string; counts?: Record<string, number>; average?: number; texts?: string[] }[]
+  created_at: string
 }

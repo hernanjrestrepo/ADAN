@@ -129,7 +129,7 @@ def test_unparseable_output_never_reaches_the_client_as_json(client, db_session)
 
 def test_streaming_prompt_asks_only_for_the_reply():
     prompt = discovery.system_prompt(discovery.empty_state(), structured=False)
-    assert "`temas`" not in prompt and "UNA sola pregunta" in prompt
+    assert "`temas`" not in prompt and "UNA pregunta" in prompt and "patrocinador" in prompt
 
 
 # ============================================================
@@ -262,3 +262,23 @@ def test_adan_does_not_repeat_its_previous_answer(client):
     second = client.post(f"/api/v1/nivel1/{cid}/chat", json={"message": "dos"}, headers=headers).json()["message"]
     assert second["content"].startswith("Tienes razón") and len(llm.calls) == 3
     assert "repite casi igual" in llm.calls[2][-1].content
+
+
+def test_a_work_table_brings_other_specialists_into_the_conversation(client):
+    cid, headers = _setup(client, "mesa@example.com")
+    _use(client, ScriptLLM([{**TURN_1, "respuesta": "Tu cliente ideal queda definido; buen avance.", "habla": "cmo",
+                             "mesa": [{"habla": "cfo", "texto": "Y ese perfil gasta 30 a 50 millones por viaje: buena señal 😄", "emocion": "riendo"},
+                                      {"habla": "cmo", "texto": "repetido, no entra", "emocion": "feliz"}],
+                             "investigar": "", "reaccion": {"agente": "cmo", "emocion": "feliz", "frase": "¡Bien!"}}]))
+    client.post(f"/api/v1/nivel1/{cid}/chat", json={"message": "53 años, Barranquilla, viaja con su familia"}, headers=headers)
+    msgs = client.get(f"/api/v1/nivel1/{cid}/status", headers=headers).json()["messages"]
+    last = [m["agent_name"] for m in msgs[-2:]]
+    assert last == ["Santiago · CMO", "Camila · CFO"] and msgs[-1]["metadata_json"]["mesa"] is True
+
+
+def test_an_existing_company_gets_a_review_and_pivot_not_a_restart(client):
+    cid, headers = _setup(client, "existente@example.com")
+    started = client.post("/api/v1/onboarding/start", headers=headers, json={"company_name": "App Viajes", "stage": "existing"}).json()
+    llm = _use(client, ScriptLLM([TURN_1]))
+    client.post(f"/api/v1/nivel1/{started['company_id']}/chat", json={"message": "Tenemos MVP y pocas ventas"}, headers=headers)
+    assert "MODO REVISIÓN Y PIVOTE" in llm.calls[0][0].content

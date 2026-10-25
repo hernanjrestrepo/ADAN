@@ -93,6 +93,10 @@ const LEVEL_LINK: Record<number, (id: string) => string> = {
   3: (id) => `/constitucion/${id}`,
 }
 
+function levelPath(n: number, companyId: string): string {
+  return (LEVEL_LINK[n] ?? ((id: string) => `/ruta/${id}`))(companyId)
+}
+
 export default function CompanyBar({ companyId, company, onCompany }: {
   companyId: string
   company: Company | null
@@ -167,8 +171,12 @@ export default function CompanyBar({ companyId, company, onCompany }: {
           </button>
         )}
 
-        {/* Checklist de los 7 Niveles */}
-        <ol aria-label="Avance de los 7 Niveles" className="ml-auto flex items-center gap-1 overflow-x-auto">
+        {/* Checklist de los 7 Niveles, con flechas para ir al anterior o al siguiente */}
+        <span className="ml-auto flex items-center gap-1">
+          <button type="button" aria-label="Nivel anterior" title="Nivel anterior" disabled={!current || current.number <= 1}
+            onClick={() => current && navigate(levelPath(current.number - 1, companyId))}
+            className="grid h-7 w-7 place-items-center rounded-full border border-adan-border text-sm hover:border-adan-accent disabled:opacity-30">‹</button>
+        <ol aria-label="Avance de los 7 Niveles" className="flex items-center gap-1 overflow-x-auto">
           {[1, 2, 3, 4, 5, 6, 7].map((n) => {
             const lv = levels.find((l) => l.number === n)
             const ap = paid.find((p) => p.level === n)
@@ -190,6 +198,11 @@ export default function CompanyBar({ companyId, company, onCompany }: {
             )
           })}
         </ol>
+          <button type="button" aria-label="Nivel siguiente" title="Nivel siguiente (cuando el actual esté cerrado)"
+            disabled={!current || !levels.some((l) => l.number === current.number + 1 && l.status !== 'blocked')}
+            onClick={() => current && navigate(levelPath(current.number + 1, companyId))}
+            className="grid h-7 w-7 place-items-center rounded-full border border-adan-border text-sm hover:border-adan-accent disabled:opacity-30">›</button>
+        </span>
         <span className="text-xs text-adan-muted whitespace-nowrap">{done} de 7{current ? ` · en curso: ${current.name}` : ''}</span>
         {current && paid.length > 0 && !paid.find((p) => p.level === current.number)?.paid && (
           <button type="button" onClick={() => pay(current.number)} disabled={paying !== null}

@@ -221,6 +221,16 @@ class Nivel1Service:
         self.db.add(assistant_msg)
         self.db.commit()
         self.db.refresh(assistant_msg)
+        if not degraded:
+            for i, extra in enumerate((parsed.get("mesa") or [])[:2]):
+                who = extra.get("habla") if isinstance(extra, dict) and extra.get("habla") in timeline.TEAM else None
+                text = str(extra.get("texto", "")).strip() if isinstance(extra, dict) else ""
+                if not who or who == speaker or len(text) < 5:
+                    continue
+                self.db.add(Message(conversation_id=conversation.id, role="assistant", agent_name=timeline.label(who),
+                                    content=text[:600], metadata_json={"agente": who, "escena": "oficina", "mesa": True,
+                                                                        "reaccion": {"agente": who, "emocion": extra.get("emocion", "hablando"), "frase": ""}}))
+            self.db.commit()
 
         return assistant_msg, conversation
 
@@ -235,8 +245,11 @@ class Nivel1Service:
             "[Investigación hecha por ADÁN en internet"
             + ("" if research["searched"] else ", SIN búsqueda verificada: márcalo como estimación")
             + f" sobre «{query}»]\n{research['text'][:6000]}\n\n"
-            "Responde ahora al cliente con esos hallazgos, sin repetir lo que ya le dijiste: cifras clave en una "
-            "tabla, un gráfico si ayuda y las fuentes (URL) al final. Luego tu pregunta. Deja `investigar` vacío."))]
+            "Responde ahora al cliente con esos hallazgos, sin repetir lo que ya le dijiste. NO vuelques los datos: "
+            "digiérelos y aterrízalos a SU empresa (qué significan para su negocio, qué decisión cambian, qué "
+            "proponemos hacer). Máximo 3 cifras clave, solo las que tengan fuente con URL (o márcalas como "
+            "estimación); descarta las que no cuadren con el sentido común. Fuentes al final. Luego tu pregunta. "
+            "Deja `investigar` vacío."))]
         response = await self.llm.chat_json(messages, discovery.SCHEMA, temperature=0.3, max_tokens=3000)
         parsed = response.parsed if isinstance(response.parsed, dict) else {}
         reply = parsed.get("respuesta") if isinstance(parsed.get("respuesta"), str) else ""
@@ -260,8 +273,9 @@ class Nivel1Service:
         search = getattr(self.llm, "chat_search", None)
         msgs = [LLMMessage(role="system", content=(
             "Eres el investigador de ADÁN. Busca en internet datos actuales y verificables para responder. Da cifras "
-            "con año y la URL de cada fuente. Si hay estimaciones distintas, muestra el rango. Español, máximo 250 "
-            "palabras.")),
+            "con año y la URL EXACTA de cada fuente; si no encuentras una fuente real, dilo: nunca inventes un número "
+            "ni una fuente. Revisa que cada cifra tenga sentido común frente a la población y el mercado reales. Si "
+            "hay estimaciones distintas, muestra el rango. Español, máximo 250 palabras.")),
             LLMMessage(role="user", content=query)]
         try:
             if search is None:
@@ -331,6 +345,14 @@ class Nivel1Service:
             self.db.commit()
 
         system_prompt = discovery.system_prompt(state, structured=structured)
+        company = self.db.query(Company).join(Project, Project.company_id == Company.id) \
+            .join(Card, Card.project_id == Project.id).filter(Card.id == conversation.card_id).first()
+        if company is not None and company.origin_stage == "existing":
+            system_prompt += (
+                "\n\nMODO REVISIÓN Y PIVOTE: esta empresa ya existe (puede tener producto, MVP o ventas, y quizá no le está "
+                "yendo como esperaba). No empieces de cero: usa lo que ya hay (documentos, producto, cifras) para cubrir los "
+                "temas rápido, encuentra dónde se rompe el negocio (el problema, el cliente, el canal, el precio o la "
+                "ejecución) y propone con optimismo realista qué ajustar o pivotar, apoyándote en sus datos reales.")
         if conversation.summary:
             system_prompt += f"\n\nResumen de lo que el cliente contó antes: {conversation.summary}"
         # Capas Global, Proyecto, Nivel y Card (AD-CMP-04); la Conversación son los mensajes

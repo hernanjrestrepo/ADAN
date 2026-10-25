@@ -22,6 +22,7 @@ function Director({ embedded = false }: { embedded?: boolean }) {
   const focusZone = useUniverso((s) => s.focusZone)
   const selected = useUniverso((s) => s.selected)
   const started = useUniverso((s) => s.started) || embedded
+  const cam = useUniverso((s) => s.cam)
 
   useEffect(() => {
     const c = controls.current
@@ -40,6 +41,15 @@ function Director({ embedded = false }: { embedded?: boolean }) {
       void c.setLookAt(...(MOBILE ? OVERVIEW_MOBILE : OVERVIEW), true)
     }
   }, [focusZone, selected, started])
+
+  // Botones de la cámara: acercar, alejar o volver a la vista general
+  useEffect(() => {
+    const c = controls.current
+    if (!c || cam.n === 0) return
+    if (cam.op === 'in') void c.dolly(4, true)
+    else if (cam.op === 'out') void c.dolly(-4, true)
+    else void c.setLookAt(...(MOBILE ? OVERVIEW_MOBILE : OVERVIEW), true)
+  }, [cam])
 
   useEffect(() => {
     const c = controls.current

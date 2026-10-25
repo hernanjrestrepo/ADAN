@@ -1,5 +1,5 @@
 import type {
-  BoardDialogue, BoardDialogueTurn, AdminCompany, AdminMovement, AdminPurchase, AdminSummary, AdminUser, AppleCompanyLevel, AppleNetwork, ApplePrices, ApplePurchase, AppleWallet, CommunityConnection, CommunityListing, CommunityProfile, ExecutiveReport, FinancialModel, OrgChart, PublicSurvey, SurveyAnswer, SurveyInsights, SurveyResults, SurveySummary, ArenaSession, AgentContract, LegalGuide, NameCheck, Statutes, StatutesInput, AgentOffering, AgentTask, ContractReport, HirePeriod,
+  SurveySimulation, BoardDialogue, BoardDialogueTurn, AdminCompany, AdminMovement, AdminPurchase, AdminSummary, AdminUser, AppleCompanyLevel, AppleNetwork, ApplePrices, ApplePurchase, AppleWallet, CommunityConnection, CommunityListing, CommunityProfile, ExecutiveReport, FinancialModel, OrgChart, PublicSurvey, SurveyAnswer, SurveyInsights, SurveyResults, SurveySummary, ArenaSession, AgentContract, LegalGuide, NameCheck, Statutes, StatutesInput, AgentOffering, AgentTask, ContractReport, HirePeriod,
   BoardConsensus, BoardRoomInput, ChatResponse, Company, CompanyInput, DecideInput, Decision, DocumentRecord,
   Evidence, EvidenceInput, GatePreview, GateReviewResult, LevelView, Nivel1Status, OnboardingState, Score,
   ScoreOverview, TimelineEvent, TokenResponse, TwinKind, TwinOverview, UploadResult, User,
@@ -95,6 +95,7 @@ export const api = {
   createCompany: (input: CompanyInput) => post<Company>('/companies/', input),
   getCompanies: () => request<Company[]>('/companies/'),
   getCompany: (id: string) => request<Company>(`/companies/${id}`),
+  archiveCompany: (id: string, reason: string) => post<Company>(`/twin/${id}/lifecycle/archive`, { reason }),
 
   // Nivel 1
   getNivel1Status: (companyId: string) => request<Nivel1Status>(`/nivel1/${companyId}/status`),
@@ -187,6 +188,8 @@ export const api = {
   getSurveyResults: (companyId: string, token: string) => request<SurveyResults>(`/nivel1/${companyId}/surveys/${token}/results`),
   getSurveyInsights: (companyId: string, token: string) =>
     request<SurveyInsights>(`/nivel1/${companyId}/surveys/${token}/insights`, { method: 'POST', signal: AbortSignal.timeout(CHAT_TIMEOUT_MS) }),
+  simulateSurvey: (companyId: string, token: string) =>
+    request<SurveySimulation>(`/nivel1/${companyId}/surveys/${token}/simular`, { method: 'POST', signal: AbortSignal.timeout(CHAT_TIMEOUT_MS) }),
   getPublicSurvey: (token: string) => request<PublicSurvey>(`/encuestas/${token}`),
   answerSurvey: (token: string, answers: Record<string, SurveyAnswer>, consent: boolean) =>
     post<{ ok: boolean }>(`/encuestas/${token}`, { answers, consent }),

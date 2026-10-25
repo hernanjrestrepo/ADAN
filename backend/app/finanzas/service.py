@@ -177,8 +177,12 @@ class Finanzas:
                   "Genexis y CSI. La membresía de Paradixe (USD 100 al mes, CRM y plataformas) la agrega el sistema: no la "
                   "pongas como rol. "
                   "`costo_humano_equivalente`: lo que costaría ese rol con una persona (igual al costo si es humano). "
-                  "`por_que`: una frase. `resumen`: cómo queda la organización y cuánto ahorra frente a hacerlo todo con "
-                  "personas, en 3 frases. Entre 6 y 14 roles.")
+                  "`por_que`: una frase que diga qué costo o riesgo reduce y qué oportunidad abre. Usa SIEMPRE la IA y "
+                  "los servicios de Paradixe donde aporten: por ejemplo, EVA en ventas y marketing baja el costo de "
+                  "adquirir clientes (CAC) y escala sin contratar un equipo comercial grande; el BPO convierte costos "
+                  "fijos en variables. `resumen`: en 3 a 4 frases, cómo queda la organización, cuánto ahorra frente a "
+                  "hacerlo todo con personas, cómo baja el riesgo y cómo mejora el CAC y la escalabilidad. "
+                  "Entre 6 y 14 roles.")
         resp = await self.llm.chat_json([LLMMessage("system", CFO), LLMMessage("user", prompt)], ORG_SCHEMA,
                                         temperature=0.3, max_tokens=5000)
         data = resp.parsed if isinstance(resp.parsed, dict) else {}

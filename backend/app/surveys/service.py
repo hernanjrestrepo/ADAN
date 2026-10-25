@@ -54,6 +54,29 @@ DESIGNER = (
 )
 
 
+SIM_SCHEMA = {
+    "type": "object", "additionalProperties": False, "required": ["perfil", "respuestas", "supuestos"],
+    "properties": {
+        "perfil": {"type": "string"},
+        "supuestos": {"type": "array", "items": {"type": "string"}},
+        "respuestas": {"type": "array", "items": {
+            "type": "object", "additionalProperties": False, "required": ["id", "conteos", "promedio", "textos"],
+            "properties": {"id": {"type": "string"},
+                           "conteos": {"type": "object", "additionalProperties": {"type": "number"}},
+                           "promedio": {"type": "number"},
+                           "textos": {"type": "array", "items": {"type": "string"}}}}},
+    },
+}
+SIM_SIZE = 50
+
+SIMULATOR = (
+    "Eres el Simulador de Mercado de ADÁN. Simulas cómo respondería una muestra de personas REALISTA del segmento "
+    "descrito, con diversidad (no todas sufren el problema igual; algunas no lo sufren). No eres optimista: te basas "
+    "en cómo se comporta la gente de verdad. Es una simulación para avanzar mientras llega la encuesta real; nunca la "
+    "presentes como datos reales. Español."
+)
+
+
 def _now() -> str:
     return datetime.now(timezone.utc).isoformat()
 
@@ -198,7 +221,44 @@ class Surveys:
                 item["texts"] = values[-50:]
             out.append(item)
         return {"token": survey["token"], "titulo": survey["titulo"], "open": survey["open"],
-                "responses": len(responses), "questions": out}
+                "responses": len(responses), "questions": out, "simulation": survey.get("simulation")}
+
+    async def simulate(self, project: Project, survey: dict, brief: str) -> dict:
+        """Respuestas simuladas de 50 personas del segmento. Se guardan aparte y se contrastan con las reales."""
+        qs = [{k: q[k] for k in ("id", "texto", "tipo", "opciones")} for q in survey["preguntas"]]
+        prompt = (f"Segmento y problema (lo que ADÁN sabe):\n{brief[:5000]}\n\nEncuesta:\n"
+                  f"{json.dumps(qs, ensure_ascii=False)}\n\n"
+                  f"Simula {SIM_SIZE} respuestas. Por pregunta (`id`): `conteos` = cuántas personas eligieron cada opción "
+                  "(opcion y multiple; en escala, las claves '1' a '5'); `promedio` = promedio para escala y numero (0 si no "
+                  "aplica); `textos` = 3 a 5 respuestas abiertas típicas para preguntas de texto (vacío si no aplica). "
+                  "`perfil`: a quiénes simulaste, en una frase. `supuestos`: en qué te basaste y los límites de la "
+                  "simulación (máximo 4).")
+        resp = await self.llm.chat_json([LLMMessage("system", SIMULATOR), LLMMessage("user", prompt)], SIM_SCHEMA,
+                                        temperature=0.5, max_tokens=4000)
+        data = resp.parsed if isinstance(resp.parsed, dict) else {}
+        by_id = {r.get("id"): r for r in data.get("respuestas") or [] if isinstance(r, dict)}
+        questions = []
+        for q in survey["preguntas"]:
+            r = by_id.get(q["id"]) or {}
+            item = {"id": q["id"], "texto": q["texto"], "tipo": q["tipo"]}
+            if q["tipo"] in ("opcion", "multiple", "escala"):
+                keys = q["opciones"] if q["tipo"] != "escala" else [str(i) for i in range(1, 6)]
+                raw = r.get("conteos") if isinstance(r.get("conteos"), dict) else {}
+                item["counts"] = {k: max(0, int(float(raw.get(k, 0) or 0))) for k in keys}
+            if q["tipo"] in ("escala", "numero"):
+                item["average"] = round(float(r.get("promedio") or 0), 2)
+            if q["tipo"] == "texto":
+                item["texts"] = normalize_list(r.get("textos"))[:5]
+            questions.append(item)
+        simulation = {"size": SIM_SIZE, "perfil": normalize_string(data.get("perfil")),
+                      "supuestos": normalize_list(data.get("supuestos"))[:4], "questions": questions, "created_at": _now()}
+        doc = self._doc(survey["token"], project)
+        if doc is not None:
+            stored = json.loads(doc.content)
+            stored["simulation"] = simulation
+            doc.content = json.dumps(stored, ensure_ascii=False)
+            self.db.commit()
+        return simulation
 
     async def insights(self, survey: dict) -> dict:
         results = self.results(survey)

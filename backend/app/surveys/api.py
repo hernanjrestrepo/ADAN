@@ -74,6 +74,19 @@ def set_open(company_id: str, token: str, body: OpenBody, db: Session = Depends(
         raise HTTPException(status_code=404, detail="La encuesta no existe")
 
 
+@router.post("/nivel1/{company_id}/surveys/{token}/simular")
+async def simulate_survey(company_id: str, token: str, db: Session = Depends(get_db), user: User = Depends(llm_user),
+                          llm: LLMAdapter = Depends(get_llm)):
+    """Encuesta simulada con el Simulador de Mercado: se avanza ya y se contrasta cuando lleguen las respuestas reales."""
+    _, project = _project(db, company_id, user)
+    surveys = Surveys(llm, db)
+    survey = surveys.get(token, project)
+    if not survey:
+        raise HTTPException(status_code=404, detail="Encuesta no encontrada")
+    with usage_scope(db, company_id, level=1):
+        return await surveys.simulate(project, survey, Nivel1Service(llm, db).board_brief(project))
+
+
 @router.post("/nivel1/{company_id}/surveys/{token}/insights")
 async def survey_insights(company_id: str, token: str, db: Session = Depends(get_db), user: User = Depends(llm_user),
                           llm: LLMAdapter = Depends(get_llm)):
