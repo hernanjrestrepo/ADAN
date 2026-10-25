@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useSyncExternalStore, type FormEvent, type KeyboardEvent, type ReactNode } from 'react'
 import RichMessage from '../../components/RichMessage'
 import Badge from '../../components/ui/Badge'
+import { FILE_ICON, pastedFiles } from '../../lib/clipboard'
 import Button from '../../components/ui/Button'
 import MicButton from '../../components/MicButton'
 import { EmptyState } from '../../components/ui/States'
@@ -21,7 +22,7 @@ interface ChatPanelProps {
 }
 
 const MAX_MESSAGE_CHARS = 8000  // mismo límite que el backend (WO-097)
-const ACCEPTED_DOCS = '.pdf,.docx,.xlsx,.pptx,.txt,.md,.csv,.json'
+const ACCEPTED_DOCS = '.pdf,.docx,.xlsx,.pptx,.txt,.md,.csv,.json,.png,.jpg,.jpeg,.webp,.gif,.mp3,.m4a,.wav,.ogg,.opus,.aac,.flac,.amr,.mp4,.mov,.webm,.mkv,.avi,.3gp,image/*,audio/*,video/*'
 
 const TOPIC_ICON: Record<DiscoveryTopic['estado'], { icon: string; label: string; className: string }> = {
   respondido: { icon: '✓', label: 'Entendido', className: 'bg-adan-success/20 text-adan-success' },
@@ -113,6 +114,13 @@ export default function ChatPanel({
   const fileInput = useRef<HTMLInputElement>(null)
   const busy = sending || uploading
   const pickFiles = () => fileInput.current?.click()
+  // Lo que se está cargando se ve de inmediato, con su ícono
+  const [sendingFiles, setSendingFiles] = useState<string[]>([])
+  const upload = async (files: File[]) => {
+    if (!onUpload || !files.length) return
+    setSendingFiles(files.map((f) => f.name))
+    try { await onUpload(files) } finally { setSendingFiles([]) }
+  }
   const [showProgress, setShowProgress] = useState(false)
   const endRef = useRef<HTMLDivElement>(null)
   const formRef = useRef<HTMLFormElement>(null)
@@ -173,8 +181,9 @@ export default function ChatPanel({
               className="w-full rounded-xl border border-dashed border-adan-accent/50 bg-adan-accent/5 p-4 text-left hover:bg-adan-accent/10">
               <p className="text-sm font-semibold">📎 ¿Ya tienes documentos? Súbelos y ADÁN aprende de tu idea o de tu empresa</p>
               <p className="text-xs text-adan-muted mt-1">
-                Plan de negocio, estados financieros, presentaciones, estudios de mercado, cotizaciones, actas… en PDF, Word,
-                Excel, PowerPoint o texto (hasta 10 archivos de 15 MB). ADÁN distingue lo que está respaldado de lo que es supuesto.
+                Plan de negocio, estados financieros, presentaciones, actas, capturas de pantalla, fotos, grabaciones de audio o
+                video… (hasta 10 archivos; documentos e imágenes de 15 MB, audio y video de 50 MB). También puedes pegar una
+                captura con Ctrl+V. ADÁN distingue lo que está respaldado de lo que es supuesto.
               </p>
             </button>
           )}
@@ -198,11 +207,18 @@ export default function ChatPanel({
               </div>
             </div>
           ))}
+          {sendingFiles.length > 0 && (
+            <div className="flex justify-end" data-testid="sending-files">
+              <div className="flex max-w-[85%] flex-wrap gap-2 rounded-xl bg-adan-accent/80 px-3 py-2 text-sm text-white">
+                {sendingFiles.map((n) => <span key={n} className="rounded-lg bg-white/15 px-2 py-0.5">{FILE_ICON(n)} {n}</span>)}
+              </div>
+            </div>
+          )}
           {busy && (
             <div className="flex justify-start">
               <div className="bg-adan-surface border border-adan-border rounded-xl px-4 py-3">
                 <div className="text-sm text-adan-muted animate-pulse">
-                  {uploading ? 'ADÁN está leyendo tus documentos' : 'ADÁN está pensando tu respuesta'}…{elapsed >= 5 ? ` (${elapsed} s)` : ''}
+                  {uploading ? 'ADÁN está leyendo lo que cargaste' : 'ADÁN está pensando tu respuesta'}…{elapsed >= 5 ? ` (${elapsed} s)` : ''}
                 </div>
               </div>
             </div>
@@ -223,7 +239,14 @@ export default function ChatPanel({
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Escribe tu respuesta… (Enter envía, Shift+Enter salto de línea)"
+            onPaste={(e) => {
+              const files = pastedFiles(e)
+              if (files.length && onUpload) {
+                e.preventDefault()
+                void upload(files)
+              }
+            }}
+            placeholder="Escribe, dicta 🎤 o pega una captura (Ctrl+V). Enter envía."
             maxLength={MAX_MESSAGE_CHARS}
             rows={Math.min(6, Math.max(2, input.split('\n').length))}
             className="flex-1 resize-none px-4 py-3 bg-adan-surface border border-adan-border rounded-xl text-adan-text focus:outline-hidden focus:border-adan-accent"
@@ -236,9 +259,9 @@ export default function ChatPanel({
                 onChange={async (e) => {
                   const files = Array.from(e.target.files ?? [])
                   e.target.value = ''
-                  if (files.length) await onUpload(files)
+                  await upload(files)
                 }} />
-              <Button type="button" variant="secondary" onClick={pickFiles} disabled={busy} title="Cargar documentos">📎</Button>
+              <Button type="button" variant="secondary" onClick={pickFiles} disabled={busy} title="Cargar documentos, imágenes, audio o video">📎</Button>
             </>
           )}
           <MicButton onText={(t) => setInput((v) => (v ? `${v} ${t}` : t))} disabled={busy}

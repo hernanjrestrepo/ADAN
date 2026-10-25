@@ -78,6 +78,9 @@ class Settings:
     APPLES_REQUIRED: bool = os.getenv("APPLES_REQUIRED", "false").lower() in ("1", "true", "yes")
     # Regalo de bienvenida a quien se registra con un enlace de invitación (alcanza para el Nivel 1)
     APPLES_WELCOME_REFERRAL: int = int(os.getenv("APPLES_WELCOME_REFERRAL", "5"))
+    # Transcripción local de audio y video (faster-whisper): tamaño del modelo e idioma ("" = detectar)
+    WHISPER_MODEL: str = os.getenv("WHISPER_MODEL", "small")
+    WHISPER_LANGUAGE: str = os.getenv("WHISPER_LANGUAGE", "es")
     # Superadministradores de Paradixe (correos separados por comas): ven todo y regalan @pples para pruebas
     PARADIXE_SUPERADMINS: str = os.getenv("PARADIXE_SUPERADMINS", "ceo@paradixe.xyz")
     LLM_MODEL_STANDARD: str = os.getenv("LLM_MODEL_STANDARD", "claude-sonnet-5")

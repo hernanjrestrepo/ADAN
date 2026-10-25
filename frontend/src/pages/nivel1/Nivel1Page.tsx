@@ -123,6 +123,18 @@ export default function Nivel1Page() {
       const result = await api.uploadDocuments(companyId, files)
       if (result.errors.length) setError(result.errors.join(' '))
       await loadStatus()
+      // Audio y video se transcriben aparte: lo que entendió ADÁN llega en un momento
+      const status = await api.getNivel1Status(companyId)
+      const last = status.messages[status.messages.length - 1]
+      if (last?.metadata_json?.investigando) {
+        setResearching(true)
+        void waitForResearch(companyId, last.id, 600_000).then((msgs) => {
+          setResearching(false)
+          const found = msgs?.[msgs.length - 1]
+          if (found) reactTo(found)
+          void loadStatus()
+        })
+      }
     } catch (err) {
       setError(errorMessage(err))
     } finally {

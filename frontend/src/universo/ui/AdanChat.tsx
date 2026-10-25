@@ -3,6 +3,7 @@ import { Link } from 'react-router'
 import { useAuth } from '../../auth/context'
 import { AdanMark } from '../../components/Logo'
 import MicButton from '../../components/MicButton'
+import { pastedFiles } from '../../lib/clipboard'
 import RichMessage from '../../components/RichMessage'
 import { waitForResearch } from '../../lib/research'
 import { reactTo } from '../react'
@@ -15,7 +16,7 @@ import type { Company, Message } from '../../types'
 // lee los documentos que subas y te deja hablar por micrófono.
 
 const COMPANY_KEY = 'adan-universo-company'
-const ACCEPTED_DOCS = '.pdf,.docx,.xlsx,.pptx,.txt,.md,.csv,.json'
+const ACCEPTED_DOCS = '.pdf,.docx,.xlsx,.pptx,.txt,.md,.csv,.json,.png,.jpg,.jpeg,.webp,.gif,.mp3,.m4a,.wav,.ogg,.opus,.aac,.flac,.amr,.mp4,.mov,.webm,.mkv,.avi,.3gp,image/*,audio/*,video/*'
 
 interface Line { id: string; from: 'adan' | 'tu'; text: string }
 
@@ -248,7 +249,8 @@ export default function AdanChat({ open, onToggle }: { open: boolean; onToggle: 
           <form onSubmit={send} className="flex items-end gap-2">
             <textarea aria-label="Mensaje para ADÁN" value={input} onChange={(e) => setInput(e.target.value)} rows={2} maxLength={8000}
               onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) { e.preventDefault(); void send() } }}
-              placeholder="Escribe o dicta tu respuesta…" disabled={Boolean(busy)}
+              placeholder="Escribe, dicta o pega una captura…"
+              onPaste={(e) => { const files = pastedFiles(e); if (files.length) { e.preventDefault(); void upload(files) } }} disabled={Boolean(busy)}
               className="flex-1 resize-none rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-sm outline-none focus:border-cyan-300" />
             <input ref={fileInput} type="file" multiple accept={ACCEPTED_DOCS} className="hidden" aria-label="Cargar documentos"
               onChange={(e) => { const files = Array.from(e.target.files ?? []); e.target.value = ''; void upload(files) }} />

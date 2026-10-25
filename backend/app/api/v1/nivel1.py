@@ -1,4 +1,5 @@
 """Nivel 1 endpoints — the complete Level 1 flow with real intelligence."""
+import asyncio
 import json
 import logging
 
@@ -13,6 +14,7 @@ from app.ai.factory import get_llm_adapter
 from app.arena.service import Arena
 from app.nivel1 import board_dialogue
 from app.documents import extract as doc_extract
+from app.documents import media
 from app.ems.memory import EnterpriseMemorySystem
 from app.ems.store import embedding_provider, get_vector_store
 from app.core.auth import get_current_user
@@ -124,6 +126,49 @@ def require_level_paid(db: Session, company_id: str, level: int) -> None:
     if not apples.is_unlocked(db, company_id, level):
         raise HTTPException(status_code=402, detail=(
             f"El Nivel {level} se activa con @pples. Cárgalas en tu billetera y paga el Nivel para seguir."))
+
+
+async def transcribe_later(bind, llm: LLMAdapter, company_id: str, user_id: str, files: list[tuple[str, bytes]]) -> None:
+    """Transcribe las grabaciones en el servidor y ADÁN aprende de ellas como de cualquier documento."""
+    import os
+    import tempfile
+    db = Session(bind=bind)
+    try:
+        user = db.get(User, user_id)
+        project = db.query(Project).filter(Project.company_id == company_id).first()
+        level = db.query(Level).filter(Level.project_id == project.id, Level.number == 1).first()
+        docs = []
+        for name, data in files:
+            suffix = doc_extract.extension(name) or ".bin"
+            with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as tmp:
+                tmp.write(data)
+                path = tmp.name
+            try:
+                text = await asyncio.to_thread(media.transcribe, path)
+            except Exception as exc:  # noqa: BLE001
+                text = ""
+                logger.warning("No se pudo transcribir %s: %s", name, exc)
+            finally:
+                os.unlink(path)
+            if text.strip():
+                title = f"Transcripción de {name}"
+                db.add(Document(project_id=project.id, title=title[:255], content=text, doc_type="client_upload",
+                                origin="received_from_client", updated_by=user.name))
+                db.commit()
+                docs.append((title, text))
+        service = Nivel1Service(llm, db)
+        if docs:
+            with usage_scope(db, company_id, 1):
+                await service.learn_from_documents(project, level, docs)
+        else:
+            conversation = service.get_or_create_conversation(service.get_or_create_pain_card(project, level))
+            db.add(Message(conversation_id=conversation.id, role="assistant", agent_name="ADÁN",
+                           content="No pude transcribir la grabación. ¿Me la envías en otro formato (MP3, M4A o MP4)?"))
+            db.commit()
+    except Exception:  # noqa: BLE001
+        logger.exception("La transcripción en segundo plano falló")
+    finally:
+        db.close()
 
 
 async def research_later(bind, llm: LLMAdapter, company_id: str, conversation_id: str, query: str, user_id: str) -> None:
@@ -257,6 +302,7 @@ MAX_EMS_CHARS = 80_000
 @router.post("/{company_id}/documents/upload")
 async def upload_documents(
     company_id: str,
+    background: BackgroundTasks,
     files: list[UploadFile] = File(...),
     db: Session = Depends(get_db),
     user: User = Depends(llm_user),
@@ -275,17 +321,43 @@ async def upload_documents(
 
     extracted, errors = [], []
     for f in files:
-        data = await f.read(doc_extract.MAX_FILE_BYTES + 1)
+        data = await f.read(doc_extract.MAX_MEDIA_BYTES + 1)
         try:
             extracted.append(doc_extract.extract(f.filename or "documento", data))
         except doc_extract.ExtractionError as exc:
             errors.append(str(exc))
     if not extracted:
         raise HTTPException(status_code=400, detail=" ".join(errors) or "No se pudo leer ningún archivo.")
-    for doc in extracted:
-        if doc.kind == "PDF" and len(doc.text.strip()) < 40 * max(doc.pages or 1, 1):
-            errors.append(f"{doc.filename}: parece un PDF escaneado como imagen y casi no tiene texto; súbelo en una "
-                          "versión con texto (Word, o un PDF exportado desde el original).")
+
+    service = Nivel1Service(llm, db)
+    card = service.get_or_create_pain_card(project, level)
+    conversation = service.get_or_create_conversation(card)
+    # Lo que el cliente adjuntó queda a la vista en la conversación
+    icons = {"Imagen": "🖼️", "Audio": "🎙️", "Video": "🎬"}
+    db.add(Message(conversation_id=conversation.id, role="user", content="📎 Adjunté: " + ", ".join(
+        f"{icons.get(d.kind, '📄')} {d.filename}" for d in extracted), metadata_json={"adjuntos": [
+        {"nombre": d.filename, "tipo": d.kind} for d in extracted]}))
+    db.commit()
+
+    # Imágenes y PDFs escaneados: OCR ya; audio y video: se transcriben aparte (tardan)
+    to_transcribe = [d for d in extracted if d.pending == "transcribir"]
+    for d in extracted:
+        if d.pending != "ocr":
+            continue
+        try:
+            if d.kind == "Imagen":
+                d.text = await media.ocr_image(d.data, media.IMAGE_TYPES.get(doc_extract.extension(d.filename), "image/png"))
+            else:
+                text, read = await media.ocr_pdf(d.data)
+                if text.strip():
+                    d.text = text
+                    if d.pages > read:
+                        errors.append(f"{d.filename}: era un PDF escaneado; leí con OCR las primeras {read} de {d.pages} páginas.")
+        except media.MediaError as exc:
+            errors.append(f"{d.filename}: {exc}")
+        if len(d.text.strip()) < 20:
+            errors.append(f"{d.filename}: no encontré texto legible.")
+    extracted = [d for d in extracted if d.pending != "transcribir" and len(d.text.strip()) >= 20]
 
     saved = []
     ems = EnterpriseMemorySystem(db, embedding_provider, get_vector_store(db))
@@ -304,10 +376,20 @@ async def upload_documents(
         saved.append({"id": record.id, "title": doc.filename, "kind": doc.kind, "pages": doc.pages,
                       "chars": len(doc.text), "truncated": doc.truncated})
 
-    service = Nivel1Service(llm, db)
-    result = await service.learn_from_documents(project, level, [(d.filename, d.text) for d in extracted])
-    card = service.get_or_create_pain_card(project, level)
-    conversation = service.get_or_create_conversation(card)
+    if extracted:
+        result = await service.learn_from_documents(project, level, [(d.filename, d.text) for d in extracted])
+    else:
+        result = {"reply": "", "degraded": None, "learning": {}}
+    if to_transcribe:
+        names = ", ".join(d.filename for d in to_transcribe)
+        note = Message(conversation_id=conversation.id, role="assistant", agent_name="ADÁN",
+                       content=f"🎙️ Recibí {names}. Lo estoy transcribiendo; cuando termine te cuento aquí lo que entendí.",
+                       metadata_json={"investigando": {"consulta": f"transcripción de {names}"}})
+        db.add(note)
+        db.commit()
+        result["reply"] = (result["reply"] + "\n\n" if result["reply"] else "") + note.content
+        background.add_task(transcribe_later, db.get_bind(), llm, company_id, user.id,
+                            [(d.filename, d.data) for d in to_transcribe])
     return {"documents": saved, "errors": errors, "reply": result["reply"], "degraded": result["degraded"],
             "learning": result["learning"], "conversation_id": conversation.id,
             "discovery": discovery_progress(db, conversation, project)}
