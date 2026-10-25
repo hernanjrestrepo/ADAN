@@ -519,6 +519,23 @@ async def board_dialogue_reply(company_id: str, body: BoardDialogueBody, db: Ses
         raise HTTPException(status_code=503, detail=str(exc)) from exc
 
 
+class ContinueBody(BaseModel):
+    reason: str = Field(..., min_length=3, max_length=2000)
+
+
+@router.post("/{company_id}/board-room/continuar")
+def board_continue_anyway(company_id: str, body: ContinueBody, db: Session = Depends(get_db),
+                          user: User = Depends(get_current_user)):
+    """El fundador ordena continuar aunque el Board no aprobó: queda constancia y afecta la calificación."""
+    get_owned_company(db, company_id, user)
+    project = db.query(Project).filter(Project.company_id == company_id).first()
+    try:
+        consensus = Nivel1Service(llm=None, db=db).get_last_board_consensus(project)
+    except ValueError:
+        raise HTTPException(status_code=404, detail="Primero ejecuta una sesión del Board Room")
+    return board_dialogue.continue_anyway(db, project, consensus, body.reason.strip())
+
+
 def _board_out(consensus) -> dict:
     return {
         "objective": consensus.objective,

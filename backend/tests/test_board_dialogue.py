@@ -58,3 +58,31 @@ def test_the_dialogue_is_private(client):
     cid, _ = _setup(client, "duenoboard@example.com")
     _, other = _setup(client, "ajenoboard@example.com")
     assert client.get(f"/api/v1/nivel1/{cid}/board-room/dialogo", headers=other).status_code == 404
+
+
+def test_an_empty_board_answer_is_retried_and_never_shown_as_garbage(client):
+    cid, h = _setup(client, "vacio@example.com")
+    _use(client, DialogueLLM([
+        {"replies": [], "ceo": "Xmart Travel", "consensus": ""},
+        {"replies": [{"agent": "legal", "reply": "Con la explicación del bono sin compra obligatoria, mi objeción baja.",
+                      "vote": "PIVOT", "changed": False}], "ceo": "Legal entiende el punto; falta el dictamen escrito.", "consensus": "x"},
+    ]))
+    client.post(f"/api/v1/nivel1/{cid}/chat", json={"message": "A las familias les cuesta planear viajes"}, headers=h)
+    client.post(f"/api/v1/nivel1/{cid}/board-room", headers=h)
+    turn = client.post(f"/api/v1/nivel1/{cid}/board-room/dialogo", headers=h, json={"message": "No es pirámide"}).json()["turn"]
+    assert turn["replies"][0]["agent"] == "Legal" and turn["ceo"].startswith("Legal entiende")
+
+
+def test_the_founder_can_continue_anyway_and_it_lowers_the_score(client):
+    cid, h = _setup(client, "continuo@example.com")
+    _use(client, DialogueLLM([]))
+    client.post(f"/api/v1/nivel1/{cid}/chat", json={"message": "A las familias les cuesta planear viajes"}, headers=h)
+    url = f"/api/v1/nivel1/{cid}/board-room/continuar"
+    assert client.post(url, headers=h, json={"reason": "sin sesión"}).status_code == 404
+    client.post(f"/api/v1/nivel1/{cid}/board-room", headers=h)
+    res = client.post(url, headers=h,
+                      json={"reason": "Ya expliqué los tres temas; el mercado solo se valida lanzando"}).json()
+    assert res["recorded"] is True and len(res["open_objections"]) == 6  # en la prueba los seis votaron PIVOT
+    evidence = client.get(f"/api/v1/scoring/{cid}/evidence", headers=h).json()
+    note = [e for e in evidence if "decidió continuar" in e["claim"]]
+    assert note and note[0]["polarity"] == "contradicts" and note[0]["kind"] == "inference"
