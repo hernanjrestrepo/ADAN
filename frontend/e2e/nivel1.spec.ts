@@ -83,7 +83,7 @@ test('se conversa con el Board en general y con cada especialista hasta llegar a
   await dialogue.getByLabel('Escríbele al Board…').fill('Ya tengo 20 preventas pagadas')
   await dialogue.getByRole('button', { name: 'Enviar' }).click()
   await expect(dialogue.getByText('El CFO queda conforme: ahora son 6 de 6.')).toBeVisible()
-  await expect(dialogue.getByText(/6 de 6/)).toBeVisible()
+  await expect(dialogue.getByText('6 de 6', { exact: true })).toBeVisible()
   expect(api.callsTo('POST', '/nivel1/c1/board-room/dialogo')[0]?.body).toEqual({ message: 'Ya tengo 20 preventas pagadas', agent: null })
 
   // Responderle a un especialista en su tarjeta
