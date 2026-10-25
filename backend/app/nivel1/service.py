@@ -15,7 +15,7 @@ import json
 import re
 import time
 from difflib import SequenceMatcher
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from urllib.parse import urlparse
 
 from sqlalchemy.orm import Session
@@ -166,10 +166,24 @@ class Nivel1Service:
     async def read_links(self, project: Project, text: str) -> str:
         """Abre los enlaces que el fundador pegó: quedan en la Biblioteca y el equipo los lee en este turno."""
         urls = web.find_urls(text)
+        read = self.db.query(Document).filter(Document.project_id == project.id, Document.doc_type == "web_page") \
+            .order_by(Document.created_at.desc()).limit(6).all()
         if not urls:
-            return ""
-        pages = await web.fetch_all(urls)
-        blocks = []
+            # Las páginas que ya se leyeron siguen siendo parte de lo que el equipo sabe de la empresa
+            if not read:
+                return ""
+            return ("Páginas web que YA ABRISTE en esta empresa (con el navegador; sí puedes ver páginas web). Úsalas; "
+                    "si el fundador pide revisarlas otra vez, pídele el enlace y se vuelven a abrir:\n\n"
+                    + "\n\n---\n\n".join((d.content or "")[:3500] for d in read[:2]))
+        fresh_after = datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(hours=6)
+        cached = {}
+        for d in read:
+            m = re.search(r"^Fuente: (\S+)", d.content or "", re.M)
+            if m and d.created_at and d.created_at.replace(tzinfo=None) > fresh_after:
+                cached.setdefault(m.group(1).rstrip("/").lower(), d.content)
+        todo = [u for u in urls if u.rstrip("/").lower() not in cached]
+        pages = await web.fetch_all(todo) if todo else []
+        blocks = [cached[u.rstrip("/").lower()][:9000] for u in urls if u.rstrip("/").lower() in cached]
         for page in pages:
             if page.get("error"):
                 blocks.append(f"- {page['url']}: NO se pudo abrir ({page['error']}). Díselo con honestidad y pide el texto.")
@@ -178,10 +192,12 @@ class Nivel1Service:
             content = web.as_markdown(page)
             self.db.add(Document(project_id=project.id, title=f"Página web: {page.get('titulo') or host}"[:255],
                                  content=content, doc_type="web_page", origin="received_from_client"))
-            blocks.append(content[:7000])
+            blocks.append(content[:9000])
         self.db.commit()
-        return ("El fundador compartió enlaces y TÚ ABRISTE LAS PÁGINAS (sí puedes ver páginas web). Esto es lo que "
-                "contienen; úsalo, cita lo que dicen y no le pidas que te lo describa:\n\n" + "\n\n---\n\n".join(blocks))
+        return ("El fundador compartió enlaces y TÚ ABRISTE LAS PÁGINAS con un navegador real (sí puedes ver páginas "
+                "web, incluso las hechas con JavaScript, y ves una descripción de la pantalla). Esto es lo que "
+                "contienen; úsalo, cita lo que dicen y no le pidas que te lo describa ni digas que tienes "
+                "restricciones para navegar:\n\n" + "\n\n---\n\n".join(blocks))
 
     # --- Step 2: Chat with ADÁN ---
 

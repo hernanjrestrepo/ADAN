@@ -178,11 +178,42 @@ async def fetch_page(url: str, client: httpx.AsyncClient | None = None) -> dict:
     return data
 
 
+SCREEN_PROMPT = ("Es la captura de una página web. Describe en español, en máximo 12 líneas: qué ofrece y a quién, "
+                 "los textos y precios que se ven, los botones y llamados a la acción, cómo se compra o se paga si se "
+                 "ve, y la impresión de diseño y confianza. Solo lo que se ve; no inventes.")
+
+
+async def see(page: dict) -> dict:
+    """Si el HTML trae poco, abre la página en el navegador real y describe la captura con visión."""
+    from app.documents import media, navegador
+
+    needs = page.get("aviso") or len(page.get("texto") or "") < 1500 or page.get("error")
+    if not needs or not navegador.available():
+        return page
+    try:
+        rendered = await navegador.render(page["url"])
+    except BlockedURLError:
+        return {"url": page["url"], "error": "la dirección no es pública"}
+    if not rendered or rendered.get("error"):
+        return page if not page.get("error") else {**page, "error": (rendered or {}).get("error", page["error"])}
+    vision = ""
+    shot = rendered["main"].get("screenshot")
+    if shot and media.can_see():
+        try:
+            vision = await media.ocr_image(shot, "image/jpeg", SCREEN_PROMPT)
+        except Exception:  # noqa: BLE001 - sin visión igual queda el texto
+            vision = ""
+    base = page if not page.get("error") else {"url": page["url"], "titulo": "", "descripcion": "", "encabezados": [],
+                                                "texto": "", "enlaces": []}
+    return navegador.merge(base, rendered, vision)
+
+
 async def fetch_all(urls: list[str]) -> list[dict]:
     if not urls:
         return []
     async with public_http_client(timeout=TIMEOUT_S, follow_redirects=True, headers=HEADERS) as client:
-        return list(await asyncio.gather(*(fetch_page(u, client) for u in urls[:MAX_URLS])))
+        pages = list(await asyncio.gather(*(fetch_page(u, client) for u in urls[:MAX_URLS])))
+    return list(await asyncio.gather(*(see(p) for p in pages)))
 
 
 def as_markdown(page: dict) -> str:
@@ -194,6 +225,12 @@ def as_markdown(page: dict) -> str:
         parts.append(f"> {page['descripcion']}")
     if page.get("aviso"):
         parts.append(f"_{page['aviso']}_")
+    if page.get("pantalla"):
+        parts.append("## Lo que se ve en pantalla (navegador real + visión)\n" + page["pantalla"])
+    if page.get("botones"):
+        parts.append("## Botones y llamados a la acción\n" + " · ".join(page["botones"]))
+    if page.get("formularios"):
+        parts.append("## Campos de formulario\n" + " · ".join(page["formularios"]))
     if page.get("encabezados"):
         parts.append("## Estructura\n" + "\n".join(f"- {h}" for h in page["encabezados"]))
     if page.get("texto"):
