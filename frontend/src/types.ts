@@ -64,7 +64,11 @@ export interface Message {
   content: string
   created_at: string
   // degraded: respondió el modelo local de respaldo porque Claude no estaba disponible
-  metadata_json?: { degraded?: string | null } | null
+  metadata_json?: {
+    degraded?: string | null
+    reaccion?: { agente: string; emocion: string; frase: string } | null
+    investigado?: { consulta: string; verificado: boolean } | null
+  } | null
 }
 
 // Guion del Descubrimiento del Dolor: siete temas y lo que ADÁN ya entendió de cada uno

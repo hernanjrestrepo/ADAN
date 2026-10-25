@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import type { ChartSpec } from '../lib/chart'
 import {
   AGENT_BY_ID, AGENTS, ARCHETYPES, INVESTORS, LEVELS, type AgentId, type Archetype, type GateTask, type Level, type ZoneId,
 } from './data'
@@ -55,6 +56,7 @@ interface State {
   celebration: number | null
   report: number | null
   panel: 'mision' | 'ruta' | 'ecosistema' | 'insignias' | null
+  holo: ChartSpec | null
   start: (archetypeId: string, name: string, mode: 'crear' | 'reinventar') => void
   reset: () => void
   goToLevel: (n: number) => void
@@ -76,6 +78,7 @@ interface State {
   openReport: (level: number | null) => void
   setPanel: (panel: State['panel']) => void
   log: (text: string, color?: string) => void
+  showHolo: (chart: ChartSpec | null) => void
 }
 
 const STORAGE_KEY = 'adan-universo-v2'
@@ -217,6 +220,7 @@ export const useUniverso = create<State>((set, get) => ({
   celebration: null,
   report: null,
   panel: 'mision',
+  holo: null,
 
   start: (archetypeId, name, mode) => {
     const a = archetypeOf(archetypeId)
@@ -369,6 +373,7 @@ export const useUniverso = create<State>((set, get) => ({
   closeCelebration: () => set({ celebration: null, focusZone: null }),
   openReport: (level) => set({ report: level }),
   setPanel: (panel) => set({ panel }),
+  showHolo: (chart) => set({ holo: chart }),
   log: (text, color = '#94a3b8') => {
     feedId += 1
     set({ feed: [{ id: feedId, text, color, at: Date.now() }, ...get().feed].slice(0, 30) })

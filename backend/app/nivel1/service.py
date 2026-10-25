@@ -128,6 +128,22 @@ class Nivel1Service:
 
         degraded = response.metadata.get("degraded")
         parsed = response.parsed if isinstance(response.parsed, dict) else {}
+        research = None
+        query = parsed.get("investigar") if isinstance(parsed.get("investigar"), str) else ""
+        if query.strip() and not degraded:
+            # ADÁN investiga en internet y vuelve a responder con lo que encontró (con fuentes)
+            research = await self._research(query.strip())
+            if research["text"]:
+                messages = messages + [LLMMessage(role="assistant", content=parsed.get("respuesta") or ""),
+                                       LLMMessage(role="user", content=(
+                    "[Investigación hecha por ADÁN en internet"
+                    + ("" if research["searched"] else ", SIN búsqueda verificada: márcalo como estimación")
+                    + f" sobre «{query.strip()}»]\n{research['text'][:6000]}\n\n"
+                    "Responde ahora al cliente con esos hallazgos: cifras clave en una tabla, un gráfico si ayuda, "
+                    "y las fuentes (URL) al final. Luego tu pregunta. Deja `investigar` vacío."))]
+                second = await self.llm.chat_json(messages, discovery.SCHEMA, temperature=0.3, max_tokens=3000)
+                if isinstance(second.parsed, dict) and second.parsed.get("respuesta"):
+                    parsed, response = second.parsed, second
         reply = parsed.get("respuesta") if isinstance(parsed.get("respuesta"), str) else ""
         if reply.strip():
             content = reply.strip()
@@ -150,6 +166,8 @@ class Nivel1Service:
                 "duration_s": response.duration_s,
                 "degraded": degraded,
                 "discovery": state,
+                "reaccion": parsed.get("reaccion") if isinstance(parsed.get("reaccion"), dict) else None,
+                "investigado": {"consulta": research["query"], "verificado": research["searched"]} if research else None,
             },
         )
         self.db.add(assistant_msg)
@@ -157,6 +175,22 @@ class Nivel1Service:
         self.db.refresh(assistant_msg)
 
         return assistant_msg, conversation
+
+    async def _research(self, query: str) -> dict:
+        """Búsqueda en internet (Kimi $web_search). Sin búsqueda disponible, responde con lo que sabe y lo marca."""
+        search = getattr(self.llm, "chat_search", None)
+        msgs = [LLMMessage(role="system", content=(
+            "Eres el investigador de ADÁN. Busca en internet datos actuales y verificables para responder. Da cifras "
+            "con año y la URL de cada fuente. Si hay estimaciones distintas, muestra el rango. Español, conciso.")),
+            LLMMessage(role="user", content=query)]
+        try:
+            if search is None:
+                resp = await self.llm.chat(msgs, max_tokens=2500)
+                return {"query": query, "text": resp.content or "", "searched": False}
+            resp = await search(msgs, max_tokens=4000)
+            return {"query": query, "text": resp.content or "", "searched": bool(resp.metadata.get("searched", True))}
+        except Exception:  # noqa: BLE001 - la conversación sigue aunque la búsqueda falle
+            return {"query": query, "text": "", "searched": False}
 
     # --- Documentación del cliente ---
 

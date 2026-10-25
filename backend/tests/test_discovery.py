@@ -205,3 +205,34 @@ def test_the_same_evidence_said_differently_is_suggested_once():
     ]}
     merged = discovery.merge(state, parsed)
     assert [e["fuente"] for e in merged["evidencia_sugerida"]] == ["ANATO", "Despegar"]
+
+
+class ResearchLLM(ScriptLLM):
+    """Pide investigar en el primer turno; la búsqueda devuelve datos con fuente."""
+
+    def __init__(self, turns):
+        super().__init__(turns)
+        self.searches = []
+
+    async def chat_search(self, messages, max_tokens=4096):
+        self.searches.append(messages[-1].content)
+        resp = LLMResponse(content="El mercado global de viajes fue USD 1,9 billones en 2025 (fuente: https://wttc.org)", model="fake")
+        resp.metadata["searched"] = True
+        return resp
+
+
+def test_adan_researches_the_internet_instead_of_asking_the_client(client):
+    cid, headers = _setup(client, "investiga@example.com")
+    llm = _use(client, ResearchLLM([
+        {**TURN_1, "respuesta": "Lo busco ya.", "investigar": "tamaño del mercado global de viajes 2025",
+         "reaccion": {"agente": "csi", "emocion": "pensando", "frase": "Voy por los datos"}},
+        {**TURN_1, "respuesta": "| Mercado | USD |\n|---|---|\n| Global 2025 | 1,9 billones |\n\nFuente: https://wttc.org",
+         "investigar": "", "reaccion": {"agente": "cmo", "emocion": "feliz", "frase": "¡Mercado gigante!"}},
+    ]))
+    msg = client.post(f"/api/v1/nivel1/{cid}/chat", json={"message": "Busca tú el tamaño del mercado"}, headers=headers).json()["message"]
+    assert llm.searches == ["tamaño del mercado global de viajes 2025"]
+    assert "1,9 billones" in msg["content"] and "wttc.org" in msg["content"]
+    assert msg["metadata_json"]["reaccion"]["agente"] == "cmo"
+    assert msg["metadata_json"]["investigado"] == {"consulta": "tamaño del mercado global de viajes 2025", "verificado": True}
+    # La segunda vuelta recibe lo investigado
+    assert "1,9 billones" in llm.calls[1][-1].content

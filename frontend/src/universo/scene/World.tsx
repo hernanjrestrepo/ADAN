@@ -5,12 +5,16 @@ import { useEffect, useRef } from 'react'
 import { AGENTS, ZONES } from '../data'
 import { useUniverso } from '../store'
 import AgentFigure from './AgentFigure'
+import Holo from './Holo'
 import { livePositions } from './layout'
 import Office from './Office'
 import Zones from './Zones'
 
 // El panel de misión ocupa la izquierda: la cámara mira un poco a la izquierda para centrar la oficina en lo visible
 const OVERVIEW: [number, number, number, number, number, number] = [-3, 19, 23, -4, 0, 0]
+// En el celular el chat ocupa la mitad de abajo: la cámara sube la oficina a la mitad de arriba
+const MOBILE = typeof window !== 'undefined' && window.innerWidth < 768
+const OVERVIEW_MOBILE: [number, number, number, number, number, number] = [0, 28, 25, 0, 0, 7]
 
 // Cámara cinematográfica: vista general, o vuelo a la zona que se enfoca
 function Director() {
@@ -31,9 +35,9 @@ function Director() {
       // En el Board, el panel de votos ocupa la parte baja: se mira un poco por delante de la mesa para subirla
       const board = focusZone === 'board'
       const close = board ? 12.5 : 11
-      void c.setLookAt(x, close * (board ? 0.95 : 0.85), z + close, x, 0.8, z + (board ? 3.2 : 0), true)
+      void c.setLookAt(x, close * (board ? 0.95 : 0.85) * (MOBILE ? 1.3 : 1), z + close, x, 0.8, z + (board ? 3.2 : 0) + (MOBILE ? 4 : 0), true)
     } else if (!selected) {
-      void c.setLookAt(...OVERVIEW, true)
+      void c.setLookAt(...(MOBILE ? OVERVIEW_MOBILE : OVERVIEW), true)
     }
   }, [focusZone, selected, started])
 
@@ -44,7 +48,7 @@ function Director() {
     if (!agent) return
     // Acercarse al agente donde está ahora
     const [x, z] = livePositions.get(selected) ?? agent.home
-    void c.setLookAt(x + 3, 4.2, z + 6.5, x, 1.3, z, true)
+    void c.setLookAt(x + 3, MOBILE ? 6 : 4.2, z + (MOBILE ? 8 : 6.5), x, 1.3, z + (MOBILE ? 2.5 : 0), true)
   }, [selected])
 
   return (
@@ -70,6 +74,7 @@ export default function World() {
       <Stars radius={120} depth={40} count={2500} factor={4} saturation={0.4} fade speed={0.6} />
       <Office />
       <Zones />
+      <Holo />
       {AGENTS.map((a) => (
         <AgentFigure key={a.id} agent={a} />
       ))}

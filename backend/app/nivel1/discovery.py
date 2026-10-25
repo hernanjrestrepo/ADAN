@@ -32,9 +32,24 @@ MAX_SUMMARY = 300
 SCHEMA = {
     "type": "object",
     "additionalProperties": False,
-    "required": ["respuesta", "temas", "evidencia_sugerida"],
+    "required": ["respuesta", "temas", "evidencia_sugerida", "investigar", "reaccion"],
     "properties": {
         "respuesta": {"type": "string"},
+        # Si hace falta un dato del mundo (mercado, competencia, cifras), qué buscar en internet; vacío si no
+        "investigar": {"type": "string"},
+        # Cómo reacciona el equipo en el Universo a lo que se está hablando
+        "reaccion": {
+            "type": "object",
+            "additionalProperties": False,
+            "required": ["agente", "emocion", "frase"],
+            "properties": {
+                "agente": {"type": "string", "enum": ["ceo", "cto", "cfo", "cmo", "legal", "producto", "operaciones",
+                                                      "csi", "eva", "investigador", "analista"]},
+                "emocion": {"type": "string", "enum": ["feliz", "riendo", "preocupado", "estresado", "celebrando",
+                                                       "pensando", "hablando"]},
+                "frase": {"type": "string"},
+            },
+        },
         "temas": {
             "type": "array",
             "items": {
@@ -154,6 +169,32 @@ def brief(state: dict) -> str:
                                     for tid in TOPIC_IDS) else ""
 
 
+# Cómo conversa ADÁN (lecciones de las conversaciones reales: era repetitivo, preguntaba lo ya contestado, anclaba
+# en el primer mensaje aunque el cliente lo corrigiera y le pedía al cliente investigar lo que ADÁN puede buscar)
+CONVERSATION_RULES = (
+    "1. Conversa como un socio experto, no como un formulario. NO empieces con «Entiendo:» ni repitas en un "
+    "párrafo lo que el cliente acaba de decir: reconócelo en media frase y aporta algo (un dato, un riesgo, una "
+    "idea). Varía cómo empiezas.\n"
+    "2. Si el cliente te corrige o aclara, la corrección manda desde ya: no vuelvas sobre lo anterior. Si un tema no "
+    "aplica a su modelo (p. ej., cobra comisión y no cobra por la plataforma: no preguntes si pagarían por usarla; "
+    "pregunta lo que sí importa, como si comprarían por ahí), adáptalo y no lo repitas.\n"
+    "3. Haz UNA sola pregunta por turno, sobre el primer tema pendiente o parcial. Nunca preguntes algo ya respondido "
+    "ni hagas la misma pregunta dos veces.\n"
+    "4. TÚ investigas: si falta un dato del mundo (tamaño de mercado, competidores, precios, tendencias, temporadas, "
+    "regulación) o el cliente te pide buscarlo o dice que no lo sabe, NO le pidas que lo busque él: escribe en "
+    "`investigar` qué buscar en internet (una consulta concreta) y en `respuesta` dile en una frase que lo estás "
+    "buscando. Nunca digas que no puedes buscar en internet.\n"
+    "5. Cuando presentes cifras, usa una tabla en Markdown; si hay una comparación, una evolución o una proyección, "
+    "agrega un gráfico así:\n```chart\n{\"type\":\"bar\",\"title\":\"…\",\"labels\":[\"…\"],\"series\":[{\"name\":\"…\","
+    "\"data\":[1,2]}]}\n```\n(type: bar, line o pie). Solo con números reales o explícitamente marcados como supuesto.\n"
+    "6. Máximo 120 palabras (más solo si presentas datos investigados). No pongas «(Tema N de 7)»: el avance se ve en "
+    "pantalla. Cuando los siete temas estén cubiertos, propón directamente el Board Room.\n"
+    "7. `reaccion`: quién del equipo reacciona a este turno en la oficina (el especialista del tema: cfo si es dinero, "
+    "cmo si es mercado, legal si es ley, csi o investigador si se investiga…), con su emoción y una frase de máximo 10 "
+    "palabras, humana y con algo de humor cuando cabe.\n"
+)
+
+
 def system_prompt(state: dict, structured: bool = True) -> str:
     """Las instrucciones del turno: el guion, lo que ya se sabe y qué toca preguntar.
 
@@ -186,16 +227,7 @@ def system_prompt(state: dict, structured: bool = True) -> str:
         "desconocida si no está claro). Una sola respuesta del cliente puede cubrir varios temas.\n"
         "B) Escribes `respuesta` para el cliente:\n"
     )
-    reply = (
-        "1. Empieza con una frase que confirme lo que entendiste de su último mensaje, con sus datos "
-        "concretos. Si contestó algo, demuéstralo; nunca lo ignores.\n"
-        "2. Luego haz UNA sola pregunta, sobre el primer tema pendiente o parcial del guion. Si su respuesta "
-        "a ese tema fue vaga, repregunta lo mismo más concreto y da un ejemplo de buena respuesta.\n"
-        "3. Nunca preguntes algo que ya está respondido. Si el cliente no sabe un dato, dile en una frase "
-        "cómo conseguirlo (p. ej., hablar con 5 clientes) y pasa al siguiente tema; no insistas.\n"
-        "4. Máximo 120 palabras, sin listas salvo en el resumen final. Indica el avance al final con el número "
-        "del tema que preguntas, tal como aparece arriba: (Tema N de 7).\n"
-    )
+    reply = CONVERSATION_RULES
     evidence = (
         "\n`evidencia_sugerida`: solo lo verificable que el cliente reporte en su último mensaje: lo que dijeron "
         "o hicieron clientes reales (testimony: entrevistas, ventas, mensajes) o una fuente externa con nombre "

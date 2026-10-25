@@ -48,7 +48,7 @@ export default function UniversoPage() {
   const stop = useCallback(() => setAutopilot(false), [])
   useAutopilot(autopilot && started, stop)
   // ADÁN recibe a la persona con el chat abierto; se recoge cuando sesiona el Board, La Arena o se mira a alguien
-  const [chatOpen, setChatOpen] = useState(() => window.innerWidth >= 1024)
+  const [chatOpen, setChatOpen] = useState(true)
   useEffect(() => useUniverso.subscribe((s, prev) => {
     if ((s.board && !prev.board) || (s.arena && !prev.arena) || (s.selected && !prev.selected)) setChatOpen(false)
   }), [])
@@ -63,7 +63,10 @@ export default function UniversoPage() {
       {started ? (
         <>
           <TopBar autopilot={autopilot} onAutopilot={() => setAutopilot((v) => !v)} />
-          {panel === 'ruta' ? <RoutePanel /> : panel === 'ecosistema' ? <EcosystemPanel /> : panel === 'insignias' ? <BadgesPanel /> : <MissionPanel />}
+          {/* En el celular, con el chat abierto, la misión se recoge: arriba la oficina, abajo la conversación */}
+          <div className={chatOpen ? 'max-md:hidden' : ''}>
+            {panel === 'ruta' ? <RoutePanel /> : panel === 'ecosistema' ? <EcosystemPanel /> : panel === 'insignias' ? <BadgesPanel /> : <MissionPanel />}
+          </div>
           <AgentCard />
           <BoardOverlay />
           <ArenaOverlay />
