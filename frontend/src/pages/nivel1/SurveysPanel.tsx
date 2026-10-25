@@ -57,8 +57,8 @@ function Bars({ counts, total }: { counts: Record<string, number>; total: number
   )
 }
 
-export default function SurveysPanel({ companyId, onError, onChanged }: {
-  companyId: string; onError: (m: string) => void; onChanged: () => void
+export default function SurveysPanel({ companyId, onError, onChanged, simulatedOnly = false }: {
+  companyId: string; onError: (m: string) => void; onChanged: () => void; simulatedOnly?: boolean
 }) {
   const [list, setList] = useState<SurveySummary[] | null>(null)
   const [results, setResults] = useState<SurveyResults | null>(null)
@@ -169,6 +169,7 @@ export default function SurveysPanel({ companyId, onError, onChanged }: {
             )}
           </Card>
 
+          {!simulatedOnly && (
           <Card>
             <h3 className="font-bold">📨 Encuesta real: tus contactos</h3>
             <p className="text-xs text-adan-muted mt-1">
@@ -211,6 +212,8 @@ export default function SurveysPanel({ companyId, onError, onChanged }: {
               <a href={url} target="_blank" rel="noreferrer" className="underline">Ver como la ve el encuestado ↗</a>
             </div>
           </Card>
+
+          )}
 
           <Card>
             <div className="flex flex-wrap items-center justify-between gap-2">

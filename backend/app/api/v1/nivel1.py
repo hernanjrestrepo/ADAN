@@ -303,6 +303,7 @@ MAX_EMS_CHARS = 80_000
 async def upload_documents(
     company_id: str,
     background: BackgroundTasks,
+    nivel: int = 1,
     files: list[UploadFile] = File(...),
     db: Session = Depends(get_db),
     user: User = Depends(llm_user),
@@ -315,7 +316,8 @@ async def upload_documents(
     project = db.query(Project).filter(Project.company_id == company_id).first()
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
-    level = db.query(Level).filter(Level.project_id == project.id, Level.number == 1).first()
+    level = db.query(Level).filter(Level.project_id == project.id, Level.number == nivel).first() or \
+        db.query(Level).filter(Level.project_id == project.id, Level.number == 1).first()
     if len(files) > MAX_UPLOAD_FILES:
         raise HTTPException(status_code=400, detail=f"Sube máximo {MAX_UPLOAD_FILES} archivos a la vez.")
 
@@ -330,7 +332,7 @@ async def upload_documents(
         raise HTTPException(status_code=400, detail=" ".join(errors) or "No se pudo leer ningún archivo.")
 
     service = Nivel1Service(llm, db)
-    card = service.get_or_create_pain_card(project, level)
+    card = service.get_or_create_level_card(project, level)
     conversation = service.get_or_create_conversation(card)
     # Lo que el cliente adjuntó queda a la vista en la conversación
     icons = {"Imagen": "🖼️", "Audio": "🎙️", "Video": "🎬"}
@@ -404,23 +406,23 @@ class ArenaAnswers(BaseModel):
 
 
 @router.post("/{company_id}/arena/start")
-async def arena_start(company_id: str, body: ArenaStart | None = None, db: Session = Depends(get_db),
+async def arena_start(company_id: str, body: ArenaStart | None = None, nivel: int = 1, db: Session = Depends(get_db),
                       user: User = Depends(llm_user), llm: LLMAdapter = Depends(get_llm),
                       _usage: None = Depends(track_llm_usage)):
     """La Arena: cuatro inversionistas simulados escuchan la empresa y hacen sus preguntas más difíciles."""
     get_owned_company(db, company_id, user)
     project = db.query(Project).filter(Project.company_id == company_id).first()
-    brief = Nivel1Service(llm, db).board_brief(project)
+    brief = Nivel1Service(llm, db).board_brief(project, nivel)
     pitch = body.pitch.strip() if body else ""
     if not brief.strip() and not pitch:
         raise HTTPException(status_code=400, detail="Cuéntale primero a ADÁN tu empresa, o escribe tu pitch.")
     session = await Arena(llm, db).start(project, brief, pitch)
-    timeline.arena_questions(db, project, session)
+    timeline.arena_questions(db, project, session, nivel=nivel)
     return session
 
 
 @router.post("/{company_id}/arena/{session_id}/answer")
-async def arena_answer(company_id: str, session_id: str, body: ArenaAnswers, db: Session = Depends(get_db),
+async def arena_answer(company_id: str, session_id: str, body: ArenaAnswers, nivel: int = 1, db: Session = Depends(get_db),
                        user: User = Depends(llm_user), llm: LLMAdapter = Depends(get_llm),
                        _usage: None = Depends(track_llm_usage)):
     """El fundador responde y cada inversionista decide si invierte, con cuánto y con qué condiciones."""
@@ -435,7 +437,7 @@ async def arena_answer(company_id: str, session_id: str, body: ArenaAnswers, db:
     answers = {k: v[:4000] for k, v in body.answers.items() if k in {i["id"] for i in session["investors"]}}
     result = await arena.answer(project, session, answers)
     texts = list(dict.fromkeys(v.strip() for v in answers.values() if v.strip()))
-    timeline.arena_verdicts(db, project, "\n\n".join(texts) or "(sin respuesta)", result)
+    timeline.arena_verdicts(db, project, "\n\n".join(texts) or "(sin respuesta)", result, nivel=nivel)
     return result
 
 
@@ -453,6 +455,7 @@ def arena_last(company_id: str, db: Session = Depends(get_db), user: User = Depe
 async def run_board_room(
     company_id: str,
     body: BoardRoomRequest | None = None,
+    nivel: int = 1,
     db: Session = Depends(get_db),
     user: User = Depends(llm_user),
     llm: LLMAdapter = Depends(get_llm),
@@ -467,10 +470,10 @@ async def run_board_room(
 
     try:
         consensus = await service.run_board_room(project, company, client_question=body.question if body else "",
-                                                 client_position=body.position if body else "")
+                                                 client_position=body.position if body else "", level_number=nivel)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
-    timeline.board_session(db, project, consensus)  # la sesión también se cuenta en la conversación
+    timeline.board_session(db, project, consensus, nivel=nivel)  # la sesión también se cuenta en la conversación
     return _board_out(consensus)
 
 
@@ -504,7 +507,7 @@ def board_dialogue_thread(company_id: str, db: Session = Depends(get_db), user: 
 
 
 @router.post("/{company_id}/board-room/dialogo")
-async def board_dialogue_reply(company_id: str, body: BoardDialogueBody, db: Session = Depends(get_db),
+async def board_dialogue_reply(company_id: str, body: BoardDialogueBody, nivel: int = 1, db: Session = Depends(get_db),
                                user: User = Depends(llm_user), llm: LLMAdapter = Depends(get_llm),
                                _usage: None = Depends(track_llm_usage)):
     """Hablarle al Board o responderle a un especialista: profundiza, aporta evidencia o llega a un consenso."""
@@ -516,9 +519,9 @@ async def board_dialogue_reply(company_id: str, body: BoardDialogueBody, db: Ses
     except ValueError:
         raise HTTPException(status_code=404, detail="Primero ejecuta una sesión del Board Room")
     try:
-        result = await board_dialogue.reply(llm, db, project, consensus, service.board_brief(project),
+        result = await board_dialogue.reply(llm, db, project, consensus, service.board_brief(project, nivel),
                                             body.message.strip(), body.agent)
-        timeline.board_turn(db, project, result["turn"])
+        timeline.board_turn(db, project, result["turn"], nivel=nivel)
         return result
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
@@ -531,7 +534,7 @@ class ContinueBody(BaseModel):
 
 
 @router.post("/{company_id}/board-room/continuar")
-def board_continue_anyway(company_id: str, body: ContinueBody, db: Session = Depends(get_db),
+def board_continue_anyway(company_id: str, body: ContinueBody, nivel: int = 1, db: Session = Depends(get_db),
                           user: User = Depends(get_current_user)):
     """El fundador ordena continuar aunque el Board no aprobó: queda constancia y afecta la calificación."""
     get_owned_company(db, company_id, user)
@@ -541,8 +544,8 @@ def board_continue_anyway(company_id: str, body: ContinueBody, db: Session = Dep
     except ValueError:
         raise HTTPException(status_code=404, detail="Primero ejecuta una sesión del Board Room")
     result = board_dialogue.continue_anyway(db, project, consensus, body.reason.strip())
-    timeline.post(db, project, body.reason.strip(), role="user", scene="board")
-    timeline.post(db, project, f"⚖️ Queda en el acta: decidiste continuar con {len(result['open_objections'])} objeción(es) "
+    timeline.post(db, project, body.reason.strip(), role="user", scene="board", nivel=nivel)
+    timeline.post(db, project, nivel=nivel, content=f"⚖️ Queda en el acta: decidiste continuar con {len(result['open_objections'])} objeción(es) "
                   "abiertas. Respeto tu decisión; esto baja la calificación de la empresa. Para cerrar el Nivel, ve a "
                   "«Avance y cierre».", agent="ceo", scene="board")
     db.commit()

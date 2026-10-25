@@ -21,6 +21,7 @@ from sqlalchemy.orm import Session
 
 from app.ai.router import for_tier
 from app.documents import learn as doc_learning
+from app.levels.scripts import script_for
 from app.nivel1 import board_dialogue, discovery, timeline
 from app.nivel1.context import ContextLayers
 from app.ai.base import LLMAdapter, LLMMessage
@@ -39,14 +40,22 @@ MAX_CONTEXT_MESSAGES = 12
 MAX_SUMMARY_CHARS = 2000
 
 
+def script_of(db: Session, conversation: Conversation | None):
+    card = db.get(Card, conversation.card_id) if conversation is not None else None
+    kind = card.card_type if card is not None else ""
+    return script_for(int(kind[5:])) if kind.startswith("nivel") and kind[5:].isdigit() else script_for(1)
+
+
 def discovery_progress(db: Session, conversation: Conversation | None, project: Project) -> dict:
     """Avance del guion para la interfaz; la evidencia ya registrada no se vuelve a sugerir."""
     history = db.query(Message).filter(Message.conversation_id == conversation.id).order_by(
         Message.created_at).all() if conversation else []
-    state = discovery.current_state(history)
-    known = {e.claim.strip().lower() for e in scoring.active_evidence(db, project, "problem", include_unconfirmed=True)}
+    script = script_of(db, conversation)
+    state = discovery.current_state(history, script)
+    known = {e.claim.strip().lower() for e in scoring.active_evidence(db, project, script.dimension or "problem",
+                                                                       include_unconfirmed=True)}
     state["evidencia_sugerida"] = [e for e in state["evidencia_sugerida"] if e["afirmacion"].strip().lower() not in known]
-    return discovery.progress(state)
+    return discovery.progress(state, script)
 
 
 # Lo que es una tarea por conseguir (no un hecho) no entra como evidencia
@@ -58,7 +67,10 @@ def auto_register_evidence(db: Session, project: Project, user, message: Message
     """La evidencia que el cliente menciona o que ADÁN encuentra investigando se registra sola, sin confirmar
     (decisión de Hernán, 2026-10-24). Solo entran hechos con fuente; lo que es una tarea por conseguir, no."""
     state = (message.metadata_json or {}).get("discovery") or {}
-    known = {e.claim.strip().lower() for e in scoring.active_evidence(db, project, "problem", include_unconfirmed=True)}
+    dimension = script_of(db, db.get(Conversation, message.conversation_id)).dimension
+    if dimension is None:
+        return 0  # Niveles sin Score propio: la evidencia queda en la conversación
+    known = {e.claim.strip().lower() for e in scoring.active_evidence(db, project, dimension, include_unconfirmed=True)}
     added = 0
     for s in state.get("evidencia_sugerida") or []:
         claim, kind, source = (s.get("afirmacion") or "").strip(), s.get("tipo"), (s.get("fuente") or "").strip()
@@ -67,7 +79,7 @@ def auto_register_evidence(db: Session, project: Project, user, message: Message
         if kind == "external" and not source:
             continue
         try:
-            scoring.record_evidence(db, project, user, dimension="problem", claim=claim, kind=kind, source=source or None)
+            scoring.record_evidence(db, project, user, dimension=dimension, claim=claim, kind=kind, source=source or None)
             known.add(claim.lower())
             added += 1
         except scoring.EvidenceError:
@@ -92,6 +104,21 @@ class Nivel1Service:
         self.board_room = BoardRoom(llm)
 
     # --- Step 1: Pain Discovery Card ---
+
+    def get_or_create_level_card(self, project: Project, level: Level) -> Card:
+        """La Card de trabajo del Nivel: la del dolor en el Nivel 1; una por Nivel desde el 2."""
+        if level.number == 1:
+            return self.get_or_create_pain_card(project, level)
+        script = script_for(level.number)
+        kind = f"nivel{level.number}"
+        card = self.db.query(Card).filter(Card.project_id == project.id, Card.card_type == kind).first()
+        if card is None:
+            card = Card(project_id=project.id, level_id=level.id, title=f"Nivel {level.number}: {script.name}",
+                        description=script.goal, card_type=kind, status=CardStatus.ACTIVE)
+            self.db.add(card)
+            self.db.commit()
+            self.db.refresh(card)
+        return card
 
     def get_or_create_pain_card(self, project: Project, level: Level) -> Card:
         """Get or create the Pain Discovery card for Level 1."""
@@ -149,15 +176,17 @@ class Nivel1Service:
         (discovery.py). Si responde el modelo local de respaldo, el estado no se toca y el mensaje
         queda marcado como degradado para que el cliente lo sepa.
         """
-        card = self.get_or_create_pain_card(project, level)
+        card = self.get_or_create_level_card(project, level)
         if conversation is None:
             conversation = self.get_or_create_conversation(card)
+        script = script_of(self.db, conversation)
+        schema = discovery.schema_for(script.topic_ids)
 
         self.db.add(Message(conversation_id=conversation.id, role="user", content=user_message))
         self.db.commit()
 
         history = self._history(conversation)
-        state = discovery.current_state(history)
+        state = discovery.current_state(history, script)
         messages = self.build_llm_messages(conversation, state)
         # Lo ya investigado en esta conversación: no se vuelve a buscar (cada búsqueda tarda) ni se repite
         done = [m.metadata_json["investigado"]["consulta"] for m in history
@@ -168,7 +197,7 @@ class Nivel1Service:
                 "\n\nYa investigaste en internet (no repitas estas búsquedas; usa lo encontrado, que está en tus "
                 "respuestas anteriores): " + " | ".join(q[:160] for q in done[-6:])))
         last_reply = next((m.content for m in reversed(history) if m.role == "assistant"), "")
-        response = await self.llm.chat_json(messages, discovery.SCHEMA, temperature=0.4, max_tokens=2048)
+        response = await self.llm.chat_json(messages, schema, temperature=0.4, max_tokens=2048)
 
         degraded = response.metadata.get("degraded")
         parsed = response.parsed if isinstance(response.parsed, dict) else {}
@@ -184,7 +213,7 @@ class Nivel1Service:
                 LLMMessage(role="user", content=(
                     "[Nota interna: ese borrador repite casi igual tu respuesta anterior. Responde a lo NUEVO que "
                     "acaba de decir el cliente, sin repetir datos ni tablas que ya le diste. Deja `investigar` vacío.]")),
-            ], discovery.SCHEMA, temperature=0.6, max_tokens=2048)
+            ], schema, temperature=0.6, max_tokens=2048)
             if isinstance(retry.parsed, dict) and retry.parsed.get("respuesta"):
                 parsed, response = retry.parsed, retry
         reply = parsed.get("respuesta") if isinstance(parsed.get("respuesta"), str) else ""
@@ -237,7 +266,8 @@ class Nivel1Service:
     async def complete_research(self, conversation: Conversation, query: str) -> Message | None:
         """Investiga en internet lo que ADÁN anunció y responde con los hallazgos en un mensaje nuevo."""
         history = self._history(conversation)
-        state = discovery.current_state(history)
+        script = script_of(self.db, conversation)
+        state = discovery.current_state(history, script)
         research = await self._research(query)
         if not research["text"]:
             return None
@@ -250,7 +280,7 @@ class Nivel1Service:
             "proponemos hacer). Máximo 3 cifras clave, solo las que tengan fuente con URL (o márcalas como "
             "estimación); descarta las que no cuadren con el sentido común. Fuentes al final. Luego tu pregunta. "
             "Deja `investigar` vacío."))]
-        response = await self.llm.chat_json(messages, discovery.SCHEMA, temperature=0.3, max_tokens=3000)
+        response = await self.llm.chat_json(messages, discovery.schema_for(script.topic_ids), temperature=0.3, max_tokens=3000)
         parsed = response.parsed if isinstance(response.parsed, dict) else {}
         reply = parsed.get("respuesta") if isinstance(parsed.get("respuesta"), str) else ""
         if not reply.strip():
@@ -292,9 +322,9 @@ class Nivel1Service:
         """ADÁN lee la documentación cargada: actualiza el guion del dolor, propone evidencia verificable y
         deja escrito qué entendió, qué falta y qué riesgos ve. El resultado queda en la conversación
         (Registro Permanente) y en un Documento que el Board lee antes de votar."""
-        card = self.get_or_create_pain_card(project, level)
+        card = self.get_or_create_level_card(project, level)
         conversation = self.get_or_create_conversation(card)
-        state = discovery.current_state(self._history(conversation))
+        state = discovery.current_state(self._history(conversation), script_of(self.db, conversation))
         context = ContextLayers(self.db).for_conversation(conversation)
         response = await doc_learning.learn(self.llm, state, docs, context)
         degraded = response.metadata.get("degraded")
@@ -337,16 +367,24 @@ class Nivel1Service:
         Evita desbordar la ventana de contexto en conversaciones largas (AD-CMP-04).
         """
         history = self._history(conversation)
+        script = script_of(self.db, conversation)
         if state is None:
-            state = discovery.current_state(history)
+            state = discovery.current_state(history, script)
         older, recent = history[:-MAX_CONTEXT_MESSAGES], history[-MAX_CONTEXT_MESSAGES:]
         if older:
             conversation.summary = self._summarize(older)
             self.db.commit()
 
-        system_prompt = discovery.system_prompt(state, structured=structured)
+        system_prompt = discovery.system_prompt(state, structured=structured, script=script)
         company = self.db.query(Company).join(Project, Project.company_id == Company.id) \
             .join(Card, Card.project_id == Project.id).filter(Card.id == conversation.card_id).first()
+        if script.number > 1:
+            # Lo que se construyó en los Niveles anteriores: el punto de partida de este
+            project = self.db.query(Project).join(Card, Card.project_id == Project.id) \
+                .filter(Card.id == conversation.card_id).first()
+            before = self.levels_brief(project, script.number) if project is not None else ""
+            if before:
+                system_prompt += "\n\nLo acordado en los Niveles anteriores:\n" + before
         if company is not None and company.origin_stage == "existing":
             system_prompt += (
                 "\n\nMODO REVISIÓN Y PIVOTE: esta empresa ya existe (puede tener producto, MVP o ventas, y quizá no le está "
@@ -371,9 +409,9 @@ class Nivel1Service:
     # --- Step 3: Board Room ---
 
     async def run_board_room(self, project: Project, company: Company,
-                             client_question: str = "", client_position: str = "") -> BoardConsensus:
+                             client_question: str = "", client_position: str = "", level_number: int = 1) -> BoardConsensus:
         """Board Room de 7 roles (AD-FUNC-02): el CEO preside y seis especialistas votan."""
-        pain_description = self.board_brief(project)
+        pain_description = self.board_brief(project, level_number)
         if not pain_description.strip():
             raise ValueError("No hay descripción del dolor. Inicia una conversación primero.")
         conversation_context = ""
@@ -416,7 +454,28 @@ class Nivel1Service:
 
         return consensus
 
-    def board_brief(self, project: Project) -> str:
+    def levels_brief(self, project: Project, upto: int) -> str:
+        """Lo logrado en cada Nivel anterior a `upto`, tema por tema."""
+        parts = []
+        for n in range(1, upto):
+            script = script_for(n)
+            kind = "pain_discovery" if n == 1 else f"nivel{n}"
+            card = self.db.query(Card).filter(Card.project_id == project.id, Card.card_type == kind).first()
+            conv = self.db.query(Conversation).filter(Conversation.card_id == card.id).first() if card else None
+            if conv is None:
+                continue
+            text = discovery.brief(discovery.current_state(self._history(conv), script), script)
+            if text:
+                parts.append(f"Nivel {n}, {script.name}:\n{text}")
+        return "\n\n".join(parts)
+
+    def board_brief(self, project: Project, level_number: int = 1) -> str:
+        if level_number > 1:
+            # Desde el Nivel 3 el Board evalúa lo construido en este Nivel sobre lo de los anteriores
+            return self.levels_brief(project, level_number + 1)
+        return self._level1_brief(project)
+
+    def _level1_brief(self, project: Project) -> str:
         """Lo que el Board evalúa: lo que ADÁN entendió (guion), la evidencia registrada y las palabras
         del cliente. Las respuestas del modelo de respaldo y el resto de la charla no entran: antes el
         Board leía la conversación cruda, con ruido y respuestas sin sentido."""

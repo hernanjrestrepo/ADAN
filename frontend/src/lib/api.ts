@@ -1,5 +1,5 @@
 import type {
-  SurveySimulation, BoardDialogue, BoardDialogueTurn, AdminCompany, AdminMovement, AdminPurchase, AdminSummary, AdminUser, AppleCompanyLevel, AppleNetwork, ApplePrices, ApplePurchase, AppleWallet, CommunityConnection, CommunityListing, CommunityProfile, ExecutiveReport, FinancialModel, OrgChart, PublicSurvey, SurveyAnswer, SurveyInsights, SurveyResults, SurveySummary, ArenaSession, AgentContract, LegalGuide, NameCheck, Statutes, StatutesInput, AgentOffering, AgentTask, ContractReport, HirePeriod,
+  LevelRoom, Message, SurveySimulation, BoardDialogue, BoardDialogueTurn, AdminCompany, AdminMovement, AdminPurchase, AdminSummary, AdminUser, AppleCompanyLevel, AppleNetwork, ApplePrices, ApplePurchase, AppleWallet, CommunityConnection, CommunityListing, CommunityProfile, ExecutiveReport, FinancialModel, OrgChart, PublicSurvey, SurveyAnswer, SurveyInsights, SurveyResults, SurveySummary, ArenaSession, AgentContract, LegalGuide, NameCheck, Statutes, StatutesInput, AgentOffering, AgentTask, ContractReport, HirePeriod,
   BoardConsensus, BoardRoomInput, ChatResponse, Company, CompanyInput, DecideInput, Decision, DocumentRecord,
   Evidence, EvidenceInput, GatePreview, GateReviewResult, LevelView, Nivel1Status, OnboardingState, Score,
   ScoreOverview, TimelineEvent, TokenResponse, TwinKind, TwinOverview, UploadResult, User,
@@ -106,10 +106,10 @@ export const api = {
       signal: AbortSignal.timeout(CHAT_TIMEOUT_MS),
     }),
   // Documentación del cliente: multipart, sin Content-Type (el navegador pone el boundary)
-  uploadDocuments: async (companyId: string, files: File[]): Promise<UploadResult> => {
+  uploadDocuments: async (companyId: string, files: File[], nivel = 1): Promise<UploadResult> => {
     const form = new FormData()
     files.forEach((f) => form.append('files', f))
-    const response = await fetch(`${API_BASE}/nivel1/${companyId}/documents/upload`, {
+    const response = await fetch(`${API_BASE}/nivel1/${companyId}/documents/upload${nivel > 1 ? `?nivel=${nivel}` : ''}`, {
       method: 'POST', body: form, credentials: 'same-origin', headers: { 'X-Requested-With': 'adan' },
       signal: AbortSignal.timeout(CHAT_TIMEOUT_MS * 2),
     })
@@ -222,24 +222,32 @@ export const api = {
     URL.revokeObjectURL(url)
   },
   // La Arena (inversionistas simulados): leer y deliberar toma tiempo
-  startArena: (companyId: string, pitch: string) =>
-    request<ArenaSession>(`/nivel1/${companyId}/arena/start`, {
+  startArena: (companyId: string, pitch: string, nivel = 1) =>
+    request<ArenaSession>(`/nivel1/${companyId}/arena/start${nivel > 1 ? `?nivel=${nivel}` : ''}`, {
       method: 'POST', body: JSON.stringify({ pitch }), signal: AbortSignal.timeout(CHAT_TIMEOUT_MS * 2),
     }),
-  answerArena: (companyId: string, sessionId: string, answers: Record<string, string>) =>
-    request<ArenaSession>(`/nivel1/${companyId}/arena/${sessionId}/answer`, {
+  answerArena: (companyId: string, sessionId: string, answers: Record<string, string>, nivel = 1) =>
+    request<ArenaSession>(`/nivel1/${companyId}/arena/${sessionId}/answer${nivel > 1 ? `?nivel=${nivel}` : ''}`, {
       method: 'POST', body: JSON.stringify({ answers }), signal: AbortSignal.timeout(CHAT_TIMEOUT_MS * 2),
     }),
   getLastArena: (companyId: string) => request<ArenaSession>(`/nivel1/${companyId}/arena/last`),
   getBoardDialogue: (companyId: string) => request<BoardDialogue>(`/nivel1/${companyId}/board-room/dialogo`),
-  talkToBoard: (companyId: string, message: string, agent: string | null) =>
-    request<BoardDialogue & { turn: BoardDialogueTurn }>(`/nivel1/${companyId}/board-room/dialogo`, {
+  talkToBoard: (companyId: string, message: string, agent: string | null, nivel = 1) =>
+    request<BoardDialogue & { turn: BoardDialogueTurn }>(`/nivel1/${companyId}/board-room/dialogo${nivel > 1 ? `?nivel=${nivel}` : ''}`, {
       method: 'POST', body: JSON.stringify({ message, agent }), signal: AbortSignal.timeout(CHAT_TIMEOUT_MS),
     }),
-  continueDespiteBoard: (companyId: string, reason: string) =>
-    post<{ recorded: boolean; open_objections: string[]; penalty_confidence: number }>(`/nivel1/${companyId}/board-room/continuar`, { reason }),
-  runBoardRoom: (companyId: string, input?: BoardRoomInput) =>
-    post<BoardConsensus>(`/nivel1/${companyId}/board-room`, input ?? {}),
+  continueDespiteBoard: (companyId: string, reason: string, nivel = 1) =>
+    post<{ recorded: boolean; open_objections: string[]; penalty_confidence: number }>(`/nivel1/${companyId}/board-room/continuar${nivel > 1 ? `?nivel=${nivel}` : ''}`, { reason }),
+  runBoardRoom: (companyId: string, input?: BoardRoomInput, nivel = 1) =>
+    post<BoardConsensus>(`/nivel1/${companyId}/board-room${nivel > 1 ? `?nivel=${nivel}` : ''}`, input ?? {}),
+  // La Sala de los Niveles 2 a 7
+  getLevelStatus: (nivel: number, companyId: string) => request<LevelRoom>(`/nivel/${nivel}/${companyId}/status`),
+  chatLevel: (nivel: number, companyId: string, message: string) =>
+    request<{ message: Message; conversation_id: string }>(`/nivel/${nivel}/${companyId}/chat`, {
+      method: 'POST', body: JSON.stringify({ message }), signal: AbortSignal.timeout(CHAT_TIMEOUT_MS),
+    }),
+  closeLevel: (nivel: number, companyId: string, reason: string) =>
+    post<{ closed: boolean; pending: string[]; next: number | null }>(`/nivel/${nivel}/${companyId}/cerrar`, { reason }),
   getLastBoardRoom: (companyId: string) => request<BoardConsensus>(`/nivel1/${companyId}/board-room/last`),
   generateDiagnosis: (companyId: string) => post<DocumentRecord>(`/nivel1/${companyId}/diagnosis`),
   gateReview: (companyId: string) => post<GateReviewResult>(`/nivel1/${companyId}/gate-review`),
