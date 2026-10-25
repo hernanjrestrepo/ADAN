@@ -86,3 +86,19 @@ def test_the_founder_can_continue_anyway_and_it_lowers_the_score(client):
     evidence = client.get(f"/api/v1/scoring/{cid}/evidence", headers=h).json()
     note = [e for e in evidence if "decidió continuar" in e["claim"]]
     assert note and note[0]["polarity"] == "contradicts" and note[0]["kind"] == "inference"
+
+
+def test_the_board_session_and_its_dialogue_live_in_the_same_conversation(client):
+    cid, h = _setup(client, "unasala@example.com")
+    _use(client, DialogueLLM([{"replies": [{"agent": "CFO", "reply": "Con 20 preventas pagadas cambio mi voto.",
+                                            "vote": "PROCEED", "changed": True, "reason": "20 preventas"}],
+                               "ceo": "El CFO queda conforme; sigue faltando Legal.", "consensus": "Caja inicial validada"}]))
+    client.post(f"/api/v1/nivel1/{cid}/chat", json={"message": "A las familias les cuesta planear viajes"}, headers=h)
+    client.post(f"/api/v1/nivel1/{cid}/board-room", headers=h)
+    client.post(f"/api/v1/nivel1/{cid}/board-room/dialogo", headers=h, json={"message": "Tengo 20 preventas"})
+    msgs = client.get(f"/api/v1/nivel1/{cid}/status", headers=h).json()["messages"]
+    board = [m for m in msgs if (m.get("metadata_json") or {}).get("escena") == "board"]
+    names = [m["agent_name"] for m in board]
+    assert names[0] == "ADÁN" and "Camila · CFO" in names and "Lucía · Legal" in names
+    assert any(m["role"] == "user" and m["content"] == "Tengo 20 preventas" for m in board)
+    assert "Cambio mi voto" in board[-2]["content"] and board[-1]["agent_name"] == "ADÁN"

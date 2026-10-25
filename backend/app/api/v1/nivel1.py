@@ -12,7 +12,7 @@ from app.ai.base import LLMAdapter
 from app.apples import service as apples
 from app.ai.factory import get_llm_adapter
 from app.arena.service import Arena
-from app.nivel1 import board_dialogue
+from app.nivel1 import board_dialogue, timeline
 from app.documents import extract as doc_extract
 from app.documents import media
 from app.ems.memory import EnterpriseMemorySystem
@@ -414,7 +414,9 @@ async def arena_start(company_id: str, body: ArenaStart | None = None, db: Sessi
     pitch = body.pitch.strip() if body else ""
     if not brief.strip() and not pitch:
         raise HTTPException(status_code=400, detail="Cuéntale primero a ADÁN tu empresa, o escribe tu pitch.")
-    return await Arena(llm, db).start(project, brief, pitch)
+    session = await Arena(llm, db).start(project, brief, pitch)
+    timeline.arena_questions(db, project, session)
+    return session
 
 
 @router.post("/{company_id}/arena/{session_id}/answer")
@@ -431,7 +433,10 @@ async def arena_answer(company_id: str, session_id: str, body: ArenaAnswers, db:
     if session["phase"] != "questions":
         raise HTTPException(status_code=409, detail="Esa sesión ya terminó: entra de nuevo a La Arena")
     answers = {k: v[:4000] for k, v in body.answers.items() if k in {i["id"] for i in session["investors"]}}
-    return await arena.answer(project, session, answers)
+    result = await arena.answer(project, session, answers)
+    texts = list(dict.fromkeys(v.strip() for v in answers.values() if v.strip()))
+    timeline.arena_verdicts(db, project, "\n\n".join(texts) or "(sin respuesta)", result)
+    return result
 
 
 @router.get("/{company_id}/arena/last")
@@ -465,7 +470,7 @@ async def run_board_room(
                                                  client_position=body.position if body else "")
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
-
+    timeline.board_session(db, project, consensus)  # la sesión también se cuenta en la conversación
     return _board_out(consensus)
 
 
@@ -511,8 +516,10 @@ async def board_dialogue_reply(company_id: str, body: BoardDialogueBody, db: Ses
     except ValueError:
         raise HTTPException(status_code=404, detail="Primero ejecuta una sesión del Board Room")
     try:
-        return await board_dialogue.reply(llm, db, project, consensus, service.board_brief(project),
-                                          body.message.strip(), body.agent)
+        result = await board_dialogue.reply(llm, db, project, consensus, service.board_brief(project),
+                                            body.message.strip(), body.agent)
+        timeline.board_turn(db, project, result["turn"])
+        return result
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     except RuntimeError as exc:
@@ -533,7 +540,13 @@ def board_continue_anyway(company_id: str, body: ContinueBody, db: Session = Dep
         consensus = Nivel1Service(llm=None, db=db).get_last_board_consensus(project)
     except ValueError:
         raise HTTPException(status_code=404, detail="Primero ejecuta una sesión del Board Room")
-    return board_dialogue.continue_anyway(db, project, consensus, body.reason.strip())
+    result = board_dialogue.continue_anyway(db, project, consensus, body.reason.strip())
+    timeline.post(db, project, body.reason.strip(), role="user", scene="board")
+    timeline.post(db, project, f"⚖️ Queda en el acta: decidiste continuar con {len(result['open_objections'])} objeción(es) "
+                  "abiertas. Respeto tu decisión; esto baja la calificación de la empresa. Para cerrar el Nivel, ve a "
+                  "«Avance y cierre».", agent="ceo", scene="board")
+    db.commit()
+    return result
 
 
 def _board_out(consensus) -> dict:

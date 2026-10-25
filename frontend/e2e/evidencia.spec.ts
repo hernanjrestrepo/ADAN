@@ -5,7 +5,7 @@ async function openEvidence(page: import('@playwright/test').Page, api: FakeApi)
   api.loggedIn = true
   await api.install(page)
   await page.goto('/nivel1/c1')
-  await page.getByRole('tab', { name: 'Evidencia' }).click()
+  await page.getByRole('tab', { name: 'Avance y cierre' }).click()
 }
 
 test('la evidencia se registra por tipo y el Gate dice qué falta hasta que alcanza', async ({ page }) => {
@@ -37,7 +37,7 @@ test('sin evidencia suficiente, avanzar es decisión del cliente y se documenta'
   api.loggedIn = true
   await api.install(page)
   await page.goto('/nivel1/c1')
-  await page.getByRole('button', { name: /Gate Review/ }).click()
+  await page.getByRole('button', { name: /Cerrar el Nivel/ }).click()
   const result = page.getByTestId('gate-result')
   await expect(result).toContainText('Todavía falta evidencia')
   await expect(result).toContainText('dato verificable externamente')
@@ -53,7 +53,7 @@ test('los 8 Scores se muestran con su disponibilidad', async ({ page }) => {
   api.loggedIn = true
   await api.install(page)
   await page.goto('/nivel1/c1')
-  await page.getByRole('tab', { name: 'Scores' }).click()
+  await page.getByRole('tab', { name: 'Avance y cierre' }).click()
   await expect(page.getByTestId('score-card')).toHaveCount(8)
   await expect(page.getByText('Nace en el Nivel 6')).toBeVisible()
   await expect(page.getByText('Se abre en el Nivel 2')).toBeVisible()

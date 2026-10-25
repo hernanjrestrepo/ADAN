@@ -7,8 +7,19 @@ const AGENT_IDS = new Set(['ceo', 'cto', 'cfo', 'cmo', 'legal', 'producto', 'ope
 type Mood = 'feliz' | 'riendo' | 'preocupado' | 'estresado' | 'celebrando' | 'pensando' | 'hablando'
 const MOODS = new Set<Mood>(['feliz', 'riendo', 'preocupado', 'estresado', 'celebrando', 'pensando', 'hablando'])
 
+function snippet(text: string) {
+  const plain = text.replace(/```[\s\S]*?```/g, '').replace(/[*_#>|`]/g, '').replace(/\s+/g, ' ').trim()
+  return plain.length > 110 ? `${plain.slice(0, 107)}…` : plain
+}
+
 export function reactTo(message: Message) {
   const u = useUniverso.getState()
+  const speaker = String(message.metadata_json?.agente ?? '')
+  if (speaker && (AGENT_IDS.has(speaker) || speaker.startsWith('inv-'))) {
+    u.say(speaker, snippet(message.content), 7000)
+    u.feel(speaker, 'hablando', 6000)
+    if (message.metadata_json?.escena === 'oficina' && AGENT_IDS.has(speaker)) u.select(speaker as never)
+  }
   const r = message.metadata_json?.reaccion
   const chart = lastChart(message.content)
   if (chart) u.showHolo(chart)
@@ -21,5 +32,5 @@ export function reactTo(message: Message) {
     u.feel(r.agente, mood, 5000)
     if (r.frase) u.say(r.agente, r.frase, 5000)
   }
-  u.feel('ceo', 'hablando', 3000)
+  if (!speaker) u.feel('ceo', 'hablando', 3000)
 }

@@ -21,7 +21,7 @@ from sqlalchemy.orm import Session
 
 from app.ai.router import for_tier
 from app.documents import learn as doc_learning
-from app.nivel1 import board_dialogue, discovery
+from app.nivel1 import board_dialogue, discovery, timeline
 from app.nivel1.context import ContextLayers
 from app.ai.base import LLMAdapter, LLMMessage
 from app.ai.normalize import normalize_string, normalize_list
@@ -198,10 +198,11 @@ class Nivel1Service:
             content = ("No pude procesar tu mensaje esta vez. Quedó guardado: escríbeme de nuevo la idea "
                        "principal y seguimos donde íbamos.")
 
+        speaker = parsed.get("habla") if parsed.get("habla") in timeline.TEAM else "ceo"
         assistant_msg = Message(
             conversation_id=conversation.id,
             role="assistant",
-            agent_name="ADÁN",
+            agent_name=timeline.label(speaker),
             content=content,
             metadata_json={
                 "model": response.model,
@@ -210,6 +211,8 @@ class Nivel1Service:
                 "degraded": degraded,
                 "discovery": state,
                 "reaccion": parsed.get("reaccion") if isinstance(parsed.get("reaccion"), dict) else None,
+                "agente": speaker,
+                "escena": "oficina",
                 "investigado": None,
                 # La búsqueda en internet corre aparte (tarda); sus hallazgos llegan en el siguiente mensaje
                 "investigando": {"consulta": pending} if pending else None,
@@ -240,10 +243,12 @@ class Nivel1Service:
         if not reply.strip():
             return None
         state = discovery.merge(state, parsed)
-        msg = Message(conversation_id=conversation.id, role="assistant", agent_name="ADÁN", content=reply.strip(),
+        speaker = parsed.get("habla") if parsed.get("habla") in timeline.TEAM else "ceo"
+        msg = Message(conversation_id=conversation.id, role="assistant", agent_name=timeline.label(speaker), content=reply.strip(),
                       metadata_json={"model": response.model, "duration_s": response.duration_s,
                                      "tokens": response.prompt_tokens + response.completion_tokens, "discovery": state,
                                      "reaccion": parsed.get("reaccion") if isinstance(parsed.get("reaccion"), dict) else None,
+                                     "agente": speaker, "escena": "oficina",
                                      "investigado": {"consulta": query, "verificado": research["searched"]}})
         self.db.add(msg)
         self.db.commit()

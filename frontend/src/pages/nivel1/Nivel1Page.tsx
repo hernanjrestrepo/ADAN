@@ -7,28 +7,22 @@ import Tabs from '../../components/ui/Tabs'
 import { LoadingState } from '../../components/ui/States'
 import { api, errorMessage } from '../../lib/api'
 import type {
-  BoardConsensus, BoardRoomInput, Decision, DocumentRecord, GateReviewResult, LevelStatus, Message, Nivel1Status,
+  Decision, DocumentRecord, GateReviewResult, LevelStatus, Message, Nivel1Status,
 } from '../../types'
-import BoardRoomPanel from './BoardRoomPanel'
-import ArenaPanel from './ArenaPanel'
 import ChatPanel from './ChatPanel'
 import { reactTo } from '../../universo/react'
 import { waitForResearch } from '../../lib/research'
-import SurveysPanel from './SurveysPanel'
 import DiagnosisPanel from './DiagnosisPanel'
 import EvidencePanel from './EvidencePanel'
 import ScoresPanel from './ScoresPanel'
 
-type Tab = 'chat' | 'evidence' | 'surveys' | 'boardroom' | 'arena' | 'diagnosis' | 'scores'
+// Una sola sala: la conversación (con el Board y La Arena dentro), el cierre del Nivel y el diagnóstico
+type Tab = 'chat' | 'scores' | 'diagnosis'
 
 const TABS: { id: Tab; label: string }[] = [
-  { id: 'chat', label: 'Conversación' },
-  { id: 'evidence', label: 'Evidencia' },
-  { id: 'surveys', label: 'Encuestas' },
-  { id: 'boardroom', label: 'Board Room' },
-  { id: 'arena', label: 'La Arena' },
+  { id: 'chat', label: 'Sala' },
+  { id: 'scores', label: 'Avance y cierre' },
   { id: 'diagnosis', label: 'Diagnóstico' },
-  { id: 'scores', label: 'Scores' },
 ]
 
 const LEVEL_BADGE: Record<LevelStatus, { text: string; tone: 'green' | 'blue' | 'gray' }> = {
@@ -49,8 +43,6 @@ export default function Nivel1Page() {
   const [sending, setSending] = useState(false)
   const [researching, setResearching] = useState(false)
   const [uploading, setUploading] = useState(false)
-  const [board, setBoard] = useState<BoardConsensus | null>(null)
-  const [boardRunning, setBoardRunning] = useState(false)
   const [diagnosis, setDiagnosis] = useState<DocumentRecord | null>(null)
   const [diagnosing, setDiagnosing] = useState(false)
   const [gate, setGate] = useState<GateReviewResult | null>(null)
@@ -71,7 +63,6 @@ export default function Nivel1Page() {
   useEffect(() => {
     let cancelled = false
     // La última sesión del Board se ve sin volver a ejecutarla (404 si todavía no hay ninguna)
-    api.getLastBoardRoom(companyId).then((b) => { if (!cancelled) setBoard(b) }).catch(() => undefined)
     api.getNivel1Status(companyId)
       .then((data) => { if (!cancelled) applyStatus(data) })
       .catch((err: unknown) => { if (!cancelled) setError(errorMessage(err)) })
@@ -139,19 +130,6 @@ export default function Nivel1Page() {
       setError(errorMessage(err))
     } finally {
       setUploading(false)
-    }
-  }
-
-  const handleBoardRoom = async (input?: BoardRoomInput) => {
-    setActiveTab('boardroom')
-    setBoard(null)
-    setBoardRunning(true)
-    try {
-      setBoard(await api.runBoardRoom(companyId, input))
-    } catch (err) {
-      setError(errorMessage(err))
-    } finally {
-      setBoardRunning(false)
     }
   }
 
@@ -239,22 +217,21 @@ export default function Nivel1Page() {
       ) : (
         <>
           {activeTab === 'chat' && (
-            <ChatPanel messages={messages} sending={sending} researching={researching} discovery={status?.discovery} onSend={handleSend}
-              uploading={uploading} onUpload={handleUpload}
-              onBoardRoom={() => handleBoardRoom()} onDiagnosis={handleDiagnosis} onGateReview={handleGateReview}
+            <ChatPanel companyId={companyId} messages={messages} sending={sending} researching={researching}
+              discovery={status?.discovery} onSend={handleSend} onReload={loadStatus} uploading={uploading} onUpload={handleUpload}
+              onDiagnosis={handleDiagnosis} onClose={handleGateReview} onError={showError}
               world={<Suspense fallback={<div className="h-full rounded-2xl bg-adan-surface animate-pulse" />}><EmbeddedWorld /></Suspense>} />
           )}
-          {activeTab === 'surveys' && <SurveysPanel companyId={companyId} onError={showError} onChanged={bump} />}
-          {activeTab === 'arena' && <ArenaPanel companyId={companyId} onError={showError} />}
-          {activeTab === 'boardroom' && <BoardRoomPanel companyId={companyId} result={board} running={boardRunning} onRun={handleBoardRoom} onNewSession={() => setBoard(null)} />}
           {activeTab === 'diagnosis' && (
             <DiagnosisPanel diagnosis={diagnosis} running={diagnosing} onGenerate={handleDiagnosis} />
           )}
-          {activeTab === 'evidence' && <EvidencePanel companyId={companyId} onChanged={bump} />}
           {activeTab === 'scores' && (
+            <div className="h-full overflow-y-auto">
             <ScoresPanel companyId={companyId} refreshKey={refreshKey} gate={gate} pendingDecision={pendingDecision}
               deciding={deciding} advancing={advancing} onDecide={handleDecision} onAdvanceAnyway={handleAdvanceAnyway}
-              onGoToEvidence={() => setActiveTab('evidence')} onError={showError} />
+              onGoToEvidence={() => setActiveTab('scores')} onError={showError} />
+              <div className="max-w-4xl mx-auto px-4 pb-8"><EvidencePanel companyId={companyId} onChanged={bump} /></div>
+            </div>
           )}
         </>
       )}
