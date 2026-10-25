@@ -90,7 +90,8 @@ function BrandEditor({ company, onSaved, onClose }: { company: Company; onSaved:
 // Lo que se puede abrir de cada Nivel en ADÁN real
 const LEVEL_LINK: Record<number, (id: string) => string> = {
   1: (id) => `/nivel1/${id}`,
-  3: (id) => `/constitucion/${id}`,
+  2: (id) => `/nivel/2/${id}`, 3: (id) => `/nivel/3/${id}`, 4: (id) => `/nivel/4/${id}`,
+  5: (id) => `/nivel/5/${id}`, 6: (id) => `/nivel/6/${id}`, 7: (id) => `/nivel/7/${id}`,
 }
 
 function levelPath(n: number, companyId: string): string {

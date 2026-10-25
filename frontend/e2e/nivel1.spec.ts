@@ -42,7 +42,7 @@ test('en el Nivel 1 se valida con encuestas: sin Board ni Arena (llegan en los N
   await openNivel1(page)
   await expect(page.getByRole('button', { name: /Board Room/ })).toHaveCount(0)
   await expect(page.getByRole('button', { name: /La Arena/ })).toHaveCount(0)
-  await page.getByRole('button', { name: /Validar: encuesta simulada y real/ }).click()
+  await page.getByRole('button', { name: /Validar con encuesta simulada/ }).click()
   await expect(page.getByRole('dialog', { name: 'Encuesta' })).toBeVisible()
 })
 

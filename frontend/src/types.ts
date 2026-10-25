@@ -993,3 +993,24 @@ export interface SurveySimulation {
   questions: { id: string; texto: string; tipo: string; counts?: Record<string, number>; average?: number; texts?: string[] }[]
   created_at: string
 }
+
+// La Sala de un Nivel (2 a 7)
+export interface LevelInfo {
+  number: number
+  name: string
+  goal: string
+  deliverables: string[]
+  kpis: string[]
+  team: string[]
+  board: boolean
+  arena: boolean
+  topics: { id: string; label: string }[]
+}
+
+export interface LevelRoom {
+  level: LevelInfo
+  status: 'blocked' | 'active' | 'completed'
+  conversation_id: string | null
+  messages: Message[]
+  discovery: DiscoveryProgress | null
+}

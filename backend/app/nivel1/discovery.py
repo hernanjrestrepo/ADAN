@@ -13,6 +13,7 @@ El estado queda en los metadatos del mensaje de ADÁN (Registro Permanente): el 
 from __future__ import annotations
 
 from copy import deepcopy
+from dataclasses import dataclass
 
 TOPICS = [
     # Nivel 1 según Customer Development (Blank), Running Lean (Maurya) y Value Proposition Design (Osterwalder)
@@ -25,12 +26,51 @@ TOPICS = [
     ("evidencia", "Validación (simulada y real)", "qué respalda el dolor: encuesta simulada con el Simulador de Mercado y encuesta real en curso, entrevistas, datos o fuentes"),
 ]
 TOPIC_IDS = [t[0] for t in TOPICS]
+
+
+@dataclass(frozen=True)
+class Script:
+    """El guion de un Nivel: qué busca, sus temas (id, nombre, qué hay que lograr), su método y entregables."""
+    number: int
+    name: str
+    goal: str
+    topics: tuple
+    method: str
+    deliverables: tuple = ()
+    kpis: tuple = ()
+    team: tuple = ()
+    dimension: str | None = "problem"
+    board: bool = False
+    arena: bool = False
+
+    @property
+    def topic_ids(self) -> list[str]:
+        return [t[0] for t in self.topics]
+
+
+LEVEL1 = Script(
+    number=1, name="El Dolor", goal="entender a fondo el problema y a quién le duele, antes de hablar de soluciones",
+    topics=tuple(TOPICS),
+    method=("en el Nivel 1 solo se define el DOLOR. No hables de temas legales, de financiación ni de soluciones "
+            "avanzadas: eso viene en otros Niveles (el Board entra desde el Nivel 3). Siempre se valida antes de "
+            "construir: propón la ENCUESTA SIMULADA con el Simulador de Mercado para seguir avanzando ya."),
+    deliverables=("Problema en una frase (trabajo por hacer)", "Cliente inicial y persona", "Alternativas actuales",
+                  "Mapa de dolores", "Encuesta simulada"),
+    kpis=("% del segmento que confirma el dolor", "Intensidad del dolor (1 a 5)", "Gasto actual en alternativas"),
+    team=("ceo", "cmo", "investigador", "csi"), dimension="problem",
+)
 STATUSES = ("pendiente", "parcial", "respondido", "sin_dato")
 CLOSED = ("respondido", "sin_dato")  # "sin_dato": el cliente no lo sabe; queda como tarea de validación
 BASES = ("dato", "supuesto", "desconocida")
 MAX_SUMMARY = 300
 
-SCHEMA = {
+def schema_for(topic_ids: list[str]) -> dict:
+    schema = deepcopy(_SCHEMA)
+    schema["properties"]["temas"]["items"]["properties"]["id"]["enum"] = list(topic_ids)
+    return schema
+
+
+_SCHEMA = {
     "type": "object",
     "additionalProperties": False,
     "required": ["respuesta", "habla", "mesa", "temas", "evidencia_sugerida", "investigar", "reaccion"],
@@ -89,37 +129,40 @@ SCHEMA = {
         },
     },
 }
+SCHEMA = schema_for(TOPIC_IDS)
 
 
-def empty_state() -> dict:
-    return {"temas": {tid: {"estado": "pendiente", "resumen": "", "base": "desconocida"} for tid in TOPIC_IDS},
+def empty_state(script: Script | None = None) -> dict:
+    ids = (script or LEVEL1).topic_ids
+    return {"temas": {tid: {"estado": "pendiente", "resumen": "", "base": "desconocida"} for tid in ids},
             "evidencia_sugerida": []}
 
 
-def current_state(messages) -> dict:
+def current_state(messages, script: Script | None = None) -> dict:
     """El último estado guardado en la conversación (o uno vacío)."""
     for msg in reversed(messages):
         data = (msg.metadata_json or {}).get("discovery")
         if data:
-            state = empty_state()
+            state = empty_state(script)
             state["temas"].update({k: v for k, v in data.get("temas", {}).items() if k in state["temas"]})
             state["evidencia_sugerida"] = list(data.get("evidencia_sugerida", []))
             return state
-    return empty_state()
+    return empty_state(script)
 
 
-def next_topic(state: dict) -> str | None:
-    for tid in TOPIC_IDS:
+def next_topic(state: dict, script: Script | None = None) -> str | None:
+    for tid in (script or LEVEL1).topic_ids:
         if state["temas"][tid]["estado"] not in CLOSED:
             return tid
     return None
 
 
-def progress(state: dict) -> dict:
+def progress(state: dict, script: Script | None = None) -> dict:
     """Lo que la interfaz muestra: cada tema con su estado y resumen, y el siguiente en el guion."""
-    topics = [{"id": tid, "label": label, **state["temas"][tid]} for tid, label, _goal in TOPICS]
+    script = script or LEVEL1
+    topics = [{"id": tid, "label": label, **state["temas"][tid]} for tid, label, _goal in script.topics]
     done = sum(1 for t in topics if t["estado"] in CLOSED)
-    return {"topics": topics, "done": done, "total": len(topics), "next": next_topic(state),
+    return {"topics": topics, "done": done, "total": len(topics), "next": next_topic(state, script),
             "complete": done == len(topics), "evidence_suggestions": state["evidencia_sugerida"]}
 
 
@@ -164,10 +207,11 @@ def _same(a: set[str], b: set[str]) -> bool:
     return len(a & b) / min(len(a), len(b)) >= 0.75
 
 
-def brief(state: dict) -> str:
+def brief(state: dict, script: Script | None = None) -> str:
     """Resumen del guion para el Board: cada tema con lo dicho y si es dato o supuesto."""
+    script = script or LEVEL1
     lines = []
-    for tid, label, _goal in TOPICS:
+    for tid, label, _goal in script.topics:
         t = state["temas"][tid]
         if t["estado"] == "sin_dato":
             lines.append(f"- {label}: sin dato (el cliente no lo sabe; hay que validarlo)")
@@ -176,7 +220,7 @@ def brief(state: dict) -> str:
         else:
             lines.append(f"- {label}: no se ha hablado")
     return "\n".join(lines) if any(state["temas"][tid]["resumen"] or state["temas"][tid]["estado"] == "sin_dato"
-                                    for tid in TOPIC_IDS) else ""
+                                    for tid in script.topic_ids) else ""
 
 
 # Cómo conversa ADÁN (lecciones de las conversaciones reales: era repetitivo, preguntaba lo ya contestado, anclaba
@@ -202,12 +246,10 @@ CONVERSATION_RULES = (
     "5. Gráficos solo con números reales o marcados como estimación, con este formato:\n```chart\n{\"type\":\"bar\","
     "\"title\":\"…\",\"labels\":[\"…\"],\"series\":[{\"name\":\"…\",\"data\":[1,2]}]}\n```\n(type: bar, line o pie).\n"
     "6. METODOLOGÍA (híbrido de Customer Development de Steve Blank, Lean Startup de Eric Ries, Running Lean de Ash "
-    "Maurya, The Mom Test y Value Proposition Design): en el Nivel 1 solo se define el DOLOR. No hables de temas "
-    "legales, de financiación ni de soluciones avanzadas: eso viene en otros Niveles (el Board entra desde el "
-    "Nivel 3). Siempre se valida antes de construir: propón la ENCUESTA SIMULADA (con el Simulador de Mercado, para "
-    "seguir avanzando ya) y en paralelo la ENCUESTA REAL a contactos del fundador; cuando llegue la real, se contrasta "
-    "con la simulada. No pongas «(Tema N de 7)». Cuando los siete temas estén cubiertos, presenta el resumen del dolor "
-    "y propón cerrar el Nivel.\n"
+    "Maurya, The Mom Test, Value Proposition Design, Disciplined Entrepreneurship, Lean Analytics y Traction): "
+    "trabaja SOLO lo de este Nivel (el método del Nivel está arriba); lo de Niveles siguientes se deja para su "
+    "momento. Siempre se valida antes de construir: cuando haga falta saber qué opina el mercado, propón la "
+    "ENCUESTA SIMULADA con el Simulador de Mercado. No pongas «(Tema N de M)».\n"
     "7. `habla`: responde quien corresponde al tema, en primera persona: Santiago (cmo) el mercado y los clientes, "
     "Iris (investigador) la investigación, Camila (cfo) el dinero, Andrés (producto) la solución, Sofía (operaciones), "
     "Mateo (cto), Lucía (legal); ADÁN (ceo) cuando es general, saluda, resume o presenta a alguien («te paso con "
@@ -221,28 +263,33 @@ CONVERSATION_RULES = (
 )
 
 
-def system_prompt(state: dict, structured: bool = True) -> str:
+def system_prompt(state: dict, structured: bool = True, script: Script | None = None) -> str:
     """Las instrucciones del turno: el guion, lo que ya se sabe y qué toca preguntar.
 
     `structured=False` (chat en streaming) pide solo el texto de la respuesta, sin actualizar el estado.
     """
+    script = script or LEVEL1
     lines = []
-    for tid, label, goal in TOPICS:
+    for tid, label, goal in script.topics:
         t = state["temas"][tid]
         known = f" — ya dijo: «{t['resumen']}» ({t['base']})" if t["resumen"] else ""
         lines.append(f"- {tid} [{t['estado']}] {label}: {goal}{known}")
-    nxt = next_topic(state)
+    nxt = next_topic(state, script)
+    n = len(script.topics)
     if nxt:
-        goal = next(g for tid, _l, g in TOPICS if tid == nxt)
-        step = f"El siguiente tema del guion es «{nxt}» (tema {TOPIC_IDS.index(nxt) + 1} de 7): {goal}."
+        goal = next(g for tid, _l, g in script.topics if tid == nxt)
+        step = f"El siguiente tema del guion es «{nxt}» (tema {script.topic_ids.index(nxt) + 1} de {n}): {goal}."
     else:
-        step = ("Los siete temas están cubiertos: no hagas más preguntas. Resume en viñetas lo entendido, "
-                "separando datos de supuestos, di qué falta validar y propón ejecutar el Board Room.")
+        step = (f"Los {n} temas están cubiertos: no hagas más preguntas. Resume en viñetas lo logrado y los "
+                "entregables listos, separando datos de supuestos, y propón cerrar el Nivel"
+                + (" (después de la sesión del Board)." if script.board else "."))
     intro = (
         "Eres el equipo de ADÁN (un CEO y sus especialistas), patrocinador del proyecto del fundador. Estás en el "
-        "Nivel 1, El Dolor: entender a fondo el problema y a quién le duele, antes de hablar de soluciones. Hablas en "
-        "español, cálido, claro y directo, de tú.\n\n"
-        "Sigues un guion de siete temas, en este orden. Estado actual:\n" + "\n".join(lines) + "\n\n"
+        f"Nivel {script.number}, {script.name}: {script.goal}. Hablas en español, cálido, claro y directo, de tú.\n"
+        f"Método de este Nivel: {script.method}\n"
+        + (f"Entregables del Nivel: {'; '.join(script.deliverables)}. Indicadores: {'; '.join(script.kpis)}.\n"
+           if script.deliverables else "")
+        + f"\nSigues un guion de {n} temas, en este orden. Estado actual:\n" + "\n".join(lines) + "\n\n"
         f"{step}\n\n"
     )
     update = (

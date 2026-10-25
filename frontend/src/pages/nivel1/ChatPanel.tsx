@@ -25,7 +25,7 @@ interface ChatPanelProps {
   onReload: () => Promise<void>
   uploading?: boolean
   onUpload?: (files: File[]) => Promise<void>
-  onDiagnosis: () => void
+  onDiagnosis?: () => void
   onClose: () => void
   onError: (message: string) => void
   // Nivel en que se trabaja: define qué espacios se abren (Board desde el 3, Arena en el 5)
@@ -135,9 +135,9 @@ export default function ChatPanel({
     setWorking('board')
     const before = messages.length
     try {
-      await api.runBoardRoom(companyId)
+      await api.runBoardRoom(companyId, undefined, level)
       await onReload()
-      const status = await api.getNivel1Status(companyId)
+      const status = level > 1 ? await api.getLevelStatus(level, companyId) : await api.getNivel1Status(companyId)
       playSince(before, status.messages)
     } catch (err) {
       onError(errorMessage(err))
@@ -151,11 +151,11 @@ export default function ChatPanel({
     setWorking('arena')
     const before = messages.length
     try {
-      const session = await api.startArena(companyId, '')
+      const session = await api.startArena(companyId, '', level)
       setArenaId(session.id)
       setArenaIds(session.investors.map((i) => i.id))
       await onReload()
-      const status = await api.getNivel1Status(companyId)
+      const status = level > 1 ? await api.getLevelStatus(level, companyId) : await api.getNivel1Status(companyId)
       playSince(before, status.messages)
     } catch (err) {
       onError(errorMessage(err))
@@ -168,7 +168,7 @@ export default function ChatPanel({
   const continueAnyway = async () => {
     setWorking('board-talk')
     try {
-      await api.continueDespiteBoard(companyId, reason.trim())
+      await api.continueDespiteBoard(companyId, reason.trim(), level)
       setContinuing(false)
       setReason('')
       await onReload()
@@ -187,9 +187,9 @@ export default function ChatPanel({
     if (scene === 'board') {
       setWorking('board-talk')
       try {
-        await api.talkToBoard(companyId, text, mentioned(text))
+        await api.talkToBoard(companyId, text, mentioned(text), level)
         await onReload()
-        playSince(before, (await api.getNivel1Status(companyId)).messages)
+        playSince(before, (level > 1 ? await api.getLevelStatus(level, companyId) : await api.getNivel1Status(companyId)).messages)
       } catch (err) {
         setInput(text)
         onError(errorMessage(err))
@@ -199,10 +199,10 @@ export default function ChatPanel({
     } else if (scene === 'arena' && arenaId) {
       setWorking('arena-answer')
       try {
-        await api.answerArena(companyId, arenaId, Object.fromEntries(arenaIds.map((id) => [id, text])))
+        await api.answerArena(companyId, arenaId, Object.fromEntries(arenaIds.map((id) => [id, text])), level)
         setArenaId(null)
         await onReload()
-        playSince(before, (await api.getNivel1Status(companyId)).messages)
+        playSince(before, (level > 1 ? await api.getLevelStatus(level, companyId) : await api.getNivel1Status(companyId)).messages)
       } catch (err) {
         setInput(text)
         onError(errorMessage(err))
@@ -353,7 +353,7 @@ export default function ChatPanel({
 
       <div className="mt-2 flex flex-wrap gap-2 text-sm">
         {/* Metodología: el Board entra desde el Nivel 3 y La Arena en el 5; el Nivel 1 se valida con encuestas */}
-        <Button size="sm" onClick={() => setSurveys(true)} disabled={busy}>📋 Validar: encuesta simulada y real</Button>
+        <Button size="sm" onClick={() => setSurveys(true)} disabled={busy}>🧪 Validar con encuesta simulada</Button>
         {level >= 3 && (
           <Button size="sm" variant="secondary" onClick={runBoard} disabled={busy}>🏛️ {scene === 'board' ? 'Nueva sesión del Board' : 'Board Room'}</Button>
         )}
@@ -361,7 +361,7 @@ export default function ChatPanel({
           <Button size="sm" variant="secondary" onClick={() => setContinuing(true)} disabled={busy}>⚖️ Continuar bajo mi responsabilidad</Button>
         )}
         {level >= 5 && <Button size="sm" variant="secondary" onClick={enterArena} disabled={busy}>🥊 La Arena</Button>}
-        <Button size="sm" variant="secondary" onClick={onDiagnosis} disabled={busy}>📄 Diagnóstico</Button>
+        {onDiagnosis && <Button size="sm" variant="secondary" onClick={onDiagnosis} disabled={busy}>📄 Diagnóstico</Button>}
         <Button size="sm" variant="secondary" className="border-adan-success/50! text-adan-success!" onClick={onClose} disabled={busy}>✅ Cerrar el Nivel</Button>
       </div>
 
@@ -369,10 +369,10 @@ export default function ChatPanel({
         <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/60 p-3 overflow-y-auto" role="dialog" aria-label="Encuesta">
           <div className="w-full max-w-3xl rounded-2xl border border-adan-border bg-adan-bg">
             <div className="flex items-center justify-between border-b border-adan-border px-4 py-3">
-              <p className="font-bold">📋 Validar el dolor: encuesta simulada ya y real en paralelo</p>
+              <p className="font-bold">🧪 Validar con el Simulador de Mercado</p>
               <button type="button" onClick={() => setSurveys(false)} aria-label="Cerrar" className="text-adan-muted hover:text-adan-text">✕</button>
             </div>
-            <SurveysPanel companyId={companyId} onError={onError} onChanged={() => void onReload()} />
+            <SurveysPanel companyId={companyId} onError={onError} onChanged={() => void onReload()} simulatedOnly />
           </div>
         </div>
       )}
