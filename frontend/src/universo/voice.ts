@@ -4,6 +4,7 @@
 
 const KEY = 'adan-voz'
 let ctx: AudioContext | null = null
+let master: AudioNode | null = null
 let busyUntil = 0
 
 export type Emotion = 'feliz' | 'riendo' | 'preocupado' | 'estresado' | 'celebrando' | 'pensando' | 'hablando'
@@ -54,7 +55,21 @@ function audio(): AudioContext | null {
   if (!AC) return null
   ctx = ctx ?? new AC()
   if (ctx.state === 'suspended') void ctx.resume()
+  if (!master) {
+    // Canal maestro: sube el volumen y un compresor evita que sature cuando suenan varios a la vez
+    const gain = ctx.createGain()
+    gain.gain.value = 1.6
+    const comp = ctx.createDynamicsCompressor()
+    comp.threshold.value = -14
+    comp.ratio.value = 6
+    gain.connect(comp).connect(ctx.destination)
+    master = gain
+  }
   return ctx
+}
+
+function out(c: AudioContext): AudioNode {
+  return master ?? c.destination
 }
 
 // El navegador solo deja sonar audio después de un gesto de la persona: el primer clic o tecla lo desbloquea, y
@@ -98,12 +113,12 @@ function chirp(c: AudioContext, t: number, from: number, to: number, dur: number
   gain.gain.linearRampToValueAtTime(vol, t + Math.min(0.012, dur / 3))
   gain.gain.setValueAtTime(vol, t + dur * 0.7)
   gain.gain.exponentialRampToValueAtTime(0.0005, t + dur)
-  osc.connect(gain).connect(c.destination)
+  osc.connect(gain).connect(out(c))
   osc.start(t)
   osc.stop(t + dur + 0.02)
 }
 
-const VOL = 0.07
+const VOL = 0.22
 
 // Cómo suena cada emoción: forma de la frase (sube, cae, burbujea…) y ritmo
 function phrase(c: AudioContext, agent: string, emotion: Emotion, length: number, start: number): number {
