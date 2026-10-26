@@ -101,6 +101,22 @@ def _work(parsed: dict, repo_url: str | None, degraded) -> dict | None:
     return None
 
 
+_NAMES = ("ADÁN", "Adán", "Santiago", "Camila", "Mateo", "Lucía", "Andrés", "Sofía", "Iris", "Orión", "Eva", "Teo")
+_NAME_PREFIX = re.compile(r"^\s*(?:(?:" + "|".join(_NAMES) + r")(?:\s*(?:·|,|-)\s*[A-Za-zÁÉÍÓÚáéíóú ]{2,20})?"
+                          r"(?:\s+aquí)?\s*[.:,—-]\s+)", re.I)
+
+
+def _without_name(text: str) -> str:
+    """Quita «Santiago.» o «Camila, CFO:» al inicio: el nombre ya se ve en el chat y en la oficina."""
+    out = _NAME_PREFIX.sub("", text or "", count=1)
+    return out[:1].upper() + out[1:]
+
+
+def _options(parsed: dict) -> list[str]:
+    raw = parsed.get("opciones") if isinstance(parsed.get("opciones"), list) else []
+    return [str(o).strip()[:60] for o in raw if str(o).strip()][:3]
+
+
 def _questions(texts: list[str]) -> list[str]:
     """Las preguntas (frases que terminan en «?») de los mensajes del equipo."""
     out = []
@@ -312,7 +328,7 @@ class Nivel1Service:
             ], schema, temperature=0.6, max_tokens=2048)
             if isinstance(retry.parsed, dict) and retry.parsed.get("respuesta"):
                 parsed, response = retry.parsed, retry
-        reply = parsed.get("respuesta") if isinstance(parsed.get("respuesta"), str) else ""
+        reply = _without_name(parsed.get("respuesta") if isinstance(parsed.get("respuesta"), str) else "")
         if reply.strip():
             content = reply.strip()
             if not degraded:
@@ -336,6 +352,7 @@ class Nivel1Service:
             content=content,
             metadata_json={
                 "propone_cierre": bool(closing),
+                "opciones": [] if closing or degraded else _options(parsed),
                 "logo_sugerido": getattr(self, "found_logo", None),
                 # Trabajo en segundo plano que llega como mensaje aparte: recorrido con clics o revisión de código
                 "trabajando": _work(parsed, getattr(self, "repo_url", None), degraded),
@@ -402,7 +419,7 @@ class Nivel1Service:
             "Deja `investigar` vacío."))]
         response = await self.llm.chat_json(messages, discovery.schema_for(script.topic_ids), temperature=0.3, max_tokens=3000)
         parsed = response.parsed if isinstance(response.parsed, dict) else {}
-        reply = parsed.get("respuesta") if isinstance(parsed.get("respuesta"), str) else ""
+        reply = _without_name(parsed.get("respuesta") if isinstance(parsed.get("respuesta"), str) else "")
         if not reply.strip():
             return None
         state = discovery.merge(state, parsed)

@@ -280,6 +280,8 @@ export const api = {
   chooseBrandSlogan: (companyId: string, texto: string) => post<BrandData>(`/empresa/${companyId}/marca/slogan`, { texto }),
   brandManual: (companyId: string) => request<BrandData>(`/empresa/${companyId}/marca/manual`, { method: 'POST', signal: AbortSignal.timeout(CHAT_TIMEOUT_MS) }),
   getLibrary: (companyId: string) => request<Library>(`/empresa/${companyId}/biblioteca`),
+  prepareDeliverables: (companyId: string) =>
+    request<{ pendientes: number }>(`/empresa/${companyId}/biblioteca/entregables`, { method: 'POST' }),
   getLibraryDoc: (companyId: string, docId: string) =>
     request<{ id: string; titulo: string; markdown: string }>(`/empresa/${companyId}/biblioteca/${docId}`),
   getIdentity: (companyId: string) => request<CompanyIdentity>(`/empresa/${companyId}/identidad`),

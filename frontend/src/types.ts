@@ -73,6 +73,8 @@ export interface Message {
     investigando?: { consulta: string } | null
     // ADÁN propone cerrar el Nivel (el fundador confirma con un clic o diciendo que sí)
     propone_cierre?: boolean
+    // Respuestas rápidas que el fundador puede tocar en vez de escribir
+    opciones?: string[]
     // Logo encontrado en la web de la empresa, para adoptarlo con un clic
     logo_sugerido?: { url: string } | null
     // Trabajo en segundo plano que llega como mensaje aparte
@@ -1098,6 +1100,7 @@ export interface LibraryDoc {
 }
 
 export interface Library {
+  faltan?: { nivel: number; entregables: string[] }[]
   memoria?: { tipo: 'decidido' | 'descartado' | 'dato' | 'pendiente'; texto: string; nivel?: number; fecha?: string }[]
   marca: {
     nombre: string

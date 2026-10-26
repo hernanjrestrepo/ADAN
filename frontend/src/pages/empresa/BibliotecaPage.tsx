@@ -16,6 +16,20 @@ const ICON: Record<LibraryDoc['seccion'], string> = {
   marca: '🏷️', legal: '⚖️', numeros: '🧮', estrategia: '🧭', board: '🏛️', cliente: '📎',
 }
 
+// Qué falta en cada sección vacía y dónde se construye
+const EMPTY: Record<LibraryDoc['seccion'], string> = {
+  marca: 'Aún no hay documentos de marca: el manual y el logo se crean en Marca.',
+  legal: 'Aún no hay documentos legales: los estatutos, la ruta legal y los trámites se preparan en Constitución y en el Expediente.',
+  numeros: 'Aún no hay documentos de números: el flujo de caja, el organigrama y el informe se construyen en Finanzas (Nivel 3).',
+  estrategia: 'Aún no hay documentos de estrategia: los entregables de cada Nivel aparecen aquí al cerrarlo.',
+  board: 'Aún no hay actas: aparecen cuando sesionan el Board (desde el Nivel 3) y La Arena (Nivel 5).',
+  cliente: 'Aún no has subido archivos ni enlaces: súbelos o pégalos en el chat de la Sala.',
+}
+const LINKS: Partial<Record<LibraryDoc['seccion'], (id: string) => string>> = {
+  marca: (id) => `/marca/${id}`, legal: (id) => `/expediente/${id}`, numeros: (id) => `/finanzas/${id}`,
+}
+const LINK_LABEL: Partial<Record<LibraryDoc['seccion'], string>> = { marca: 'Ir a Marca', legal: 'Ir al Expediente', numeros: 'Ir a Finanzas' }
+
 const date = (iso: string | null) => (iso ? new Date(iso).toLocaleDateString('es-CO', { day: 'numeric', month: 'short', year: 'numeric' }) : '')
 
 function contrast(hex: string): string {
@@ -47,11 +61,31 @@ export default function BibliotecaPage() {
   const [section, setSection] = useState<LibraryDoc['seccion'] | 'todo'>('todo')
   const [open, setOpen] = useState<{ id: string; titulo: string; markdown: string } | null>(null)
   const [loadingDoc, setLoadingDoc] = useState('')
+  const [writing, setWriting] = useState(0)
 
   useEffect(() => {
     let cancelled = false
-    api.getLibrary(companyId).then((l) => { if (!cancelled) setLib(l) }).catch((e: unknown) => setError(errorMessage(e)))
-    return () => { cancelled = true }
+    let timer = 0
+    const load = () => api.getLibrary(companyId).then((l) => { if (!cancelled) setLib(l); return l })
+    void load().then(async (l) => {
+      const pending = (l.faltan ?? []).reduce((n, f) => n + f.entregables.length, 0)
+      if (!pending || cancelled) return
+      // Niveles cerrados sin sus entregables: ADÁN los redacta y se van mostrando a medida que quedan listos
+      const res = await api.prepareDeliverables(companyId)
+      if (cancelled || !res.pendientes) return
+      setWriting(res.pendientes)
+      let rounds = 0
+      const poll = async () => {
+        rounds += 1
+        const fresh = await load().catch(() => null)
+        const left = (fresh?.faltan ?? []).reduce((n, f) => n + f.entregables.length, 0)
+        if (cancelled) return
+        setWriting(left)
+        if (left && rounds < 40) timer = window.setTimeout(poll, 8000)
+      }
+      timer = window.setTimeout(poll, 8000)
+    }).catch((e: unknown) => setError(errorMessage(e)))
+    return () => { cancelled = true; window.clearTimeout(timer) }
   }, [companyId])
 
   const docs = useMemo(() => {
@@ -160,10 +194,17 @@ export default function BibliotecaPage() {
                 </Button>
               ))}
             </div>
-            {docs.length === 0 ? (
-              <p className="mt-6 text-sm text-adan-muted">
-                {lib.documentos.length ? 'Nada coincide con la búsqueda.' : 'Todavía no hay documentos: se irán guardando aquí a medida que avances en los Niveles.'}
+            {writing > 0 && (
+              <p className="mt-4 rounded-xl border border-adan-accent/40 bg-adan-accent/5 p-3 text-sm animate-pulse" data-testid="redactando">
+                ✍️ ADÁN está redactando {writing} entregable{writing === 1 ? '' : 's'} de los Niveles que ya cerraste. Van apareciendo aquí solos.
               </p>
+            )}
+            {docs.length === 0 ? (
+              <div className="mt-6 text-sm text-adan-muted">
+                {query ? 'Nada coincide con la búsqueda.' : section !== 'todo' ? (
+                  <p>{EMPTY[section]} {LINKS[section] && <Link to={LINKS[section]!(companyId)} className="text-adan-accent underline">{LINK_LABEL[section]}</Link>}</p>
+                ) : 'Todavía no hay documentos: se irán guardando aquí a medida que avances en los Niveles.'}
+              </div>
             ) : (
               <ul className="mt-4 divide-y divide-adan-border">
                 {docs.map((d) => (
