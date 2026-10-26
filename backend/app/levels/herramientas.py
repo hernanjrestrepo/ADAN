@@ -11,6 +11,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
 from app.ai.base import LLMAdapter, LLMMessage
+from app.ai.router import for_tier
 from app.ai.usage import usage_scope
 from app.api.v1.nivel1 import get_llm
 from app.core.authz import get_owned_company
@@ -46,6 +47,7 @@ def _project(db: Session, company_id: str) -> Project | None:
 async def walk_later(bind, llm: LLMAdapter, company_id: str, url: str, goal: str, nivel: int,
                      user: str = "", password: str = "") -> None:
     """Recorre la página y cuenta en la Sala lo que encontró (Andrés, de producto)."""
+    llm = for_tier(llm, "standard")  # sin nivel, el adaptador va al modelo local de respaldo
     db = Session(bind=bind)
     try:
         project = _project(db, company_id)
@@ -95,6 +97,7 @@ async def walk_later(bind, llm: LLMAdapter, company_id: str, url: str, goal: str
 
 async def review_later(bind, llm: LLMAdapter, company_id: str, url: str, goal: str, nivel: int, token: str = "") -> None:
     """Mateo revisa el repositorio y deja la revisión en la Sala y en la Biblioteca."""
+    llm = for_tier(llm, "complex")
     db = Session(bind=bind)
     try:
         project = _project(db, company_id)
@@ -143,7 +146,7 @@ async def jokes(company_id: str, db: Session = Depends(get_db), user: User = Dep
         return json.loads(doc.content or '{"chistes": []}')
     try:
         with usage_scope(db, company_id, level=1):
-            resp = await llm.chat_json([
+            resp = await for_tier(llm, "standard").chat_json([
                 LLMMessage("system", (
                     "Escribe 16 bromas cortas (máximo 18 palabras), amables y de oficina, que el equipo de ADÁN le dice al "
                     "fundador sobre SU proyecto. Estilo: «me voy de vacaciones con tu plataforma», «con este flujo de "

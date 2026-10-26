@@ -99,6 +99,9 @@ async def build_level(llm: LLMAdapter, db: Session, project: Project, n: int, on
 
 async def build_later(bind, llm: LLMAdapter, company_id: str, levels: list[int] | None = None) -> None:
     """Prepara en segundo plano los entregables que faltan (de un Nivel o de todos los cerrados)."""
+    from app.ai.router import for_tier
+
+    llm = for_tier(llm, "standard")  # sin nivel, el adaptador va al modelo local de respaldo
     db = Session(bind=bind)
     try:
         project = db.query(Project).filter(Project.company_id == company_id).first()
