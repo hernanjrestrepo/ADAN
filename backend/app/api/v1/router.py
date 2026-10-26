@@ -16,6 +16,7 @@ from app.onboarding import api as onboarding
 from app.scoring import api as scoring
 from app.twin import api as twin
 from app.visitas import api as visitas
+from app.genexis import api as genexis
 
 router = APIRouter(prefix="/api/v1")
 
@@ -37,3 +38,4 @@ router.include_router(niveles.router)
 router.include_router(empresa.router)
 router.include_router(herramientas.router)
 router.include_router(visitas.router)
+router.include_router(genexis.router)

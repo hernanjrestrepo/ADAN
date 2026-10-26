@@ -12,6 +12,7 @@ TEAM = {
     "ceo": ("ADÁN", "CEO"), "cto": ("Mateo", "CTO"), "cfo": ("Camila", "CFO"), "cmo": ("Santiago", "CMO"),
     "legal": ("Lucía", "Legal"), "producto": ("Andrés", "Producto"), "operaciones": ("Sofía", "Operaciones"),
     "csi": ("Orión", "CSI"), "eva": ("Eva", "EVA"), "investigador": ("Iris", "Investigadora"), "analista": ("Teo", "Analista"),
+    "genexis": ("Forja", "Genexis"),
 }
 ROLE_TO_ID = {"CTO": "cto", "CFO": "cfo", "CMO": "cmo", "Legal": "legal", "Producto": "producto", "Operaciones": "operaciones"}
 

@@ -38,13 +38,14 @@ TYPES: dict[str, dict] = {
     "board_minutes": {"seccion": "board", "nivel": 3, "titulo": "Acta del Board"},
     "board_override": {"seccion": "board", "nivel": 3, "titulo": "Decisión bajo tu responsabilidad"},
     "arena": {"seccion": "board", "nivel": 5, "titulo": "Sesión de La Arena"},
+    "libro_empresa": {"seccion": "estrategia", "nivel": 7, "titulo": "Libro de la Empresa"},
     "code_review": {"seccion": "estrategia", "nivel": 4, "titulo": "Revisión de código"},
     "client_upload": {"seccion": "cliente", "nivel": None, "titulo": "Archivo subido"},
     "web_page": {"seccion": "cliente", "nivel": None, "titulo": "Página web leída"},
 }
 
 # Lo que sólo es estado interno (o ya se muestra resumido en otra parte) no se lista como documento
-HIDDEN = {"marca", "expediente", "board_dialogue", "client_docs_digest", "memoria_proyecto", "chistes"}
+HIDDEN = {"marca", "expediente", "board_dialogue", "client_docs_digest", "memoria_proyecto", "chistes", "graduacion", "seguimiento", "mvp_sitio"}
 
 
 def _is_json(text: str | None) -> bool:

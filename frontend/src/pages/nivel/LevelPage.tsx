@@ -24,7 +24,9 @@ const TOOLS: Record<number, { label: string; to: (id: string) => string }[]> = {
       { label: '📁 Expediente de creación', to: (id) => `/expediente/${id}` },
       { label: '🧮 Flujo de caja y organigrama', to: (id) => `/finanzas/${id}` },
       { label: '⚖️ Nombre, ruta legal y estatutos', to: (id) => `/constitucion/${id}` }],
-  4: [{ label: '🤖 Agentes por tiempo', to: (id) => `/agentes/${id}` }],
+  4: [{ label: '🛠️ Taller Genexis: construir el MVP', to: (id) => `/taller/${id}` },
+      { label: '🤖 Agentes por tiempo', to: (id) => `/agentes/${id}` }],
+  7: [{ label: '🎓 Graduación y modo continuo', to: (id) => `/graduacion/${id}` }],
 }
 
 export default function LevelPage() {

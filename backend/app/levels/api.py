@@ -16,7 +16,7 @@ from app.core.auth import get_current_user
 from app.core.authz import get_owned_company
 from app.core.database import get_db
 from app.core.ratelimit import llm_user
-from app.levels import entregables
+from app.levels import entregables, graduacion
 from app.levels.scripts import script_for
 from app.models.models import Level, Message, NivelStatus, Project, User
 from app.nivel1 import timeline
@@ -105,6 +105,8 @@ async def chat(n: int, company_id: str, body: ChatBody, background: BackgroundTa
         timeline.post(db, project, text, role="user", nivel=n)
         result, closing = _close(db, project, level, n, "")
         background.add_task(entregables.build_later, db.get_bind(), llm, company_id, [n])
+        if n == 7:
+            background.add_task(graduacion.graduate_later, db.get_bind(), llm, company_id)
         return {"message": {"id": closing.id, "role": closing.role, "agent_name": closing.agent_name, "content": closing.content,
                             "created_at": closing.created_at.isoformat(), "metadata_json": closing.metadata_json},
                 "conversation_id": conv.id, "closed": result}
@@ -129,6 +131,8 @@ def close(n: int, company_id: str, body: CloseBody, background: BackgroundTasks,
     result, _ = _close(db, project, level, n, body.reason.strip())
     # Los entregables del Nivel quedan escritos en la Biblioteca (en segundo plano)
     background.add_task(entregables.build_later, db.get_bind(), llm, company_id, [n])
+    if n == 7:  # cierre de todo el proceso
+        background.add_task(graduacion.graduate_later, db.get_bind(), llm, company_id)
     return result
 
 

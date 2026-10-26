@@ -21,7 +21,7 @@ from app.documents import media
 from app.empresa import biblioteca, logo_externo
 from app.empresa.catalog import COUNTRIES, items_for
 from app.empresa.service import STATUSES, Expediente, Marca
-from app.levels import entregables
+from app.levels import entregables, graduacion
 from app.models.models import Document, Project, User
 from app.nivel1 import memoria, timeline
 from app.nivel1.service import Nivel1Service
@@ -402,3 +402,42 @@ async def consolidate_memory(company_id: str, db: Session = Depends(get_db), use
     with usage_scope(db, company_id, level=1):
         data = await memoria.consolidate(llm, db, project)
     return {"ficha": data.get("ficha", {}), "acuerdos": len(data.get("acuerdos", []))}
+
+
+# --- Graduación y modo continuo ------------------------------------------------------------------------------------
+
+class CheckInBody(BaseModel):
+    valores: dict[str, float] = Field(default_factory=dict)
+    nota: str = Field("", max_length=500)
+
+
+@router.get("/{company_id}/graduacion")
+def graduation_status(company_id: str, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
+    company, project = _ctx(db, company_id, user)
+    return {**graduacion.status(db, project), "empresa": company.name,
+            "identidad": Marca(None, db).identity(company, project), "fundador": user.name}
+
+
+@router.post("/{company_id}/graduacion")
+def graduate(company_id: str, background: BackgroundTasks, db: Session = Depends(get_db),
+             user: User = Depends(llm_user), llm: LLMAdapter = Depends(get_llm)):
+    """Prepara (o rehace) la graduación: Board final, Libro de la Empresa y certificado. Requiere el Nivel 7 cerrado."""
+    _, project = _ctx(db, company_id, user)
+    current = graduacion.status(db, project)
+    if not current["nivel7_cerrado"]:
+        raise HTTPException(status_code=409, detail="La graduación llega al cerrar el Nivel 7.")
+    if current["estado"] == "preparando":
+        return current
+    background.add_task(graduacion.graduate_later, db.get_bind(), llm, company_id)
+    return {**current, "estado": "preparando"}
+
+
+@router.post("/{company_id}/seguimiento")
+async def monthly_check_in(company_id: str, body: CheckInBody, db: Session = Depends(get_db),
+                           user: User = Depends(llm_user), llm: LLMAdapter = Depends(get_llm)):
+    """Modo continuo: los indicadores del mes, leídos por Camila contra el plan."""
+    if not body.valores:
+        raise HTTPException(status_code=422, detail="Escribe al menos un indicador.")
+    _, project = _ctx(db, company_id, user)
+    with usage_scope(db, company_id, level=7):
+        return await graduacion.check_in(llm, db, project, body.valores, body.nota.strip())
