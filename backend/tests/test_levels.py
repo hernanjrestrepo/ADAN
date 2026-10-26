@@ -72,3 +72,27 @@ def test_adan_proposes_closing_and_a_yes_closes_the_level(client, db_session):
     res = client.post(f"/api/v1/nivel/2/{cid}/chat", headers=h, json={"message": "Sí, dale"}).json()
     assert res["closed"]["next"] == 3 and "Nivel 2 cerrado" in res["message"]["content"]
     assert client.get(f"/api/v1/nivel/3/{cid}/status", headers=h).json()["status"] == "active"
+
+
+def test_closing_a_level_writes_its_deliverables_into_the_library(client, db_session):
+    from app.ai.base import LLMResponse
+
+    class Writer(ScriptLLM):
+        async def chat(self, messages, model=None, temperature=0.7, max_tokens=2048):
+            title = messages[-1].content.split("»")[0].split("«")[-1]
+            return LLMResponse(content=f"# {title}\n\nResumen: borrador con lo acordado (supuestos marcados).", model="fake")
+
+    cid, h = _setup(client, "entregables@example.com")
+    _open_level(db_session, cid, 2)
+    client.get(f"/api/v1/nivel/2/{cid}/status", headers=h)
+    before = client.get(f"/api/v1/empresa/{cid}/biblioteca", headers=h).json()
+    assert before["faltan"][0]["nivel"] == 1  # el Nivel 1 ya cerrado aún no tiene sus entregables
+    _use(client, Writer([]))
+    client.post(f"/api/v1/nivel/2/{cid}/cerrar", headers=h, json={"reason": "Validaremos lanzando en dos semanas"})
+    lib = client.get(f"/api/v1/empresa/{cid}/biblioteca", headers=h).json()
+    titles = {d["titulo"]: d for d in lib["documentos"]}
+    assert titles["Nivel 2 · Lienzo de Propuesta de Valor"]["seccion"] == "estrategia"
+    assert titles["Nivel 2 · Hipótesis de precio"]["seccion"] == "numeros" and titles["Nivel 2 · Lean Canvas"]["nivel"] == 2
+    assert client.post(f"/api/v1/empresa/{cid}/biblioteca/entregables", headers=h).json()["pendientes"] == 5
+    lib = client.get(f"/api/v1/empresa/{cid}/biblioteca", headers=h).json()
+    assert lib["faltan"] == [] and "Nivel 1 · Mapa de dolores" in {d["titulo"] for d in lib["documentos"]}

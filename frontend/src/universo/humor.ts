@@ -3,7 +3,7 @@
 // estas son las de siempre, por si todavía no han llegado.
 import { AGENTS } from './data'
 import { useUniverso } from './store'
-import { babble, laugh, yelp } from './voice'
+import { laugh, talk, yelp } from './voice'
 
 const DEFAULT_JOKES: Record<string, string[]> = {
   ceo: ['Si este proyecto despega, el primer viaje de la oficina lo pagas tú, ¿listo?',
@@ -62,7 +62,7 @@ export function tellJoke(agent: string) {
   u.present(agent, 9000)
   u.say(agent, text, 7000)
   u.feel(agent, 'riendo', 7000)
-  babble(agent, text)
+  talk(agent, text, 'feliz')
   u.caption(`${a.name} · ${a.role}`, text, a.color)
   const others = AGENTS.filter((x) => x.id !== agent).sort(() => Math.random() - 0.5).slice(0, 2 + Math.floor(Math.random() * 2))
   others.forEach((o, i) => {
@@ -84,7 +84,7 @@ export function scold(agent: string) {
   u.feel(agent, 'estresado', 4500)
   u.say(agent, text, 4500)
   yelp(agent)
-  window.setTimeout(() => babble(agent, text), 450)
+  window.setTimeout(() => talk(agent, text, 'preocupado'), 500)
   u.caption(`${a.name} · ${a.role}`, text, a.color)
   // Alguien del equipo se burla un poquito
   const witness = pick(AGENTS.filter((x) => x.id !== agent))

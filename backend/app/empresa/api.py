@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import base64
 
-from fastapi import APIRouter, Depends, File, HTTPException, Response, UploadFile
+from fastapi import APIRouter, BackgroundTasks, Depends, File, HTTPException, Response, UploadFile
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
@@ -21,6 +21,7 @@ from app.documents import media
 from app.empresa import biblioteca, logo_externo
 from app.empresa.catalog import COUNTRIES, items_for
 from app.empresa.service import STATUSES, Expediente, Marca
+from app.levels import entregables
 from app.models.models import Document, Project, User
 from app.nivel1 import timeline
 from app.nivel1.service import Nivel1Service
@@ -337,6 +338,17 @@ async def numbers_in_room(company_id: str, db: Session = Depends(get_db), user: 
 def library(company_id: str, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
     company, project = _ctx(db, company_id, user)
     return biblioteca.catalog(db, project, company)
+
+
+@router.post("/{company_id}/biblioteca/entregables")
+def library_deliverables(company_id: str, background: BackgroundTasks, db: Session = Depends(get_db),
+                         user: User = Depends(llm_user), llm: LLMAdapter = Depends(get_llm)):
+    """Prepara en segundo plano los entregables de los Niveles cerrados que todavía no están en la Biblioteca."""
+    _, project = _ctx(db, company_id, user)
+    pending = entregables.missing(db, project)
+    if pending:
+        background.add_task(entregables.build_later, db.get_bind(), llm, company_id)
+    return {"pendientes": sum(len(v) for v in pending.values())}
 
 
 def _library_doc(db: Session, project: Project, doc_id: str) -> tuple[str, str]:

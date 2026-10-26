@@ -6,7 +6,7 @@ import { api } from '../lib/api'
 import { FLOORS, type Identity } from './scene/pisos'
 import World from './scene/World'
 import { useUniverso } from './store'
-import { setVoiceOn, voiceOn } from './voice'
+import { hush, setVoiceOn, voiceOn } from './voice'
 
 // Si el navegador no puede con WebGL, el chat sigue igual
 class Boundary extends Component<{ children: ReactNode }, { failed: boolean }> {
@@ -98,7 +98,7 @@ export default function EmbeddedWorld({ level = 1, companyId }: { level?: number
         </select>
       </div>
  <div className="absolute bottom-3 right-3 flex gap-1" aria-label="Controles de la cámara">
-        <button type="button" onClick={() => { setVoiceOn(!voice); setVoice(!voice) }} aria-pressed={voice}
+        <button type="button" onClick={() => { if (voice) hush(); setVoiceOn(!voice); setVoice(!voice) }} aria-pressed={voice}
           title={voice ? 'Silenciar la voz de los personajes' : 'Activar la voz de los personajes'} aria-label="Voz de los personajes"
           className="grid h-9 w-9 place-items-center rounded-full bg-black/60 text-lg text-white hover:bg-black/80">{voice ? '🔊' : '🔇'}</button>
         {([['reset', '⟲', 'Vista general de la oficina'], ['in', '＋', 'Acercar'], ['out', '－', 'Alejar']] as const).map(([op, icon, label]) => (

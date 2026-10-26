@@ -101,7 +101,7 @@ interface State {
 
 // Partes de un subtítulo: frases completas de hasta ~150 caracteres, sin cortar palabras
 export function subtitleParts(text: string): string[] {
-  const sentences = text.match(/[^.!?¿¡]+[.!?]+["»)]*|[^.!?]+$/g) ?? [text]
+  const sentences = text.match(/[^.!?]+[.!?]+["»)]*|[^.!?]+$/g) ?? [text]
   const parts: string[] = []
   let cur = ''
   for (const raw of sentences) {

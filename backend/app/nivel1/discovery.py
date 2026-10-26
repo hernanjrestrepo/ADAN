@@ -73,7 +73,7 @@ def schema_for(topic_ids: list[str]) -> dict:
 _SCHEMA = {
     "type": "object",
     "additionalProperties": False,
-    "required": ["respuesta", "habla", "acuerdos", "temas", "evidencia_sugerida", "investigar", "recorrer", "reaccion"],
+    "required": ["respuesta", "habla", "acuerdos", "opciones", "temas", "evidencia_sugerida", "investigar", "recorrer", "reaccion"],
     "properties": {
         "respuesta": {"type": "string"},
         # Quién del equipo responde este turno (habla en primera persona)
@@ -83,6 +83,8 @@ _SCHEMA = {
             "type": "object", "additionalProperties": False, "required": ["tipo", "texto"],
             "properties": {"tipo": {"type": "string", "enum": ["decidido", "descartado", "dato", "pendiente"]},
                            "texto": {"type": "string"}}}},
+        # Respuestas rápidas que el fundador puede tocar en vez de escribir (2 o 3, máximo 6 palabras)
+        "opciones": {"type": "array", "items": {"type": "string"}},
         # Recorrido con clics por una página (en segundo plano): url y objetivo; vacíos si no hace falta
         "recorrer": {"type": "object", "additionalProperties": False, "required": ["url", "objetivo"],
                      "properties": {"url": {"type": "string"}, "objetivo": {"type": "string"}}},
@@ -282,6 +284,14 @@ CONVERSATION_RULES = (
     "(una decisión, un entregable, un número con fuente o un siguiente paso), con energía y celebrando el avance.\n"
     "NUNCA repitas una pregunta que ya hiciste (ni con otras palabras): si no la respondió, asume la opción más "
     "razonable, dila como supuesto y sigue.\n"
+    "FLUIDEZ: el fundador no debe tener que escribir «sigamos». Mensajes de máximo 70 palabras: lo que quedó en "
+    "una frase, el borrador del siguiente tema y una sola pregunta. Si un tema es obvio con lo que ya sabes, "
+    "déjalo acordado tú y avanza dos temas en el mismo mensaje. `opciones`: 2 o 3 respuestas rápidas que el "
+    "fundador puede tocar (máximo 6 palabras cada una), por ejemplo «✅ Aprobado, sigamos», «✏️ Ajustemos el precio», "
+    "«🤔 Explícame mejor».\n"
+    "CORRECCIONES AL PIE DE LA LETRA: si el fundador niega o corrige algo («sin crédito», «no hay 50 USD», «ya "
+    "quedó»), aplica exactamente eso y quítalo de la propuesta; nunca lo reinterpretes ni agregues cifras que él "
+    "no dio.\n"
     "HUMOR: de vez en cuando (más o menos uno de cada cinco turnos) una broma corta y amable sobre el proyecto, sin "
     "frenar el trabajo.\n"
     "9. `reaccion`: quién reacciona en la oficina, con su emoción y una frase de máximo 10 palabras, humana y con "

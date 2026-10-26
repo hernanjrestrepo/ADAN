@@ -72,7 +72,13 @@ function useElapsed(running: boolean) {
 
 // Retrato del personaje de la oficina que habla
 function Speaker({ message }: { message: Message }) {
-  return <Portrait agent={String(message.metadata_json?.agente ?? 'ceo')} size={36} />
+  return (
+    <button type="button" onClick={() => reactTo(message, true)} title="Que pase al frente y lo diga en la oficina"
+      aria-label={`Que ${message.agent_name ?? 'ADÁN'} lo diga en la oficina`}
+      className="h-9 w-9 shrink-0 self-start rounded-full transition-transform hover:scale-110 focus:outline-2 focus:outline-adan-accent">
+      <Portrait agent={String(message.metadata_json?.agente ?? 'ceo')} size={36} />
+    </button>
+  )
 }
 
 const SCENE_CHIP: Record<string, string> = { board: '🏛️ Board Room', arena: '🥊 La Arena' }
@@ -320,7 +326,7 @@ export default function ChatPanel({
             <div key={msg.id} className={`flex gap-2 ${user ? 'justify-end' : 'justify-start'}`}>
               {!user && <Speaker message={msg} />}
               <div className={`max-w-[85%] rounded-xl px-4 py-3 ${user ? 'bg-adan-accent text-white' : 'bg-adan-surface border border-adan-border cursor-pointer hover:border-adan-accent/60'}`}
-                onClick={user ? undefined : (e) => { if (!(e.target as HTMLElement).closest('a,button')) reactTo(msg) }}
+                onClick={user ? undefined : (e) => { if (!(e.target as HTMLElement).closest('a,button')) reactTo(msg, true) }}
                 title={user ? undefined : 'Clic: que lo diga en la oficina'}>
                 {!user && (
                   <div className="mb-1 flex flex-wrap items-center gap-2 text-xs">
@@ -341,6 +347,16 @@ export default function ChatPanel({
                   </div>
                 )}
                 {!user && logoDone[msg.id] === 'si' && <p className="mt-2 text-xs text-adan-success">✓ Logo adoptado: ya brilla en tu oficina y en la Biblioteca.</p>}
+                {!user && msg.id === lastAssistantId && !busy && (msg.metadata_json?.opciones?.length ?? 0) > 0 && (
+                  <div className="mt-3 flex flex-wrap gap-2" data-testid="opciones">
+                    {msg.metadata_json!.opciones!.map((o) => (
+                      <button key={o} type="button" onClick={() => void onSend(o)}
+                        className="rounded-full border border-adan-accent/50 bg-adan-accent/10 px-3 py-1 text-xs font-medium text-adan-text hover:bg-adan-accent/20">
+                        {o}
+                      </button>
+                    ))}
+                  </div>
+                )}
                 {!user && msg.metadata_json?.propone_cierre && msg.id === lastAssistantId && (
                   <div className="mt-3 flex flex-wrap gap-2" data-testid="propone-cierre">
                     <Button size="sm" variant="success" onClick={onClose} disabled={busy}>✅ Sí, cerramos el Nivel</Button>

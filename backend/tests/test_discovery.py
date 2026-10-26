@@ -298,3 +298,13 @@ def test_a_question_already_asked_is_not_asked_again(client):
     msg = client.post(f"/api/v1/nivel1/{cid}/chat", json={"message": "sigan"}, headers=headers).json()["message"]
     assert msg["content"].startswith("Asumo Bogotá")
     assert "ya preguntaste" in llm.calls[-1][-1].content
+
+
+def test_replies_drop_the_speaker_name_and_bring_quick_options(client):
+    cid, headers = _setup(client, "opciones@example.com")
+    turn = {**TURN_1, "respuesta": "Santiago. Te propongo lanzar mañana con tu red. ¿Lo dejamos así?", "acuerdos": [],
+            "opciones": ["✅ Aprobado, sigamos", "✏️ Ajustemos la fecha", "🤔 Explícame mejor", "sobra"]}
+    _use(client, ScriptLLM([turn]))
+    msg = client.post(f"/api/v1/nivel1/{cid}/chat", json={"message": "lanzamiento mañana"}, headers=headers).json()["message"]
+    assert msg["content"].startswith("Te propongo lanzar mañana")
+    assert msg["metadata_json"]["opciones"] == ["✅ Aprobado, sigamos", "✏️ Ajustemos la fecha", "🤔 Explícame mejor"]

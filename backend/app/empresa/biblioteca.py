@@ -6,6 +6,7 @@ import json
 
 from sqlalchemy.orm import Session
 
+from app.levels import entregables
 from app.models.models import Company, Document, Project
 
 # doc_type → sección, Nivel donde nace, cómo se ve, herramienta que lo produce y descarga propia
@@ -83,6 +84,8 @@ def catalog(db: Session, project: Project, company: Company) -> dict:
         if d.doc_type in HIDDEN:
             continue
         meta = TYPES.get(d.doc_type, {"seccion": "estrategia", "nivel": None, "titulo": "Documento"})
+        if d.doc_type == entregables.DOC_TYPE:
+            meta = {"seccion": entregables.section_of(d.title), "nivel": entregables.level_of(d.title), "titulo": "Entregable"}
         data = _is_json(d.content)
         download = meta.get("descarga")
         if not download and not data and d.content:
@@ -106,7 +109,9 @@ def catalog(db: Session, project: Project, company: Company) -> dict:
                          "ext": "docx", "palabras": None})
     from app.nivel1 import memoria  # la memoria del proyecto que custodia ADÁN, visible para el fundador
 
+    pending = entregables.missing(db, project)
     return {"marca": brand, "secciones": SECTIONS, "documentos": items,
+            "faltan": [{"nivel": n, "entregables": names} for n, names in sorted(pending.items())],
             "memoria": list(reversed(memoria.load(db, project)["acuerdos"]))}
 
 
