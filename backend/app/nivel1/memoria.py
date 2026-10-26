@@ -21,7 +21,7 @@ from app.models.models import Company, Document, Project, User
 DOC_TYPE = "memoria_proyecto"
 KINDS = {"decidido": "Decidido", "descartado": "Descartado (no volver a proponerlo ni preguntarlo)",
          "dato": "Dato confirmado por el fundador", "pendiente": "Pendiente acordado"}
-MAX_AGREEMENTS = 80
+MAX_AGREEMENTS = 140
 CHUNK_CHARS = 900
 MAX_CHUNKS = 4
 # Documentos de la Biblioteca que alimentan los fragmentos (los JSON de estado interno no)
@@ -192,7 +192,7 @@ CONSOLIDATOR = (
     "canales, metas aprobadas. Solo lo que el fundador dijo o aprobó; si algo no está claro, no lo pongas.\n"
     "2) `acuerdos`: el libro depurado. Si dos acuerdos se contradicen, queda el MÁS RECIENTE (o el que el "
     "fundador corrigió); fusiona duplicados; quita pendientes ya resueltos; incluye lo que el fundador descartó o "
-    "pidió no volver a preguntar (tipo «descartado»). Máximo 60, cada uno en una frase. `nivel`: el Nivel donde "
+    "pidió no volver a preguntar (tipo «descartado»). Máximo 20 por Nivel y 120 en total, cada uno en una frase; un pendiente que se resolvió en un Nivel posterior desaparece. `nivel`: el Nivel donde "
     "se acordó.\n"
     "Nunca inventes: nada de cifras que el fundador no dio. Español."
 )
@@ -225,10 +225,10 @@ async def consolidate(llm, db: Session, project: Project) -> dict:
             talks.append(f"=== Nivel {lv.number} ===\n" + "\n".join(lines)[-14000:])
     current = "\n".join(f"- [{a['tipo']}, Nivel {a.get('nivel', '?')}] {a['texto']}" for a in data["acuerdos"])
 
-    async def ask(prompt: str) -> dict:
+    async def ask(prompt: str, tokens: int = 3000) -> dict:
         try:
             resp = await llm.chat_json([LLMMessage("system", CONSOLIDATOR), LLMMessage("user", prompt)],
-                                       CONSOLIDATE_SCHEMA, temperature=0.1, max_tokens=3000)
+                                       CONSOLIDATE_SCHEMA, temperature=0.1, max_tokens=tokens)
         except Exception:  # noqa: BLE001 - un Nivel que falla no impide consolidar los demás
             return {}
         if resp.metadata.get("degraded"):
@@ -250,15 +250,19 @@ async def consolidate(llm, db: Session, project: Project) -> dict:
         "Une y depura. Libro de acuerdos actual (lo más reciente):\n" + (current or "(vacío)")
         + "\n\nAcuerdos encontrados en las conversaciones, Nivel por Nivel (en orden):\n" + merged
         + "\n\nFicha encontrada por partes (la más reciente manda):\n"
-        + "\n".join(f"- {k}: {v}" for k, v in fragments.items()))
+        + "\n".join(f"- {k}: {v}" for k, v in fragments.items()), tokens=8000)  # la unión es larga: sin cortarla
     if not parsed.get("acuerdos") and not parsed.get("ficha"):
         return data  # sin la pasada final no se reemplaza la memoria: se intenta de nuevo más tarde
     now = datetime.now(timezone.utc).isoformat(timespec="seconds")
     agreements = [{"tipo": a["tipo"], "texto": str(a["texto"]).strip()[:300], "nivel": a.get("nivel"), "fecha": now}
                   for a in parsed.get("acuerdos", []) if a.get("tipo") in KINDS and str(a.get("texto", "")).strip()]
+    # La ficha son parámetros de la empresa, no calificaciones del Board ni de La Arena
     ficha = {str(f["campo"]).strip()[:60]: str(f["valor"]).strip()[:300] for f in parsed.get("ficha", [])
-             if str(f.get("campo", "")).strip() and str(f.get("valor", "")).strip()}
-    data["acuerdos"] = agreements[:MAX_AGREEMENTS] or data["acuerdos"]
+             if str(f.get("campo", "")).strip() and str(f.get("valor", "")).strip()
+             and not re.search(r"board|arena|score|puntaje", str(f["campo"]) + " " + str(f["valor"])[:40], re.I)}
+    # Si sobran, se conservan los más recientes (los Niveles avanzados corrigen a los primeros)
+    agreements.sort(key=lambda a: a.get("nivel") or 0)
+    data["acuerdos"] = agreements[-MAX_AGREEMENTS:] or data["acuerdos"]
     data["ficha"] = {**data.get("ficha", {}), **ficha}
     data["consolidado"] = now
     save(db, project, data)
