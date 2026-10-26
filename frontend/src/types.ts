@@ -1100,6 +1100,7 @@ export interface LibraryDoc {
 }
 
 export interface Library {
+  ficha?: Record<string, string>
   faltan?: { nivel: number; entregables: string[] }[]
   memoria?: { tipo: 'decidido' | 'descartado' | 'dato' | 'pendiente'; texto: string; nivel?: number; fecha?: string }[]
   marca: {

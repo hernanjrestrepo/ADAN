@@ -38,6 +38,10 @@ class AgentVote:
     failure_mode: str = ""      # la razón más probable por la que la empresa cerraría, desde su especialidad
     bulletproof: bool = False   # si en su especialidad el tema está a prueba de balas
     devils_advocate: bool = False
+    readiness: float | None = None  # 0-100: qué tan lista está su área para el siguiente paso de la etapa
+    blockers: list[str] = field(default_factory=list)       # lo que hay que resolver antes de seguir
+    assumed_risks: list[str] = field(default_factory=list)  # riesgos que el fundador decidió asumir
+    post_launch: list[str] = field(default_factory=list)    # lo que se mide después de lanzar
 
 
 @dataclass
@@ -62,6 +66,10 @@ class BoardConsensus:
     minutes: str = ""              # acta de la sesión
     failure_modes: list[str] = field(default_factory=list)  # por qué esta empresa podría cerrar
     bulletproof_gaps: list[str] = field(default_factory=list)  # áreas que todavía no están a prueba de balas
+    stage: str = ""                                          # etapa que se evaluó (Nivel y su objetivo)
+    blockers: list[str] = field(default_factory=list)
+    assumed_risks: list[str] = field(default_factory=list)
+    post_launch: list[str] = field(default_factory=list)
 
     def to_dict(self) -> dict:
         return asdict(self)
@@ -105,11 +113,20 @@ FAILURE_LENS = {
 }
 
 VOTE_RULES = (
-    "Tu postura por defecto es escéptica. Vota PROCEED solo si, en TU especialidad, el tema está a prueba de "
-    "balas: respaldado por evidencia verificable (datos externos con fuente, clientes reales, ventas, cifras "
-    "medidas), no por supuestos ni proyecciones del fundador. Ante la duda, PIVOT: es más barato corregir ahora "
-    "que cerrar después. STOP si lo que hay indica que el problema no existe o que el modelo no puede funcionar. "
-    "Una confianza mayor a 70 exige que cites al menos dos datos verificables de esta empresa."
+    "Eres exigente, pero evalúas LA ETAPA EN QUE ESTÁ la empresa (ver «Etapa que se evalúa»): ¿está lista para el "
+    "siguiente paso de ESTE Nivel? No exijas evidencia que solo puede existir después (por ejemplo, ventas reales "
+    "o CAC medido si la empresa aún no ha lanzado): eso va en `post_launch` como lo que hay que medir al lanzar, y "
+    "no es motivo de PIVOT.\n"
+    "Coherencia: la FICHA DE LA EMPRESA y el LIBRO DE ACUERDOS son decisiones del fundador y del equipo de ADÁN. "
+    "No las contradigas ni las ignores; si en tu área ves un problema serio con un acuerdo, nómbralo y propone "
+    "cómo resolverlo. Un riesgo que el fundador decidió asumir (por ejemplo, formalizar un contrato con un socio "
+    "más adelante) va en `assumed_risks` con su mitigación, no es un bloqueante. Usa los datos vigentes, no los "
+    "superados (un cliente o una cifra que el fundador corrigió ya no cuenta).\n"
+    "Vota PROCEED si en tu área no hay ningún BLOQUEANTE para el siguiente paso de esta etapa (las mejoras van en "
+    "`key_concerns`). PIVOT solo si hay un bloqueante concreto que hay que resolver antes de seguir (va en "
+    "`blockers`, con cómo resolverlo). STOP si el problema no existe o el modelo no puede funcionar. "
+    "`readiness`: de 0 a 100, qué tan lista está tu área para el siguiente paso de esta etapa (no tu confianza "
+    "en el voto). `bulletproof`: true si tu área está a prueba de balas PARA ESTA ETAPA."
 )
 
 DEVILS_ADVOCATE = (
@@ -127,11 +144,15 @@ def _system(role: str, focus: str, devil: bool = False) -> str:
         f"Busca primero cómo podría fallar desde tu área: {FAILURE_LENS.get(role, focus)}.\n"
         + VOTE_RULES + (DEVILS_ADVOCATE if devil else "") + "\n"
         "Reglas: habla de ESTA empresa, con sus datos, cifras, segmentos y socios; nada genérico que sirva para "
-        "cualquier empresa. Distingue dato de supuesto: si casi todo son supuestos, baja tu confianza. "
+        "cualquier empresa. Construyes sobre el trabajo que el equipo de ADÁN ya hizo con el fundador en los Niveles "
+        "(sus entregables están en el contexto): no lo descalifiques en bloque; señala qué falta y cómo cerrarlo. "
+        "Sin adjetivos despectivos (nada de «teatro», «fantasía» o «humo»). "
+        "Distingue dato de supuesto: si casi todo son supuestos, baja tu confianza. "
         "`analysis`: máximo 80 palabras. `justification`: una frase. `failure_mode`: la razón más probable por la "
-        "que esta empresa cerraría desde tu especialidad, en una frase concreta. `bulletproof`: true solo si tu "
-        "área está a prueba de balas. `key_strengths` y `key_concerns`: máximo 3 cada una, específicas. "
-        "`questions`: máximo 2, la evidencia concreta que cambiaría tu voto (qué medir, con quién, cuántos). Español."
+        "que esta empresa cerraría desde tu especialidad, en una frase concreta. `key_strengths` y `key_concerns`: "
+        "máximo 3 cada una, específicas. `blockers`, `assumed_risks` y `post_launch`: máximo 2 cada una (vacías si "
+        "no hay). `questions`: máximo 2, la evidencia concreta que cambiaría tu voto (qué medir, con quién, cuántos). "
+        "Español."
     )
 
 
@@ -157,9 +178,13 @@ VOTE_SCHEMA = {
         "questions": {"type": "array", "items": {"type": "string"}},
         "failure_mode": {"type": "string"},
         "bulletproof": {"type": "boolean"},
+        "readiness": {"type": "integer", "minimum": 0, "maximum": 100},
+        "blockers": {"type": "array", "items": {"type": "string"}},
+        "assumed_risks": {"type": "array", "items": {"type": "string"}},
+        "post_launch": {"type": "array", "items": {"type": "string"}},
     },
     "required": ["analysis", "justification", "vote", "confidence", "key_strengths", "key_concerns", "questions",
-                 "failure_mode", "bulletproof"],
+                 "failure_mode", "bulletproof", "readiness", "blockers", "assumed_risks", "post_launch"],
     "additionalProperties": False,
 }
 
@@ -195,14 +220,15 @@ class BoardRoom:
         self.chair_llm = for_tier(llm, "standard")
 
     async def run(self, pain_description: str, conversation_context: str = "",
-                  client_question: str = "", client_position: str = "", session_number: int = 0) -> BoardConsensus:
+                  client_question: str = "", client_position: str = "", session_number: int = 0,
+                  stage: str = "") -> BoardConsensus:
         # El abogado del diablo rota sesión a sesión entre los seis especialistas
         devil = list(SPECIALISTS)[session_number % len(SPECIALISTS)]
         # 1. Habla primero el CEO: objetivo y decisión en juego
-        opening = await self._open(pain_description, client_question, client_position)
+        opening = await self._open(pain_description, client_question, client_position, stage)
 
         # 2. Los especialistas deliberan en paralelo, con la apertura y la posición del cliente
-        briefing = self._briefing(opening, client_question, client_position)
+        briefing = (f"\n\nEtapa que se evalúa: {stage}" if stage else "") + self._briefing(opening, client_question, client_position)
         votes = await asyncio.gather(*[
             self._analyze_agent(role, {"name": role, "system": _system(role, SPECIALISTS[role], role == devil)},
                                 pain_description, conversation_context + briefing, devil=role == devil)
@@ -215,6 +241,7 @@ class BoardRoom:
         consensus.decision_at_stake = opening["decision_at_stake"]
         consensus.client_question = client_question
         consensus.client_position = client_position
+        consensus.stage = stage
 
         # 4. El CEO cierra: síntesis y evidencia que falta (antes de presentar la decisión)
         if consensus.decision != "NO_CONSENSUS":
@@ -239,9 +266,11 @@ class BoardRoom:
             return None
         return data if isinstance(data, dict) else None
 
-    async def _open(self, pain: str, question: str, position: str) -> dict:
+    async def _open(self, pain: str, question: str, position: str, stage: str = "") -> dict:
         prompt = (
             f"Abre la sesión del Board Room.\n\nDolor o propuesta del cliente:\n{pain}\n\n"
+            + (f"Etapa que se evalúa: {stage}\nEl objetivo y la decisión deben ser sobre ESTE Nivel y sus entregables "
+               "(no sobre otra etapa).\n" if stage else "")
             + (f"Pregunta del cliente: {question}\n" if question else "")
             + (f"Posición del cliente: {position}\n" if position else "")
             + "\nDeclara el objetivo de la sesión y la decisión concreta que está en juego. "
@@ -277,6 +306,13 @@ class BoardRoom:
                + "\n" if consensus.failure_modes else "")
             + (f"Áreas que no están a prueba de balas: {', '.join(consensus.bulletproof_gaps)}\n"
                if consensus.bulletproof_gaps else "")
+            + (f"Etapa evaluada: {consensus.stage}\n" if consensus.stage else "")
+            + ("Bloqueantes:\n" + "\n".join(f"- {b}" for b in consensus.blockers) + "\n" if consensus.blockers else "")
+            + ("Riesgos que el fundador decidió asumir:\n" + "\n".join(f"- {b}" for b in consensus.assumed_risks) + "\n"
+               if consensus.assumed_risks else "")
+            + "\nCoherencia: reconoce lo que el equipo de ADÁN y el fundador ya construyeron en los Niveles; el "
+            "veredicto es sobre si están listos para el siguiente paso de ESTA etapa, no un juicio sobre todo el "
+            "trabajo. No exijas lo que solo existe después de lanzar.\n"
             + "\n`synthesis` (máximo 120 palabras, de tú al cliente): el veredicto en una frase, las 2 o 3 "
             "razones con datos de esta empresa y el disenso si lo hay. Sé honesto aunque incomode: el objetivo es que "
             "la empresa no cierre. Recuerda que la decisión es del cliente.\n"
@@ -316,9 +352,17 @@ class BoardRoom:
             devil = " (abogado del diablo)" if v.devils_advocate else ""
             lines.append(f"- **{v.agent}**{devil}: {v.vote} ({v.confidence:.0f}%). {v.justification}")
         lines += ["", f"## Resultado: {c.decision}",
-                  f"Score {c.score:.0f}/100 · confianza promedio {c.confidence:.0f}%"]
+                  f"Preparación para el siguiente paso: {c.score:.0f}/100 · confianza promedio {c.confidence:.0f}%"]
+        if c.stage:
+            lines.insert(5, f"**Etapa evaluada:** {c.stage}")
         if c.dissent:
             lines += ["", "## Disenso", c.dissent]
+        if c.blockers:
+            lines += ["", "## Bloqueantes (resolver antes de seguir)"] + [f"- {b}" for b in c.blockers]
+        if c.assumed_risks:
+            lines += ["", "## Riesgos que el fundador decidió asumir"] + [f"- {b}" for b in c.assumed_risks]
+        if c.post_launch:
+            lines += ["", "## Para medir después de lanzar"] + [f"- {b}" for b in c.post_launch]
         if c.failure_modes:
             lines += ["", "## Por qué esta empresa podría cerrar"] + [f"- {f}" for f in c.failure_modes]
         if c.bulletproof_gaps:
@@ -405,6 +449,10 @@ class BoardRoom:
                 bulletproof=bool(raw_data["bulletproof"]) if isinstance(raw_data.get("bulletproof"), bool)
                 else normalized["vote"] == "PROCEED",
                 devils_advocate=devil,
+                readiness=float(raw_data["readiness"]) if isinstance(raw_data.get("readiness"), (int, float)) else None,
+                blockers=normalize_list(raw_data.get("blockers"))[:2],
+                assumed_risks=normalize_list(raw_data.get("assumed_risks"))[:2],
+                post_launch=normalize_list(raw_data.get("post_launch"))[:2],
             )
         except (json.JSONDecodeError, KeyError, ValueError, AttributeError, TypeError):
             # Sin JSON válido no hay voto: se registra como abstención y no cuenta
@@ -461,6 +509,10 @@ class BoardRoom:
         vote_weights = {"PROCEED": 1.0, "PIVOT": 0.5, "STOP": 0.0}
         weighted_sum = sum(v.confidence * vote_weights.get(v.vote, 0.5) for v in votes)
         score = weighted_sum / total if total > 0 else 0
+        # Si las áreas dieron su preparación para el siguiente paso, esa es la calificación (no la confianza del voto)
+        ready = [v.readiness for v in votes if v.readiness is not None]
+        if ready:
+            score = sum(ready) / len(ready)
 
 
         # Find unanimous concerns and strengths
@@ -504,4 +556,7 @@ class BoardRoom:
             dissent=dissent,
             failure_modes=[f"{v.agent}: {v.failure_mode}" for v in votes if v.failure_mode][:6],
             bulletproof_gaps=[v.agent for v in votes if not v.bulletproof],
+            blockers=[f"{v.agent}: {b}" for v in votes for b in v.blockers][:8],
+            assumed_risks=[f"{v.agent}: {b}" for v in votes for b in v.assumed_risks][:6],
+            post_launch=[f"{v.agent}: {b}" for v in votes for b in v.post_launch][:6],
         )

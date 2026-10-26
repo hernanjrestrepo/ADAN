@@ -23,7 +23,7 @@ from app.empresa.catalog import COUNTRIES, items_for
 from app.empresa.service import STATUSES, Expediente, Marca
 from app.levels import entregables
 from app.models.models import Document, Project, User
-from app.nivel1 import timeline
+from app.nivel1 import memoria, timeline
 from app.nivel1.service import Nivel1Service
 
 router = APIRouter(prefix="/empresa", tags=["empresa"])
@@ -377,3 +377,28 @@ def library_doc(company_id: str, doc_id: str, db: Session = Depends(get_db), use
     _, project = _ctx(db, company_id, user)
     title, text = _library_doc(db, project, doc_id)
     return {"id": doc_id, "titulo": title, "markdown": text}
+
+
+# --- Ficha de la empresa y memoria del proyecto ---------------------------------------------------------------------
+
+class FichaBody(BaseModel):
+    ficha: dict[str, str] = Field(default_factory=dict)
+
+
+@router.put("/{company_id}/ficha")
+def update_ficha(company_id: str, body: FichaBody, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
+    """El fundador corrige la ficha (fuente única de verdad de todo el equipo): lo que él escribe manda."""
+    if len(body.ficha) > 60:
+        raise HTTPException(status_code=422, detail="La ficha admite hasta 60 campos.")
+    _, project = _ctx(db, company_id, user)
+    return {"ficha": memoria.set_ficha(db, project, body.ficha)["ficha"]}
+
+
+@router.post("/{company_id}/memoria/consolidar")
+async def consolidate_memory(company_id: str, db: Session = Depends(get_db), user: User = Depends(llm_user),
+                             llm: LLMAdapter = Depends(get_llm)):
+    """ADÁN relee todas las conversaciones, recupera los acuerdos, quita contradicciones y arma la ficha."""
+    _, project = _ctx(db, company_id, user)
+    with usage_scope(db, company_id, level=1):
+        data = await memoria.consolidate(llm, db, project)
+    return {"ficha": data.get("ficha", {}), "acuerdos": len(data.get("acuerdos", []))}

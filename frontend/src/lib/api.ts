@@ -280,6 +280,11 @@ export const api = {
   chooseBrandSlogan: (companyId: string, texto: string) => post<BrandData>(`/empresa/${companyId}/marca/slogan`, { texto }),
   brandManual: (companyId: string) => request<BrandData>(`/empresa/${companyId}/marca/manual`, { method: 'POST', signal: AbortSignal.timeout(CHAT_TIMEOUT_MS) }),
   getLibrary: (companyId: string) => request<Library>(`/empresa/${companyId}/biblioteca`),
+  updateFicha: (companyId: string, ficha: Record<string, string>) =>
+    request<{ ficha: Record<string, string> }>(`/empresa/${companyId}/ficha`, { method: 'PUT', body: JSON.stringify({ ficha }) }),
+  consolidateMemory: (companyId: string) =>
+    request<{ ficha: Record<string, string>; acuerdos: number }>(`/empresa/${companyId}/memoria/consolidar`, {
+      method: 'POST', signal: AbortSignal.timeout(180_000) }),
   prepareDeliverables: (companyId: string) =>
     request<{ pendientes: number }>(`/empresa/${companyId}/biblioteca/entregables`, { method: 'POST' }),
   getLibraryDoc: (companyId: string, docId: string) =>

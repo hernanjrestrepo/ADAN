@@ -104,6 +104,11 @@ async def build_later(bind, llm: LLMAdapter, company_id: str, levels: list[int] 
         project = db.query(Project).filter(Project.company_id == company_id).first()
         if project is None:
             return
+        # Primero la memoria al día (acuerdos sin contradicciones y ficha): los entregables salen de ahí
+        try:
+            await memoria.consolidate(llm, db, project)
+        except Exception:  # noqa: BLE001
+            logger.exception("No se pudo consolidar la memoria antes de los entregables")
         pending = missing(db, project)
         for n in sorted(pending):
             if levels and n not in levels:
