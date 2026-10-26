@@ -222,13 +222,33 @@ async def consolidate(llm, db: Session, project: Project) -> dict:
         if lines:
             talks.append(f"=== Nivel {lv.number} ===\n" + "\n".join(lines)[-14000:])
     current = "\n".join(f"- [{a['tipo']}, Nivel {a.get('nivel', '?')}] {a['texto']}" for a in data["acuerdos"])
-    prompt = ("Libro de acuerdos actual:\n" + (current or "(vacío)") + "\n\nConversaciones (en orden):\n"
-              + "\n\n".join(talks)[-60000:])
-    resp = await llm.chat_json([LLMMessage("system", CONSOLIDATOR), LLMMessage("user", prompt)], CONSOLIDATE_SCHEMA,
-                               temperature=0.1, max_tokens=6000)
-    parsed = resp.parsed if isinstance(resp.parsed, dict) else {}
-    if not parsed.get("acuerdos") and not parsed.get("ficha"):
+
+    async def ask(prompt: str) -> dict:
+        try:
+            resp = await llm.chat_json([LLMMessage("system", CONSOLIDATOR), LLMMessage("user", prompt)],
+                                       CONSOLIDATE_SCHEMA, temperature=0.1, max_tokens=4000)
+        except Exception:  # noqa: BLE001 - un Nivel que falla no impide consolidar los demás
+            return {}
+        return resp.parsed if isinstance(resp.parsed, dict) else {}
+
+    # Nivel por Nivel (cada conversación cabe holgada) y al final una pasada corta que une y depura
+    candidates: list[dict] = []
+    fragments: dict[str, str] = {}
+    for talk in talks:
+        part = await ask("Conversación de un Nivel:\n" + talk)
+        candidates += [a for a in part.get("acuerdos", []) if isinstance(a, dict)]
+        fragments.update({str(f.get("campo", "")): str(f.get("valor", "")) for f in part.get("ficha", [])
+                          if isinstance(f, dict)})
+    if not candidates and not fragments:
         return data
+    merged = "\n".join(f"- [{a.get('tipo')}, Nivel {a.get('nivel', '?')}] {a.get('texto', '')}" for a in candidates)
+    parsed = await ask(
+        "Une y depura. Libro de acuerdos actual (lo más reciente):\n" + (current or "(vacío)")
+        + "\n\nAcuerdos encontrados en las conversaciones, Nivel por Nivel (en orden):\n" + merged
+        + "\n\nFicha encontrada por partes (la más reciente manda):\n"
+        + "\n".join(f"- {k}: {v}" for k, v in fragments.items()))
+    if not parsed.get("acuerdos") and not parsed.get("ficha"):
+        parsed = {"acuerdos": candidates, "ficha": [{"campo": k, "valor": v} for k, v in fragments.items()]}
     now = datetime.now(timezone.utc).isoformat(timespec="seconds")
     agreements = [{"tipo": a["tipo"], "texto": str(a["texto"]).strip()[:300], "nivel": a.get("nivel"), "fecha": now}
                   for a in parsed.get("acuerdos", []) if a.get("tipo") in KINDS and str(a.get("texto", "")).strip()]
