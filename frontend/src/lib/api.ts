@@ -1,5 +1,5 @@
 import type {
-  AdminVisits, BrandData, CompanyIdentity, Dossier, Library, LevelRoom, Message, SurveySimulation, BoardDialogue, BoardDialogueTurn, AdminCompany, AdminMovement, AdminPurchase, AdminSummary, AdminUser, AppleCompanyLevel, AppleNetwork, ApplePrices, ApplePurchase, AppleWallet, CommunityConnection, CommunityListing, CommunityProfile, ExecutiveReport, FinancialModel, OrgChart, PublicSurvey, SurveyAnswer, SurveyInsights, SurveyResults, SurveySummary, ArenaSession, AgentContract, LegalGuide, NameCheck, Statutes, StatutesInput, AgentOffering, AgentTask, ContractReport, HirePeriod,
+  AdminVisits, BrandData, CheckIn, Graduation, Lead, Workshop, CompanyIdentity, Dossier, Library, LevelRoom, Message, SurveySimulation, BoardDialogue, BoardDialogueTurn, AdminCompany, AdminMovement, AdminPurchase, AdminSummary, AdminUser, AppleCompanyLevel, AppleNetwork, ApplePrices, ApplePurchase, AppleWallet, CommunityConnection, CommunityListing, CommunityProfile, ExecutiveReport, FinancialModel, OrgChart, PublicSurvey, SurveyAnswer, SurveyInsights, SurveyResults, SurveySummary, ArenaSession, AgentContract, LegalGuide, NameCheck, Statutes, StatutesInput, AgentOffering, AgentTask, ContractReport, HirePeriod,
   BoardConsensus, BoardRoomInput, ChatResponse, Company, CompanyInput, DecideInput, Decision, DocumentRecord,
   Evidence, EvidenceInput, GatePreview, GateReviewResult, LevelView, Nivel1Status, OnboardingState, Score,
   ScoreOverview, TimelineEvent, TokenResponse, TwinKind, TwinOverview, UploadResult, User,
@@ -297,6 +297,22 @@ export const api = {
     post<{ started: boolean; after: string }>(`/herramientas/${companyId}/recorrido`, body),
   startCodeReview: (companyId: string, body: { url: string; objetivo?: string; token?: string; nivel: number }) =>
     post<{ started: boolean; after: string }>(`/herramientas/${companyId}/repositorio`, body),
+  // Taller de Genexis (Nivel 4): especificación, landing, prototipo, interesados y código
+  getWorkshop: (companyId: string) => request<Workshop>(`/genexis/${companyId}`),
+  writeSpec: (companyId: string) =>
+    request<Workshop>(`/genexis/${companyId}/especificacion`, { method: 'POST', signal: AbortSignal.timeout(CHAT_TIMEOUT_MS * 2) }),
+  buildSite: (companyId: string, tipo: 'landing' | 'prototipo', aprobar_apples = false) =>
+    post<Workshop>(`/genexis/${companyId}/sitio`, { tipo, aprobar_apples }),
+  tweakSite: (companyId: string, tipo: 'landing' | 'prototipo', instruccion: string, aprobar_apples = false) =>
+    post<Workshop>(`/genexis/${companyId}/sitio/${tipo}/ajustar`, { instruccion, aprobar_apples }),
+  getLeads: (companyId: string) => request<Lead[]>(`/genexis/${companyId}/interesados`),
+  evaluateProduct: (companyId: string, url: string) => post<{ started: boolean }>(`/genexis/${companyId}/evaluar`, { url }),
+  // Graduación y modo continuo
+  getGraduation: (companyId: string) => request<Graduation>(`/empresa/${companyId}/graduacion`),
+  graduate: (companyId: string) => request<Graduation>(`/empresa/${companyId}/graduacion`, { method: 'POST' }),
+  checkIn: (companyId: string, valores: Record<string, number>, nota: string) =>
+    request<CheckIn>(`/empresa/${companyId}/seguimiento`, { method: 'POST', body: JSON.stringify({ valores, nota }),
+      signal: AbortSignal.timeout(CHAT_TIMEOUT_MS) }),
   getJokes: (companyId: string) => request<{ chistes: { agente: string; texto: string }[] }>(`/herramientas/${companyId}/chistes`),
   buildNumbers: (companyId: string) => request<{ ok: boolean }>(`/empresa/${companyId}/numeros`, { method: 'POST', signal: AbortSignal.timeout(CHAT_TIMEOUT_MS * 2) }),
   // La Sala de los Niveles 2 a 7

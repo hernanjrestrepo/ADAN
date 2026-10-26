@@ -91,7 +91,7 @@ def network(db: Session, user: User) -> dict:
 
 # ---------- Billetera ----------
 
-GIFT_KINDS = ("bienvenida", "regalo", "nivel_bono")
+GIFT_KINDS = ("bienvenida", "regalo", "nivel_bono", "servicio_bon")
 
 
 def gift_balance(db: Session, user_id: str) -> Decimal:
@@ -226,3 +226,26 @@ def unlock_level(db: Session, user: User, company: Company, level: int) -> dict:
         db.rollback()
         raise AppleError("Ese Nivel ya está pagado.") from exc
     return {"level": level, "apples": price, "balance": float(balance(db, user.id))}
+
+
+def spend(db: Session, user: User, company: Company, apples: int, reference: str, label: str) -> dict:
+    """Cobra un servicio aparte de los Niveles (por ejemplo, el prototipo que construye Genexis): primero las
+    @pples regaladas y las comisiones de la red solo sobre lo pagado, igual que un Nivel. Idempotente por
+    `reference`: el mismo servicio no se cobra dos veces."""
+    if apples <= 0:
+        return {"apples": 0, "balance": float(balance(db, user.id))}
+    if balance(db, user.id) < apples:
+        raise AppleError(f"Te faltan @pples: {label} cuesta {apples} y tienes {balance(db, user.id)}.")
+    from_gift = min(gift_balance(db, user.id), Decimal(apples))
+    paid = Decimal(apples) - from_gift
+    full = f"{label} · {company.name}"
+    if from_gift > 0:
+        _move(db, user.id, "servicio_bon", -from_gift, reference, f"{full} (con @pples regaladas)", company_id=company.id)
+    if paid > 0:
+        _move(db, user.id, "servicio", -paid, reference, full, company_id=company.id)
+    for depth, sponsor_id in enumerate(upline(db, user.id) if paid > 0 else [], start=1):
+        _move(db, sponsor_id, "referido", paid * Decimal(str(pricing.REFERRAL_RATE)), f"{reference}:{depth}",
+              f"Red nivel {depth}: {user.name.split(' ')[0]} pagó {label}", company_id=company.id, depth=depth,
+              source_user_id=user.id)
+    db.commit()
+    return {"apples": apples, "balance": float(balance(db, user.id))}

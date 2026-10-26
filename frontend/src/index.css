@@ -81,3 +81,27 @@ body {
 .markdown h2 { font-size: 1.125rem; }
 .markdown blockquote { border-left: 3px solid #475569; padding-left: 0.75rem; color: #94a3b8; }
 .markdown code { background: #0f172a; padding: 0.1rem 0.3rem; border-radius: 0.25rem; }
+
+/* Confeti de la graduación */
+.adan-confetti {
+  position: absolute;
+  top: -12px;
+  width: 9px;
+  height: 14px;
+  border-radius: 2px;
+  opacity: 0.9;
+  animation-name: adan-confetti-fall;
+  animation-timing-function: linear;
+  animation-iteration-count: 2;
+}
+@keyframes adan-confetti-fall {
+  to { transform: translateY(110vh) rotate(720deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .adan-confetti { display: none; }
+}
+/* Al imprimir la graduación sale solo el certificado */
+@media print {
+  header, nav, .print\:hidden { display: none !important; }
+  #certificado { break-inside: avoid; }
+}

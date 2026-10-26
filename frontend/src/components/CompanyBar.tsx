@@ -173,6 +173,8 @@ export default function CompanyBar({ companyId, company, onCompany }: {
         )}
         <Link to={`/marca/${companyId}`} className="text-xs text-adan-muted hover:text-adan-text">🏷️ Marca</Link>
         <Link to={`/expediente/${companyId}`} className="text-xs text-adan-muted hover:text-adan-text">📁 Expediente</Link>
+        <Link to={`/taller/${companyId}`} className="text-xs text-adan-muted hover:text-adan-text">🛠️ Taller</Link>
+        <Link to={`/graduacion/${companyId}`} className="text-xs text-adan-muted hover:text-adan-text">🎓 Graduación</Link>
         <Link to={`/biblioteca/${companyId}`} className="text-xs text-adan-muted hover:text-adan-text">📚 Biblioteca</Link>
 
         {/* Checklist de los 7 Niveles, con flechas para ir al anterior o al siguiente */}

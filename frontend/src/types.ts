@@ -1131,3 +1131,58 @@ export interface AdminVisits {
   referentes: { origen: string; visitas: number }[]
   directas: number
 }
+
+export interface WorkshopSite {
+  slug: string
+  version: number
+  estado: 'vacio' | 'construyendo' | 'listo' | 'error'
+  error?: string
+  ajustes?: number
+  actualizado?: string
+  ultimo_ajuste?: string
+  url: string | null
+}
+
+export interface Workshop {
+  empresa_existente: boolean
+  especificacion: { id: string; markdown: string } | null
+  plan_mejoras: { id: string; markdown: string } | null
+  sitios: { landing: WorkshopSite | null; prototipo: WorkshopSite | null }
+  interesados: number
+  precio_prototipo: number
+  precio_ajuste: number
+  ajustes_gratis: number
+}
+
+export interface Lead {
+  id: string
+  nombre: string | null
+  correo: string | null
+  celular: string | null
+  mensaje: string | null
+  pagina: string
+  fecha: string
+}
+
+export interface CheckIn {
+  fecha: string
+  valores: Record<string, number>
+  nota: string
+  lectura: string
+}
+
+export interface Graduation {
+  nivel7_cerrado: boolean
+  graduada: boolean
+  estado: 'pendiente' | 'preparando' | 'lista' | 'error'
+  fecha?: string
+  certificado?: string
+  frase?: string
+  kpis?: { nombre: string; meta: number; unidad: string; frecuencia: string }[]
+  board?: { decision: string; preparacion: number } | null
+  libro: { id: string; markdown: string } | null
+  seguimientos: CheckIn[]
+  empresa?: string
+  fundador?: string
+  identidad?: CompanyIdentity
+}

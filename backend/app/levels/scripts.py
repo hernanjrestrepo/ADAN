@@ -61,7 +61,11 @@ LEVEL4 = Script(
         ("exito", "Criterio de éxito", "qué resultado diría que el MVP funcionó"),
     ),
     method=("The Lean Startup (Construir → Medir → Aprender) y Running Lean: el MVP más pequeño que pruebe el "
-            "supuesto más riesgoso. El desarrollo listo se cotiza aparte según el trabajo real."),
+            "supuesto más riesgoso. Genexis CONSTRUYE en el Taller (🛠️ Taller Genexis): la especificación del "
+            "producto, la landing de validación con la marca (incluida en este Nivel, capta interesados reales con "
+            "su autorización), un prototipo navegable (se cotiza aparte en @pples) y el código descargable. Si la "
+            "empresa ya tiene producto, Genexis lo recorre y deja un plan de mejoras. Proponle al fundador usar el "
+            "Taller en vez de describir el MVP en abstracto. El software de producción lo cotiza Paradixe aparte."),
     deliverables=("Alcance del MVP", "MVP o landing", "Plan de medición", "Cotización del desarrollo"),
     kpis=("Activación", "Tiempo hasta el primer valor", "Costo del MVP"),
     team=("cto", "producto", "ceo"), dimension="product", board=True,
