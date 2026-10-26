@@ -72,7 +72,9 @@ def palette(data: bytes, mime: str) -> list[str]:
     except Exception:  # noqa: BLE001 - un ícono raro no impide adoptar el logo
         return []
     img.thumbnail((96, 96))
-    pixels = [(r // 16 * 16, g // 16 * 16, b // 16 * 16) for r, g, b, a in img.getdata() if a > 128]
+    raw = img.tobytes()  # RGBA, 4 bytes por píxel (getdata() quedó en desuso en Pillow 13)
+    pixels = [(raw[i] // 16 * 16, raw[i + 1] // 16 * 16, raw[i + 2] // 16 * 16)
+              for i in range(0, len(raw), 4) if raw[i + 3] > 128]
     counts = Counter(_hex(p) for p in pixels)
     colors = [c for c, _ in counts.most_common(30) if not _plain(c)]
     out: list[str] = []
