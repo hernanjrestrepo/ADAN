@@ -202,8 +202,10 @@ async def consolidate(llm, db: Session, project: Project) -> dict:
     """Recupera los acuerdos de TODAS las conversaciones (también las anteriores a la memoria), resuelve
     contradicciones y arma la ficha de parámetros. Reemplaza el libro de acuerdos."""
     from app.ai.base import LLMMessage
+    from app.ai.router import for_tier
     from app.models.models import Card, Conversation, Level, Message
 
+    llm = for_tier(llm, "standard")
     data = load(db, project)
     talks = []
     levels = db.query(Level).filter(Level.project_id == project.id).order_by(Level.number).all()
@@ -226,9 +228,11 @@ async def consolidate(llm, db: Session, project: Project) -> dict:
     async def ask(prompt: str) -> dict:
         try:
             resp = await llm.chat_json([LLMMessage("system", CONSOLIDATOR), LLMMessage("user", prompt)],
-                                       CONSOLIDATE_SCHEMA, temperature=0.1, max_tokens=4000)
+                                       CONSOLIDATE_SCHEMA, temperature=0.1, max_tokens=3000)
         except Exception:  # noqa: BLE001 - un Nivel que falla no impide consolidar los demás
             return {}
+        if resp.metadata.get("degraded"):
+            return {}  # el modelo local de respaldo no tiene calidad para reescribir la memoria
         return resp.parsed if isinstance(resp.parsed, dict) else {}
 
     # Nivel por Nivel (cada conversación cabe holgada) y al final una pasada corta que une y depura
@@ -248,7 +252,7 @@ async def consolidate(llm, db: Session, project: Project) -> dict:
         + "\n\nFicha encontrada por partes (la más reciente manda):\n"
         + "\n".join(f"- {k}: {v}" for k, v in fragments.items()))
     if not parsed.get("acuerdos") and not parsed.get("ficha"):
-        parsed = {"acuerdos": candidates, "ficha": [{"campo": k, "valor": v} for k, v in fragments.items()]}
+        return data  # sin la pasada final no se reemplaza la memoria: se intenta de nuevo más tarde
     now = datetime.now(timezone.utc).isoformat(timespec="seconds")
     agreements = [{"tipo": a["tipo"], "texto": str(a["texto"]).strip()[:300], "nivel": a.get("nivel"), "fecha": now}
                   for a in parsed.get("acuerdos", []) if a.get("tipo") in KINDS and str(a.get("texto", "")).strip()]
