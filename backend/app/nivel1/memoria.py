@@ -139,6 +139,10 @@ def context(db: Session, project: Project, query: str = "", nivel: int | None = 
     if name:
         parts.append(f"El fundador se llama {name}. Andrés, Camila, Santiago, Mateo, Lucía, Sofía e Iris son del equipo de "
                      f"ADÁN: nunca llames así al fundador.")
+    if data.get("ficha"):
+        parts.append("FICHA DE LA EMPRESA (fuente única de verdad: todas las cuentas y afirmaciones salen de aquí; si "
+                     "algo la contradice, gana la ficha):\n"
+                     + "\n".join(f"- {k}: {v}" for k, v in data["ficha"].items()))
     if data["acuerdos"]:
         by_kind: dict[str, list[str]] = {}
         for a in data["acuerdos"]:
@@ -160,3 +164,86 @@ def context(db: Session, project: Project, query: str = "", nivel: int | None = 
     if not parts:
         return ""
     return "MEMORIA DEL PROYECTO (la custodia ADÁN; todo el equipo la conoce):\n" + "\n\n".join(parts)
+
+
+# --- Consolidación: memoria sin contradicciones y ficha de parámetros --------------------------------------------
+
+CONSOLIDATE_SCHEMA = {
+    "type": "object", "additionalProperties": False, "required": ["ficha", "acuerdos"],
+    "properties": {
+        "ficha": {"type": "array", "items": {
+            "type": "object", "additionalProperties": False, "required": ["campo", "valor"],
+            "properties": {"campo": {"type": "string"}, "valor": {"type": "string"}}}},
+        "acuerdos": {"type": "array", "items": {
+            "type": "object", "additionalProperties": False, "required": ["tipo", "texto", "nivel"],
+            "properties": {"tipo": {"type": "string", "enum": list(KINDS)}, "texto": {"type": "string"},
+                           "nivel": {"type": "integer"}}}},
+    },
+}
+
+CONSOLIDATOR = (
+    "Eres ADÁN, custodio de la memoria del proyecto. Lees lo que dijo el FUNDADOR en las conversaciones de los "
+    "Niveles (sus palabras mandan; lo que propuso el equipo solo cuenta si él lo aprobó) y el libro de acuerdos "
+    "actual. Devuelves:\n"
+    "1) `ficha`: los parámetros de la empresa como fuente única de verdad, cada uno con `campo` y `valor` corto: "
+    "modelo de ingresos, comisión, costos fijos, quién paga la pasarela de pagos, programa de referidos (niveles y "
+    "porcentajes), financiamiento (capital propio, deuda, inversión), mercado (geografía, idiomas, nacional o "
+    "internacional, B2C/B2B), segmento de clientes, estado del producto (lanzado o no, qué hace), socios y su rol, "
+    "canales, metas aprobadas. Solo lo que el fundador dijo o aprobó; si algo no está claro, no lo pongas.\n"
+    "2) `acuerdos`: el libro depurado. Si dos acuerdos se contradicen, queda el MÁS RECIENTE (o el que el "
+    "fundador corrigió); fusiona duplicados; quita pendientes ya resueltos; incluye lo que el fundador descartó o "
+    "pidió no volver a preguntar (tipo «descartado»). Máximo 60, cada uno en una frase. `nivel`: el Nivel donde "
+    "se acordó.\n"
+    "Nunca inventes: nada de cifras que el fundador no dio. Español."
+)
+
+
+async def consolidate(llm, db: Session, project: Project) -> dict:
+    """Recupera los acuerdos de TODAS las conversaciones (también las anteriores a la memoria), resuelve
+    contradicciones y arma la ficha de parámetros. Reemplaza el libro de acuerdos."""
+    from app.ai.base import LLMMessage
+    from app.models.models import Card, Conversation, Level, Message
+
+    data = load(db, project)
+    talks = []
+    levels = db.query(Level).filter(Level.project_id == project.id).order_by(Level.number).all()
+    for lv in levels:
+        cards = db.query(Card).filter(Card.project_id == project.id, Card.level_id == lv.id).all()
+        conv_ids = [c.id for card in cards for c in db.query(Conversation).filter(Conversation.card_id == card.id).all()]
+        if not conv_ids:
+            continue
+        msgs = db.query(Message).filter(Message.conversation_id.in_(conv_ids)).order_by(Message.created_at).all()
+        lines = []
+        for m in msgs:
+            if m.role == "user":
+                lines.append(f"FUNDADOR: {m.content[:900]}")
+            elif not (isinstance(m.metadata_json, dict) and m.metadata_json.get("mesa")):
+                lines.append(f"{m.agent_name or 'ADÁN'}: {m.content[:300]}")
+        if lines:
+            talks.append(f"=== Nivel {lv.number} ===\n" + "\n".join(lines)[-14000:])
+    current = "\n".join(f"- [{a['tipo']}, Nivel {a.get('nivel', '?')}] {a['texto']}" for a in data["acuerdos"])
+    prompt = ("Libro de acuerdos actual:\n" + (current or "(vacío)") + "\n\nConversaciones (en orden):\n"
+              + "\n\n".join(talks)[-60000:])
+    resp = await llm.chat_json([LLMMessage("system", CONSOLIDATOR), LLMMessage("user", prompt)], CONSOLIDATE_SCHEMA,
+                               temperature=0.1, max_tokens=6000)
+    parsed = resp.parsed if isinstance(resp.parsed, dict) else {}
+    if not parsed.get("acuerdos") and not parsed.get("ficha"):
+        return data
+    now = datetime.now(timezone.utc).isoformat(timespec="seconds")
+    agreements = [{"tipo": a["tipo"], "texto": str(a["texto"]).strip()[:300], "nivel": a.get("nivel"), "fecha": now}
+                  for a in parsed.get("acuerdos", []) if a.get("tipo") in KINDS and str(a.get("texto", "")).strip()]
+    ficha = {str(f["campo"]).strip()[:60]: str(f["valor"]).strip()[:300] for f in parsed.get("ficha", [])
+             if str(f.get("campo", "")).strip() and str(f.get("valor", "")).strip()}
+    data["acuerdos"] = agreements[:MAX_AGREEMENTS] or data["acuerdos"]
+    data["ficha"] = {**data.get("ficha", {}), **ficha}
+    data["consolidado"] = now
+    save(db, project, data)
+    return data
+
+
+def set_ficha(db: Session, project: Project, ficha: dict[str, str]) -> dict:
+    """El fundador corrige la ficha a mano: lo que él escribe manda."""
+    data = load(db, project)
+    data["ficha"] = {str(k).strip()[:60]: str(v).strip()[:300] for k, v in ficha.items() if str(k).strip() and str(v).strip()}
+    save(db, project, data)
+    return data

@@ -37,8 +37,16 @@ BY_ID = {i["id"]: i for i in INVESTORS}
 PERSONA = (
     "Eres {name}, {role}, en La Arena de ADÁN. Evalúas empresas con este criterio: {lens}. Has visto cientos de "
     "pitches y sabes que 9 de cada 10 empresas cierran en sus primeros cinco años: no regalas tu dinero ni tu "
-    "aprobación. Eres exigente y directo, pero justo: si algo está bien respaldado, lo reconoces. Hablas en "
-    "español, de tú. Nada genérico: todo sobre ESTA empresa, con sus cifras."
+    "aprobación. Eres exigente y directo, pero justo y profesional: si algo está bien respaldado, lo reconoces, y "
+    "nunca usas adjetivos despectivos («teatro», «fantasía», «cementerio», «humo»). Hablas en español, de tú. Nada "
+    "genérico: todo sobre ESTA empresa, con sus cifras.\n"
+    "Evalúas la empresa EN SU ETAPA (ver «Etapa»): si todavía no ha lanzado, juzgas lo razonable para esa etapa "
+    "(equipo y socios, mercado, producto ya construido, plan de lanzamiento, economía unitaria proyectada) y la "
+    "falta de ventas reales NO es una falla fatal; lo que pedirías ver tras el lanzamiento va en tus condiciones. "
+    "La FICHA DE LA EMPRESA y los ACUERDOS son decisiones del fundador: úsalos y no los contradigas (por ejemplo, "
+    "si un socio es dueño de una parte y presta servicios, eso es su estructura, no un problema). Si el fundador "
+    "se financia con capital propio, tu veredicto dice si invertirías y qué necesitarías ver para hacerlo, como "
+    "preparación para cuando quiera levantar capital."
 )
 
 QUESTIONS_SCHEMA = {
@@ -91,7 +99,7 @@ class Arena:
 
     async def start(self, project: Project, brief: str, pitch: str = "") -> dict:
         """El pitch y la primera ronda: cada inversionista dice qué ve y hace sus dos preguntas más difíciles."""
-        prompt = (f"Lo que se sabe de la empresa (evaluación de ADÁN y su Board):\n{brief}\n\n"
+        prompt = (f"Lo que se sabe de la empresa (ficha, acuerdos y entregables del equipo de ADÁN):\n{brief}\n\n"
                   + (f"El pitch del fundador:\n{pitch}\n\n" if pitch else "")
                   + "`first_impression`: lo que ves, en máximo 60 palabras. `questions`: tus 2 preguntas más difíciles, "
                     "las que decidirían tu inversión. `red_flags`: máximo 3 alertas concretas.")
@@ -104,7 +112,7 @@ class Arena:
                               "questions": normalize_list(data.get("questions"))[:2],
                               "red_flags": normalize_list(data.get("red_flags"))[:3],
                               "unavailable": bool(data.get("_error") or data.get("_degraded"))})
-        session = {"id": str(uuid.uuid4()), "phase": "questions", "pitch": pitch, "brief": brief[:6000],
+        session = {"id": str(uuid.uuid4()), "phase": "questions", "pitch": pitch, "brief": brief[:14000],
                    "investors": investors, "started_at": _now()}
         self._save(project, session)
         return session
@@ -119,10 +127,11 @@ class Arena:
                       f"Alertas que viste: {'; '.join(inv['red_flags']) or 'ninguna'}\n\n"
                       f"Respuesta del fundador:\n{answers.get(inv['id'], '').strip() or '(no respondió)'}\n\n"
                       "Decide. `decision`: INVIERTE, CON_CONDICIONES o NO_INVIERTE. Si la respuesta no resolvió tus "
-                      "dudas con datos, no inviertas. `amount_usd`: cuánto pondrías (0 si no inviertes). `terms`: "
+                      "dudas con lo razonable para su etapa, no inviertas. `amount_usd`: cuánto pondrías (0 si no inviertes). `terms`: "
                       "participación, valoración o condiciones del crédito, en una frase. `reason`: por qué, en "
                       "máximo 60 palabras. `conditions`: lo que exigirías antes de desembolsar (máximo 3). "
-                      "`fatal_flaw`: una falla que hace inviable la empresa tal como está, o vacío si no la hay.")
+                      "`fatal_flaw`: una falla que hace inviable la empresa tal como está (no la falta de ventas "
+                      "antes de lanzar), o vacío si no la hay.")
             data = await self._ask(BY_ID[inv["id"]], prompt, DECISION_SCHEMA)
             decision = data.get("decision") if data.get("decision") in (*YES, "NO_INVIERTE") else "NO_INVIERTE"
             unavailable = bool(data.get("_error") or data.get("_degraded"))

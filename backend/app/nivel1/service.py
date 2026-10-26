@@ -558,6 +558,60 @@ class Nivel1Service:
 
     # --- Step 3: Board Room ---
 
+    def stage_of(self, project: Project, level_number: int) -> str:
+        """La etapa que evalúan el Board y La Arena: el Nivel, su objetivo y entregables, y el estado del producto."""
+        script = script_for(level_number)
+        ficha = memoria.load(self.db, project).get("ficha", {})
+        product = next((v for k, v in ficha.items() if "producto" in k.lower() or "lanz" in k.lower()), "")
+        closed = self.db.query(Level).filter(Level.project_id == project.id, Level.status == NivelStatus.COMPLETED).count()
+        return (f"Nivel {level_number}, {script.name}: {script.goal}. Entregables de este Nivel: "
+                f"{'; '.join(script.deliverables)}. Niveles ya cerrados con el equipo de ADÁN: {closed} de 7."
+                + (f" Estado del producto: {product}." if product else ""))
+
+    async def refresh_memory(self, project: Project, max_age_hours: float = 2.0) -> None:
+        """Consolida la memoria (acuerdos sin contradicciones y ficha) si no se hizo hace poco."""
+        data = memoria.load(self.db, project)
+        # Con poca conversación no hay nada que consolidar (y no se gasta una llamada al modelo)
+        said = self.db.query(Message).join(Conversation, Conversation.id == Message.conversation_id) \
+            .join(Card, Card.id == Conversation.card_id) \
+            .filter(Card.project_id == project.id, Message.role == "user").count()
+        if said < 8:
+            return
+        stamp = data.get("consolidado")
+        if stamp:
+            try:
+                age = datetime.now(timezone.utc) - datetime.fromisoformat(stamp)
+                if age.total_seconds() < max_age_hours * 3600:
+                    return
+            except ValueError:
+                pass
+        try:
+            await memoria.consolidate(self.llm, self.db, project)
+        except Exception:  # noqa: BLE001 - sin consolidar, se usa la memoria tal como está
+            pass
+
+    async def arena_brief(self, project: Project, level_number: int) -> str:
+        """Lo que reciben los inversionistas de La Arena: la misma verdad que el Board (etapa, ficha, acuerdos y
+        entregables), para que no evalúen una empresa distinta a la que construyó el equipo de ADÁN."""
+        await self.refresh_memory(project)
+        parts = [f"Etapa: {self.stage_of(project, level_number)}"]
+        memory = memoria.context(self.db, project, query="pitch inversión mercado modelo", nivel=level_number)
+        if memory:
+            parts.append(memory)
+        delivered = self.db.query(Document).filter(Document.project_id == project.id, Document.doc_type == "entregable") \
+            .order_by(Document.title).limit(30).all()
+        if delivered:
+            parts.append("Entregables del equipo de ADÁN:\n" + "\n\n".join(f"### {d.title}\n{(d.content or '')[:500]}"
+                                                                           for d in delivered))
+        history = self.board_brief(project, level_number)
+        if history:
+            parts.append("Historia de los Niveles (puede estar superada: la ficha y los acuerdos mandan):\n" + history[:4000])
+        # Sin historia, entregables ni acuerdos no hay nada que evaluar: La Arena pide primero contarle la empresa
+        data = memoria.load(self.db, project)
+        if not (history or delivered or data.get("acuerdos") or data.get("ficha")):
+            return ""
+        return "\n\n".join(parts)
+
     async def run_board_room(self, project: Project, company: Company,
                              client_question: str = "", client_position: str = "", level_number: int = 1) -> BoardConsensus:
         """Board Room de 7 roles (AD-FUNC-02): el CEO preside y seis especialistas votan."""
@@ -570,17 +624,31 @@ class Nivel1Service:
         conversation_context += "\n\nLo que ya se sabe de la empresa:\n" + ContextLayers(self.db).project_layer(project)
         # Y lo que el fundador le explicó al Board después de la sesión anterior
         conversation_context += board_dialogue.as_context(self.db, project)
+        # La memoria al día (sin contradicciones, con la ficha) antes de que el Board la lea
+        await self.refresh_memory(project)
         # Y la memoria del proyecto: el Board no vuelve a pedir lo que ya se acordó o se descartó
         memory = memoria.context(self.db, project, query=pain_description[:2000], nivel=level_number)
         if memory:
             conversation_context += "\n\n" + memory
+        # Lo que el equipo de ADÁN ya entregó en los Niveles: el Board construye sobre eso
+        delivered = self.db.query(Document).filter(Document.project_id == project.id, Document.doc_type == "entregable") \
+            .order_by(Document.title).limit(30).all()
+        if delivered:
+            conversation_context += "\n\nEntregables que el equipo de ADÁN ya construyó con el fundador:\n" + "\n\n".join(
+                f"### {d.title}\n{(d.content or '')[:700]}" for d in delivered)
 
         # Cuántas sesiones van: el abogado del diablo rota entre los especialistas
         sessions = self.db.query(Document).filter(Document.project_id == project.id,
                                                   Document.doc_type == "board_minutes").count()
-        consensus = await self.board_room.run(pain_description, conversation_context,
-                                              client_question=client_question, client_position=client_position,
-                                              session_number=sessions)
+        consensus = await self.board_room.run(
+            "Historia de los Niveles (puede estar superada: la FICHA y el LIBRO DE ACUERDOS mandan sobre esto):\n"
+            + pain_description, conversation_context,
+            client_question=client_question, client_position=client_position,
+            session_number=sessions, stage=self.stage_of(project, level_number))
+        # Los bloqueantes quedan como pendientes en la memoria: el equipo los trabaja en los siguientes turnos
+        if consensus.blockers:
+            memoria.remember(self.db, project, [{"tipo": "pendiente", "texto": f"Bloqueante del Board: {b}"}
+                                                for b in consensus.blockers[:4]], level_number)
 
         # Persist result in Gemelo Digital
         votes_data = [

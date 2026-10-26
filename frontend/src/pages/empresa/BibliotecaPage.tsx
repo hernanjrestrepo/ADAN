@@ -53,6 +53,58 @@ function Swatch({ nombre, hex }: { nombre: string; hex: string }) {
   )
 }
 
+// La ficha de la empresa: los parámetros que usa todo el equipo (comisión, pasarela, mercado…). El fundador la
+// corrige aquí y ADÁN la puede reconstruir releyendo todas las conversaciones.
+function Ficha({ companyId, initial, onError }: { companyId: string; initial: Record<string, string>; onError: (m: string) => void }) {
+  const [rows, setRows] = useState<[string, string][]>(() => Object.entries(initial))
+  const [editing, setEditing] = useState(false)
+  const [busy, setBusy] = useState('')
+  const save = async () => {
+    setBusy('save')
+    try {
+      const res = await api.updateFicha(companyId, Object.fromEntries(rows.filter(([k, v]) => k.trim() && v.trim())))
+      setRows(Object.entries(res.ficha))
+      setEditing(false)
+    } catch (e) { onError(errorMessage(e)) } finally { setBusy('') }
+  }
+  const rebuild = async () => {
+    setBusy('rebuild')
+    try { setRows(Object.entries((await api.consolidateMemory(companyId)).ficha)) } catch (e) { onError(errorMessage(e)) } finally { setBusy('') }
+  }
+  return (
+    <Card>
+      <div className="flex flex-wrap items-start justify-between gap-2">
+        <div>
+          <h2 className="text-lg font-bold">📋 Ficha de la empresa</h2>
+          <p className="text-sm text-adan-muted">La fuente única de verdad: todas las cuentas del equipo, el Board y La Arena salen de aquí. Si algo está mal, corrígelo.</p>
+        </div>
+        <div className="flex gap-2">
+          <Button size="sm" variant="secondary" onClick={rebuild} loading={busy === 'rebuild'} disabled={Boolean(busy)}
+            title="ADÁN relee todas las conversaciones, recupera los acuerdos y quita contradicciones">🧠 Reordenar la memoria</Button>
+          {editing
+            ? <Button size="sm" onClick={save} loading={busy === 'save'}>Guardar</Button>
+            : <Button size="sm" variant="secondary" onClick={() => setEditing(true)}>✏️ Editar</Button>}
+        </div>
+      </div>
+      {rows.length === 0 && !editing && <p className="mt-3 text-sm text-adan-muted">Todavía no hay ficha: toca «Reordenar la memoria» para que ADÁN la arme con lo que han hablado.</p>}
+      <div className="mt-3 grid gap-2 sm:grid-cols-2">
+        {rows.map(([k, v], i) => editing ? (
+          <div key={i} className="flex gap-1">
+            <input value={k} onChange={(e) => setRows((r) => r.map((x, j) => (j === i ? [e.target.value, x[1]] : x)))} aria-label="Campo"
+              className="w-1/3 rounded-lg border border-adan-border bg-adan-bg px-2 py-1 text-xs font-semibold" />
+            <input value={v} onChange={(e) => setRows((r) => r.map((x, j) => (j === i ? [x[0], e.target.value] : x)))} aria-label="Valor"
+              className="flex-1 rounded-lg border border-adan-border bg-adan-bg px-2 py-1 text-xs" />
+            <button type="button" onClick={() => setRows((r) => r.filter((_, j) => j !== i))} aria-label="Quitar" className="px-1 text-adan-muted">✕</button>
+          </div>
+        ) : (
+          <p key={i} className="rounded-lg border border-adan-border px-3 py-2 text-sm"><b>{k}:</b> {v}</p>
+        ))}
+      </div>
+      {editing && <Button size="sm" variant="ghost" className="mt-2" onClick={() => setRows((r) => [...r, ['', '']])}>+ Agregar campo</Button>}
+    </Card>
+  )
+}
+
 export default function BibliotecaPage() {
   const { companyId = '' } = useParams()
   const [lib, setLib] = useState<Library | null>(null)
@@ -160,6 +212,8 @@ export default function BibliotecaPage() {
               </div>
             </div>
           </Card>
+
+          <Ficha key={JSON.stringify(lib.ficha ?? {})} companyId={companyId} initial={lib.ficha ?? {}} onError={setError} />
 
           {lib.memoria && lib.memoria.length > 0 && (
             <Card>

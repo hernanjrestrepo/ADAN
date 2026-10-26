@@ -112,7 +112,8 @@ def catalog(db: Session, project: Project, company: Company) -> dict:
     pending = entregables.missing(db, project)
     return {"marca": brand, "secciones": SECTIONS, "documentos": items,
             "faltan": [{"nivel": n, "entregables": names} for n, names in sorted(pending.items())],
-            "memoria": list(reversed(memoria.load(db, project)["acuerdos"]))}
+            "memoria": list(reversed(memoria.load(db, project)["acuerdos"])),
+            "ficha": memoria.load(db, project).get("ficha", {})}
 
 
 def read(db: Session, project: Project, doc_id: str) -> Document | None:

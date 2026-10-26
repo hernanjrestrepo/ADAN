@@ -426,7 +426,7 @@ async def arena_start(company_id: str, body: ArenaStart | None = None, nivel: in
     """La Arena: cuatro inversionistas simulados escuchan la empresa y hacen sus preguntas más difíciles."""
     get_owned_company(db, company_id, user)
     project = db.query(Project).filter(Project.company_id == company_id).first()
-    brief = Nivel1Service(llm, db).board_brief(project, nivel)
+    brief = await Nivel1Service(llm, db).arena_brief(project, nivel)
     pitch = body.pitch.strip() if body else ""
     if not brief.strip() and not pitch:
         raise HTTPException(status_code=400, detail="Cuéntale primero a ADÁN tu empresa, o escribe tu pitch.")
