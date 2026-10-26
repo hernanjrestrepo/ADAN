@@ -19,7 +19,7 @@ from app.documents import navegador
 
 log = logging.getLogger(__name__)
 
-MAX_STEPS = 10
+MAX_STEPS = 14
 _CARD = re.compile(r"\b(?:\d[ -]?){13,19}\b")
 _PAY_WORDS = re.compile(r"\b(pagar|pague|paga ahora|confirmar (?:el )?pago|comprar ahora|finalizar compra|place order|pay now)\b", re.I)
 
@@ -28,10 +28,17 @@ _ELEMENTS = """() => {
   const vis = (e) => { const r = e.getBoundingClientRect(); const s = getComputedStyle(e);
     return r.width > 2 && r.height > 2 && s.visibility !== 'hidden' && s.display !== 'none'; };
   const clean = (t) => (t || '').replace(/\\s+/g, ' ').trim().slice(0, 80);
-  const els = [...document.querySelectorAll('a[href],button,[role=button],input,textarea,select,[contenteditable=true]')].filter(vis).slice(0, 60);
+  // Primero lo que está en un panel abierto (diálogo, chat flotante, capa fija) y lo que se ve en pantalla
+  const overlay = (e) => { for (let n = e; n && n !== document.body; n = n.parentElement) {
+    const st = getComputedStyle(n); if (n.getAttribute('role') === 'dialog' || n.getAttribute('aria-modal') === 'true'
+      || st.position === 'fixed' || st.position === 'sticky') return 1; } return 0; };
+  const inView = (e) => { const r = e.getBoundingClientRect(); return r.bottom > 0 && r.top < innerHeight ? 1 : 0; };
+  const all = [...document.querySelectorAll('a[href],button,[role=button],input,textarea,select,[contenteditable=true]')].filter(vis);
+  const els = all.map((e, k) => [e, overlay(e) * 2 + inView(e), k]).sort((x, y) => y[1] - x[1] || x[2] - y[2]).map((x) => x[0]).slice(0, 60);
   window.__adan = els;
   return els.map((e, i) => ({ i, tag: e.tagName.toLowerCase(), type: e.type || '',
-    label: clean(e.innerText || e.value || e.getAttribute('aria-label') || e.getAttribute('placeholder') || e.getAttribute('name') || e.title) }));
+    label: clean(e.getAttribute('aria-label') || e.getAttribute('placeholder') || e.innerText || e.getAttribute('name') || e.title),
+    value: (e.tagName === 'INPUT' || e.tagName === 'TEXTAREA') ? clean(e.value) : (e.isContentEditable ? clean(e.innerText) : '') }));
 }"""
 
 STEP_SCHEMA = {
@@ -49,9 +56,39 @@ GUIDE = (
     "elementos numerados. Responde la siguiente acción: `clic` (indice), `escribir` (indice y texto; para entrar con "
     "la cuenta del fundador escribe exactamente {{usuario}} o {{clave}}), `enter` (enviar lo escrito), `esperar` (si "
     "la página está cargando o el chat está respondiendo) o `fin` cuando el objetivo esté cumplido o sea imposible. "
+    "Si un campo ya contiene tu texto, NO lo escribas otra vez: envíalo con `enter` o con el botón de enviar. Si "
+    "escribes en un chat, espera su respuesta (`esperar`) antes de seguir. "
     "`nota`: qué ves y qué haces, en una frase. NUNCA escribas datos de tarjeta ni confirmes un pago: si llegas a la "
-    "pantalla de pago, descríbela y termina con `fin`."
+    "pantalla de pago, descríbela y termina con `fin`.\n"
+    "`texto` es lo que TÚ escribes (el mensaje completo), nunca la etiqueta del campo. Ejemplo para un chat: "
+    "{\"accion\": \"escribir\", \"indice\": 0, \"texto\": \"Hola, quiero un viaje de 4 noches a Cartagena para 2 "
+    "personas\", \"nota\": \"Le escribo al chat lo que pide el objetivo\"}. Para un campo de texto vacío usa `escribir` "
+    "directamente (no hace falta hacer clic antes)."
 )
+
+
+async def _act(page, action: str, idx: int, value: str) -> None:
+    """Hace la acción sobre el elemento número `idx`. Si no se deja llenar (chats con editores propios), hace clic y
+    escribe con el teclado, como una persona."""
+    if action == "enter":
+        await page.keyboard.press("Enter")
+        return
+    element = (await page.evaluate_handle(f"() => window.__adan[{idx}]")).as_element()
+    if element is None:
+        raise LookupError("elemento")
+    await element.scroll_into_view_if_needed(timeout=3000)
+    if action == "clic":
+        try:
+            await element.click(timeout=5000)
+        except Exception:  # noqa: BLE001 - algo lo tapa: clic por JavaScript
+            await element.evaluate("(e) => e.click()")
+        return
+    try:
+        await element.fill(value, timeout=4000)
+    except Exception:  # noqa: BLE001
+        await element.click(timeout=4000)
+        await page.keyboard.press("Control+A")
+        await page.keyboard.type(value, delay=15)
 
 
 async def walk(llm: LLMAdapter, url: str, goal: str, user: str = "", password: str = "") -> dict:
@@ -74,9 +111,15 @@ async def walk(llm: LLMAdapter, url: str, goal: str, user: str = "", password: s
                 await page.wait_for_timeout(navegador.SETTLE_MS)
                 for n in range(MAX_STEPS):
                     elements = await page.evaluate(_ELEMENTS)
+                    # Formulario de clave (entrar o crear cuenta) sin cuenta de prueba: se detiene, nunca inventa una
+                    if not user and any(e["type"] == "password" for e in elements):
+                        steps.append({"paso": n + 1, "accion": "fin", "url": page.url,
+                                      "nota": "La página pide entrar o crear una cuenta. Me detengo: para seguir, dame "
+                                              "una cuenta de prueba en «🧭 Recorrer una página»."})
+                        break
                     text = (await page.evaluate("() => document.body ? document.body.innerText : ''"))[:3000]
                     listing = "\n".join(f"[{e['i']}] {e['tag']}{'/' + e['type'] if e['type'] else ''}: {e['label']}"
-                                        for e in elements)
+                                        + (f" (ya contiene: «{e['value']}»)" if e.get('value') else "") for e in elements)
                     history = "\n".join(f"{s['paso']}. {s['accion']} → {s['nota']}" for s in steps[-6:])
                     resp = await llm.chat_json([
                         LLMMessage("system", GUIDE),
@@ -99,23 +142,29 @@ async def walk(llm: LLMAdapter, url: str, goal: str, user: str = "", password: s
                     if action == "clic" and _PAY_WORDS.search(target["label"]):
                         steps[-1]["nota"] += " — me detengo: ese botón confirma un pago y ADÁN nunca paga."
                         break
-                    handle = await page.evaluate_handle(f"() => window.__adan[{idx}]") if target else None
-                    if action == "clic":
-                        await handle.as_element().click(timeout=5000)
-                    elif action == "escribir":
-                        value = typed.replace("{{usuario}}", user).replace("{{clave}}", password)
-                        if _CARD.search(value.replace(" ", "")):
-                            steps[-1]["nota"] += " — no escribo números de tarjeta."
-                            break
-                        await handle.as_element().fill(value, timeout=5000)
-                        if "{{clave}}" in typed:
-                            steps[-1]["nota"] = steps[-1]["nota"].replace(password, "••••") if password else steps[-1]["nota"]
-                    elif action == "enter":
-                        await page.keyboard.press("Enter")
-                    await page.wait_for_timeout(2500)
-                final_text = (await page.evaluate("() => document.body ? document.body.innerText : ''"))[:6000]
-                shot = await page.screenshot(type="jpeg", quality=70)
-                final = {"url": page.url, "texto": final_text, "screenshot": shot}
+                    # Si la IA puso la etiqueta del campo (o nada) como texto, se escribe lo que pide el objetivo
+                    if (action == "escribir" and target and target["type"] not in ("email", "password", "tel")
+                            and (not typed.strip() or typed.strip().lower() == target["label"].lower())):
+                        typed = goal
+                    value = typed.replace("{{usuario}}", user).replace("{{clave}}", password)
+                    if action == "escribir" and _CARD.search(value.replace(" ", "")):
+                        steps[-1]["nota"] += " — no escribo números de tarjeta."
+                        break
+                    # Escribir dos veces seguidas en el mismo campo = ya está escrito: se envía
+                    prev = steps[-2] if len(steps) > 1 else None
+                    if action == "escribir" and prev and prev.get("accion") == "escribir" and prev.get("indice") == idx:
+                        action = "enter"
+                        steps[-1]["accion"] = "enter"
+                    steps[-1]["indice"] = idx
+                    try:
+                        await _act(page, action, idx, value)
+                    except Exception as e:  # noqa: BLE001 - una acción que falla se anota y se sigue con otra
+                        steps[-1]["nota"] += f" (no funcionó: {type(e).__name__}; pruebo otra cosa)"
+                    # Tras enviar, los chats tardan en responder: se les da más tiempo
+                    await page.wait_for_timeout(7000 if action == "enter" else 2500)
+                final = {"url": page.url,
+                         "texto": (await page.evaluate("() => document.body ? document.body.innerText : ''"))[:6000],
+                         "screenshot": await page.screenshot(type="jpeg", quality=70)}
             finally:
                 await browser.close()
     except BlockedURLError:
