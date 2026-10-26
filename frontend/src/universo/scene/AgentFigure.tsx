@@ -3,8 +3,9 @@ import { useFrame } from '@react-three/fiber'
 import { useRef, useState } from 'react'
 import { type Group, type Mesh } from 'three'
 import { CAFE_LINES, ZONES, type Agent } from '../data'
+import { scold, tellJoke } from '../humor'
 import { levelOf, useUniverso } from '../store'
-import { livePositions, planPath, seatFacing, seatPosition, zoneSpot } from './layout'
+import { STAGE, livePositions, planPath, seatFacing, seatPosition, zoneSpot } from './layout'
 import { PersonBody } from './Person'
 import { MOOD_EMOJI, poseRig, type Rig } from './rig'
 
@@ -28,7 +29,9 @@ export default function AgentFigure({ agent }: { agent: Agent }) {
   const selected = useUniverso((s) => s.selected === agent.id)
   const bubble = useUniverso((s) => s.bubbles[agent.id])
   const mood = useUniverso((s) => s.moods[agent.id])
-  const select = useUniverso((s) => s.select)
+  // Quien habla al frente no necesita burbuja: lo que dice va en los subtítulos
+  const onStage = useUniverso((s) => s.stage?.agent === agent.id)
+  const floor = useUniverso((s) => s.floor ?? s.level)
 
   useFrame((_, rawDelta) => {
     const delta = Math.min(rawDelta, 0.05)
@@ -51,6 +54,9 @@ export default function AgentFigure({ agent }: { agent: Agent }) {
       const [ax, az] = ZONES.arena.position
       target = [ax + [0, -1.1, 1.1][arenaSlot]!, az + 1.4 + (arenaSlot === 0 ? 0 : 0.5)]
       key = 'arena'
+    } else if (s.stage && s.stage.agent === agent.id && now < s.stage.until) {
+      target = STAGE
+      key = 'stage'
     } else if (job && job.phase !== 'returning') {
       target = zoneSpot(job.zone, agent.id)
       key = `job:${job.zone}`
@@ -65,7 +71,7 @@ export default function AgentFigure({ agent }: { agent: Agent }) {
         n.wanderAt = n.clock + 12 + Math.random() * 18
       } else if (!n.wanderTarget && n.clock >= n.wanderAt) {
         const cafe = agent.id === 'ceo' || Math.random() < 0.45
-        const zones = levelOf(s.level).zones.filter((z) => z !== 'board')
+        const zones = levelOf(s.floor ?? s.level).zones.filter((z) => z !== 'board')
         const zone = cafe ? 'cafeteria' : zones[Math.floor(Math.random() * zones.length)]
         if (zone) {
           n.wanderTarget = zoneSpot(zone, agent.id)
@@ -89,7 +95,7 @@ export default function AgentFigure({ agent }: { agent: Agent }) {
       if (dist < 0.06) {
         n.path.shift()
       } else {
-        const step = Math.min(dist, SPEED * (key === 'seat' ? 1.5 : 1) * delta)
+        const step = Math.min(dist, SPEED * (key === 'seat' ? 1.5 : key === 'stage' ? 2.6 : 1) * delta)
         n.pos = [n.pos[0] + (dx / dist) * step, n.pos[1] + (dz / dist) * step]
         const want = Math.atan2(dx, dz)
         n.heading += angleDiff(want, n.heading) * Math.min(1, delta * 10)
@@ -120,6 +126,8 @@ export default function AgentFigure({ agent }: { agent: Agent }) {
 
     if (arrived && seatedNow && agent.seat !== undefined) {
       n.heading += angleDiff(seatFacing(agent.seat), n.heading) * Math.min(1, delta * 6)
+    } else if (arrived && key === 'stage') {
+      n.heading += angleDiff(0, n.heading) * Math.min(1, delta * 8)
     } else if (arrived && key === 'arena') {
       n.heading += angleDiff(Math.PI, n.heading) * Math.min(1, delta * 6)
     } else if (arrived && key.startsWith('wander')) {
@@ -135,9 +143,12 @@ export default function AgentFigure({ agent }: { agent: Agent }) {
     // 4. Animación
     n.walk += moving ? delta * 9 : 0
     const sit = n.seated
+    // Susto (clic derecho): brinca y tiembla
+    const jolt = (s.jolts[agent.id] ?? 0) > now
     if (root.current) {
-      root.current.position.set(n.pos[0], 0, n.pos[1])
-      root.current.rotation.y = n.heading
+      root.current.position.set(n.pos[0] + (jolt ? Math.sin(n.clock * 60) * 0.05 : 0),
+        jolt ? Math.abs(Math.sin(n.clock * 14)) * 0.45 : 0, n.pos[1])
+      root.current.rotation.y = n.heading + (jolt ? Math.sin(n.clock * 45) * 0.25 : 0)
     }
     livePositions.set(agent.id, n.pos)
     if (rig.current) poseRig(rig.current, { clock: n.clock, moving, walk: n.walk, sit, working, mood: s.moods[agent.id] })
@@ -155,7 +166,8 @@ export default function AgentFigure({ agent }: { agent: Agent }) {
 
   return (
     <group ref={root} scale={1.25}
-      onClick={(e) => { e.stopPropagation(); select(agent.id) }}
+      onClick={(e) => { e.stopPropagation(); tellJoke(agent.id) }}
+      onContextMenu={(e) => { e.stopPropagation(); e.nativeEvent.preventDefault(); scold(agent.id) }}
       onPointerOver={(e) => { e.stopPropagation(); setHover(true); document.body.style.cursor = 'pointer' }}
       onPointerOut={() => { setHover(false); document.body.style.cursor = '' }}>
       <mesh ref={ring} rotation-x={-Math.PI / 2} position-y={0.02}>
@@ -163,15 +175,16 @@ export default function AgentFigure({ agent }: { agent: Agent }) {
         <meshBasicMaterial color={agent.color} transparent opacity={selected ? 0.95 : 0.55} toneMapped={false} />
       </mesh>
       <PersonBody rigRef={rig} look={agent.look} color={agent.color} />
+      <Outfit floor={floor} color={agent.color} />
       <group>
         <mesh ref={screen} position={[0, 1.25, 0.55]} visible={false}>
           <planeGeometry args={[0.7, 0.42]} />
           <meshBasicMaterial color={agent.color} transparent opacity={0.35} toneMapped={false} side={2} />
         </mesh>
-        <Html position={[0, 2.35, 0]} center distanceFactor={14} zIndexRange={[20, 0]} pointerEvents="none">
+        <Html position={[0, 2.35, 0]} center distanceFactor={10} zIndexRange={[20, 0]} pointerEvents="none">
           {showTag && (
             <div className="flex flex-col items-center gap-1 select-none">
-              {bubble && (
+              {bubble && !onStage && (
                 <div className={`u-bubble ${bubble.tone ?? ''}`} style={{ borderColor: agent.color }}>{bubble.text}</div>
               )}
               {mood && <div className="u-mood" aria-hidden="true">{MOOD_EMOJI[mood]}</div>}
@@ -184,6 +197,52 @@ export default function AgentFigure({ agent }: { agent: Agent }) {
       </group>
     </group>
   )
+}
+
+// Vestuario del piso: boina en el estudio de diseño, casco en el taller, gafas en el laboratorio,
+// gorro de fiesta en el lanzamiento y corbata en el piso ejecutivo
+function Outfit({ floor, color }: { floor: number; color: string }) {
+  if (floor === 2) {
+    return (
+      <mesh position={[0.04, 2.08, 0]} rotation-z={-0.18}>
+        <cylinderGeometry args={[0.2, 0.22, 0.07, 20]} />
+        <meshStandardMaterial color="#be123c" />
+      </mesh>
+    )
+  }
+  if (floor === 4) {
+    return (
+      <group position-y={2.0}>
+        <mesh><sphereGeometry args={[0.23, 20, 12, 0, Math.PI * 2, 0, Math.PI / 2]} /><meshStandardMaterial color="#facc15" /></mesh>
+        <mesh position-y={0.005}><cylinderGeometry args={[0.28, 0.28, 0.025, 24]} /><meshStandardMaterial color="#eab308" /></mesh>
+      </group>
+    )
+  }
+  if (floor === 5) {
+    return (
+      <mesh position={[0, 1.86, 0.17]}>
+        <boxGeometry args={[0.34, 0.08, 0.04]} />
+        <meshStandardMaterial color="#22d3ee" emissive="#22d3ee" emissiveIntensity={1.2} transparent opacity={0.8} toneMapped={false} />
+      </mesh>
+    )
+  }
+  if (floor === 6) {
+    return (
+      <mesh position-y={2.18} rotation-z={0.15}>
+        <coneGeometry args={[0.12, 0.34, 16]} />
+        <meshStandardMaterial color={color} emissive={color} emissiveIntensity={0.6} />
+      </mesh>
+    )
+  }
+  if (floor === 7) {
+    return (
+      <mesh position={[0, 1.3, 0.21]}>
+        <boxGeometry args={[0.07, 0.32, 0.02]} />
+        <meshStandardMaterial color="#b91c1c" />
+      </mesh>
+    )
+  }
+  return null
 }
 
 function nearestZoneCenter(p: [number, number]): [number, number] {

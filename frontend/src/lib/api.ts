@@ -1,5 +1,5 @@
 import type {
-  BrandData, CompanyIdentity, Dossier, Library, LevelRoom, Message, SurveySimulation, BoardDialogue, BoardDialogueTurn, AdminCompany, AdminMovement, AdminPurchase, AdminSummary, AdminUser, AppleCompanyLevel, AppleNetwork, ApplePrices, ApplePurchase, AppleWallet, CommunityConnection, CommunityListing, CommunityProfile, ExecutiveReport, FinancialModel, OrgChart, PublicSurvey, SurveyAnswer, SurveyInsights, SurveyResults, SurveySummary, ArenaSession, AgentContract, LegalGuide, NameCheck, Statutes, StatutesInput, AgentOffering, AgentTask, ContractReport, HirePeriod,
+  AdminVisits, BrandData, CompanyIdentity, Dossier, Library, LevelRoom, Message, SurveySimulation, BoardDialogue, BoardDialogueTurn, AdminCompany, AdminMovement, AdminPurchase, AdminSummary, AdminUser, AppleCompanyLevel, AppleNetwork, ApplePrices, ApplePurchase, AppleWallet, CommunityConnection, CommunityListing, CommunityProfile, ExecutiveReport, FinancialModel, OrgChart, PublicSurvey, SurveyAnswer, SurveyInsights, SurveyResults, SurveySummary, ArenaSession, AgentContract, LegalGuide, NameCheck, Statutes, StatutesInput, AgentOffering, AgentTask, ContractReport, HirePeriod,
   BoardConsensus, BoardRoomInput, ChatResponse, Company, CompanyInput, DecideInput, Decision, DocumentRecord,
   Evidence, EvidenceInput, GatePreview, GateReviewResult, LevelView, Nivel1Status, OnboardingState, Score,
   ScoreOverview, TimelineEvent, TokenResponse, TwinKind, TwinOverview, UploadResult, User,
@@ -141,6 +141,16 @@ export const api = {
   adminPurchases: () => request<AdminPurchase[]>('/admin/compras'),
   adminMovements: () => request<AdminMovement[]>('/admin/movimientos'),
   adminCompanies: () => request<AdminCompany[]>('/admin/empresas'),
+  adminVisits: (dias: number) => request<AdminVisits>(`/admin/visitas?dias=${dias}`),
+  // Revisar una cuenta desde la consola (solo lectura) y volver a la propia
+  adminImpersonate: (userId: string) => request<void>(`/admin/usuarios/${userId}/entrar`, { method: 'POST' }),
+  backToMyAccount: () => request<void>('/auth/volver', { method: 'POST' }),
+  adminDeleteUser: (userId: string, confirmar: string) =>
+    request<{ deleted: boolean }>(`/admin/usuarios/${userId}`, { method: 'DELETE', body: JSON.stringify({ confirmar }) }),
+  adminDeleteCompany: (companyId: string, confirmar: string) =>
+    request<{ deleted: boolean }>(`/admin/empresas/${companyId}`, { method: 'DELETE', body: JSON.stringify({ confirmar }) }),
+  trackVisit: (ruta: string, referente: string) =>
+    request<void>('/visitas', { method: 'POST', body: JSON.stringify({ ruta, referente: referente || null }) }),
   // Comunidad ADÁN
   listCommunityCompanies: (f: { q: string; stage: string; looking_for: string; seleccion: boolean }) => {
     const params = new URLSearchParams({ q: f.q, stage: f.stage, looking_for: f.looking_for, seleccion: String(f.seleccion) })
@@ -273,11 +283,19 @@ export const api = {
   getLibraryDoc: (companyId: string, docId: string) =>
     request<{ id: string; titulo: string; markdown: string }>(`/empresa/${companyId}/biblioteca/${docId}`),
   getIdentity: (companyId: string) => request<CompanyIdentity>(`/empresa/${companyId}/identidad`),
+  // El logo que la empresa ya tiene: desde su web (url) o subido (imagen como data URL)
+  adoptExistingLogo: (companyId: string, logo: { url?: string; imagen?: string }) =>
+    post<BrandData>(`/empresa/${companyId}/marca/logo-actual`, logo),
+  startWalk: (companyId: string, body: { url: string; objetivo: string; usuario?: string; clave?: string; nivel: number }) =>
+    post<{ started: boolean; after: string }>(`/herramientas/${companyId}/recorrido`, body),
+  startCodeReview: (companyId: string, body: { url: string; objetivo?: string; token?: string; nivel: number }) =>
+    post<{ started: boolean; after: string }>(`/herramientas/${companyId}/repositorio`, body),
+  getJokes: (companyId: string) => request<{ chistes: { agente: string; texto: string }[] }>(`/herramientas/${companyId}/chistes`),
   buildNumbers: (companyId: string) => request<{ ok: boolean }>(`/empresa/${companyId}/numeros`, { method: 'POST', signal: AbortSignal.timeout(CHAT_TIMEOUT_MS * 2) }),
   // La Sala de los Niveles 2 a 7
   getLevelStatus: (nivel: number, companyId: string) => request<LevelRoom>(`/nivel/${nivel}/${companyId}/status`),
   chatLevel: (nivel: number, companyId: string, message: string) =>
-    request<{ message: Message; conversation_id: string }>(`/nivel/${nivel}/${companyId}/chat`, {
+    request<{ message: Message; conversation_id: string; closed?: { next: number | null } }>(`/nivel/${nivel}/${companyId}/chat`, {
       method: 'POST', body: JSON.stringify({ message }), signal: AbortSignal.timeout(CHAT_TIMEOUT_MS),
     }),
   closeLevel: (nivel: number, companyId: string, reason: string) =>

@@ -4,17 +4,19 @@ from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from pydantic import BaseModel, Field
 from sqlalchemy import func, or_
 from sqlalchemy.orm import Session
 
 from app.apples import gateway, pricing, service
 from app.apples.models import AppleMovement, ApplePurchase, LevelUnlock, ReferralProfile
-from app.core.authz import require_superadmin
+from app.core.auth import ADMIN_COOKIE, SESSION_COOKIE, create_access_token, set_session_cookie
+from app.core.authz import is_superadmin, require_superadmin
 from app.core.config import settings
 from app.core.database import get_db
-from app.models.models import Company, User
+from app.core.purge import purge
+from app.models.models import Company, Event, User
 
 router = APIRouter(prefix="/admin", tags=["consola Paradixe"])
 
@@ -124,3 +126,75 @@ def companies(db: Session = Depends(get_db), _: User = Depends(require_superadmi
         out.append({"id": c.id, "name": c.name, "owner": u.email, "status": str(getattr(c.status, "value", c.status)),
                     "stage": c.origin_stage, "created_at": c.created_at.isoformat(), "levels_paid": sorted(paid)})
     return out
+
+
+# --- Revisar y borrar cuentas y empresas ---------------------------------------------------------------------------
+
+class ConfirmBody(BaseModel):
+    confirmar: str = Field(..., min_length=1, max_length=255)
+
+
+def _audit(db: Session, admin: User, kind: str, entity: str, entity_id: str, detail: dict) -> None:
+    """Rastro de auditoría de lo que hace la consola (sin llaves foráneas: sobrevive al borrado)."""
+    db.add(Event(project_id=None, event_type=kind, entity_type=entity, entity_id=entity_id,
+                 data={"admin": admin.email, **detail}))
+
+
+@router.post("/usuarios/{user_id}/entrar", status_code=204)
+def impersonate(user_id: str, request: Request, response: Response, db: Session = Depends(get_db),
+                admin: User = Depends(require_superadmin)):
+    """Entra a la cuenta de una persona para revisarla, en solo lectura, por una hora como máximo."""
+    target = db.get(User, user_id)
+    if target is None:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+    if target.id == admin.id:
+        raise HTTPException(status_code=409, detail="Esa es tu propia cuenta.")
+    own = request.cookies.get(SESSION_COOKIE) or create_access_token(admin)
+    response.set_cookie(ADMIN_COOKIE, own, max_age=3600, httponly=True, samesite="lax",
+                        secure=settings.SESSION_COOKIE_SECURE, path="/")
+    set_session_cookie(response, create_access_token(target, impersonator=admin))
+    _audit(db, admin, "admin_impersonation", "user", target.id, {"email": target.email})
+    db.commit()
+    response.status_code = 204
+    return response
+
+
+@router.delete("/usuarios/{user_id}")
+def delete_user(user_id: str, body: ConfirmBody, db: Session = Depends(get_db), admin: User = Depends(require_superadmin)):
+    """Borra una cuenta y sus empresas. Se escribe el correo para confirmar. No se borran superadministradores, la
+    cuenta propia ni cuentas con compras aprobadas (la contabilidad de los pagos debe quedar)."""
+    target = db.get(User, user_id)
+    if target is None:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+    if body.confirmar.strip().lower() != (target.email or "").lower():
+        raise HTTPException(status_code=422, detail="Escribe el correo exacto de la cuenta para confirmar.")
+    if target.id == admin.id or is_superadmin(target):
+        raise HTTPException(status_code=409, detail="No se pueden borrar cuentas de superadministradores.")
+    paid = db.query(ApplePurchase).filter(ApplePurchase.user_id == target.id, ApplePurchase.status == "aprobada").count()
+    if paid:
+        raise HTTPException(status_code=409, detail="Esta cuenta tiene compras aprobadas: sus pagos deben quedar "
+                                                    "registrados. Puedes borrar sus empresas una por una.")
+    companies_ids = [c.id for c in db.query(Company).filter(Company.primary_user_id == target.id).all()]
+    rows = purge(db, Company.__table__, companies_ids) + purge(db, User.__table__, [target.id])
+    _audit(db, admin, "admin_delete_user", "user", user_id, {"email": target.email, "empresas": len(companies_ids),
+                                                             "filas": rows})
+    db.commit()
+    return {"deleted": True, "empresas": len(companies_ids)}
+
+
+@router.delete("/empresas/{company_id}")
+def delete_company(company_id: str, body: ConfirmBody, db: Session = Depends(get_db),
+                   admin: User = Depends(require_superadmin)):
+    """Borra una empresa con todo lo suyo (Niveles, conversaciones, documentos). Se escribe el nombre para confirmar.
+    Los movimientos de @pples que la mencionan se conservan, desvinculados."""
+    company = db.get(Company, company_id)
+    if company is None:
+        raise HTTPException(status_code=404, detail="Empresa no encontrada")
+    if body.confirmar.strip().lower() != (company.name or "").strip().lower():
+        raise HTTPException(status_code=422, detail="Escribe el nombre exacto de la empresa para confirmar.")
+    name = company.name
+    db.expunge(company)
+    rows = purge(db, Company.__table__, [company_id])
+    _audit(db, admin, "admin_delete_company", "company", company_id, {"nombre": name, "filas": rows})
+    db.commit()
+    return {"deleted": True, "filas": rows}

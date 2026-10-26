@@ -8,13 +8,15 @@ import Card from '../components/ui/Card'
 import { LoadingState } from '../components/ui/States'
 import Tabs from '../components/ui/Tabs'
 import { api, errorMessage } from '../lib/api'
-import type { AdminCompany, AdminMovement, AdminPurchase, AdminSummary, AdminUser } from '../types'
+import WorldMap from '../components/WorldMap'
+import { countryName } from '../lib/paises'
+import type { AdminCompany, AdminMovement, AdminPurchase, AdminSummary, AdminUser, AdminVisits } from '../types'
 
 // Consola de Paradixe (solo superadministradores): ver y controlar ADÁN, como la consola de Xmart Travel
 
-type Tab = 'resumen' | 'usuarios' | 'compras' | 'movimientos' | 'empresas'
+type Tab = 'resumen' | 'visitas' | 'usuarios' | 'compras' | 'movimientos' | 'empresas'
 const TABS: { id: Tab; label: string }[] = [
-  { id: 'resumen', label: '📊 Resumen' }, { id: 'usuarios', label: '👥 Usuarios y regalos' },
+  { id: 'resumen', label: '📊 Resumen' }, { id: 'visitas', label: '🌎 Visitas' }, { id: 'usuarios', label: '👥 Usuarios y regalos' },
   { id: 'compras', label: '💳 Compras' }, { id: 'movimientos', label: '🍎 Movimientos' }, { id: 'empresas', label: '🏢 Empresas' },
 ]
 
@@ -72,12 +74,148 @@ function Summary({ s }: { s: AdminSummary }) {
   )
 }
 
+function Visits() {
+  const [days, setDays] = useState(30)
+  const [v, setV] = useState<AdminVisits | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  useEffect(() => { api.adminVisits(days).then(setV).catch((e: unknown) => setError(errorMessage(e))) }, [days])
+  if (error) return <Alert message={error} />
+  if (!v) return <LoadingState label="Cargando las visitas…" />
+  const pct = (n: number) => (v.visitas ? `${Math.round((100 * n) / v.visitas)} %` : '—')
+  const maxDay = Math.max(...v.por_dia.map((d) => d.visitas), 1)
+  const maxCountry = Math.max(...v.paises.map((p) => p.visitas), 1)
+  return (
+    <div className="space-y-4">
+      <div className="flex flex-wrap items-center gap-2">
+        {[7, 30, 90, 365].map((d) => (
+          <Button key={d} size="sm" variant={days === d ? 'primary' : 'secondary'} onClick={() => setDays(d)}>Últimos {d} días</Button>
+        ))}
+      </div>
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <Kpi label="Visitas a la página" value={v.visitas.toLocaleString('es-CO')} />
+        <Kpi label="Visitantes" value={v.visitantes.toLocaleString('es-CO')} hint={`${v.paises.length} países · ${pct(v.con_cuenta)} con cuenta`} />
+        <Kpi label="En línea ahora" value={String(v.ahora)} hint="Últimos 5 minutos" />
+        <Kpi label="Desde el celular" value={pct(v.moviles)} hint={`${pct(v.visitas - v.moviles)} desde computador`} />
+      </div>
+      <div className="grid gap-4 lg:grid-cols-[2fr_1fr]">
+        <Card><h3 className="mb-2 font-bold">De qué parte del mundo nos ven</h3><WorldMap countries={v.paises} /></Card>
+        <Card>
+          <h3 className="mb-2 font-bold">Países</h3>
+          {v.paises.length === 0 && <p className="text-sm text-adan-muted">Todavía no hay visitas en el periodo.</p>}
+          <ul className="space-y-2">
+            {v.paises.slice(0, 12).map((p) => (
+              <li key={p.pais} className="text-sm">
+                <div className="flex justify-between"><span>{countryName(p.pais)}</span><b>{p.visitas}</b></div>
+                <div className="h-1.5 rounded-full bg-adan-surface-2"><div className="h-full rounded-full bg-adan-accent" style={{ width: `${(100 * p.visitas) / maxCountry}%` }} /></div>
+              </li>
+            ))}
+          </ul>
+        </Card>
+      </div>
+      <div className="grid gap-4 lg:grid-cols-3">
+        <Card className="lg:col-span-2">
+          <h3 className="mb-2 font-bold">Visitas por día</h3>
+          <div className="flex h-36 items-end gap-1 border-b border-adan-border">
+            {v.por_dia.map((d) => (
+              <div key={d.dia} title={`${d.dia}: ${d.visitas} visitas · ${d.visitantes} visitantes`} className="flex-1 rounded-t bg-adan-accent hover:opacity-80"
+                style={{ height: `${Math.max(3, (100 * d.visitas) / maxDay)}%`, maxWidth: 40 }} />
+            ))}
+          </div>
+        </Card>
+        <Card>
+          <h3 className="mb-2 font-bold">De dónde llegan</h3>
+          <p className="flex justify-between text-sm"><span>Directo</span><b>{v.directas}</b></p>
+          {v.referentes.map((r) => <p key={r.origen} className="flex justify-between text-sm"><span>{r.origen}</span><b>{r.visitas}</b></p>)}
+          <h3 className="mb-2 mt-4 font-bold">Páginas más vistas</h3>
+          {v.paginas.map((p) => <p key={p.ruta} className="flex justify-between text-sm"><span className="truncate">{p.ruta}</span><b>{p.visitas}</b></p>)}
+        </Card>
+      </div>
+    </div>
+  )
+}
+
+// Confirmación de borrado: hay que escribir el correo o el nombre exacto
+function ConfirmDelete({ what, expected, onConfirm, onCancel }: {
+  what: string; expected: string; onConfirm: (typed: string) => Promise<void>; onCancel: () => void
+}) {
+  const [typed, setTyped] = useState('')
+  const [busy, setBusy] = useState(false)
+  return (
+    <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/60 p-3" role="dialog" aria-label={`Borrar ${what}`}>
+      <div className="mt-24 w-full max-w-md space-y-3 rounded-2xl border border-adan-danger/50 bg-adan-bg p-5">
+        <p className="text-lg font-bold">🗑️ Borrar {what}</p>
+        <p className="text-sm text-adan-muted">Se borra definitivamente con todo lo suyo (Niveles, conversaciones, documentos). No se puede deshacer. Escribe <b className="text-adan-text">{expected}</b> para confirmar.</p>
+        <input value={typed} onChange={(e) => setTyped(e.target.value)} aria-label="Confirmación" autoFocus
+          className="w-full rounded-xl border border-adan-border bg-adan-surface px-3 py-2 text-sm" />
+        <div className="flex justify-end gap-2">
+          <Button variant="ghost" onClick={onCancel}>Cancelar</Button>
+          <Button variant="danger" loading={busy} disabled={typed.trim().toLowerCase() !== expected.trim().toLowerCase()}
+            onClick={async () => { setBusy(true); try { await onConfirm(typed) } finally { setBusy(false) } }}>Borrar definitivamente</Button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function Companies() {
+  const [rows, setRows] = useState<AdminCompany[] | null>(null)
+  const [del, setDel] = useState<AdminCompany | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  const [msg, setMsg] = useState<string | null>(null)
+  const load = useCallback(() => api.adminCompanies().then(setRows).catch((e: unknown) => setError(errorMessage(e))), [])
+  useEffect(() => { void load() }, [load])
+  if (!rows) return error ? <Alert message={error} /> : <LoadingState label="Cargando empresas…" />
+  return (
+    <div className="space-y-3">
+      <Alert message={error} onClose={() => setError(null)} />
+      {msg && <p className="rounded-lg bg-adan-success/10 p-2 text-sm text-adan-success">{msg}</p>}
+      <Card className="p-0! overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead className="text-left text-xs text-adan-muted"><tr>
+            <th className="p-3">Empresa</th><th>Dueño</th><th>Origen</th><th>Estado</th><th>Niveles pagados</th><th>Creada</th><th></th>
+          </tr></thead>
+          <tbody>
+            {rows.map((c) => (
+              <tr key={c.id} className="border-t border-adan-border">
+                <td className="p-3 font-semibold">{c.name}</td><td>{c.owner}</td><td>{c.stage ?? '—'}</td><td>{c.status}</td>
+                <td>{c.levels_paid.length ? c.levels_paid.join(', ') : '—'}</td><td>{date(c.created_at)}</td>
+                <td className="pr-3"><Button size="sm" variant="ghost" className="text-adan-danger!" onClick={() => { setMsg(null); setDel(c) }}>🗑️ Borrar</Button></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </Card>
+      {del && (
+        <ConfirmDelete what={`la empresa «${del.name}»`} expected={del.name} onCancel={() => setDel(null)}
+          onConfirm={async (typed) => {
+            try {
+              await api.adminDeleteCompany(del.id, typed)
+              setMsg(`Se borró «${del.name}».`)
+              setDel(null)
+              await load()
+            } catch (e) { setError(errorMessage(e)); setDel(null) }
+          }} />
+      )}
+    </div>
+  )
+}
+
 function Users() {
   const [q, setQ] = useState('')
   const [rows, setRows] = useState<AdminUser[] | null>(null)
   const [gift, setGift] = useState<{ id: string; apples: string; reason: string } | null>(null)
   const [msg, setMsg] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [del, setDel] = useState<AdminUser | null>(null)
+
+  const enter = async (u: AdminUser) => {
+    try {
+      await api.adminImpersonate(u.id)
+      window.location.assign('/dashboard')
+    } catch (e) {
+      setError(errorMessage(e))
+    }
+  }
 
   const load = useCallback((query: string) => api.adminUsers(query).then(setRows).catch((e: unknown) => setError(errorMessage(e))), [])
   useEffect(() => { void load('') }, [load])
@@ -131,7 +269,11 @@ function Users() {
                         </div>
                       </div>
                     ) : (
-                      <Button size="sm" variant="secondary" onClick={() => { setMsg(null); setGift({ id: u.id, apples: '20', reason: 'pruebas' }) }}>🎁 Regalar @pples</Button>
+                      <div className="flex flex-wrap gap-1">
+                        <Button size="sm" variant="secondary" onClick={() => { setMsg(null); setGift({ id: u.id, apples: '20', reason: 'pruebas' }) }}>🎁 Regalar</Button>
+                        <Button size="sm" variant="secondary" onClick={() => enter(u)} title="Entrar a su cuenta para revisarla (solo lectura)">👁️ Entrar</Button>
+                        <Button size="sm" variant="ghost" className="text-adan-danger!" onClick={() => { setMsg(null); setDel(u) }}>🗑️ Borrar</Button>
+                      </div>
                     )}
                   </td>
                 </tr>
@@ -139,6 +281,17 @@ function Users() {
             </tbody>
           </table>
         </Card>
+      )}
+      {del && (
+        <ConfirmDelete what={`la cuenta de ${del.email}`} expected={del.email} onCancel={() => setDel(null)}
+          onConfirm={async (typed) => {
+            try {
+              await api.adminDeleteUser(del.id, typed)
+              setMsg(`Se borró la cuenta ${del.email} y sus empresas.`)
+              setDel(null)
+              await load(q)
+            } catch (e) { setError(errorMessage(e)); setDel(null) }
+          }} />
       )}
     </div>
   )
@@ -174,6 +327,7 @@ export default function ConsolaPage() {
       <main className="h-full overflow-y-auto">
         <div className="max-w-7xl mx-auto p-4 sm:p-6">
           {tab === 'resumen' && (error ? <Alert message={error} /> : summary ? <Summary s={summary} /> : <LoadingState label="Cargando el resumen…" />)}
+          {tab === 'visitas' && <Visits />}
           {tab === 'usuarios' && <Users />}
           {tab === 'compras' && <Table<AdminPurchase> load={api.adminPurchases} empty="Aún no hay compras." cols={[
             ['Fecha', (p) => date(p.created_at)], ['Usuario', (p) => p.email], ['@pples', (p) => `🍎 ${p.apples}`], ['Valor', (p) => cop(p.amount_cop)],
@@ -183,10 +337,7 @@ export default function ConsolaPage() {
             ['Fecha', (m) => date(m.created_at)], ['Usuario', (m) => m.email], ['Tipo', (m) => m.kind],
             ['@pples', (m) => <span className={m.amount >= 0 ? 'text-adan-success' : ''}>{m.amount >= 0 ? '+' : ''}{num(m.amount)}</span>], ['Detalle', (m) => m.detail],
           ]} />}
-          {tab === 'empresas' && <Table<AdminCompany> load={api.adminCompanies} empty="Aún no hay empresas." cols={[
-            ['Empresa', (c) => c.name], ['Dueño', (c) => c.owner], ['Origen', (c) => c.stage ?? '—'],
-            ['Niveles pagados', (c) => (c.levels_paid.length ? c.levels_paid.join(', ') : '—')], ['Creada', (c) => date(c.created_at)],
-          ]} />}
+          {tab === 'empresas' && <Companies />}
         </div>
       </main>
     </AppShell>

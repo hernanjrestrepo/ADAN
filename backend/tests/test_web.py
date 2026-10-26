@@ -82,3 +82,28 @@ def test_pages_already_read_are_remembered_and_not_reopened(client, monkeypatch)
     assert len(calls) == 1  # la segunda vez usa lo que ya leyó hace un momento
     client.post(f"/api/v1/nivel1/{cid}/chat", headers=h, json={"message": "¿Qué te pareció el precio?"})
     assert "YA ABRISTE" in llm.calls[-1][0].content and "Un solo pago para vuelos" in llm.calls[-1][0].content
+
+
+def test_the_logo_found_on_the_site_is_offered_and_adopted(client, monkeypatch):
+    from app.empresa import logo_externo
+
+    page_html = HTML.replace("<title>", '<link rel="apple-touch-icon" href="/icon.png"><title>').replace(
+        "<h1>", '<img src="/img/logo-xmart.svg" alt="Xmart"><h1>')
+
+    async def fake_fetch_all(urls):
+        return [{"url": urls[0], **web.parse_html(page_html, urls[0])}]
+
+    async def fake_download(url):
+        assert url == "https://xmart.travel/img/logo-xmart.svg"
+        return b'<svg xmlns="http://www.w3.org/2000/svg"><rect fill="#0f766e"/><circle fill="#f59e0b"/><path fill="#fff"/></svg>', "image/svg+xml"
+    monkeypatch.setattr(web, "fetch_all", fake_fetch_all)
+    monkeypatch.setattr(logo_externo, "download", fake_download)
+    cid, h = _setup(client, "logo-web@example.com")
+    _use(client, ScriptLLM([TURN_1]))
+    msg = client.post(f"/api/v1/nivel1/{cid}/chat", headers=h, json={"message": "Mira https://xmart.travel/"}).json()["message"]
+    suggested = msg["metadata_json"]["logo_sugerido"]["url"]
+    assert suggested == "https://xmart.travel/img/logo-xmart.svg"
+    res = client.post(f"/api/v1/empresa/{cid}/marca/logo-actual", headers=h, json={"url": suggested}).json()
+    assert res["identidad"]["logo"].startswith("data:image/svg+xml;base64,") and res["identidad"]["color"] == "#0f766e"
+    lib = client.get(f"/api/v1/empresa/{cid}/biblioteca", headers=h).json()
+    assert [p["hex"] for p in lib["marca"]["paleta"]][:2] == ["#0f766e", "#f59e0b"]

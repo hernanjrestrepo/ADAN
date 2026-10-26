@@ -66,6 +66,8 @@ class UserResponse(BaseModel):
     email: str
     name: str
     role: str
+    # Correo del superadministrador que está revisando esta cuenta desde la consola (solo lectura)
+    revisando_desde: str | None = None
 
     model_config = {"from_attributes": True}
 

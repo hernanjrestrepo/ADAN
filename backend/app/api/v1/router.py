@@ -7,6 +7,7 @@ from app.finanzas import api as finanzas
 from app.community import api as comunidad
 from app.apples import admin_api as consola
 from app.levels import api as niveles
+from app.levels import herramientas
 from app.empresa import api as empresa
 from app.apples import api as apples
 from app.hire import api as hire
@@ -14,6 +15,7 @@ from app.surveys import api as surveys
 from app.onboarding import api as onboarding
 from app.scoring import api as scoring
 from app.twin import api as twin
+from app.visitas import api as visitas
 
 router = APIRouter(prefix="/api/v1")
 
@@ -33,3 +35,5 @@ router.include_router(apples.router)
 router.include_router(consola.router)
 router.include_router(niveles.router)
 router.include_router(empresa.router)
+router.include_router(herramientas.router)
+router.include_router(visitas.router)

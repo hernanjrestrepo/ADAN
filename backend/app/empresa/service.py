@@ -313,6 +313,19 @@ class Marca:
         self.db.commit()
         return self._store(project, logo_elegido=concept)
 
+    def adopt_existing(self, project: Project, company: Company, image: str, colors: list[str], source: str) -> dict:
+        """El logo que la empresa ya tiene (de su web o subido por el fundador) pasa a ser su identidad en ADÁN."""
+        primary = colors[0] if colors else (company.brand_color or "#2563eb")
+        accent = colors[1] if len(colors) > 1 else (company.brand_accent or primary)
+        concept = {"id": "actual", "nombre_concepto": "Logo actual de la empresa", "estilo": "actual", "icono": "",
+                   "tipografia": "", "primario": primary, "acento": accent, "fondo": "#ffffff",
+                   "por_que": f"Es el logo que la empresa ya usa ({source})."}
+        company.logo = image
+        company.brand_color = primary
+        company.brand_accent = accent
+        self.db.commit()
+        return self._store(project, logo_elegido=concept, nombre_elegido=company.name, logo_fuente=source)
+
     async def slogans(self, project: Project, context: str, name: str) -> dict:
         prompt = (f"{context}\n\nMarca: {name}\n\nPropón 6 slogans cortos (máximo 6 palabras), memorables, que digan el "
                   "beneficio principal o la emoción, con ritmo; `por_que` en una frase.")

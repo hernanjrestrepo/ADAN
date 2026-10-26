@@ -228,26 +228,92 @@ function BrandSign({ identity, color }: { identity: Identity | null; color: stri
   )
 }
 
+// Alfombra luminosa con el número del piso, al frente (donde se para quien habla)
+function FloorMark({ floor, color }: { floor: number; color: string }) {
+  const ring = useRef<MeshStandardMaterial>(null)
+  useFrame(({ clock }) => { if (ring.current) ring.current.emissiveIntensity = 1.6 + Math.sin(clock.elapsedTime * 2) * 0.6 })
+  return (
+    <group position={[0, 0.02, 10.4]}>
+      <mesh rotation-x={-Math.PI / 2}><circleGeometry args={[1.6, 48]} /><meshStandardMaterial color="#0b1020" transparent opacity={0.75} /></mesh>
+      <mesh rotation-x={-Math.PI / 2} position-y={0.01}>
+        <ringGeometry args={[1.5, 1.62, 64]} />
+        <meshStandardMaterial ref={ring} color={color} emissive={color} emissiveIntensity={2} toneMapped={false} />
+      </mesh>
+      {Array.from({ length: floor }, (_, k) => (
+        <mesh key={k} rotation-x={-Math.PI / 2} position={[Math.cos((k / floor) * Math.PI * 2) * 1.2, 0.015, Math.sin((k / floor) * Math.PI * 2) * 1.2]}>
+          <circleGeometry args={[0.1, 16]} />
+          <meshStandardMaterial color={color} emissive={color} emissiveIntensity={2.5} toneMapped={false} />
+        </mesh>
+      ))}
+    </group>
+  )
+}
+
+// Lugares donde la cámara ve los muebles: al frente a lado y lado, en las esquinas y junto a las paredes
+const A = [-7.5, 11.8] as const
+const B = [7.5, 11.8] as const
+const C = [-20, 14.5] as const
+const D = [20, 14.5] as const
+const E = [-20.6, 7.5] as const
+const F = [20.6, 7.5] as const
+
 export default function LevelDecor({ floor, identity }: { floor: number; identity: Identity | null }) {
   const f = FLOORS[floor] ?? FLOORS[1]!
   return (
     <group>
       <BrandSign identity={identity} color={f.color} />
+      <FloorMark floor={floor} color={f.color} />
       <pointLight position={[0, 8, 0]} color={f.color} intensity={18} distance={40} decay={1.2} />
-      {floor === 1 && <><Whiteboard x={-10} z={-17.5} /><Whiteboard x={10} z={-17.5} /><Whiteboard x={-21.5} z={-14} rot={Math.PI / 2} /></>}
-      {floor === 2 && <><ValueCanvas x={-14.5} z={-17.6} /><Easel x={19} z={-15} color="#f472b6" /><Easel x={20} z={13} color="#38bdf8" /><Easel x={-20} z={13} color="#fbbf24" /></>}
-      {floor === 3 && (
+      {floor === 1 && (
         <>
-          <ChartScreen x={-10} z={-17.6} color="#4ade80" />
-          <ChartScreen x={10} z={-17.6} color="#22d3ee" />
-          <NotaryDesk x={-19.5} z={14.5} identity={identity} />
-          <Plant x={20.5} z={16.5} />
+          <Whiteboard x={-10} z={-17.5} /><Whiteboard x={10} z={-17.5} />
+          <Whiteboard x={A[0]} z={A[1]} rot={0.25} /><Whiteboard x={B[0]} z={B[1]} rot={-0.25} />
+          <Whiteboard x={E[0]} z={E[1]} rot={Math.PI / 2} /><Plant x={C[0]} z={C[1]} /><Plant x={D[0]} z={D[1]} />
         </>
       )}
-      {floor === 4 && <><Printer x={-19.5} z={-15.5} /><Printer x={-17.5} z={-15.5} /><Printer x={19.5} z={14.5} /><CodeScreen x={-10} z={-17.6} /><CodeScreen x={10} z={-17.6} /></>}
-      {floor === 5 && <><Beakers x={-19} z={-15.5} /><Beakers x={-19} z={14.5} /><ChartScreen x={10} z={-17.6} color="#ef4444" /></>}
-      {floor === 6 && <><Rocket x={-19} z={-14.5} /><ChartScreen x={10} z={-17.6} color="#a78bfa" /><Plant x={20.5} z={16.5} /></>}
-      {floor === 7 && <><Globe x={-19.5} z={-15} /><ChartScreen x={-10} z={-17.6} color="#fbbf24" /><ChartScreen x={10} z={-17.6} color="#34d399" /><Plant x={20.5} z={16.5} /><Plant x={-20.5} z={16.5} /></>}
+      {floor === 2 && (
+        <>
+          <ValueCanvas x={-14.5} z={-17.6} />
+          <Easel x={A[0]} z={A[1]} color="#f472b6" /><Easel x={A[0] - 1.6} z={A[1] - 0.6} color="#38bdf8" />
+          <Easel x={B[0]} z={B[1]} color="#fbbf24" /><Easel x={B[0] + 1.6} z={B[1] - 0.6} color="#a3e635" />
+          <Easel x={C[0]} z={C[1]} color="#fb923c" /><Easel x={D[0]} z={D[1]} color="#c084fc" />
+        </>
+      )}
+      {floor === 3 && (
+        <>
+          <ChartScreen x={-10} z={-17.6} color="#4ade80" /><ChartScreen x={10} z={-17.6} color="#22d3ee" />
+          <ChartScreen x={A[0]} z={A[1]} rot={0.25} color="#4ade80" /><NotaryDesk x={B[0]} z={B[1]} identity={identity} />
+          <ChartScreen x={E[0]} z={E[1]} rot={Math.PI / 2} color="#fde68a" /><Plant x={C[0]} z={C[1]} /><Plant x={D[0]} z={D[1]} />
+        </>
+      )}
+      {floor === 4 && (
+        <>
+          <CodeScreen x={-10} z={-17.6} /><CodeScreen x={10} z={-17.6} />
+          <Printer x={A[0]} z={A[1]} /><Printer x={A[0] - 1.7} z={A[1]} /><Printer x={B[0]} z={B[1]} /><Printer x={B[0] + 1.7} z={B[1]} />
+          <CodeScreen x={E[0]} z={E[1]} rot={Math.PI / 2} /><CodeScreen x={F[0]} z={F[1]} rot={-Math.PI / 2} />
+        </>
+      )}
+      {floor === 5 && (
+        <>
+          <ChartScreen x={10} z={-17.6} color="#ef4444" />
+          <Beakers x={A[0]} z={A[1]} /><Beakers x={B[0]} z={B[1]} /><Beakers x={C[0]} z={C[1]} />
+          <ChartScreen x={E[0]} z={E[1]} rot={Math.PI / 2} color="#22d3ee" /><ChartScreen x={F[0]} z={F[1]} rot={-Math.PI / 2} color="#a3e635" />
+        </>
+      )}
+      {floor === 6 && (
+        <>
+          <ChartScreen x={10} z={-17.6} color="#a78bfa" />
+          <Rocket x={B[0] + 1} z={B[1]} /><Rocket x={C[0] + 1} z={C[1] - 1} />
+          <ChartScreen x={A[0]} z={A[1]} rot={0.25} color="#f472b6" /><Plant x={D[0]} z={D[1]} />
+        </>
+      )}
+      {floor === 7 && (
+        <>
+          <ChartScreen x={-10} z={-17.6} color="#fbbf24" /><ChartScreen x={10} z={-17.6} color="#34d399" />
+          <Globe x={A[0]} z={A[1]} /><ChartScreen x={B[0]} z={B[1]} rot={-0.25} color="#fbbf24" />
+          <Plant x={C[0]} z={C[1]} /><Plant x={D[0]} z={D[1]} /><Plant x={E[0]} z={E[1]} /><Plant x={F[0]} z={F[1]} />
+        </>
+      )}
     </group>
   )
 }

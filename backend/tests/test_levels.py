@@ -56,3 +56,19 @@ def test_closing_a_level_needs_the_topics_or_a_reason_and_opens_the_next(client,
     evidence = client.get(f"/api/v1/scoring/{cid}/evidence", headers=h).json()
     assert any("cerró el Nivel 2 con temas pendientes" in e["claim"] for e in evidence)
     assert client.post(url, headers=h, json={"reason": "otra vez"}).status_code == 409
+
+
+def test_adan_proposes_closing_and_a_yes_closes_the_level(client, db_session):
+    cid, h = _setup(client, "cierre-si@example.com")
+    _open_level(db_session, cid, 2)
+    client.get(f"/api/v1/nivel/2/{cid}/status", headers=h)
+    topics = ["trabajos", "solucion", "propuesta", "diferencia", "precio", "adopcion", "validacion"]
+    turn = {"respuesta": "Tenemos los 7 temas. ¿Cerramos el Nivel y pasamos al piso 3?", "habla": "ceo", "acuerdos": [],
+            "temas": [{"id": t, "estado": "respondido", "resumen": "listo", "base": "supuesto"} for t in topics],
+            "evidencia_sugerida": [], "investigar": "", "reaccion": {"agente": "ceo", "emocion": "feliz", "frase": "¡Listo!"}}
+    _use(client, ScriptLLM([turn]))
+    msg = client.post(f"/api/v1/nivel/2/{cid}/chat", headers=h, json={"message": "La validamos con preventa"}).json()["message"]
+    assert msg["metadata_json"]["propone_cierre"] is True
+    res = client.post(f"/api/v1/nivel/2/{cid}/chat", headers=h, json={"message": "Sí, dale"}).json()
+    assert res["closed"]["next"] == 3 and "Nivel 2 cerrado" in res["message"]["content"]
+    assert client.get(f"/api/v1/nivel/3/{cid}/status", headers=h).json()["status"] == "active"

@@ -2,6 +2,8 @@
 las oficinas y el presupuesto y flujo de caja construidos dentro de la Sala del Nivel 3."""
 from __future__ import annotations
 
+import base64
+
 from fastapi import APIRouter, Depends, File, HTTPException, Response, UploadFile
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
@@ -16,7 +18,7 @@ from app.core.database import get_db
 from app.core.ratelimit import llm_user
 from app.documents import extract as doc_extract
 from app.documents import media
-from app.empresa import biblioteca
+from app.empresa import biblioteca, logo_externo
 from app.empresa.catalog import COUNTRIES, items_for
 from app.empresa.service import STATUSES, Expediente, Marca
 from app.models.models import Document, Project, User
@@ -210,6 +212,41 @@ def marca_choose_logo(company_id: str, body: LogoChoice, db: Session = Depends(g
         raise HTTPException(status_code=404, detail=str(exc)) from exc
     Expediente(None, db).set_status(project, "logo", "en_curso", "Logo elegido; falta el manual de marca.")
     return data
+
+
+class ExistingLogo(BaseModel):
+    url: str | None = Field(None, max_length=2000)
+    imagen: str | None = Field(None, max_length=900_000)
+
+
+@router.post("/{company_id}/marca/logo-actual")
+async def marca_existing_logo(company_id: str, body: ExistingLogo, db: Session = Depends(get_db),
+                              user: User = Depends(get_current_user)):
+    """Adopta el logo que la empresa ya tiene: desde una dirección de su web o subido como imagen."""
+    company, project = _ctx(db, company_id, user)
+    try:
+        if body.url:
+            raw, mime = await logo_externo.download(body.url)
+            source = f"tomado de {body.url}"
+        elif body.imagen and body.imagen.startswith("data:image/"):
+            head, _, b64 = body.imagen.partition(",")
+            mime = head[5:].split(";")[0]
+            raw = base64.b64decode(b64, validate=False)
+            if len(raw) > logo_externo.MAX_BYTES:
+                raise logo_externo.LogoError("La imagen del logo es muy pesada (máximo 600 KB).")
+            source = "subido por el fundador"
+        else:
+            raise logo_externo.LogoError("Envía la dirección del logo o la imagen.")
+        if mime not in logo_externo.IMAGE_TYPES:
+            raise logo_externo.LogoError("El logo debe ser PNG, JPG, WEBP, SVG o ICO.")
+    except logo_externo.LogoError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail="La imagen no se pudo leer.") from exc
+    data = Marca(None, db).adopt_existing(project, company, logo_externo.data_url(raw, mime),
+                                          logo_externo.palette(raw, mime), source)
+    Expediente(None, db).set_status(project, "logo", "en_curso", "Se adoptó el logo actual; falta el manual de marca.")
+    return {**data, "identidad": Marca(None, db).identity(company, project)}
 
 
 @router.post("/{company_id}/marca/slogans")

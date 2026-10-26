@@ -264,16 +264,21 @@ def test_adan_does_not_repeat_its_previous_answer(client):
     assert "repite casi igual" in llm.calls[2][-1].content
 
 
-def test_a_work_table_brings_other_specialists_into_the_conversation(client):
+def test_one_speaker_per_turn_and_agreements_are_remembered(client):
     cid, headers = _setup(client, "mesa@example.com")
-    _use(client, ScriptLLM([{**TURN_1, "respuesta": "Tu cliente ideal queda definido; buen avance.", "habla": "cmo",
-                             "mesa": [{"habla": "cfo", "texto": "Y ese perfil gasta 30 a 50 millones por viaje: buena señal 😄", "emocion": "riendo"},
-                                      {"habla": "cmo", "texto": "repetido, no entra", "emocion": "feliz"}],
-                             "investigar": "", "reaccion": {"agente": "cmo", "emocion": "feliz", "frase": "¡Bien!"}}]))
+    turn = {**TURN_1, "respuesta": "Tu cliente ideal queda definido; buen avance.", "habla": "cmo",
+            "mesa": [{"habla": "cfo", "texto": "Esto ya no debe aparecer como mensaje aparte", "emocion": "riendo"}],
+            "acuerdos": [{"tipo": "descartado", "texto": "We Travel no interviene en la venta"},
+                         {"tipo": "dato", "texto": "El pago con Wompi ya funciona en producción"}],
+            "investigar": "", "reaccion": {"agente": "cmo", "emocion": "feliz", "frase": "¡Bien!"}}
+    llm = _use(client, ScriptLLM([turn, {**TURN_2, "acuerdos": []}]))
     client.post(f"/api/v1/nivel1/{cid}/chat", json={"message": "53 años, Barranquilla, viaja con su familia"}, headers=headers)
     msgs = client.get(f"/api/v1/nivel1/{cid}/status", headers=headers).json()["messages"]
-    last = [m["agent_name"] for m in msgs[-2:]]
-    assert last == ["Santiago · CMO", "Camila · CFO"] and msgs[-1]["metadata_json"]["mesa"] is True
+    assert msgs[-1]["agent_name"] == "Santiago · CMO" and msgs[-2]["role"] == "user"  # nadie más habla en el turno
+    client.post(f"/api/v1/nivel1/{cid}/chat", json={"message": "sigan"}, headers=headers)
+    system = llm.calls[-1][0].content
+    assert "LIBRO DE ACUERDOS" in system and "We Travel no interviene" in system and "Hernán Restrepo" in system
+    assert "PROPOSITIVO SIEMPRE" in system
 
 
 def test_an_existing_company_gets_a_review_and_pivot_not_a_restart(client):
@@ -282,3 +287,14 @@ def test_an_existing_company_gets_a_review_and_pivot_not_a_restart(client):
     llm = _use(client, ScriptLLM([TURN_1]))
     client.post(f"/api/v1/nivel1/{started['company_id']}/chat", json={"message": "Tenemos MVP y pocas ventas"}, headers=headers)
     assert "MODO REVISIÓN Y PIVOTE" in llm.calls[0][0].content
+
+
+def test_a_question_already_asked_is_not_asked_again(client):
+    cid, headers = _setup(client, "repetida@example.com")
+    ask = {**TURN_1, "respuesta": "Buen punto. ¿Cuál es la primera ruta que vas a vender?", "acuerdos": []}
+    fixed = {**TURN_1, "respuesta": "Asumo Bogotá–Cartagena como primera ruta. Te propongo el plan de medición: …", "acuerdos": []}
+    llm = _use(client, ScriptLLM([ask, ask, fixed]))
+    client.post(f"/api/v1/nivel1/{cid}/chat", json={"message": "Aura hace todo"}, headers=headers)
+    msg = client.post(f"/api/v1/nivel1/{cid}/chat", json={"message": "sigan"}, headers=headers).json()["message"]
+    assert msg["content"].startswith("Asumo Bogotá")
+    assert "ya preguntaste" in llm.calls[-1][-1].content

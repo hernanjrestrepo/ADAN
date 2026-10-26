@@ -64,6 +64,13 @@ export default function AppShell({ crumbs = [], status, toolbar, children, fixed
 
   return (
     <div className={`${fixedHeight ? 'min-h-screen lg:h-dvh lg:min-h-0' : 'min-h-screen'} flex flex-col`} style={companyId ? brandStyle(company) : undefined}>
+      {user?.revisando_desde && (
+        <div className="sticky top-0 z-50 flex flex-wrap items-center justify-center gap-3 bg-adan-warning px-4 py-2 text-sm font-semibold text-black" role="status">
+          👁️ Estás revisando la cuenta de {user.email} desde la consola (solo lectura).
+          <button type="button" onClick={async () => { await api.backToMyAccount().catch(() => undefined); window.location.assign('/consola') }}
+            className="rounded-full bg-black px-3 py-1 text-xs text-white hover:bg-black/80">Volver a mi cuenta</button>
+        </div>
+      )}
       <a href="#contenido" className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:rounded-lg focus:bg-adan-accent focus:px-4 focus:py-2 focus:text-white">
         Saltar al contenido
       </a>

@@ -171,6 +171,19 @@ async def transcribe_later(bind, llm: LLMAdapter, company_id: str, user_id: str,
         db.close()
 
 
+def schedule_work(background: BackgroundTasks, db: Session, llm: LLMAdapter, company_id: str, msg, nivel: int) -> None:
+    """Lanza en segundo plano el recorrido o la revisión de código que pidió el turno."""
+    work = (msg.metadata_json or {}).get("trabajando")
+    if not work:
+        return
+    from app.levels import herramientas  # aquí: herramientas importa este módulo
+
+    if work["tipo"] == "repositorio":
+        background.add_task(herramientas.review_later, db.get_bind(), llm, company_id, work["url"], work.get("objetivo", ""), nivel)
+    elif work["tipo"] == "recorrido":
+        background.add_task(herramientas.walk_later, db.get_bind(), llm, company_id, work["url"], work["objetivo"], nivel)
+
+
 async def research_later(bind, llm: LLMAdapter, company_id: str, conversation_id: str, query: str, user_id: str) -> None:
     """Termina la investigación anunciada en un turno, con su propia sesión de base de datos."""
     db = Session(bind=bind)
@@ -223,6 +236,7 @@ async def chat(
     if pending:
         # La respuesta sale ya; la búsqueda en internet sigue aparte y llega como otro mensaje
         background.add_task(research_later, db.get_bind(), llm, company_id, conv.id, pending["consulta"], user.id)
+    schedule_work(background, db, llm, company_id, msg, 1)
 
     return ChatResponse(
         message=MessageResponse.model_validate(msg),

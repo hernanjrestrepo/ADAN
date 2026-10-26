@@ -9,9 +9,16 @@ const AGENT_IDS = new Set(['ceo', 'cto', 'cfo', 'cmo', 'legal', 'producto', 'ope
 type Mood = 'feliz' | 'riendo' | 'preocupado' | 'estresado' | 'celebrando' | 'pensando' | 'hablando'
 const MOODS = new Set<Mood>(['feliz', 'riendo', 'preocupado', 'estresado', 'celebrando', 'pensando', 'hablando'])
 
+function plain(text: string) {
+  return text.replace(/```[\s\S]*?```/g, '').replace(/\[([^\]]+)\]\([^)]+\)/g, '$1').replace(/https?:\/\/\S+/g, '')
+    .replace(/[*_#>|`]/g, '').replace(/\s+/g, ' ').trim()
+}
+
+// Lo que cabe en la burbuja sobre la cabeza: la primera frase completa
 function snippet(text: string) {
-  const plain = text.replace(/```[\s\S]*?```/g, '').replace(/[*_#>|`]/g, '').replace(/\s+/g, ' ').trim()
-  return plain.length > 110 ? `${plain.slice(0, 107)}…` : plain
+  const p = plain(text)
+  const first = p.match(/^.{20,140}?[.!?](\s|$)/)?.[0]?.trim()
+  return first ?? (p.length > 140 ? `${p.slice(0, p.lastIndexOf(' ', 137))}…` : p)
 }
 
 export function reactTo(message: Message) {
@@ -24,9 +31,13 @@ export function reactTo(message: Message) {
     // Voz robótica y subtítulos: lo esencial de lo que dice, mientras la transcripción completa queda en el chat
     const inv = INVESTORS.find((i) => `inv-${i.id}` === speaker)
     const agent = AGENT_BY_ID[speaker as AgentId]
-    babble(speaker, snippet(message.content))
-    u.caption(message.agent_name ?? agent?.name ?? inv?.name ?? 'ADÁN', snippet(message.content), inv?.color ?? agent?.color ?? '#60a5fa', 6500)
-    if (message.metadata_json?.escena === 'oficina' && AGENT_IDS.has(speaker)) u.select(speaker as never)
+    // Subtítulos completos (frase por frase) y voz; quien habla pasa al frente mientras dura
+    const said = plain(message.content).slice(0, 900)
+    babble(speaker, said.slice(0, 220))
+    u.caption(message.agent_name ?? agent?.name ?? inv?.name ?? 'ADÁN', said, inv?.color ?? agent?.color ?? '#60a5fa')
+    if (message.metadata_json?.escena === 'oficina' && AGENT_IDS.has(speaker)) {
+      u.present(speaker, Math.min(26000, Math.max(7000, said.length * 60)))
+    }
   }
   const r = message.metadata_json?.reaccion
   const chart = lastChart(message.content)

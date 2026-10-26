@@ -63,9 +63,9 @@ export default function LevelPage() {
     setRoom(fresh)
     const at = fresh.messages.findIndex((m) => m.id === message.id)
     fresh.messages.slice(at + 1).filter((m) => m.role !== 'user').forEach((m, i) => window.setTimeout(() => reactTo(m), 2600 * (i + 1)))
-    if (message.metadata_json?.investigando) {
+    if (message.metadata_json?.investigando || message.metadata_json?.trabajando) {
       setResearching(true)
-      void waitForResearch(companyId, message.id, 150_000, nivel).then((msgs) => {
+      void waitForResearch(companyId, message.id, 300_000, nivel).then((msgs) => {
         setResearching(false)
         const found = msgs?.[msgs.length - 1]
         if (found) reactTo(found)
@@ -81,6 +81,8 @@ export default function LevelPage() {
     try {
       const data = await api.chatLevel(nivel, companyId, text)
       await afterReply(data.message)
+      // El fundador dijo que sí al cierre que propuso ADÁN: subimos al siguiente piso
+      if (data.closed?.next) window.setTimeout(() => navigate(`/nivel/${data.closed!.next}/${companyId}`), 3500)
     } catch (err) {
       setError(errorMessage(err))
       await load()
@@ -99,6 +101,20 @@ export default function LevelPage() {
       setError(errorMessage(err))
     } finally {
       setUploading(false)
+    }
+  }
+
+  // Con todos los temas cubiertos no hace falta motivo: se cierra directo y se sube al siguiente piso
+  const closeNow = async () => {
+    setClosingBusy(true)
+    try {
+      const res = await api.closeLevel(nivel, companyId, '')
+      await load()
+      if (res.next) window.setTimeout(() => navigate(`/nivel/${res.next}/${companyId}`), 2500)
+    } catch (err) {
+      setError(errorMessage(err))
+    } finally {
+      setClosingBusy(false)
     }
   }
 
@@ -174,7 +190,7 @@ export default function LevelPage() {
           <div className="flex-1 min-h-0">
             <ChatPanel companyId={companyId} level={nivel} messages={room.messages} sending={sending} researching={researching}
               discovery={room.discovery ?? undefined} onSend={send} onReload={load} uploading={uploading} onUpload={upload}
-              onClose={() => setClosing(true)} onError={setError}
+              onClose={() => (complete ? void closeNow() : setClosing(true))} onError={setError}
               world={<Suspense fallback={<div className="h-full rounded-2xl bg-adan-surface animate-pulse" />}><EmbeddedWorld level={nivel} companyId={companyId} /></Suspense>} />
           </div>
         </div>

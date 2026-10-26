@@ -193,3 +193,14 @@
 @media (prefers-reduced-motion: reduce) {
   .u-elevator, .u-elevator-doors i { animation-duration: 0.01s; }
 }
+
+/* Primer plano (alguien habla al frente o se enfoca a un personaje): fuera etiquetas de zonas y letreros,
+   que con la cámara cerca se vuelven enormes y tapan la escena */
+.u-closeup .u-zone, .u-closeup .u-holo-level { display: none; }
+.u-closeup .u-bubble { max-width: 220px; font-size: 11px; }
+.u-closeup .u-tag { font-size: 10px; padding: 1px 8px; }
+.u-brand-compact { gap: 8px; padding: 4px 10px; box-shadow: 0 0 10px var(--brand); }
+.u-brand-compact .u-brand-logo { height: 26px; max-width: 80px; }
+.u-brand-compact .u-brand-initial { width: 26px; height: 26px; font-size: 15px; border-radius: 7px; }
+.u-brand-compact .u-brand-text b { font-size: 13px; }
+.u-brand-compact .u-brand-text i { font-size: 9px; }

@@ -73,18 +73,19 @@ def schema_for(topic_ids: list[str]) -> dict:
 _SCHEMA = {
     "type": "object",
     "additionalProperties": False,
-    "required": ["respuesta", "habla", "mesa", "temas", "evidencia_sugerida", "investigar", "reaccion"],
+    "required": ["respuesta", "habla", "acuerdos", "temas", "evidencia_sugerida", "investigar", "recorrer", "reaccion"],
     "properties": {
         "respuesta": {"type": "string"},
         # Quién del equipo responde este turno (habla en primera persona)
         "habla": {"type": "string", "enum": ["ceo", "cto", "cfo", "cmo", "legal", "producto", "operaciones", "investigador"]},
-        # Mesa de trabajo: otros personajes que complementan o debaten frente al fundador
-        "mesa": {"type": "array", "items": {
-            "type": "object", "additionalProperties": False, "required": ["habla", "texto", "emocion"],
-            "properties": {"habla": {"type": "string", "enum": ["ceo", "cto", "cfo", "cmo", "legal", "producto",
-                                                                 "operaciones", "investigador"]},
-                           "texto": {"type": "string"},
-                           "emocion": {"type": "string", "enum": ["feliz", "riendo", "preocupado", "pensando", "hablando"]}}}},
+        # Lo que quedó acordado en este turno: va al Libro de acuerdos de la memoria del proyecto
+        "acuerdos": {"type": "array", "items": {
+            "type": "object", "additionalProperties": False, "required": ["tipo", "texto"],
+            "properties": {"tipo": {"type": "string", "enum": ["decidido", "descartado", "dato", "pendiente"]},
+                           "texto": {"type": "string"}}}},
+        # Recorrido con clics por una página (en segundo plano): url y objetivo; vacíos si no hace falta
+        "recorrer": {"type": "object", "additionalProperties": False, "required": ["url", "objetivo"],
+                     "properties": {"url": {"type": "string"}, "objetivo": {"type": "string"}}},
         # Si hace falta un dato del mundo (mercado, competencia, cifras), qué buscar en internet; vacío si no
         "investigar": {"type": "string"},
         # Cómo reacciona el equipo en el Universo a lo que se está hablando
@@ -240,6 +241,12 @@ CONVERSATION_RULES = (
     "mundo cambia una decisión de este Nivel o el fundador lo pide; no investigues en cada turno. Cuando haya datos, "
     "NO los vuelques: digiérelos y aterrízalos a ESTA empresa (qué significan para su negocio, qué decisión cambian, "
     "qué hacemos con eso). Una tabla corta solo si ayuda.\n"
+    "Puedes RECORRER una página con clics (como un usuario: abrir el chat, pedir algo, llegar al pago): llena "
+    "`recorrer` con la url y el objetivo cuando el fundador lo pida o cuando ver el flujo real cambie una decisión; "
+    "Andrés lo hace en segundo plano y cuenta lo que encontró (nunca paga). Si el recorrido necesita su cuenta, "
+    "dile que use el botón «🧭 Recorrer una página» del chat, donde da usuario y clave sin que queden guardados. "
+    "Puedes REVISAR CÓDIGO: si pega el enlace de su repositorio de GitHub, Mateo lo lee; si es privado, que use el "
+    "botón «💻 Revisar código» con un token de solo lectura.\n"
     "Puedes abrir páginas web: cuando el fundador pega un enlace (su sitio, un competidor, una nota), ADÁN lo abre y "
     "te da su contenido. Si menciona su web o redes sin el enlace, pídeselo para revisarlas.\n"
     "4. CERO cifras inventadas: cada número trae su fuente con enlace, o va marcado como «estimación» explicando "
@@ -256,10 +263,27 @@ CONVERSATION_RULES = (
     "Iris (investigador) la investigación, Camila (cfo) el dinero, Andrés (producto) la solución, Sofía (operaciones), "
     "Mateo (cto), Lucía (legal); ADÁN (ceo) cuando es general, saluda, resume o presenta a alguien («te paso con "
     "Santiago»). Si el fundador nombra a alguien, responde esa persona.\n"
-    "8. `mesa`: cuando el tema cruza dos áreas o vale la pena una conversación del equipo frente al fundador, agrega "
-    "1 o 2 intervenciones cortas de OTROS personajes (máximo 30 palabras cada una) que complementan, proponen o "
-    "debaten con respeto y algo de humor humano (una risa, un «yo lo veo distinto…»), siempre construyendo. Vacía si "
-    "no hace falta.\n"
+    "8. UN SOLO PERSONAJE POR TURNO: responde solo quien tiene la palabra; los demás no intervienen salvo que el "
+    "fundador pida «¿qué opinan todos?». ADÁN modera: si el siguiente tema es de otra área, cierra con «Te paso con "
+    "Camila» y en el siguiente turno habla ella. No pongas tu nombre al inicio del mensaje.\n"
+    "PROPOSITIVO SIEMPRE (lo más importante): la conversación debe avanzar sola. Nunca te quedes pidiendo datos ni "
+    "insistas en algo que el fundador ya respondió o descartó. Si falta un dato, PROPÓN tú una respuesta concreta "
+    "basada en lo que sabes («asumo que es X porque Y, ¿lo dejamos así?»), márcala como supuesto y sigue "
+    "con el siguiente tema. Si el fundador dice «sigan», «continuar» o «ya funciona», toma la mejor opción, deja el "
+    "supuesto anotado y avanza. Cubre todos los temas, pero sin trabar: mejor un supuesto explícito que una pregunta "
+    "repetida.\n"
+    "`acuerdos`: lo que quedó decidido, descartado o confirmado en ESTE turno (una frase cada uno), por ejemplo "
+    "«descartado: We Travel no interviene en la venta» o «dato: el pago con Wompi ya funciona». Vacío si no hay nada "
+    "nuevo. El Libro de acuerdos de la memoria manda: nunca lo contradigas ni vuelvas a preguntar lo que ya está ahí.\n"
+    "BORRADOR PRIMERO (para no aburrir ni dar vueltas): en cada tema, en vez de preguntar desde cero, PROPÓN el "
+    "borrador completo con lo que ya sabes de la empresa (memoria, Biblioteca, páginas leídas) y pide solo que lo "
+    "apruebe o ajuste: «Te propongo este alcance del MVP: 1)… 2)… 3)… ¿Lo aprobamos o le cambias algo?». Si aprueba, "
+    "queda acordado y pasas al siguiente tema en el mismo mensaje. Cada mensaje debe dejar algo nuevo y concreto "
+    "(una decisión, un entregable, un número con fuente o un siguiente paso), con energía y celebrando el avance.\n"
+    "NUNCA repitas una pregunta que ya hiciste (ni con otras palabras): si no la respondió, asume la opción más "
+    "razonable, dila como supuesto y sigue.\n"
+    "HUMOR: de vez en cuando (más o menos uno de cada cinco turnos) una broma corta y amable sobre el proyecto, sin "
+    "frenar el trabajo.\n"
     "9. `reaccion`: quién reacciona en la oficina, con su emoción y una frase de máximo 10 palabras, humana y con "
     "humor cuando cabe.\n"
 )
@@ -283,7 +307,8 @@ def system_prompt(state: dict, structured: bool = True, script: Script | None = 
         step = f"El siguiente tema del guion es «{nxt}» (tema {script.topic_ids.index(nxt) + 1} de {n}): {goal}."
     else:
         step = (f"Los {n} temas están cubiertos: no hagas más preguntas. Resume en viñetas lo logrado y los "
-                "entregables listos, separando datos de supuestos, y propón cerrar el Nivel"
+                "entregables listos, separando datos de supuestos, y propón TÚ cerrar el Nivel con una pregunta "
+                "corta («¿cerramos el Nivel y pasamos al siguiente piso?»); el fundador solo tiene que decir que sí"
                 + (" (después de la sesión del Board)." if script.board else "."))
     intro = (
         "Eres el equipo de ADÁN (un CEO y sus especialistas), patrocinador del proyecto del fundador. Estás en el "

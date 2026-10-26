@@ -127,6 +127,25 @@ export default function BibliotecaPage() {
             </div>
           </Card>
 
+          {lib.memoria && lib.memoria.length > 0 && (
+            <Card>
+              <h2 className="text-lg font-bold">🧠 Lo que ADÁN recuerda de tu proyecto</h2>
+              <p className="text-sm text-adan-muted">Los acuerdos de las conversaciones: todo el equipo los conoce y no los vuelve a preguntar.</p>
+              <ul className="mt-3 grid gap-2 sm:grid-cols-2">
+                {lib.memoria.slice(0, 40).map((a) => (
+                  <li key={`${a.tipo}-${a.texto}`} className="rounded-lg border border-adan-border px-3 py-2 text-sm">
+                    <span className={`mr-2 rounded-full px-2 py-0.5 text-[11px] font-semibold ${
+                      a.tipo === 'decidido' ? 'bg-adan-success/15 text-adan-success' : a.tipo === 'descartado' ? 'bg-adan-danger/15 text-adan-danger'
+                        : a.tipo === 'dato' ? 'bg-sky-500/15 text-sky-500' : 'bg-adan-warning/15 text-adan-warning'}`}>
+                      {a.tipo === 'decidido' ? 'Decidido' : a.tipo === 'descartado' ? 'Descartado' : a.tipo === 'dato' ? 'Dato' : 'Pendiente'}
+                    </span>
+                    {a.texto}{a.nivel ? <span className="text-xs text-adan-muted"> · Nivel {a.nivel}</span> : null}
+                  </li>
+                ))}
+              </ul>
+            </Card>
+          )}
+
           <Card>
             <div className="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
               <h2 className="text-lg font-bold">Documentos ({lib.documentos.length})</h2>

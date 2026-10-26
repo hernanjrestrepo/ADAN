@@ -1,6 +1,7 @@
-import { lazy, Suspense, type ReactNode } from 'react'
-import { Navigate, Route, Routes } from 'react-router'
+import { lazy, Suspense, useEffect, type ReactNode } from 'react'
+import { Navigate, Route, Routes, useLocation } from 'react-router'
 import { useAuth } from './auth/context'
+import { api } from './lib/api'
 import DashboardPage from './pages/DashboardPage'
 import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
@@ -37,8 +38,17 @@ function PublicOnly({ children }: { children: ReactNode }) {
   return user ? <Navigate to={safe} replace /> : children
 }
 
+// Cada página que se abre cuenta como visita para el mapa de la consola (sin datos personales)
+function useVisits() {
+  const { pathname } = useLocation()
+  useEffect(() => {
+    void api.trackVisit(pathname, document.referrer).catch(() => undefined)
+  }, [pathname])
+}
+
 export default function App() {
   const { user } = useAuth()
+  useVisits()
   return (
     <Routes>
       <Route path="/login" element={<PublicOnly><LoginPage /></PublicOnly>} />

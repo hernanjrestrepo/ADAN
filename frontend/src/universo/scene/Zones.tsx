@@ -8,7 +8,7 @@ import { BOARD_CENTER, BOARD_RADIUS, TABLE_RADIUS, seatFacing, seatPosition } fr
 import { Arena, Cafeteria } from './Lounge'
 
 function useActive(zone: ZoneId): boolean {
-  return useUniverso((s) => levelOf(s.level).zones.includes(zone))
+  return useUniverso((s) => levelOf(s.floor ?? s.level).zones.includes(zone))
 }
 
 // Disco de piso con anillo de neón y etiqueta: brilla más cuando la zona trabaja en el Nivel actual
