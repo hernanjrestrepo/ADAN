@@ -22,3 +22,4 @@ python-pptx==1.0.2
 faster-whisper==1.1.1
 requests==2.33.0  # faster-whisper la necesita para descargar el modelo
 playwright==1.58.0
+pillow==11.3.0

@@ -61,6 +61,14 @@ interface State {
   cam: { n: number; op: 'reset' | 'in' | 'out' }
   // Subtítulo de quien habla, debajo de la oficina
   subtitle: { who: string; text: string; color: string } | null
+  // Quien habla pasa al frente de la oficina hasta `until`
+  stage: { agent: string; until: number } | null
+  // Sustos (clic derecho): el personaje brinca y tiembla hasta ese momento
+  jolts: Partial<Record<string, number>>
+  // Piso que se está viendo en la Sala (null en el Universo, que usa `level`)
+  floor: number | null
+  // Bromas del equipo sobre el proyecto (las genera ADÁN una vez al día)
+  jokes: { agente: string; texto: string }[]
   start: (archetypeId: string, name: string, mode: 'crear' | 'reinventar') => void
   reset: () => void
   goToLevel: (n: number) => void
@@ -84,10 +92,46 @@ interface State {
   log: (text: string, color?: string) => void
   showHolo: (chart: ChartSpec | null) => void
   camera: (op: 'reset' | 'in' | 'out') => void
-  caption: (who: string, text: string, color: string, ms: number) => void
+  caption: (who: string, text: string, color: string, ms?: number) => void
+  present: (agent: string, ms: number) => void
+  jolt: (agent: string, ms: number) => void
+  setFloor: (floor: number | null) => void
+  setJokes: (jokes: { agente: string; texto: string }[]) => void
+}
+
+// Partes de un subtítulo: frases completas de hasta ~150 caracteres, sin cortar palabras
+export function subtitleParts(text: string): string[] {
+  const sentences = text.match(/[^.!?¿¡]+[.!?]+["»)]*|[^.!?]+$/g) ?? [text]
+  const parts: string[] = []
+  let cur = ''
+  for (const raw of sentences) {
+    const s = raw.trim()
+    if (!s) continue
+    if ((cur + ' ' + s).trim().length <= 150) {
+      cur = (cur + ' ' + s).trim()
+      continue
+    }
+    if (cur) parts.push(cur)
+    if (s.length <= 150) {
+      cur = s
+      continue
+    }
+    // Frase muy larga: se parte por palabras
+    cur = ''
+    for (const w of s.split(' ')) {
+      if ((cur + ' ' + w).trim().length > 150) {
+        parts.push(cur)
+        cur = w
+      } else cur = (cur + ' ' + w).trim()
+    }
+  }
+  if (cur) parts.push(cur)
+  return parts.slice(0, 6)
 }
 
 const STORAGE_KEY = 'adan-universo-v2'
+// El subtítulo vigente: uno nuevo reemplaza al anterior aunque no haya terminado
+let captionToken: object = {}
 type Saved = Pick<State, 'started' | 'archetypeId' | 'companyName' | 'mode' | 'level' | 'doneTasks' | 'closedLevels' | 'revealed' | 'arenaPassed'>
 
 function load(): Partial<Saved> {
@@ -229,6 +273,10 @@ export const useUniverso = create<State>((set, get) => ({
   holo: null,
   cam: { n: 0, op: 'reset' },
   subtitle: null,
+  stage: null,
+  jolts: {},
+  floor: null,
+  jokes: [],
 
   start: (archetypeId, name, mode) => {
     const a = archetypeOf(archetypeId)
@@ -382,11 +430,27 @@ export const useUniverso = create<State>((set, get) => ({
   openReport: (level) => set({ report: level }),
   setPanel: (panel) => set({ panel }),
   showHolo: (chart) => set({ holo: chart }),
-  caption: (who, text, color, ms) => {
-    const subtitle = { who, text, color }
-    set({ subtitle })
-    setTimeout(() => { if (get().subtitle === subtitle) set({ subtitle: null }) }, ms)
+  caption: (who, text, color) => {
+    // Subtítulos completos: frase por frase, cada parte el tiempo que toma leerla
+    const parts = subtitleParts(text)
+    let at = 0
+    const token = {}
+    captionToken = token
+    parts.forEach((part, i) => {
+      const subtitle = { who, text: part, color }
+      setTimeout(() => { if (captionToken === token) set({ subtitle }) }, at)
+      at += Math.max(2600, part.length * 60)
+      if (i === parts.length - 1) setTimeout(() => { if (captionToken === token && get().subtitle === subtitle) set({ subtitle: null }) }, at)
+    })
   },
+  present: (agent, ms) => {
+    const stage = { agent, until: Date.now() + ms }
+    set({ stage })
+    setTimeout(() => { if (get().stage === stage) set({ stage: null }) }, ms + 50)
+  },
+  jolt: (agent, ms) => set({ jolts: { ...get().jolts, [agent]: Date.now() + ms } }),
+  setFloor: (floor) => set({ floor }),
+  setJokes: (jokes) => set({ jokes }),
   camera: (op) => set({ cam: { n: get().cam.n + 1, op }, ...(op === 'reset' ? { selected: null, focusZone: null } : {}) }),
   log: (text, color = '#94a3b8') => {
     feedId += 1

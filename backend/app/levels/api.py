@@ -2,6 +2,7 @@
 y los indicadores del Nivel. ADÁN abre cada Nivel con la agenda y lo cierra con el fundador."""
 from __future__ import annotations
 
+import re
 from datetime import datetime, timezone
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
@@ -10,7 +11,7 @@ from sqlalchemy.orm import Session
 
 from app.ai.base import LLMAdapter
 from app.ai.usage import usage_scope
-from app.api.v1.nivel1 import get_llm, research_later
+from app.api.v1.nivel1 import get_llm, research_later, schedule_work
 from app.core.auth import get_current_user
 from app.core.authz import get_owned_company
 from app.core.database import get_db
@@ -94,12 +95,24 @@ async def chat(n: int, company_id: str, body: ChatBody, background: BackgroundTa
         raise HTTPException(status_code=409, detail=f"Primero cierra el Nivel {n - 1}.")
     service = Nivel1Service(llm, db)
     conv = timeline.conversation(db, project, n)
+    text = body.message.strip()
+    last = db.query(Message).filter(Message.conversation_id == conv.id, Message.role == "assistant") \
+        .order_by(Message.created_at.desc()).first()
+    if (last is not None and (last.metadata_json or {}).get("propone_cierre") and level.status == NivelStatus.ACTIVE
+            and _YES.match(text) and len(text) < 60):
+        # ADÁN propuso cerrar y el fundador dijo que sí: se cierra aquí mismo, sin botones ni formularios
+        timeline.post(db, project, text, role="user", nivel=n)
+        result, closing = _close(db, project, level, n, "")
+        return {"message": {"id": closing.id, "role": closing.role, "agent_name": closing.agent_name, "content": closing.content,
+                            "created_at": closing.created_at.isoformat(), "metadata_json": closing.metadata_json},
+                "conversation_id": conv.id, "closed": result}
     with usage_scope(db, company_id, level=n):
-        msg, conv = await service.chat(project, level, body.message.strip(), conv)
+        msg, conv = await service.chat(project, level, text, conv)
     auto_register_evidence(db, project, user, msg)
     pending = (msg.metadata_json or {}).get("investigando")
     if pending:
         background.add_task(research_later, db.get_bind(), llm, company_id, conv.id, pending["consulta"], user.id)
+    schedule_work(background, db, llm, company_id, msg, n)
     return {"message": {"id": msg.id, "role": msg.role, "agent_name": msg.agent_name, "content": msg.content,
                         "created_at": msg.created_at.isoformat(), "metadata_json": msg.metadata_json},
             "conversation_id": conv.id}
@@ -110,6 +123,11 @@ def close(n: int, company_id: str, body: CloseBody, db: Session = Depends(get_db
     """El fundador aprueba el cierre del Nivel. Si faltan temas, puede cerrarlo bajo su responsabilidad con un motivo:
     queda en el acta y baja la calificación del Nivel."""
     project, level = _level(db, company_id, n, user)
+    result, _ = _close(db, project, level, n, body.reason.strip())
+    return result
+
+
+def _close(db: Session, project: Project, level: Level, n: int, reason: str) -> tuple[dict, Message]:
     if level.status == NivelStatus.COMPLETED:
         raise HTTPException(status_code=409, detail="Este Nivel ya está cerrado.")
     if level.status == NivelStatus.BLOCKED:
@@ -117,7 +135,6 @@ def close(n: int, company_id: str, body: CloseBody, db: Session = Depends(get_db
     conv = timeline.conversation(db, project, n)
     progress = discovery_progress(db, conv, project)
     missing = [t["label"] for t in progress["topics"] if t["estado"] not in ("respondido", "sin_dato")]
-    reason = body.reason.strip()
     if missing and len(reason) < 10:
         raise HTTPException(status_code=409, detail="Faltan temas por cubrir: " + "; ".join(missing)
                             + ". Puedes cerrarlo bajo tu responsabilidad explicando por qué.")
@@ -133,9 +150,17 @@ def close(n: int, company_id: str, body: CloseBody, db: Session = Depends(get_db
         nxt.status = NivelStatus.ACTIVE
     if reason:
         timeline.post(db, project, reason, role="user", nivel=n)
-    timeline.post(db, project, (f"🏁 **Nivel {n} cerrado.** Entregables: {'; '.join(script.deliverables)}."
-                                + (f" Quedó pendiente: {'; '.join(missing)} (afecta la calificación)." if missing else " ¡Buen trabajo!")
-                                + (f" Seguimos con el Nivel {n + 1}." if nxt is not None else " Completaste los 7 Niveles. 🎉")),
-                  agent="ceo", nivel=n, cierre=True)
+    msg = timeline.post(db, project, (f"🏁 **Nivel {n} cerrado.** Entregables: {'; '.join(script.deliverables)}."
+                                      + (f" Quedó pendiente: {'; '.join(missing)} (afecta la calificación)." if missing else " ¡Buen trabajo!")
+                                      + (f" Seguimos con el Nivel {n + 1}: te espero en el piso {n + 1}." if nxt is not None
+                                         else " Completaste los 7 Niveles. 🎉")),
+                        agent="ceo", nivel=n, cierre=True, siguiente=n + 1 if nxt is not None else None,
+                        reaccion={"agente": "ceo", "emocion": "celebrando", "frase": "¡Nivel cerrado!"})
     db.commit()
-    return {"closed": True, "pending": missing, "next": n + 1 if nxt is not None else None}
+    db.refresh(msg)
+    return {"closed": True, "pending": missing, "next": n + 1 if nxt is not None else None}, msg
+
+
+# «Sí», «dale», «cerremos»…: la respuesta del fundador cuando ADÁN propone cerrar el Nivel
+_YES = re.compile(r"^\s*(s[ií]|sip|dale|de una|listo|ok(ay)?|claro|hag[aá]moslo|cerr(emos|alo|amos)|adelante|perfecto|"
+                  r"va|vamos|aprobado|confirmo)\b", re.I)

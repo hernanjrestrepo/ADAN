@@ -6,6 +6,8 @@ export interface User {
   name: string
   role: string
   is_superadmin?: boolean
+  // Correo del superadministrador que está revisando esta cuenta (solo lectura)
+  revisando_desde?: string | null
 }
 
 export interface TokenResponse {
@@ -69,6 +71,14 @@ export interface Message {
     reaccion?: { agente: string; emocion: string; frase: string } | null
     investigado?: { consulta: string; verificado: boolean } | null
     investigando?: { consulta: string } | null
+    // ADÁN propone cerrar el Nivel (el fundador confirma con un clic o diciendo que sí)
+    propone_cierre?: boolean
+    // Logo encontrado en la web de la empresa, para adoptarlo con un clic
+    logo_sugerido?: { url: string } | null
+    // Trabajo en segundo plano que llega como mensaje aparte
+    trabajando?: { tipo: 'recorrido' | 'repositorio'; url: string; objetivo: string } | null
+    recorrido?: boolean
+    revision_codigo?: boolean
     agente?: string
     escena?: string
     voto?: string
@@ -1088,6 +1098,7 @@ export interface LibraryDoc {
 }
 
 export interface Library {
+  memoria?: { tipo: 'decidido' | 'descartado' | 'dato' | 'pendiente'; texto: string; nivel?: number; fecha?: string }[]
   marca: {
     nombre: string
     slogan: string
@@ -1101,4 +1112,18 @@ export interface Library {
   }
   secciones: Record<LibraryDoc['seccion'], string>
   documentos: LibraryDoc[]
+}
+
+export interface AdminVisits {
+  dias: number
+  visitas: number
+  visitantes: number
+  ahora: number
+  moviles: number
+  con_cuenta: number
+  paises: { pais: string; visitas: number; visitantes: number }[]
+  por_dia: { dia: string; visitas: number; visitantes: number }[]
+  paginas: { ruta: string; visitas: number }[]
+  referentes: { origen: string; visitas: number }[]
+  directas: number
 }

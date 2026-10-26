@@ -49,16 +49,26 @@ def verify_password(plain: str, hashed: str) -> bool:
         return False
 
 
-def create_access_token(user: User) -> str:
+def create_access_token(user: User, impersonator: User | None = None) -> str:
     now = datetime.now(timezone.utc)
     payload = {
         "sub": user.id,
         "email": user.email,
         "ver": user.token_version or 0,
         "iat": now,
-        "exp": now + timedelta(minutes=settings.JWT_EXPIRATION_MINUTES),
+        "exp": now + timedelta(minutes=settings.JWT_EXPIRATION_MINUTES if impersonator is None else 60),
     }
+    if impersonator is not None:
+        # Un superadministrador revisando esta cuenta desde la consola: solo lectura y con su firma
+        payload["imp"] = impersonator.id
+        payload["imp_email"] = impersonator.email
     return jwt.encode(payload, settings.JWT_SECRET, algorithm=settings.JWT_ALGORITHM)
+
+
+# Mientras se revisa una cuenta, la sesión propia del superadministrador espera en esta cookie
+ADMIN_COOKIE = "adan_admin"
+# Lo único que se puede hacer con una sesión de revisión además de mirar: volver a la cuenta propia
+IMPERSONATION_WRITES = ("/api/v1/auth/volver", "/api/v1/auth/logout", "/api/v1/visitas")
 
 
 def set_session_cookie(response: Response, token: str) -> None:
@@ -111,4 +121,9 @@ def get_current_user(
         raise HTTPException(status_code=401, detail="User not found")
     if payload.get("ver", 0) != (user.token_version or 0):
         raise HTTPException(status_code=401, detail="La sesión fue cerrada")
+    if payload.get("imp"):
+        request.state.impersonator = payload.get("imp_email") or payload["imp"]
+        if request.method not in SAFE_METHODS and request.url.path not in IMPERSONATION_WRITES:
+            raise HTTPException(status_code=403, detail="Estás revisando esta cuenta desde la consola: es solo lectura. "
+                                                        "Vuelve a tu cuenta para hacer cambios.")
     return user

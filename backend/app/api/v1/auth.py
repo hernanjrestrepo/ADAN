@@ -3,9 +3,10 @@ from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from sqlalchemy.orm import Session
 
 from app.core.auth import (
-    clear_session_cookie, create_access_token, get_current_user, hash_password,
-    set_session_cookie, verify_password,
+    ADMIN_COOKIE, clear_session_cookie, create_access_token, decode_token, get_current_user,
+    hash_password, set_session_cookie, verify_password,
 )
+from app.core.authz import is_superadmin
 from app.core.config import settings
 from app.core.database import get_db
 from app.core.ratelimit import client_ip, limiter, too_many
@@ -75,8 +76,12 @@ def login(body: UserLogin, request: Request, response: Response, db: Session = D
 
 
 @router.post("/logout", status_code=204)
-def logout(response: Response, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+def logout(request: Request, response: Response, current_user: User = Depends(get_current_user),
+           db: Session = Depends(get_db)):
     """Cierra la sesión en todos los dispositivos: revoca los tokens emitidos hasta ahora."""
+    if getattr(request.state, "impersonator", None):
+        # Revisando una cuenta ajena: «salir» es volver a la propia, sin cerrarle la sesión a la persona
+        return back(request, response, db)
     current_user.token_version = (current_user.token_version or 0) + 1
     db.commit()
     clear_session_cookie(response)
@@ -85,5 +90,24 @@ def logout(response: Response, current_user: User = Depends(get_current_user), d
 
 
 @router.get("/me", response_model=UserResponse)
-def me(current_user: User = Depends(get_current_user)):
-    return UserResponse.model_validate(current_user)
+def me(request: Request, current_user: User = Depends(get_current_user)):
+    data = UserResponse.model_validate(current_user)
+    data.revisando_desde = getattr(request.state, "impersonator", None)
+    return data
+
+
+@router.post("/volver", status_code=204)
+def back(request: Request, response: Response, db: Session = Depends(get_db)):
+    """Termina la revisión de una cuenta desde la consola y devuelve al superadministrador a la suya."""
+    token = request.cookies.get(ADMIN_COOKIE)
+    if not token:
+        raise HTTPException(status_code=409, detail="No estás revisando ninguna cuenta.")
+    payload = decode_token(token)
+    admin = db.get(User, payload.get("sub"))
+    if admin is None or not is_superadmin(admin) or payload.get("ver", 0) != (admin.token_version or 0):
+        response.delete_cookie(ADMIN_COOKIE, path="/")
+        raise HTTPException(status_code=401, detail="Tu sesión de consola venció: vuelve a entrar.")
+    set_session_cookie(response, token)
+    response.delete_cookie(ADMIN_COOKIE, path="/", httponly=True, samesite="lax", secure=settings.SESSION_COOKIE_SECURE)
+    response.status_code = 204
+    return response

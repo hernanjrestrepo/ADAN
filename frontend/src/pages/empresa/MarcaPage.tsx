@@ -58,6 +58,21 @@ export default function MarcaPage() {
   const [busy, setBusy] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [company, setCompany] = useState('Empresa')
+  const [logoUrl, setLogoUrl] = useState('')
+
+  // La empresa ya tiene logo: se adopta subiéndolo o desde la dirección de la imagen en su web
+  const adoptOwn = (logo: { url?: string; imagen?: string }) => run('own', async () => {
+    const data = await api.adoptExistingLogo(companyId, logo)
+    window.dispatchEvent(new Event('adan-identidad'))
+    return data
+  })
+  const uploadOwn = (file: File | undefined) => {
+    if (!file) return
+    if (file.size > 600_000) { setError('La imagen del logo es muy pesada (máximo 600 KB).'); return }
+    const reader = new FileReader()
+    reader.onload = () => adoptOwn({ imagen: String(reader.result) })
+    reader.readAsDataURL(file)
+  }
 
   useEffect(() => {
     let cancelled = false
@@ -138,6 +153,22 @@ export default function MarcaPage() {
           <Card>
             <h2 className="text-xl font-bold">2. Logo</h2>
             <p className="text-sm text-adan-muted mt-1">El director de arte propone 4 conceptos distintos (ícono, monograma, emblema y solo texto) con psicología del color y contraste para leer. Elige uno: queda como identidad de tu empresa en ADÁN y en las oficinas.</p>
+            <div className="mt-3 rounded-xl border border-adan-border bg-adan-bg p-3" data-testid="logo-propio">
+              <p className="text-sm font-semibold">¿Tu empresa ya tiene logo?</p>
+              <p className="text-xs text-adan-muted">Súbelo o pega la dirección de la imagen en tu web: lo adopto tal cual y saco tu paleta de colores.</p>
+              {brand.logo_elegido?.id === 'actual' && <p className="mt-1 text-xs text-adan-success">✓ Estás usando el logo actual de tu empresa.</p>}
+              <div className="mt-2 flex flex-col gap-2 sm:flex-row">
+                <label className="inline-flex cursor-pointer items-center justify-center rounded-lg border border-adan-border px-3 py-1.5 text-sm hover:border-adan-accent">
+                  📤 Ya tengo logo: subirlo
+                  <input type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" className="hidden"
+                    onChange={(e) => { uploadOwn(e.target.files?.[0]); e.target.value = '' }} />
+                </label>
+                <input value={logoUrl} onChange={(e) => setLogoUrl(e.target.value)} placeholder="https://tuweb.com/logo.png" aria-label="Dirección del logo"
+                  className="flex-1 rounded-lg border border-adan-border bg-adan-surface px-3 py-1.5 text-sm" />
+                <Button size="sm" variant="secondary" disabled={!/^https?:\/\//.test(logoUrl) || Boolean(busy)} loading={busy === 'own'}
+                  onClick={() => adoptOwn({ url: logoUrl.trim() })}>Usar este</Button>
+              </div>
+            </div>
             <Button className="mt-3" onClick={() => run('logos', () => api.brandLogos(companyId))} loading={busy === 'logos'}>
               {brand.logos?.length ? 'Proponer otros logos' : `Diseñar logos para «${name}»`}
             </Button>

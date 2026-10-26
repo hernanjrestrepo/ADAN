@@ -26,8 +26,8 @@ function Subtitle() {
   const sub = useUniverso((s) => s.subtitle)
   if (!sub) return null
   return (
-    <div className="pointer-events-none absolute inset-x-0 bottom-16 flex justify-center px-6" aria-live="polite">
-      <p className="max-w-[90%] rounded-xl bg-black/75 px-4 py-2 text-center text-sm text-white shadow-lg">
+    <div className="pointer-events-none absolute inset-x-0 bottom-14 z-10 flex justify-center px-3" aria-live="polite">
+      <p className="max-w-[min(94%,46rem)] whitespace-normal break-words rounded-xl bg-black/80 px-4 py-2 text-center text-[13px] leading-snug text-white shadow-lg sm:text-[15px]">
         <b style={{ color: sub.color }}>{sub.who}:</b> {sub.text}
       </p>
     </div>
@@ -40,6 +40,7 @@ export default function EmbeddedWorld({ level = 1, companyId }: { level?: number
   const [visit, setVisit] = useState<{ level: number; floor: number } | null>(null)
   const [identity, setIdentity] = useState<Identity | null>(null)
   const floor = visit && visit.level === level ? visit.floor : level
+  const closeUp = useUniverso((s) => Boolean(s.stage) || Boolean(s.selected))
   const info = FLOORS[floor] ?? FLOORS[1]!
 
   useEffect(() => {
@@ -50,15 +51,29 @@ export default function EmbeddedWorld({ level = 1, companyId }: { level?: number
     // La marca se construye en otras pantallas: al volver a la pestaña el letrero se actualiza
     const onFocus = () => { void load() }
     window.addEventListener('focus', onFocus)
-    return () => { cancelled = true; window.removeEventListener('focus', onFocus) }
+    // Cuando se adopta un logo o cambia la marca en la Sala, el letrero se actualiza al instante
+    window.addEventListener('adan-identidad', onFocus)
+    // Las bromas del equipo sobre este proyecto (para los clics en los personajes)
+    api.getJokes(companyId).then((j) => { if (!cancelled) useUniverso.getState().setJokes(j.chistes) }).catch(() => undefined)
+    return () => {
+      cancelled = true
+      window.removeEventListener('focus', onFocus)
+      window.removeEventListener('adan-identidad', onFocus)
+    }
   }, [companyId])
 
+  // El piso que se ve decide qué zonas trabajan y el vestuario del equipo
+  useEffect(() => {
+    useUniverso.getState().setFloor(floor)
+    return () => useUniverso.getState().setFloor(null)
+  }, [floor])
+
   return (
-    <div className="universo relative h-full w-full overflow-hidden rounded-2xl">
+    <div className={`universo relative h-full w-full overflow-hidden rounded-2xl ${closeUp ? 'u-closeup' : ''}`}>
       <Boundary><World embedded floor={floor} identity={identity} /></Boundary>
       <Subtitle />
       {/* La marca que el fundador va construyendo, como letrero de neón de la oficina */}
-      <div className="u-brand-sign pointer-events-none absolute left-1/2 top-11 -translate-x-1/2"
+      <div className="u-brand-sign u-brand-compact pointer-events-none absolute left-3 top-11"
         style={{ ['--brand' as string]: identity?.color || info.color, ['--brand-accent' as string]: identity?.acento || '#ffffff' }}>
         {identity?.logo
           ? <img src={identity.logo} alt="" className="u-brand-logo" />
@@ -94,6 +109,9 @@ export default function EmbeddedWorld({ level = 1, companyId }: { level?: number
       <Link to="/universo" className="absolute right-3 top-3 rounded-full bg-black/50 px-3 py-1 text-[11px] text-slate-200 hover:text-white">
         Abrir el Universo ↗
       </Link>
+      <p className="pointer-events-none absolute bottom-3 left-3 hidden rounded-full bg-black/50 px-3 py-1 text-[11px] text-slate-300 sm:block">
+        Clic en alguien: te habla · clic derecho: lo regañas
+      </p>
     </div>
   )
 }

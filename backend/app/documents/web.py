@@ -57,6 +57,8 @@ class _Page(HTMLParser):
         self.description = ""
         self.headings: list[str] = []
         self.links: list[tuple[str, str]] = []
+        # Candidatos a logo, con su prioridad (menor = más probable)
+        self.logos: list[tuple[int, str]] = []
         self._parts: list[str] = []
         self._skip = 0
         self._in_title = False
@@ -75,6 +77,18 @@ class _Page(HTMLParser):
                 self.description = (a.get("content") or "").strip()
             elif name == "og:title" and not self.title:
                 self.title = (a.get("content") or "").strip()
+            elif name in ("og:logo", "og:image") and a.get("content"):
+                self.logos.append((1 if name == "og:logo" else 4, a["content"]))
+        elif tag == "link" and a.get("href"):
+            rel = (a.get("rel") or "").lower()
+            if "apple-touch-icon" in rel:
+                self.logos.append((2, a["href"]))
+            elif "icon" in rel:
+                self.logos.append((5, a["href"]))
+        elif tag == "img" and a.get("src"):
+            hint = " ".join(a.get(k) or "" for k in ("src", "alt", "class", "id")).lower()
+            if "logo" in hint:
+                self.logos.append((0, a["src"]))
         elif tag in ("h1", "h2", "h3"):
             self._heading = []
         elif tag == "a" and a.get("href"):
@@ -130,8 +144,10 @@ def parse_html(html: str, base_url: str) -> dict:
         full = urljoin(base_url, href)
         if urlparse(full).hostname == host and full.split("#")[0] != base_url and len(internal) < 15:
             internal.append(f"{label[:60]} → {full.split('#')[0]}")
+    logos = [urljoin(base_url, src) for _, src in sorted(page.logos, key=lambda x: x[0])
+             if not src.startswith("data:") and urlparse(urljoin(base_url, src)).scheme in ("http", "https")]
     return {"titulo": page.title[:200], "descripcion": page.description[:500], "encabezados": page.headings[:30],
-            "texto": page.text()[:MAX_TEXT], "enlaces": list(dict.fromkeys(internal))}
+            "texto": page.text()[:MAX_TEXT], "enlaces": list(dict.fromkeys(internal)), "logos": list(dict.fromkeys(logos))[:5]}
 
 
 async def fetch_page(url: str, client: httpx.AsyncClient | None = None) -> dict:
@@ -221,6 +237,8 @@ def as_markdown(page: dict) -> str:
     if page.get("error"):
         return f"No se pudo abrir {page['url']}: {page['error']}."
     parts = [f"# {page.get('titulo') or page['url']}", f"Fuente: {page['url']}"]
+    if page.get("logos"):
+        parts.append(f"Logo probable: {page['logos'][0]}")
     if page.get("descripcion"):
         parts.append(f"> {page['descripcion']}")
     if page.get("aviso"):

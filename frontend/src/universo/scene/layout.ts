@@ -65,3 +65,6 @@ export function zoneSpot(zone: ZoneId, agent: AgentId): [number, number] {
 
 // Posición actual de cada agente (la escribe la escena en cada frame; la usa la cámara para seguirlo)
 export const livePositions = new Map<AgentId, [number, number]>()
+
+// Punto al frente de la oficina, mirando a la cámara, donde se para quien habla
+export const STAGE: [number, number] = [0, 10.4]

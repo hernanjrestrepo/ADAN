@@ -3,28 +3,29 @@ import { useFrame } from '@react-three/fiber'
 import { useMemo, useRef } from 'react'
 import { Object3D, type InstancedMesh, type MeshStandardMaterial } from 'three'
 import { AGENTS } from '../data'
+import type { FloorTheme } from './pisos'
 
 const W = 46
 const D = 38
 
 // Planta, paredes de neón, escritorios del Board y la ciudad al fondo
-export default function Office() {
+export default function Office({ theme }: { theme?: FloorTheme }) {
   return (
     <>
       <mesh rotation-x={-Math.PI / 2} receiveShadow>
         <planeGeometry args={[W, D]} />
-        <meshStandardMaterial color="#060a14" metalness={0.75} roughness={0.32} />
+        <meshStandardMaterial color={theme?.floor ?? '#060a14'} metalness={theme?.metal ?? 0.75} roughness={0.32} />
       </mesh>
-      <Grid position-y={0.005} args={[W, D]} cellSize={1} cellThickness={0.6} cellColor="#13284a" sectionSize={4}
-        sectionThickness={1.1} sectionColor="#1d4ed8" fadeDistance={60} fadeStrength={1.2} infiniteGrid={false} />
-      <Walls />
+      <Grid position-y={0.005} args={[W, D]} cellSize={1} cellThickness={0.6} cellColor={theme?.grid[0] ?? '#13284a'} sectionSize={4}
+        sectionThickness={1.1} sectionColor={theme?.grid[1] ?? '#1d4ed8'} fadeDistance={60} fadeStrength={1.2} infiniteGrid={false} />
+      <Walls colors={theme?.walls} />
       {AGENTS.filter((a) => a.board).map((a) => <Desk key={a.id} x={a.home[0]} z={a.home[1]} color={a.color} />)}
       <Skyline />
     </>
   )
 }
 
-function Walls() {
+function Walls({ colors }: { colors?: [string, string, string] }) {
   const strips = useRef<(MeshStandardMaterial | null)[]>([])
   useFrame(({ clock }) => {
     strips.current.forEach((m, i) => {
@@ -32,9 +33,9 @@ function Walls() {
     })
   })
   const walls: { pos: [number, number, number]; size: [number, number, number]; color: string }[] = [
-    { pos: [0, 0.6, -D / 2], size: [W, 1.2, 0.2], color: '#7c3aed' },
-    { pos: [-W / 2, 0.6, 0], size: [0.2, 1.2, D], color: '#2563eb' },
-    { pos: [W / 2, 0.6, 0], size: [0.2, 1.2, D], color: '#db2777' },
+    { pos: [0, 0.6, -D / 2], size: [W, 1.2, 0.2], color: colors?.[0] ?? '#7c3aed' },
+    { pos: [-W / 2, 0.6, 0], size: [0.2, 1.2, D], color: colors?.[1] ?? '#2563eb' },
+    { pos: [W / 2, 0.6, 0], size: [0.2, 1.2, D], color: colors?.[2] ?? '#db2777' },
   ]
   return (
     <>

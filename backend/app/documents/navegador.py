@@ -32,7 +32,8 @@ _EXTRACT = """() => {
     .map(b => clean(b.innerText || b.value || b.getAttribute('aria-label'))).filter(Boolean);
   const links = [...document.querySelectorAll('a[href]')].map(a => [clean(a.innerText), a.href]).filter(([t, h]) => t && h.startsWith('http'));
   const forms = [...document.querySelectorAll('input,select,textarea')].map(i => clean(i.getAttribute('placeholder') || i.getAttribute('name') || i.getAttribute('aria-label') || i.type)).filter(Boolean);
-  return { title: document.title, text: document.body ? document.body.innerText : '', heads, buttons: [...new Set(buttons)].slice(0, 40),
+  const logos = [...document.querySelectorAll('img')].filter(i => /logo/i.test(i.src + ' ' + i.alt + ' ' + i.className + ' ' + i.id) && i.src.startsWith('http')).map(i => i.src).slice(0, 3);
+  return { title: document.title, text: document.body ? document.body.innerText : '', heads, logos, buttons: [...new Set(buttons)].slice(0, 40),
            links, forms: [...new Set(forms)].slice(0, 30) };
 }"""
 
@@ -122,6 +123,7 @@ def merge(base: dict, rendered: dict, vision: str = "") -> dict:
            "encabezados": main.get("heads") or base.get("encabezados", []), "texto": text[:MAX_TEXT],
            "botones": main.get("buttons", []), "formularios": main.get("forms", []),
            "enlaces": [f"{label} → {href}" for label, href in rendered.get("internal", [])] or base.get("enlaces", []),
+           "logos": list(dict.fromkeys((main.get("logos") or []) + (base.get("logos") or [])))[:5],
            "navegador": True}
     out.pop("aviso", None)
     if vision:

@@ -24,7 +24,7 @@ from app.ai.router import for_tier
 from app.documents import learn as doc_learning
 from app.documents import web
 from app.levels.scripts import script_for
-from app.nivel1 import board_dialogue, discovery, timeline
+from app.nivel1 import board_dialogue, discovery, memoria, timeline
 from app.nivel1.context import ContextLayers
 from app.ai.base import LLMAdapter, LLMMessage
 from app.ai.normalize import normalize_string, normalize_list
@@ -38,7 +38,7 @@ from app.scoring import service as scoring
 from app.services.gemelo_digital import GemeloDigitalService
 
 # Mensajes recientes que se envían completos al modelo; los anteriores van resumidos
-MAX_CONTEXT_MESSAGES = 12
+MAX_CONTEXT_MESSAGES = 16
 MAX_SUMMARY_CHARS = 2000
 
 
@@ -87,6 +87,34 @@ def auto_register_evidence(db: Session, project: Project, user, message: Message
         except scoring.EvidenceError:
             db.rollback()
     return added
+
+
+def _work(parsed: dict, repo_url: str | None, degraded) -> dict | None:
+    if degraded:
+        return None
+    if repo_url:
+        return {"tipo": "repositorio", "url": repo_url, "objetivo": ""}
+    walk = parsed.get("recorrer") if isinstance(parsed.get("recorrer"), dict) else {}
+    url, goal = str(walk.get("url", "")).strip(), str(walk.get("objetivo", "")).strip()
+    if url and goal and "." in url:
+        return {"tipo": "recorrido", "url": url[:2000], "objetivo": goal[:500]}
+    return None
+
+
+def _questions(texts: list[str]) -> list[str]:
+    """Las preguntas (frases que terminan en «?») de los mensajes del equipo."""
+    out = []
+    for t in texts:
+        for q in re.findall(r"[^.!?\n]*\?", t or ""):
+            q = q.strip(" ¿*_-").strip()
+            if len(q) > 12 and q not in out:
+                out.append(q)
+    return out
+
+
+def _is_mesa(m: Message) -> bool:
+    """Intervención corta de otro personaje (formato anterior): no cuenta como turno de la conversación."""
+    return isinstance(m.metadata_json, dict) and bool(m.metadata_json.get("mesa"))
 
 
 def _similar(a: str, b: str) -> float:
@@ -166,15 +194,23 @@ class Nivel1Service:
     async def read_links(self, project: Project, text: str) -> str:
         """Abre los enlaces que el fundador pegó: quedan en la Biblioteca y el equipo los lee en este turno."""
         urls = web.find_urls(text)
+        # Un repositorio de GitHub no se lee como página: lo revisa Mateo en segundo plano
+        repos = [u for u in urls if "github.com/" in u.lower() and u.lower().rstrip("/").count("/") >= 4]
+        if repos:
+            self.repo_url = repos[0]
+            urls = [u for u in urls if u not in repos]
         read = self.db.query(Document).filter(Document.project_id == project.id, Document.doc_type == "web_page") \
             .order_by(Document.created_at.desc()).limit(6).all()
+        repo_note = ("\n\nEl fundador compartió su repositorio de GitHub: Mateo (CTO) ya lo está leyendo en segundo "
+                     "plano y dejará su revisión en la Sala en un par de minutos. Díselo en una frase y sigue."
+                     if repos else "")
         if not urls:
             # Las páginas que ya se leyeron siguen siendo parte de lo que el equipo sabe de la empresa
             if not read:
-                return ""
+                return repo_note.strip()
             return ("Páginas web que YA ABRISTE en esta empresa (con el navegador; sí puedes ver páginas web). Úsalas; "
                     "si el fundador pide revisarlas otra vez, pídele el enlace y se vuelven a abrir:\n\n"
-                    + "\n\n---\n\n".join((d.content or "")[:3500] for d in read[:2]))
+                    + "\n\n---\n\n".join((d.content or "")[:3500] for d in read[:2]) + repo_note)
         fresh_after = datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(hours=6)
         cached = {}
         for d in read:
@@ -194,10 +230,18 @@ class Nivel1Service:
                                  content=content, doc_type="web_page", origin="received_from_client"))
             blocks.append(content[:9000])
         self.db.commit()
+        note = ""
+        company = self.db.get(Company, project.company_id)
+        found = next((m.group(1) for b in blocks for m in [re.search(r"^Logo probable: (\S+)", b, re.M)] if m), None)
+        if company is not None and not company.logo and found:
+            # El fundador ve la imagen en el chat y confirma con un clic si es su logo
+            self.found_logo = {"url": found}
+            note = ("\n\nEn su sitio encontré lo que parece su logo; se le muestra en el chat con un botón para adoptarlo. "
+                    "Menciónalo en una frase («¿este es tu logo? Si es, lo adopto y saco tu paleta de colores»).")
         return ("El fundador compartió enlaces y TÚ ABRISTE LAS PÁGINAS con un navegador real (sí puedes ver páginas "
                 "web, incluso las hechas con JavaScript, y ves una descripción de la pantalla). Esto es lo que "
                 "contienen; úsalo, cita lo que dicen y no le pidas que te lo describa ni digas que tienes "
-                "restricciones para navegar:\n\n" + "\n\n---\n\n".join(blocks))
+                "restricciones para navegar:\n\n" + "\n\n---\n\n".join(blocks) + note + repo_note)
 
     # --- Step 2: Chat with ADÁN ---
 
@@ -237,7 +281,14 @@ class Nivel1Service:
         pages = await self.read_links(project, user_message)
         if pages:
             messages[0] = LLMMessage(role="system", content=messages[0].content + "\n\n" + pages)
-        last_reply = next((m.content for m in reversed(history) if m.role == "assistant"), "")
+        # Las últimas respuestas del equipo: ninguna se puede repetir
+        last_replies = [m.content for m in history if m.role == "assistant" and not _is_mesa(m)][-3:]
+        # Ni las preguntas ya hechas: se le recuerdan al modelo y, si repite una, se le pide otra respuesta
+        asked = _questions([m.content for m in history if m.role == "assistant" and not _is_mesa(m)][-10:])
+        if asked:
+            messages[0] = LLMMessage(role="system", content=messages[0].content + (
+                "\n\nPreguntas que el equipo YA hizo (no repitas ninguna, ni con otras palabras; si no la respondió, "
+                "asume y sigue):\n" + "\n".join(f"- {q}" for q in asked[-8:])))
         response = await self.llm.chat_json(messages, schema, temperature=0.4, max_tokens=2048)
 
         degraded = response.metadata.get("degraded")
@@ -248,12 +299,16 @@ class Nivel1Service:
         pending = query.strip() if query.strip() and not degraded else ""
         # Nunca repetir la respuesta anterior: si sale casi igual, se pide una nueva que atienda lo que dijo el cliente
         draft = parsed.get("respuesta") if isinstance(parsed.get("respuesta"), str) else ""
-        if draft and last_reply and _similar(draft, last_reply) > 0.8 and not degraded:
+        repeated_q = [q for q in _questions([draft]) if any(_similar(q, old) > 0.72 for old in asked)] if draft else []
+        if draft and (repeated_q or any(_similar(draft, r) > 0.75 for r in last_replies)) and not degraded:
             retry = await self.llm.chat_json(messages + [
                 LLMMessage(role="assistant", content=draft),
                 LLMMessage(role="user", content=(
-                    "[Nota interna: ese borrador repite casi igual tu respuesta anterior. Responde a lo NUEVO que "
-                    "acaba de decir el cliente, sin repetir datos ni tablas que ya le diste. Deja `investigar` vacío.]")),
+                    ("[Nota interna: ese borrador vuelve a preguntar «" + repeated_q[0] + "», que ya preguntaste. No lo "
+                     "repitas: asume la opción más razonable como supuesto, propón el borrador del siguiente tema y "
+                     "avanza. Deja `investigar` vacío.]") if repeated_q else
+                    ("[Nota interna: ese borrador repite casi igual tu respuesta anterior. Responde a lo NUEVO que "
+                     "acaba de decir el cliente, sin repetir datos ni tablas que ya le diste. Deja `investigar` vacío.]"))),
             ], schema, temperature=0.6, max_tokens=2048)
             if isinstance(retry.parsed, dict) and retry.parsed.get("respuesta"):
                 parsed, response = retry.parsed, retry
@@ -269,12 +324,21 @@ class Nivel1Service:
                        "principal y seguimos donde íbamos.")
 
         speaker = parsed.get("habla") if parsed.get("habla") in timeline.TEAM else "ceo"
+        if not degraded:
+            memoria.remember(self.db, project, parsed.get("acuerdos") or [], script.number)
+        # Con todos los temas cubiertos, ADÁN propone el cierre y el fundador solo confirma
+        closing = (not degraded and reply.strip() and discovery.next_topic(state, script) is None
+                   and level.status != NivelStatus.COMPLETED)
         assistant_msg = Message(
             conversation_id=conversation.id,
             role="assistant",
             agent_name=timeline.label(speaker),
             content=content,
             metadata_json={
+                "propone_cierre": bool(closing),
+                "logo_sugerido": getattr(self, "found_logo", None),
+                # Trabajo en segundo plano que llega como mensaje aparte: recorrido con clics o revisión de código
+                "trabajando": _work(parsed, getattr(self, "repo_url", None), degraded),
                 "model": response.model,
                 "tokens": response.prompt_tokens + response.completion_tokens,
                 "duration_s": response.duration_s,
@@ -291,18 +355,33 @@ class Nivel1Service:
         self.db.add(assistant_msg)
         self.db.commit()
         self.db.refresh(assistant_msg)
+        # Un solo personaje por turno: ya no hay intervenciones de «mesa» después de la respuesta
         if not degraded:
-            for i, extra in enumerate((parsed.get("mesa") or [])[:2]):
-                who = extra.get("habla") if isinstance(extra, dict) and extra.get("habla") in timeline.TEAM else None
-                text = str(extra.get("texto", "")).strip() if isinstance(extra, dict) else ""
-                if not who or who == speaker or len(text) < 5:
-                    continue
-                self.db.add(Message(conversation_id=conversation.id, role="assistant", agent_name=timeline.label(who),
-                                    content=text[:600], metadata_json={"agente": who, "escena": "oficina", "mesa": True,
-                                                                        "reaccion": {"agente": who, "emocion": extra.get("emocion", "hablando"), "frase": ""}}))
-            self.db.commit()
-
+            await self.refresh_summary(project, conversation)
         return assistant_msg, conversation
+
+    async def refresh_summary(self, project: Project, conversation: Conversation) -> None:
+        """Resume con la IA lo que ya no cabe en la ventana de mensajes (cada 8 mensajes nuevos), para la memoria."""
+        history = [m for m in self._history(conversation) if not _is_mesa(m)]
+        older = history[:-MAX_CONTEXT_MESSAGES]
+        key = f"nivel{script_of(self.db, conversation).number}"
+        prev = memoria.summary_of(self.db, project, key)
+        if len(older) < 6 or len(older) - prev.get("mensajes", 0) < 8:
+            return
+        transcript = "\n".join(f"{'Fundador' if m.role == 'user' else (m.agent_name or 'ADÁN')}: {m.content[:700]}"
+                               for m in older[prev.get("mensajes", 0):])
+        try:
+            resp = await self.llm.chat([
+                LLMMessage(role="system", content=(
+                    "Resume para la memoria del equipo lo esencial de esta conversación: qué dijo y decidió el fundador, "
+                    "qué propuso el equipo y quedó aceptado, qué se descartó y qué quedó pendiente. Viñetas cortas, "
+                    "español, máximo 250 palabras. Sin inventar nada.")),
+                LLMMessage(role="user", content=(f"Resumen anterior:\n{prev.get('texto', '(ninguno)')}\n\n"
+                                                 f"Conversación nueva:\n{transcript[:12000]}"))], max_tokens=900)
+        except Exception:  # noqa: BLE001 - la memoria se intenta de nuevo en el siguiente turno
+            return
+        if (resp.content or "").strip() and not resp.metadata.get("degraded"):
+            memoria.set_summary(self.db, project, key, resp.content.strip(), len(older))
 
     async def complete_research(self, conversation: Conversation, query: str) -> Message | None:
         """Investiga en internet lo que ADÁN anunció y responde con los hallazgos en un mensaje nuevo."""
@@ -411,7 +490,9 @@ class Nivel1Service:
         script = script_of(self.db, conversation)
         if state is None:
             state = discovery.current_state(history, script)
-        older, recent = history[:-MAX_CONTEXT_MESSAGES], history[-MAX_CONTEXT_MESSAGES:]
+        # Las intervenciones viejas de «mesa» no ocupan la ventana: así caben más turnos reales
+        talk = [m for m in history if not _is_mesa(m)]
+        older, recent = talk[:-MAX_CONTEXT_MESSAGES], talk[-MAX_CONTEXT_MESSAGES:]
         if older:
             conversation.summary = self._summarize(older)
             self.db.commit()
@@ -431,9 +512,20 @@ class Nivel1Service:
                 "\n\nMODO REVISIÓN Y PIVOTE: esta empresa ya existe (puede tener producto, MVP o ventas, y quizá no le está "
                 "yendo como esperaba). No empieces de cero: usa lo que ya hay (documentos, producto, cifras) para cubrir los "
                 "temas rápido, encuentra dónde se rompe el negocio (el problema, el cliente, el canal, el precio o la "
-                "ejecución) y propone con optimismo realista qué ajustar o pivotar, apoyándote en sus datos reales.")
+                "ejecución) y propone con optimismo realista qué ajustar o pivotar, apoyándote en sus datos reales."
+                + ("" if company.logo else
+                   " Esta empresa ya tiene marca pero ADÁN aún no tiene su logo: en algún momento natural pídele el "
+                   "enlace de su web (lo tomamos de ahí) o que lo suba en 🏷️ Marca → «Ya tengo logo»; no inventes uno."))
         if conversation.summary:
             system_prompt += f"\n\nResumen de lo que el cliente contó antes: {conversation.summary}"
+        # La memoria del proyecto (acuerdos, resúmenes y fragmentos de la Biblioteca), la misma para todo el equipo
+        project = self.db.query(Project).join(Card, Card.project_id == Project.id) \
+            .filter(Card.id == conversation.card_id).first()
+        if project is not None:
+            last_user = next((m.content for m in reversed(talk) if m.role == "user"), "")
+            memory = memoria.context(self.db, project, query=last_user, nivel=script.number)
+            if memory:
+                system_prompt += "\n\n" + memory
         # Capas Global, Proyecto, Nivel y Card (AD-CMP-04); la Conversación son los mensajes
         system_prompt += "\n\n" + ContextLayers(self.db).for_conversation(conversation)
         messages = [LLMMessage(role="system", content=system_prompt)]
@@ -461,6 +553,10 @@ class Nivel1Service:
         conversation_context += "\n\nLo que ya se sabe de la empresa:\n" + ContextLayers(self.db).project_layer(project)
         # Y lo que el fundador le explicó al Board después de la sesión anterior
         conversation_context += board_dialogue.as_context(self.db, project)
+        # Y la memoria del proyecto: el Board no vuelve a pedir lo que ya se acordó o se descartó
+        memory = memoria.context(self.db, project, query=pain_description[:2000], nivel=level_number)
+        if memory:
+            conversation_context += "\n\n" + memory
 
         # Cuántas sesiones van: el abogado del diablo rota entre los especialistas
         sessions = self.db.query(Document).filter(Document.project_id == project.id,

@@ -92,7 +92,7 @@ export default function Nivel1Page() {
       const at = fresh.messages.findIndex((m) => m.id === data.message.id)
       fresh.messages.slice(at + 1).filter((m) => m.role !== 'user')
         .forEach((m, i) => window.setTimeout(() => reactTo(m), 2600 * (i + 1)))
-      if (data.message.metadata_json?.investigando) {
+      if (data.message.metadata_json?.investigando || data.message.metadata_json?.trabajando) {
         setResearching(true)
         void waitForResearch(companyId, data.message.id).then((msgs) => {
           setResearching(false)
@@ -121,7 +121,7 @@ export default function Nivel1Page() {
       // Audio y video se transcriben aparte: lo que entendió ADÁN llega en un momento
       const status = await api.getNivel1Status(companyId)
       const last = status.messages[status.messages.length - 1]
-      if (last?.metadata_json?.investigando) {
+      if (last?.metadata_json?.investigando || last?.metadata_json?.trabajando) {
         setResearching(true)
         void waitForResearch(companyId, last.id, 600_000).then((msgs) => {
           setResearching(false)

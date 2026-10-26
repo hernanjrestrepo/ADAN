@@ -5,11 +5,13 @@ import RichMessage from '../../components/RichMessage'
 import VoteBadge from '../../components/VoteBadge'
 import Button from '../../components/ui/Button'
 import { api, errorMessage } from '../../lib/api'
+import { waitForResearch } from '../../lib/research'
 import { FILE_ICON, pastedFiles } from '../../lib/clipboard'
 import type { DiscoveryProgress, Message } from '../../types'
 import { reactTo } from '../../universo/react'
 import { useUniverso } from '../../universo/store'
 import SurveysPanel from './SurveysPanel'
+import ToolDialog, { type Tool } from './ToolDialog'
 
 // Una sola sala: la oficina a la izquierda y la conversación a la derecha. Hablas con todo el equipo (responde a quien
 // le toca el tema) y, cuando toca, la escena se mueve al Board Room o a La Arena sin salir de la conversación.
@@ -103,6 +105,9 @@ export default function ChatPanel({
   const [surveys, setSurveys] = useState(false)
   const [continuing, setContinuing] = useState(false)
   const [reason, setReason] = useState('')
+  const [tool, setTool] = useState<Tool | null>(null)
+  const [toolBusy, setToolBusy] = useState<Tool | null>(null)
+  const [logoDone, setLogoDone] = useState<Record<string, 'si' | 'no'>>({})
   const fileInput = useRef<HTMLInputElement>(null)
   const busy = sending || uploading || Boolean(working)
   const pickFiles = () => fileInput.current?.click()
@@ -232,6 +237,42 @@ export default function ChatPanel({
     }
   }
 
+  const lastAssistantId = [...messages].reverse().find((m) => m.role !== 'user')?.id
+  const lastWork = [...messages].reverse().find((m) => m.role !== 'user')?.metadata_json?.trabajando
+  const workText = lastWork?.tipo === 'recorrido' ? '🧭 Andrés está recorriendo la página con clics; te cuenta aquí lo que encuentre.'
+    : lastWork?.tipo === 'repositorio' ? '💻 Mateo está leyendo tu código; su revisión llega aquí en un par de minutos.'
+      : '🔎 El equipo está investigando en internet; los datos te llegan aquí en un momento. Puedes seguir escribiendo.'
+
+  const adoptLogo = async (id: string, url: string) => {
+    try {
+      await api.adoptExistingLogo(companyId, { url })
+      setLogoDone((d) => ({ ...d, [id]: 'si' }))
+      window.dispatchEvent(new Event('adan-identidad'))
+    } catch (err) {
+      onError(errorMessage(err))
+    }
+  }
+
+  // Recorrido con clics o revisión de código: corren aparte y la respuesta llega como mensaje nuevo
+  const startTool = async (kind: Tool, data: Record<string, string>) => {
+    setTool(null)
+    setToolBusy(kind)
+    const before = messages.length
+    try {
+      const res = kind === 'recorrido'
+        ? await api.startWalk(companyId, { url: data.url ?? '', objetivo: data.objetivo ?? '', usuario: data.usuario, clave: data.clave, nivel: level })
+        : await api.startCodeReview(companyId, { url: data.url ?? '', objetivo: data.objetivo, token: data.token, nivel: level })
+      await onReload()
+      const latest = await waitForResearch(companyId, res.after, 300_000, level)
+      await onReload()
+      if (latest) playSince(before + 1, latest)
+    } catch (err) {
+      onError(errorMessage(err))
+    } finally {
+      setToolBusy(null)
+    }
+  }
+
   const waiting = working === 'board' ? 'El Board está deliberando: cada especialista revisa tu empresa (uno o dos minutos)…'
     : working === 'board-talk' ? 'El Board está pensando su respuesta…'
       : working === 'arena' ? 'Los inversionistas están revisando tu empresa…'
@@ -278,7 +319,9 @@ export default function ChatPanel({
           return (
             <div key={msg.id} className={`flex gap-2 ${user ? 'justify-end' : 'justify-start'}`}>
               {!user && <Speaker message={msg} />}
-              <div className={`max-w-[85%] rounded-xl px-4 py-3 ${user ? 'bg-adan-accent text-white' : 'bg-adan-surface border border-adan-border'}`}>
+              <div className={`max-w-[85%] rounded-xl px-4 py-3 ${user ? 'bg-adan-accent text-white' : 'bg-adan-surface border border-adan-border cursor-pointer hover:border-adan-accent/60'}`}
+                onClick={user ? undefined : (e) => { if (!(e.target as HTMLElement).closest('a,button')) reactTo(msg) }}
+                title={user ? undefined : 'Clic: que lo diga en la oficina'}>
                 {!user && (
                   <div className="mb-1 flex flex-wrap items-center gap-2 text-xs">
                     <b className="text-adan-accent">{msg.agent_name ?? 'ADÁN'}</b>
@@ -288,6 +331,22 @@ export default function ChatPanel({
                 )}
                 {user ? <div className="text-sm whitespace-pre-wrap">{msg.content}</div>
                   : <div className="text-sm markdown"><RichMessage text={msg.content} /></div>}
+                {!user && msg.metadata_json?.logo_sugerido && !logoDone[msg.id] && (
+                  <div className="mt-3 flex flex-wrap items-center gap-3 rounded-xl border border-adan-border bg-white p-2" data-testid="logo-sugerido">
+                    <img src={msg.metadata_json.logo_sugerido.url} alt="Logo encontrado en tu web" className="h-14 max-w-[160px] object-contain" />
+                    <div className="flex gap-2">
+                      <Button size="sm" onClick={() => adoptLogo(msg.id, msg.metadata_json!.logo_sugerido!.url)}>✅ Sí, es mi logo</Button>
+                      <Button size="sm" variant="ghost" className="text-slate-600!" onClick={() => setLogoDone((d) => ({ ...d, [msg.id]: 'no' }))}>No es</Button>
+                    </div>
+                  </div>
+                )}
+                {!user && logoDone[msg.id] === 'si' && <p className="mt-2 text-xs text-adan-success">✓ Logo adoptado: ya brilla en tu oficina y en la Biblioteca.</p>}
+                {!user && msg.metadata_json?.propone_cierre && msg.id === lastAssistantId && (
+                  <div className="mt-3 flex flex-wrap gap-2" data-testid="propone-cierre">
+                    <Button size="sm" variant="success" onClick={onClose} disabled={busy}>✅ Sí, cerramos el Nivel</Button>
+                    <Button size="sm" variant="secondary" onClick={() => void onSend('Todavía no; antes quiero ajustar algo.')} disabled={busy}>Todavía no</Button>
+                  </div>
+                )}
                 {msg.metadata_json?.degraded && (
                   <p className="mt-2 text-xs text-adan-warning" data-testid="degraded-note">
                     ⚠️ Respondió el modelo local de respaldo ({msg.metadata_json.degraded}); vuelve a enviar tu mensaje.
@@ -311,10 +370,17 @@ export default function ChatPanel({
             </div>
           </div>
         )}
+        {toolBusy && (
+          <div className="flex justify-start" data-testid="tool-working">
+            <div className="rounded-xl border border-adan-accent/40 bg-adan-accent/5 px-4 py-3 text-sm animate-pulse">
+              {toolBusy === 'recorrido' ? '🧭 Andrés está recorriendo la página con clics (uno o dos minutos)…' : '💻 Mateo está leyendo el código (uno o dos minutos)…'}
+            </div>
+          </div>
+        )}
         {researching && !busy && (
           <div className="flex justify-start" data-testid="researching">
             <div className="rounded-xl border border-adan-accent/40 bg-adan-accent/5 px-4 py-3 text-sm animate-pulse">
-              🔎 El equipo está investigando en internet; los datos te llegan aquí en un momento. Puedes seguir escribiendo.
+              {workText}
             </div>
           </div>
         )}
@@ -361,10 +427,13 @@ export default function ChatPanel({
           <Button size="sm" variant="secondary" onClick={() => setContinuing(true)} disabled={busy}>⚖️ Continuar bajo mi responsabilidad</Button>
         )}
         {level >= 5 && <Button size="sm" variant="secondary" onClick={enterArena} disabled={busy}>🥊 La Arena</Button>}
+        <Button size="sm" variant="secondary" onClick={() => setTool('recorrido')} disabled={busy || Boolean(toolBusy)}>🧭 Recorrer una página</Button>
+        <Button size="sm" variant="secondary" onClick={() => setTool('repositorio')} disabled={busy || Boolean(toolBusy)}>💻 Revisar código</Button>
         {onDiagnosis && <Button size="sm" variant="secondary" onClick={onDiagnosis} disabled={busy}>📄 Diagnóstico</Button>}
         <Button size="sm" variant="secondary" className="border-adan-success/50! text-adan-success!" onClick={onClose} disabled={busy}>✅ Cerrar el Nivel</Button>
       </div>
 
+      {tool && <ToolDialog tool={tool} onCancel={() => setTool(null)} onStart={startTool} />}
       {surveys && (
         <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/60 p-3 overflow-y-auto" role="dialog" aria-label="Encuesta">
           <div className="w-full max-w-3xl rounded-2xl border border-adan-border bg-adan-bg">

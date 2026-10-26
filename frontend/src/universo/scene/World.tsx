@@ -1,4 +1,4 @@
-import { CameraControls, Stars } from '@react-three/drei'
+import { CameraControls, Sparkles, Stars } from '@react-three/drei'
 import { Canvas } from '@react-three/fiber'
 import { Bloom, EffectComposer, Vignette } from '@react-three/postprocessing'
 import { useEffect, useRef } from 'react'
@@ -6,9 +6,9 @@ import { AGENTS, ZONES } from '../data'
 import { useUniverso } from '../store'
 import AgentFigure from './AgentFigure'
 import LevelDecor from './Floors'
-import type { Identity } from './pisos'
+import { themeOf, type Identity } from './pisos'
 import Holo from './Holo'
-import { livePositions } from './layout'
+import { STAGE, livePositions } from './layout'
 import Office from './Office'
 import Zones from './Zones'
 
@@ -25,6 +25,7 @@ function Director({ embedded = false }: { embedded?: boolean }) {
   const selected = useUniverso((s) => s.selected)
   const started = useUniverso((s) => s.started) || embedded
   const cam = useUniverso((s) => s.cam)
+  const onStage = useUniverso((s) => s.stage?.agent ?? null)
 
   useEffect(() => {
     const c = controls.current
@@ -53,6 +54,15 @@ function Director({ embedded = false }: { embedded?: boolean }) {
     else void c.setLookAt(...(MOBILE ? OVERVIEW_MOBILE : OVERVIEW), true)
   }, [cam])
 
+  // Quien habla pasa al frente: la cámara lo encuadra de cerca, y al terminar vuelve a la vista general
+  useEffect(() => {
+    const c = controls.current
+    if (!c || !started) return
+    const [x, z] = STAGE
+    if (onStage) void c.setLookAt(x + 1.2, MOBILE ? 5.5 : 4.2, z + (MOBILE ? 9 : 7.5), x, 1.5, z + (MOBILE ? 2 : 0), true)
+    else if (!focusZone && !selected) void c.setLookAt(...(MOBILE ? OVERVIEW_MOBILE : OVERVIEW), true)
+  }, [onStage, started, focusZone, selected])
+
   useEffect(() => {
     const c = controls.current
     if (!c || !selected) return
@@ -72,20 +82,23 @@ function Director({ embedded = false }: { embedded?: boolean }) {
 export default function World({ embedded = false, floor, identity = null }: { embedded?: boolean; floor?: number; identity?: Identity | null }) {
   const select = useUniverso((s) => s.select)
   const level = useUniverso((s) => s.level)
+  // En la Sala cada piso tiene su ambiente; el Universo conserva el suyo de siempre
+  const theme = floor ? themeOf(floor) : undefined
   return (
     <Canvas shadows dpr={[1, 1.75]} camera={{ fov: 40, position: [30, 34, 46], near: 0.1, far: 300 }}
       onPointerMissed={() => select(null)} gl={{ antialias: true, powerPreference: 'high-performance' }}>
-      <color attach="background" args={['#0a0a0f']} />
-      <fog attach="fog" args={['#0a0a0f', 45, 120]} />
-      <ambientLight intensity={0.6} color="#8ab4ff" />
-      <hemisphereLight args={['#8aa4ff', '#0a0a1a', 0.8]} />
+      <color attach="background" args={[theme ? theme.sky : '#0a0a0f']} />
+      <fog attach="fog" args={[theme ? theme.sky : '#0a0a0f', 45, 120]} />
+      <ambientLight intensity={theme ? 0.75 : 0.6} color={theme?.ambient ?? '#8ab4ff'} />
+      <hemisphereLight args={[theme?.ambient ?? '#8aa4ff', '#0a0a1a', 0.8]} />
       <directionalLight position={[14, 26, 12]} intensity={1.3} castShadow shadow-mapSize={[2048, 2048]}
         shadow-camera-left={-26} shadow-camera-right={26} shadow-camera-top={22} shadow-camera-bottom={-22} />
       {Object.values(ZONES).map((z) => (
         <pointLight key={z.id} position={[z.position[0], 3.5, z.position[1]]} color={z.color} intensity={14} distance={11} decay={1.6} />
       ))}
-      <Stars radius={120} depth={40} count={2500} factor={4} saturation={0.4} fade speed={0.6} />
-      <Office />
+      {(!theme || theme.stars) && <Stars radius={120} depth={40} count={2500} factor={4} saturation={0.4} fade speed={0.6} />}
+      {theme?.particles && <Sparkles count={120} scale={[44, 8, 36]} position={[0, 4, 0]} size={4} speed={0.4} color={theme.particles} />}
+      <Office theme={theme} />
       <LevelDecor floor={floor ?? level} identity={identity} />
       <Zones />
       <Holo />
