@@ -623,9 +623,9 @@ async def generate_diagnosis(
 
     service = Nivel1Service(llm, db)
 
-    # Run Board Room first
+    # El Board vigente: no se ejecuta otro si ya hay uno y el cliente no ha aportado nada nuevo
     try:
-        board_consensus = await service.run_board_room(project, company)
+        board_consensus, _reused = await service.ensure_board_room(project, company)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 

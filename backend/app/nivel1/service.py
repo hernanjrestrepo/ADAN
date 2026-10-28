@@ -728,6 +728,29 @@ class Nivel1Service:
             parts.append("Palabras del cliente (lo más reciente):\n" + "\n".join(f"- {w}" for w in words[-6:]))
         return "\n\n".join(parts) if (understood or words or digests) else ""
 
+    def last_client_message_at(self, project: Project):
+        """Cuándo habló el cliente por última vez en cualquier conversación del proyecto."""
+        from sqlalchemy import func
+
+        return self.db.query(func.max(Message.created_at)).join(
+            Conversation, Conversation.id == Message.conversation_id).join(
+            Card, Card.id == Conversation.card_id).filter(
+            Card.project_id == project.id, Message.role == "user").scalar()
+
+    async def ensure_board_room(self, project: Project, company: Company) -> tuple[BoardConsensus, bool]:
+        """El Board vigente o uno nuevo: (consenso, se_reutilizó).
+
+        Cada sesión cuesta 8 llamadas al modelo, así que no se repite sin motivo. Se reutiliza la
+        última si logró consenso y el cliente no ha escrito nada después. Si no hay Board, falló o
+        el cliente aportó algo nuevo, se ejecuta uno.
+        """
+        event = self.gemelo.get_last_board_event(project)
+        if event is not None and event.data["consensus"].get("decision") != "NO_CONSENSUS":
+            spoke = self.last_client_message_at(project)
+            if spoke is None or spoke <= event.created_at:
+                return BoardConsensus.from_dict(event.data["consensus"]), True
+        return await self.run_board_room(project, company), False
+
     def get_last_board_consensus(self, project: Project) -> BoardConsensus:
         """Último Board Room guardado: recomendaciones y Gate Review no lo vuelven a ejecutar."""
         data = self.gemelo.get_last_board_consensus(project)

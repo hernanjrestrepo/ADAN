@@ -64,7 +64,7 @@ DECISION_SCHEMA = {
     "required": ["decision", "amount_usd", "terms", "reason", "conditions", "fatal_flaw"],
     "properties": {
         "decision": {"type": "string", "enum": ["INVIERTE", "CON_CONDICIONES", "NO_INVIERTE"]},
-        "amount_usd": {"type": "integer", "minimum": 0},
+        "amount_usd": {"type": "integer"},
         "terms": {"type": "string"},
         "reason": {"type": "string"},
         "conditions": {"type": "array", "items": {"type": "string"}},
@@ -136,7 +136,7 @@ class Arena:
             decision = data.get("decision") if data.get("decision") in (*YES, "NO_INVIERTE") else "NO_INVIERTE"
             unavailable = bool(data.get("_error") or data.get("_degraded"))
             return {**inv, "answer": answers.get(inv["id"], ""), "decision": "SIN_RESPUESTA" if unavailable else decision,
-                    "amount_usd": int(data.get("amount_usd") or 0) if decision in YES and not unavailable else 0,
+                    "amount_usd": max(0, int(data.get("amount_usd") or 0)) if decision in YES and not unavailable else 0,
                     "terms": normalize_string(data.get("terms")), "reason": normalize_string(data.get("reason"))
                     or "No pude decidir esta vez.", "conditions": normalize_list(data.get("conditions"))[:3] if decision in YES else [],
                     "fatal_flaw": normalize_string(data.get("fatal_flaw")), "unavailable": unavailable}

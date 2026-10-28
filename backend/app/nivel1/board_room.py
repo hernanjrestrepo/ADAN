@@ -172,13 +172,13 @@ VOTE_SCHEMA = {
         "analysis": {"type": "string"},
         "justification": {"type": "string"},
         "vote": {"type": "string", "enum": ["PROCEED", "PIVOT", "STOP"]},
-        "confidence": {"type": "integer", "minimum": 0, "maximum": 100},
+        "confidence": {"type": "integer"},  # 0-100: la API de Claude no admite minimum/maximum en enteros
         "key_strengths": {"type": "array", "items": {"type": "string"}},
         "key_concerns": {"type": "array", "items": {"type": "string"}},
         "questions": {"type": "array", "items": {"type": "string"}},
         "failure_mode": {"type": "string"},
         "bulletproof": {"type": "boolean"},
-        "readiness": {"type": "integer", "minimum": 0, "maximum": 100},
+        "readiness": {"type": "integer"},  # 0-100 (se acota al normalizar)
         "blockers": {"type": "array", "items": {"type": "string"}},
         "assumed_risks": {"type": "array", "items": {"type": "string"}},
         "post_launch": {"type": "array", "items": {"type": "string"}},
@@ -449,7 +449,8 @@ class BoardRoom:
                 bulletproof=bool(raw_data["bulletproof"]) if isinstance(raw_data.get("bulletproof"), bool)
                 else normalized["vote"] == "PROCEED",
                 devils_advocate=devil,
-                readiness=float(raw_data["readiness"]) if isinstance(raw_data.get("readiness"), (int, float)) else None,
+                readiness=(max(0.0, min(100.0, float(raw_data["readiness"])))
+                       if isinstance(raw_data.get("readiness"), (int, float)) else None),
                 blockers=normalize_list(raw_data.get("blockers"))[:2],
                 assumed_risks=normalize_list(raw_data.get("assumed_risks"))[:2],
                 post_launch=normalize_list(raw_data.get("post_launch"))[:2],

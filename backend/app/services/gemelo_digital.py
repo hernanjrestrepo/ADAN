@@ -260,16 +260,20 @@ class GemeloDigitalService:
         self.db.refresh(doc)
         return doc
 
-    def get_last_board_consensus(self, project: Project) -> dict | None:
-        """Último resultado completo del Board Room, para no volver a ejecutarlo."""
+    def get_last_board_event(self, project: Project) -> Event | None:
         events = self.db.query(Event).filter(
             Event.project_id == project.id,
             Event.event_type == "board_room_completed",
         ).order_by(Event.created_at.desc()).all()
         for event in events:
             if event.data and event.data.get("consensus"):
-                return event.data["consensus"]
+                return event
         return None
+
+    def get_last_board_consensus(self, project: Project) -> dict | None:
+        """Último resultado completo del Board Room, para no volver a ejecutarlo."""
+        event = self.get_last_board_event(project)
+        return event.data["consensus"] if event else None
 
     def propose_level_completion(
         self, project: Project, level_number: int, score: float, message: str, recommended: str = "CLOSE",
