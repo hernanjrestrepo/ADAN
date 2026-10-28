@@ -75,6 +75,7 @@ docker compose up --build
 | `SANDBOX_URL`, `SANDBOX_TOKEN` | Sandbox aislado (`sandbox/`) para ejecutar Python. Sin ellos, `python_sandbox` no existe. |
 | `METRICS_TOKEN` | Protege `/metrics` (Prometheus). |
 | `ANTHROPIC_API_KEY`, `LLM_MODEL_STANDARD`, `LLM_MODEL_COMPLEX`, `LLM_MODEL_FAST` | IA por complejidad (WO-099). Ollama hace lo simple; Claude Sonnet, la conversación y el diagnóstico; Claude Opus, los votos del Board. Sin clave, todo corre en Ollama marcado como degradado. `python scripts/check_claude.py` verifica la clave. El costo por empresa y Nivel está en `GET /api/v1/companies/{id}/llm-usage`. |
+| `OPENROUTER_API_KEY`, `LLM_SMART_ROUTING` | OpenRouter (cientos de modelos con una clave) y **modo inteligente**: con `LLM_SMART_ROUTING=true` el enrutador elige, entre los proveedores con clave, el modelo más barato que cumpla la calidad de cada tarea. Costos, margen del 90 % y casos de MVP en `docs/economia/COSTOS_Y_MARGEN.md`. |
 | `OUTBOUND_ALLOWED_HOSTS` | Hosts a los que pueden llamar las herramientas y conectores. Vacío = cualquier host público. El proxy de salida se configura con `HTTPS_PROXY`. |
 
 La interfaz web guarda la sesión en una cookie httpOnly. Las peticiones que modifican datos llevan la cabecera `X-Requested-With: adan`, que funciona como protección anti-CSRF. Los clientes de la API pueden seguir usando `Authorization: Bearer`.

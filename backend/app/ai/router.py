@@ -38,11 +38,31 @@ def cloud_provider() -> str | None:
     return "anthropic" if settings.ANTHROPIC_API_KEY else None
 
 
-CLOUD_LABEL = {"anthropic": "Claude", "kimi": "Kimi", None: "Claude"}
+CLOUD_LABEL = {"anthropic": "Claude", "kimi": "Kimi", "openrouter": "OpenRouter", None: "Claude"}
 MISSING_KEY = {"kimi": "sin KIMI_API_KEY"}
 
 
+def smart_choice(tier: str):
+    """Modo inteligente (`LLM_SMART_ROUTING`): el modelo más barato que cumple la tarea del nivel, o None si
+    el modo está apagado, es el nivel local o no hay ninguno disponible (entonces se usa la configuración fija)."""
+    if not settings.LLM_SMART_ROUTING or tier == "simple":
+        return None
+    from app.ai import catalog
+    try:
+        return catalog.for_tier(tier, providers=catalog.available_providers() - {"ollama"})
+    except LookupError:
+        return None
+
+
+def active_provider(tier: str) -> str | None:
+    choice = smart_choice(tier)
+    return choice.spec.provider if choice else cloud_provider()
+
+
 def tier_model(tier: str) -> str:
+    choice = smart_choice(tier)
+    if choice is not None:
+        return choice.spec.model
     if tier != "simple" and cloud_provider() == "kimi":
         return settings.KIMI_MODEL
     return {"fast": settings.LLM_MODEL_FAST, "standard": settings.LLM_MODEL_STANDARD,
@@ -66,7 +86,7 @@ class TieredLLM(LLMAdapter):
                 record_usage(response, self.tier, operation)
                 return response
             except Exception as exc:  # red, API, saldo o rechazo: se degrada a Ollama
-                label = CLOUD_LABEL[cloud_provider()]
+                label = CLOUD_LABEL.get(active_provider(self.tier), "Claude")
                 logger.warning("%s no disponible para %s (%s: %s): se usa Ollama", label, operation,
                                type(exc).__name__, str(exc)[:200])
                 response = await call(self.local, None)
@@ -117,7 +137,7 @@ class TieredLLM(LLMAdapter):
             if self.claude is None or started:
                 raise
             logger.warning("%s no disponible para chat_stream (%s): se usa Ollama",
-                           CLOUD_LABEL[cloud_provider()], type(exc).__name__)
+                           CLOUD_LABEL.get(active_provider(self.tier), "Claude"), type(exc).__name__)
             async for token in self.local.chat_stream(messages, model=model, temperature=temperature,
                                                       max_tokens=max_tokens):
                 yield token
@@ -146,6 +166,8 @@ class ModelRouter(TieredLLM):
 
 def _default_claude_factory():
     """Fábrica del modelo de nube por nivel (el nombre se conserva: antes solo existía Claude)."""
+    if settings.LLM_SMART_ROUTING:
+        return _smart_factory
     provider = cloud_provider()
     if provider is None:
         return lambda tier: None
@@ -158,6 +180,22 @@ def _default_claude_factory():
     def factory(tier: str):
         return AnthropicAdapter(default_model=tier_model(tier), effort=EFFORT.get(tier))
     return factory
+
+
+def _smart_factory(tier: str):
+    """El adaptador del proveedor que eligió el selector para este nivel (None si no hay ninguno con clave)."""
+    choice = smart_choice(tier)
+    if choice is None:
+        return None
+    provider, model = choice.spec.provider, choice.spec.model
+    if provider == "anthropic":
+        from app.ai.anthropic_adapter import AnthropicAdapter
+        return AnthropicAdapter(default_model=model, effort=EFFORT.get(tier))
+    if provider == "kimi":
+        from app.ai.kimi_adapter import KimiAdapter
+        return KimiAdapter(default_model=model)
+    from app.ai.openrouter_adapter import OpenRouterAdapter
+    return OpenRouterAdapter(default_model=model)
 
 
 def for_tier(llm: LLMAdapter, tier: str) -> LLMAdapter:

@@ -26,6 +26,9 @@ x-backend-env: &backend-env
   # O Kimi (Moonshot): LLM_CLOUD_PROVIDER=kimi, o "auto" sin clave de Anthropic
   LLM_CLOUD_PROVIDER: ${LLM_CLOUD_PROVIDER:-auto}
   KIMI_API_KEY: ${KIMI_API_KEY:-}
+  # OpenRouter y modo inteligente (el modelo más barato que cumpla la calidad de cada tarea)
+  OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
+  LLM_SMART_ROUTING: ${LLM_SMART_ROUTING:-false}
   KIMI_BASE_URL: ${KIMI_BASE_URL:-https://api.moonshot.ai/v1}
   KIMI_MODEL: ${KIMI_MODEL:-kimi-k2.6}
   EMBEDDING_PROVIDER: ollama

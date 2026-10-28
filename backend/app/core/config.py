@@ -46,6 +46,11 @@ class Settings:
     # Anthropic según la complejidad. Sin ANTHROPIC_API_KEY todo va a Ollama (degradado).
     ANTHROPIC_API_KEY: str = os.getenv("ANTHROPIC_API_KEY", "")
     # Proveedor de nube: "auto" (Claude si hay clave, si no Kimi), "anthropic" o "kimi"
+    # OpenRouter (acceso a cientos de modelos con una sola clave) y modo inteligente: el enrutador elige el modelo
+    # más barato que cumpla la calidad de cada tarea (app/ai/catalog.py). Apagado: los modelos fijos de siempre.
+    OPENROUTER_API_KEY: str = os.getenv("OPENROUTER_API_KEY", "")
+    OPENROUTER_BASE_URL: str = os.getenv("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1")
+    LLM_SMART_ROUTING: bool = os.getenv("LLM_SMART_ROUTING", "false").lower() in ("1", "true", "yes")
     LLM_CLOUD_PROVIDER: str = os.getenv("LLM_CLOUD_PROVIDER", "auto").strip().lower()
     # Kimi (Moonshot), compatible con OpenAI: la misma cuenta de Xmart Travel. Un solo modelo para todos los niveles.
     KIMI_API_KEY: str = os.getenv("KIMI_API_KEY", "")
