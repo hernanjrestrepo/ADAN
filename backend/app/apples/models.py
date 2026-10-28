@@ -1,4 +1,4 @@
-"""@pples: la moneda de ADÁN (1 @pple = USD 1). Se compran con dinero real y solo se gastan dentro de ADÁN y Paradixe;
+"""@pples: la moneda de ADÁN (US$ 1 = 1.000 @pples). Se compran con dinero real y solo se gastan dentro de ADÁN y Paradixe;
 nunca se convierten de vuelta en dinero. El saldo sale de sumar un libro de movimientos que no se borra."""
 from __future__ import annotations
 

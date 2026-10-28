@@ -20,8 +20,10 @@ from app.core.config import settings
 from app.models.models import Company, User
 
 CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
-MIN_PURCHASE, MAX_PURCHASE = 5, 5000
-PACKS = [25, 60, 120, 360]
+PER_USD = pricing.APPLES_PER_USD
+MIN_PURCHASE, MAX_PURCHASE = 5 * PER_USD, 5000 * PER_USD   # de US$ 5 a US$ 5.000 por compra
+PACKS = [25 * PER_USD, 60 * PER_USD, 120 * PER_USD, 360 * PER_USD]   # US$ 25, 60, 120 y 360
+MAX_GIFT = 10_000 * PER_USD
 
 
 class AppleError(ValueError):
@@ -103,8 +105,8 @@ def gift_balance(db: Session, user_id: str) -> Decimal:
 
 def gift(db: Session, admin: User, user: User, apples: int, reason: str) -> AppleMovement:
     """Un superadministrador regala @pples (pruebas, soporte, campañas). Queda escrito quién y por qué."""
-    if not 1 <= apples <= 10000:
-        raise AppleError("Se regalan entre 1 y 10.000 @pples por vez.")
+    if not 1 <= apples <= MAX_GIFT:
+        raise AppleError(f"Se regalan entre 1 y {MAX_GIFT:,} @pples por vez.".replace(",", "."))
     ensure_profile(db, user)
     m = _move(db, user.id, "regalo", apples, f"regalo:{secrets.token_hex(8)}",
               f"Regalo de Paradixe ({admin.email}): {reason or 'pruebas'}")
@@ -139,12 +141,13 @@ def _move(db: Session, user_id: str, kind: str, amount, reference: str, detail: 
 # ---------- Compras con dinero real ----------
 
 def amount_cop(apples: int) -> int:
-    return apples * settings.APPLE_TRM
+    """Pesos a cobrar por una compra: las @pples en dólares, por la TRM."""
+    return round(apples * settings.APPLE_TRM / PER_USD)
 
 
 def create_purchase(db: Session, user: User, apples: int) -> ApplePurchase:
     if not MIN_PURCHASE <= apples <= MAX_PURCHASE:
-        raise AppleError(f"Puedes comprar entre {MIN_PURCHASE} y {MAX_PURCHASE} @pples por compra.")
+        raise AppleError("Puedes comprar entre {:,} y {:,} @pples por compra.".format(MIN_PURCHASE, MAX_PURCHASE).replace(",", "."))
     ensure_profile(db, user)
     p = ApplePurchase(user_id=user.id, apples=apples, amount_cop=amount_cop(apples), trm=settings.APPLE_TRM,
                       provider=gateway.provider())

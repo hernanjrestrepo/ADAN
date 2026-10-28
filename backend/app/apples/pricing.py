@@ -1,11 +1,12 @@
-"""Precio de cada Nivel en @pples (1 @pple = USD 1).
+"""Precio de cada Nivel: se fija en dólares y se cobra en @pples (US$ 1 = 1.000 @pples).
 
 Costo: lo que cuesta prestar el Nivel, redondeado hacia arriba a un decimal. El costo por llamada sale de lo medido
 con Kimi en el piloto de Xmart Travel (tabla `llm_usage`, oct-2026): una llamada estructurada ~USD 0,0061, una con
 búsqueda en internet ~USD 0,034 y un documento largo ~USD 0,05, con holgura por reintentos y segundas vueltas.
 
-Precio: lo fija Hernán (2026-10-24). El Dolor es barato para que no haya resistencia a la entrada; el resto deja un
-margen del orden del 90 %. El desarrollo del MVP, el dominio, el servidor y demás servicios se cotizan aparte.
+Precio: lo fija Hernán. El 2026-10-24 eran 95 @pples de US$ 1; el 2026-10-29 pasó a US$ 45 los 7 Niveles, repartidos
+en la misma proporción y con US$ 1 = 1.000 @pples. El desarrollo del MVP, el dominio, el servidor y demás servicios
+se cotizan aparte (costo ÷ 0,10, es decir, un margen del 90 %).
 """
 from __future__ import annotations
 
@@ -33,7 +34,11 @@ LEVEL_NAMES = {1: "El Dolor", 2: "Propuesta de Valor", 3: "Plan de Negocios", 4:
 SAFETY_FACTOR = 1.5          # reintentos, segundas sesiones del Board, preguntas de más
 INFRA_USD_PER_LEVEL = 0.60   # servidor, base de datos, memoria vectorial y almacenamiento de documentos
 TARGET_COST_SHARE = 0.10     # el costo es el 10 % del precio en lo que se cotiza aparte (MVP construido)
-LEVEL_APPLES = {1: 5, 2: 10, 3: 20, 4: 15, 5: 15, 6: 15, 7: 15}
+APPLES_PER_USD = settings.APPLES_PER_USD
+TARGET_MARGIN = 0.90          # la meta de utilidad sobre el costo de prestar el Nivel
+# Precio de cada Nivel en dólares: 45 en total, en la proporción 5:10:20:15:15:15:15 de la tabla anterior
+LEVEL_USD = {1: 2.50, 2: 5.00, 3: 9.50, 4: 7.00, 5: 7.00, 6: 7.00, 7: 7.00}
+LEVEL_APPLES = {n: round(usd * APPLES_PER_USD) for n, usd in LEVEL_USD.items()}
 REFERRAL_RATE = 0.005        # por nivel de la red
 REFERRAL_DEPTH = 7           # el nivel 1 es quien invitó directamente
 
@@ -54,9 +59,11 @@ class LevelPrice:
     llm_usd: float
     infra_usd: float
     cost_usd: float          # redondeado hacia arriba a un decimal
+    price_usd: float
     apples: int
     profit_usd: float
     margin: float            # sobre el costo de prestar el Nivel
+    margin_gap: float        # cuánto falta (en puntos) para la meta del 90 %; 0 si ya se cumple
     gateway_usd: float       # comisión de Wompi si el Nivel se pagara en una compra aparte
     referral_usd: float      # 3,5 % de la red
     margin_after_fees: float
@@ -70,30 +77,37 @@ def level_cost(level: int) -> tuple[float, float]:
 
 def level_price(level: int) -> LevelPrice:
     llm, cost = level_cost(level)
-    apples = LEVEL_APPLES[level]
-    gateway = apples * gateway_rate() + gateway_fixed_usd()
-    referral = apples * REFERRAL_RATE * REFERRAL_DEPTH
+    usd = LEVEL_USD[level]
+    gateway = usd * gateway_rate() + gateway_fixed_usd()
+    referral = usd * REFERRAL_RATE * REFERRAL_DEPTH
+    margin = 1 - cost / usd
     return LevelPrice(level=level, name=LEVEL_NAMES[level], llm_usd=round(llm, 3), infra_usd=INFRA_USD_PER_LEVEL,
-                      cost_usd=cost, apples=apples, profit_usd=round(apples - cost, 2),
-                      margin=round(1 - cost / apples, 4), gateway_usd=round(gateway, 3), referral_usd=round(referral, 3),
-                      margin_after_fees=round(1 - (cost + gateway + referral) / apples, 4))
+                      cost_usd=cost, price_usd=usd, apples=LEVEL_APPLES[level], profit_usd=round(usd - cost, 2),
+                      margin=round(margin, 4), margin_gap=round(max(0.0, TARGET_MARGIN - margin), 4),
+                      gateway_usd=round(gateway, 3), referral_usd=round(referral, 3),
+                      margin_after_fees=round(1 - (cost + gateway + referral) / usd, 4))
 
 
 def mvp_quote(input_tokens: int, output_tokens: int) -> dict:
     """Cotización del MVP construido (aparte del Nivel 4): costo de tokens con holgura, dividido entre 0,10."""
     from app.core.config import settings as s
     cost = (input_tokens * s.KIMI_PRICE_INPUT + output_tokens * s.KIMI_PRICE_OUTPUT) / 1_000_000 * SAFETY_FACTOR
-    return {"cost_usd": round(cost, 2), "apples": int(math.ceil(cost / TARGET_COST_SHARE))}
+    price_usd = cost / TARGET_COST_SHARE
+    return {"cost_usd": round(cost, 2), "price_usd": round(price_usd, 2),
+            "apples": int(math.ceil(price_usd * APPLES_PER_USD))}
 
 
 def price_table() -> dict:
     levels = [level_price(n) for n in range(1, 8)]
-    revenue = sum(p.apples for p in levels)
+    revenue = round(sum(p.price_usd for p in levels), 2)
     cost = round(sum(p.cost_usd for p in levels), 2)
     fees = sum(p.gateway_usd + p.referral_usd for p in levels)
     return {
         "levels": [asdict(p) for p in levels],
-        "total_apples": revenue,
+        "apples_per_usd": APPLES_PER_USD,
+        "target_margin": TARGET_MARGIN,
+        "total_usd": revenue,
+        "total_apples": sum(p.apples for p in levels),
         "total_cost_usd": cost,
         "total_profit_usd": round(revenue - cost, 2),
         "margin": round(1 - cost / revenue, 4),
@@ -110,3 +124,11 @@ def price_table() -> dict:
 
 def apples_for(level: int) -> int:
     return LEVEL_APPLES[level]
+
+
+def usd_to_apples(usd: float) -> int:
+    return round(usd * APPLES_PER_USD)
+
+
+def apples_to_usd(apples: float) -> float:
+    return apples / APPLES_PER_USD

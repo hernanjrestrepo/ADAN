@@ -61,7 +61,7 @@ class Settings:
     # Comunidad: correos de los curadores de Paradixe que marcan las Selecciones Paradixe (separados por comas)
     PARADIXE_CURATORS: str = os.getenv("PARADIXE_CURATORS", "")
 
-    # @pples (1 @pple = USD 1) y su pasarela. "simulador" mientras no haya llaves de Wompi; con llaves de producción
+    # @pples (US$ 1 = 1.000 @pples) y su pasarela. "simulador" mientras no haya llaves de Wompi; con llaves de producción
     # (pub_prod_) no se cobra hasta encender PAYMENTS_LIVE, con aprobación de Hernán.
     PUBLIC_URL: str = os.getenv("PUBLIC_URL", "http://localhost:5173").rstrip("/")
     PAYMENTS_PROVIDER: str = os.getenv("PAYMENTS_PROVIDER", "simulador")
@@ -74,10 +74,11 @@ class Settings:
     WOMPI_FEE_FIXED_COP: int = int(os.getenv("WOMPI_FEE_FIXED_COP", "700"))
     IVA_RATE: float = float(os.getenv("IVA_RATE", "0.19"))
     APPLE_TRM: int = int(os.getenv("APPLE_TRM", "4000"))  # COP por USD para cobrar las @pples
+    APPLES_PER_USD: int = int(os.getenv("APPLES_PER_USD", "1000"))  # US$ 1 = 1.000 @pples
     # Exigir el pago del Nivel con @pples antes de trabajarlo (se enciende cuando la pasarela esté lista)
     APPLES_REQUIRED: bool = os.getenv("APPLES_REQUIRED", "false").lower() in ("1", "true", "yes")
     # Regalo de bienvenida a quien se registra con un enlace de invitación (alcanza para el Nivel 1)
-    APPLES_WELCOME_REFERRAL: int = int(os.getenv("APPLES_WELCOME_REFERRAL", "5"))
+    APPLES_WELCOME_REFERRAL: int = int(os.getenv("APPLES_WELCOME_REFERRAL", "5000"))  # US$ 5
     # Transcripción local de audio y video (faster-whisper): tamaño del modelo e idioma ("" = detectar)
     WHISPER_MODEL: str = os.getenv("WHISPER_MODEL", "small")
     WHISPER_LANGUAGE: str = os.getenv("WHISPER_LANGUAGE", "es")

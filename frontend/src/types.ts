@@ -833,7 +833,7 @@ export interface CommunityConnection {
   other_email: string | null
 }
 
-// @pples (1 @pple = USD 1)
+// @pples (US$ 1 = 1.000 @pples)
 export interface AppleMovement {
   id: string
   kind: 'compra' | 'nivel' | 'referido' | 'bienvenida' | 'ajuste' | string
@@ -868,9 +868,11 @@ export interface AppleLevelPrice {
   llm_usd: number
   infra_usd: number
   cost_usd: number
+  price_usd: number
   apples: number
   profit_usd: number
   margin: number
+  margin_gap: number
   gateway_usd: number
   referral_usd: number
   margin_after_fees: number
@@ -878,13 +880,16 @@ export interface AppleLevelPrice {
 
 export interface ApplePrices {
   levels: AppleLevelPrice[]
+  apples_per_usd: number
+  target_margin: number
+  total_usd: number
   total_apples: number
   total_cost_usd: number
   total_profit_usd: number
   margin: number
   margin_after_fees: number
   apart: string[]
-  mvp_examples: Record<string, { cost_usd: number; apples: number }>
+  mvp_examples: Record<string, { cost_usd: number; price_usd: number; apples: number }>
   packs: number[]
   trm: number
   provider: string
@@ -920,11 +925,12 @@ export interface AdminSummary {
   apples_gifted: number
   apples_referral: number
   apples_in_wallets: number
-  levels: { level: number; name: string; apples: number; paid: number; revenue: number; cost: number }[]
+  levels: { level: number; name: string; apples: number; price_usd: number; paid: number; revenue: number; revenue_usd: number; cost: number }[]
   levels_revenue: number
+  levels_revenue_usd: number
   levels_cost: number
   levels_margin: number | null
-  config: { provider: string; live: boolean; required: boolean; welcome_referral: number; trm: number }
+  config: { provider: string; live: boolean; required: boolean; welcome_referral: number; trm: number; apples_per_usd: number }
 }
 
 export interface AdminUser {

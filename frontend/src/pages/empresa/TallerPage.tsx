@@ -25,12 +25,12 @@ function SiteCard({ companyId, tipo, site, ws, onChange, onError }: {
   const building = site?.estado === 'construyendo'
   const extraTweak = (site?.ajustes ?? 0) >= ws.ajustes_gratis
   const build = async () => {
-    if (!isLanding && !window.confirm(`El prototipo cuesta ${ws.precio_prototipo} @pples. ¿Lo construimos?`)) return
+    if (!isLanding && !window.confirm(`El prototipo cuesta ${ws.precio_prototipo.toLocaleString('es-CO')} @pples. ¿Lo construimos?`)) return
     setBusy(true)
     try { onChange(await api.buildSite(companyId, tipo, !isLanding)) } catch (e) { onError(errorMessage(e)) } finally { setBusy(false) }
   }
   const tweak = async () => {
-    if (extraTweak && !window.confirm(`Este ajuste cuesta ${ws.precio_ajuste} @pples (los primeros ${ws.ajustes_gratis} van incluidos). ¿Seguimos?`)) return
+    if (extraTweak && !window.confirm(`Este ajuste cuesta ${ws.precio_ajuste.toLocaleString('es-CO')} @pples (los primeros ${ws.ajustes_gratis} van incluidos). ¿Seguimos?`)) return
     setBusy(true)
     try {
       onChange(await api.tweakSite(companyId, tipo, instruction.trim(), extraTweak))
@@ -46,7 +46,7 @@ function SiteCard({ companyId, tipo, site, ws, onChange, onError }: {
           <p className="text-sm text-adan-muted">
             {isLanding
               ? 'Una página con tu marca que explica la promesa y capta interesados reales (con su autorización de datos). Incluida en el Nivel 4.'
-              : `Las pantallas principales de tu producto, navegables, para mostrar y probar con clientes. Cuesta ${ws.precio_prototipo} @pples; se aprueba antes de construir.`}
+              : `Las pantallas principales de tu producto, navegables, para mostrar y probar con clientes. Cuesta ${ws.precio_prototipo.toLocaleString('es-CO')} @pples; se aprueba antes de construir.`}
           </p>
         </div>
         {site?.version ? <span className="rounded-full bg-adan-surface-2 px-2 py-0.5 text-xs">Versión {site.version}</span> : null}
@@ -68,7 +68,7 @@ function SiteCard({ companyId, tipo, site, ws, onChange, onError }: {
               placeholder="Pídele un cambio a Genexis: «el botón más grande», «agrega precios», «más fotos de playa»…"
               className="flex-1 rounded-xl border border-adan-border bg-adan-bg px-3 py-2 text-sm" />
             <Button onClick={tweak} disabled={instruction.trim().length < 3 || busy} loading={busy}>
-              Ajustar{extraTweak ? ` · ${ws.precio_ajuste} @pples` : ''}
+              Ajustar{extraTweak ? ` · ${ws.precio_ajuste.toLocaleString('es-CO')} @pples` : ''}
             </Button>
           </div>
           {site.ultimo_ajuste && <p className="mt-1 text-xs text-adan-muted">Último ajuste: {site.ultimo_ajuste}</p>}
@@ -77,7 +77,7 @@ function SiteCard({ companyId, tipo, site, ws, onChange, onError }: {
       {!building && (
         <Button className="mt-3" variant={site?.url ? 'secondary' : 'primary'} onClick={build} loading={busy}
           disabled={!ws.especificacion && !isLanding}>
-          {site?.url ? 'Construir de nuevo' : isLanding ? 'Construir la landing' : `Construir el prototipo · ${ws.precio_prototipo} @pples`}
+          {site?.url ? 'Construir de nuevo' : isLanding ? 'Construir la landing' : `Construir el prototipo · ${ws.precio_prototipo.toLocaleString('es-CO')} @pples`}
         </Button>
       )}
       {!isLanding && !ws.especificacion && <p className="mt-1 text-xs text-adan-muted">Primero escribe la especificación del producto.</p>}

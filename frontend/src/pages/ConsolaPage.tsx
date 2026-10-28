@@ -41,12 +41,12 @@ function Summary({ s }: { s: AdminSummary }) {
         <Kpi label="Usuarios" value={num(s.users)} hint={`${s.users_30d} en los últimos 30 días`} />
         <Kpi label="Empresas" value={num(s.companies)} />
         <Kpi label="Llegaron por invitación" value={num(s.referred_users)} />
-        <Kpi label="Ventas reales" value={cop(s.purchases_cop)} hint={`${s.purchases} compras · ${s.apples_sold} @pples`} />
+        <Kpi label="Ventas reales" value={cop(s.purchases_cop)} hint={`${s.purchases} compras · ${num(s.apples_sold)} @pples`} />
         <Kpi label="@pples en billeteras" value={num(s.apples_in_wallets)} />
         <Kpi label="@pples regaladas" value={num(s.apples_gifted)} hint="bienvenidas y regalos" />
         <Kpi label="Pagado a la red" value={num(s.apples_referral)} hint="0,5 % × 7 niveles" />
         <Kpi label="Margen de los Niveles" value={s.levels_margin === null ? '—' : `${(s.levels_margin * 100).toFixed(1)} %`}
-          hint={`${num(s.levels_revenue)} @pples vendidas · costo USD ${num(s.levels_cost)}`} />
+          hint={`USD ${num(s.levels_revenue_usd)} vendidos (${num(s.levels_revenue)} @pples) · costo USD ${num(s.levels_cost)}`} />
       </div>
       <Card>
         <h2 className="font-bold">Niveles pagados</h2>
@@ -55,7 +55,7 @@ function Summary({ s }: { s: AdminSummary }) {
           <tbody>
             {s.levels.map((l) => (
               <tr key={l.level} className="border-t border-adan-border">
-                <td className="py-2">{l.level}. {l.name}</td><td>🍎 {l.apples}</td><td>{l.paid}</td><td>🍎 {num(l.revenue)}</td><td>USD {num(l.cost)}</td>
+                <td className="py-2">{l.level}. {l.name}</td><td>USD {l.price_usd.toFixed(2)} · 🍎 {num(l.apples)}</td><td>{l.paid}</td><td>USD {num(l.revenue_usd)}</td><td>USD {num(l.cost)}</td>
               </tr>
             ))}
           </tbody>
@@ -259,7 +259,7 @@ function Users() {
                   <td className="py-3 pr-3">
                     {gift?.id === u.id ? (
                       <div className="flex flex-col gap-1 w-44">
-                        <input type="number" min={1} max={10000} value={gift.apples} onChange={(e) => setGift({ ...gift, apples: e.target.value })}
+                        <input type="number" min={1} max={10000000} value={gift.apples} onChange={(e) => setGift({ ...gift, apples: e.target.value })}
                           aria-label="@pples a regalar" className="rounded-lg border border-adan-border bg-adan-bg px-2 py-1 text-xs" />
                         <input value={gift.reason} onChange={(e) => setGift({ ...gift, reason: e.target.value })} placeholder="Motivo (pruebas…)" maxLength={120}
                           aria-label="Motivo del regalo" className="rounded-lg border border-adan-border bg-adan-bg px-2 py-1 text-xs" />
@@ -270,7 +270,7 @@ function Users() {
                       </div>
                     ) : (
                       <div className="flex flex-wrap gap-1">
-                        <Button size="sm" variant="secondary" onClick={() => { setMsg(null); setGift({ id: u.id, apples: '20', reason: 'pruebas' }) }}>🎁 Regalar</Button>
+                        <Button size="sm" variant="secondary" onClick={() => { setMsg(null); setGift({ id: u.id, apples: '20000', reason: 'pruebas' }) }}>🎁 Regalar</Button>
                         <Button size="sm" variant="secondary" onClick={() => enter(u)} title="Entrar a su cuenta para revisarla (solo lectura)">👁️ Entrar</Button>
                         <Button size="sm" variant="ghost" className="text-adan-danger!" onClick={() => { setMsg(null); setDel(u) }}>🗑️ Borrar</Button>
                       </div>
@@ -330,7 +330,7 @@ export default function ConsolaPage() {
           {tab === 'visitas' && <Visits />}
           {tab === 'usuarios' && <Users />}
           {tab === 'compras' && <Table<AdminPurchase> load={api.adminPurchases} empty="Aún no hay compras." cols={[
-            ['Fecha', (p) => date(p.created_at)], ['Usuario', (p) => p.email], ['@pples', (p) => `🍎 ${p.apples}`], ['Valor', (p) => cop(p.amount_cop)],
+            ['Fecha', (p) => date(p.created_at)], ['Usuario', (p) => p.email], ['@pples', (p) => `🍎 ${num(p.apples)}`], ['Valor', (p) => cop(p.amount_cop)],
             ['Pasarela', (p) => p.provider], ['Estado', (p) => p.status], ['Transacción', (p) => p.external_id ?? '—'],
           ]} />}
           {tab === 'movimientos' && <Table<AdminMovement> load={api.adminMovements} empty="Aún no hay movimientos." cols={[

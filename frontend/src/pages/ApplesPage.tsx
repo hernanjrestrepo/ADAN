@@ -7,7 +7,7 @@ import { LoadingState } from '../components/ui/States'
 import { api, errorMessage } from '../lib/api'
 import type { AppleNetwork, ApplePrices, ApplePurchase, AppleWallet } from '../types'
 
-// Billetera de @pples: 1 @pple = USD 1. Se compran con dinero real (Wompi) y se gastan en los Niveles y servicios de
+// Billetera de @pples: US$ 1 = 1.000 @pples. Se compran con dinero real (Wompi) y se gastan en los Niveles y servicios de
 // ADÁN y Paradixe; no se convierten de vuelta en dinero. También la red: 0,5 % por cada uno de 7 niveles hacia arriba.
 
 const KIND_LABEL: Record<string, string> = {
@@ -21,6 +21,10 @@ function cop(n: number) {
 
 function apples(n: number) {
   return n.toLocaleString('es-CO', { maximumFractionDigits: 3 })
+}
+
+function usd(n: number) {
+  return n.toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2 })
 }
 
 export default function ApplesPage() {
@@ -88,7 +92,7 @@ export default function ApplesPage() {
               {purchase.status === 'pendiente' && simulated ? (
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-wider text-adan-warning">Pasarela de prueba (simulador)</p>
-                  <h2 className="mt-1 text-xl font-bold">Pagar {purchase.apples} @pples · {cop(purchase.amount_cop)}</h2>
+                  <h2 className="mt-1 text-xl font-bold">Pagar {apples(purchase.apples)} @pples · {cop(purchase.amount_cop)}</h2>
                   <p className="mt-1 text-sm text-adan-muted">Aún no hay llaves de Wompi: este paso simula la página de pago. No se cobra dinero real.</p>
                   <div className="mt-4 flex gap-2">
                     <Button onClick={() => simulate(true)} loading={busy}>Aprobar pago de prueba</Button>
@@ -97,7 +101,7 @@ export default function ApplesPage() {
                 </div>
               ) : (
                 <p className="text-sm">
-                  {purchase.status === 'aprobada' ? `✅ Listo: se acreditaron ${purchase.apples} @pples a tu billetera.`
+                  {purchase.status === 'aprobada' ? `✅ Listo: se acreditaron ${apples(purchase.apples)} @pples a tu billetera.`
                     : purchase.status === 'rechazada' ? '❌ El pago no se aprobó. No se te cobró nada; puedes intentarlo de nuevo.'
                       : '⏳ Estamos esperando la confirmación de la pasarela. Recarga en unos segundos.'}
                 </p>
@@ -109,25 +113,25 @@ export default function ApplesPage() {
             <Card className="md:col-span-1">
               <p className="text-sm text-adan-muted">Tu saldo</p>
               <p className="mt-1 text-5xl font-black">🍎 {apples(wallet.balance)}</p>
-              <p className="mt-1 text-xs text-adan-muted">@pples · 1 @pple = USD 1 · se gastan dentro de ADÁN y Paradixe</p>
+              <p className="mt-1 text-xs text-adan-muted">@pples · US$ 1 = 1.000 @pples · se gastan dentro de ADÁN y Paradixe</p>
               {wallet.provider === 'simulador' && <p className="mt-3 rounded-lg bg-adan-warning/10 p-2 text-xs text-adan-warning">Modo de prueba: los pagos se simulan hasta conectar Wompi.</p>}
             </Card>
             <Card className="md:col-span-2">
               <h2 className="font-bold">Cargar @pples</h2>
-              <p className="text-xs text-adan-muted mt-1">Pagas en pesos con tarjeta, PSE o Nequi en la página segura de Wompi. TRM de cobro: {cop(prices.trm)} por @pple.</p>
+              <p className="text-xs text-adan-muted mt-1">Pagas en pesos con tarjeta, PSE o Nequi en la página segura de Wompi. TRM de cobro: {cop(prices.trm)} por dólar (US$ 1 = {apples(prices.apples_per_usd)} @pples).</p>
               <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-2">
                 {prices.packs.map((n) => (
                   <button key={n} type="button" disabled={busy} onClick={() => buy(n)}
                     className="rounded-xl border border-adan-border p-3 text-left hover:border-adan-accent disabled:opacity-50">
-                    <span className="block text-lg font-bold">🍎 {n}</span>
-                    <span className="block text-xs text-adan-muted">{cop(n * prices.trm)}</span>
+                    <span className="block text-lg font-bold">{usd(n / prices.apples_per_usd)}</span>
+                    <span className="block text-xs text-adan-muted">🍎 {apples(n)} · {cop(n / prices.apples_per_usd * prices.trm)}</span>
                   </button>
                 ))}
               </div>
-              <form className="mt-3 flex gap-2" onSubmit={(e) => { e.preventDefault(); if (customN >= 5) void buy(customN) }}>
-                <input type="number" min={5} max={5000} value={custom} onChange={(e) => setCustom(e.target.value)} placeholder="Otra cantidad (mín. 5)"
-                  aria-label="Cantidad de @pples" className="flex-1 rounded-xl border border-adan-border bg-adan-bg px-3 py-2 text-sm" />
-                <Button type="submit" disabled={busy || !(customN >= 5)}>Comprar{customN >= 5 ? ` · ${cop(customN * prices.trm)}` : ''}</Button>
+              <form className="mt-3 flex gap-2" onSubmit={(e) => { e.preventDefault(); if (customN >= 5) void buy(Math.round(customN * prices.apples_per_usd)) }}>
+                <input type="number" min={5} max={5000} value={custom} onChange={(e) => setCustom(e.target.value)} placeholder="Otro monto en dólares (mín. US$ 5)"
+                  aria-label="Monto en dólares" className="flex-1 rounded-xl border border-adan-border bg-adan-bg px-3 py-2 text-sm" />
+                <Button type="submit" disabled={busy || !(customN >= 5)}>Comprar{customN >= 5 ? ` · ${usd(customN)} = 🍎 ${apples(customN * prices.apples_per_usd)} · ${cop(customN * prices.trm)}` : ''}</Button>
               </form>
             </Card>
           </section>
@@ -136,7 +140,7 @@ export default function ApplesPage() {
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div>
                 <h2 className="font-bold">Precio de cada Nivel</h2>
-                <p className="text-xs text-adan-muted">Los 7 Niveles completos: {prices.total_apples} @pples. Cada Nivel se paga una sola vez por empresa.</p>
+                <p className="text-xs text-adan-muted">Los 7 Niveles completos: {usd(prices.total_usd)} ({apples(prices.total_apples)} @pples). Cada Nivel se paga una sola vez por empresa.</p>
               </div>
               <button type="button" onClick={() => setShowCosts((v) => !v)} className="text-xs text-adan-accent hover:underline">
                 {showCosts ? 'Ocultar costos' : 'Ver de qué se compone'}
@@ -145,7 +149,7 @@ export default function ApplesPage() {
             <div className="mt-3 overflow-x-auto">
               <table className="w-full text-sm">
                 <thead className="text-left text-xs text-adan-muted">
-                  <tr><th className="py-2">Nivel</th>{showCosts && <><th>Costo</th><th>Utilidad</th><th>Margen</th></>}<th className="text-right">@pples</th></tr>
+                  <tr><th className="py-2">Nivel</th>{showCosts && <><th>Costo</th><th>Utilidad</th><th>Margen</th></>}<th className="text-right">Precio</th><th className="text-right">@pples</th></tr>
                 </thead>
                 <tbody>
                   {prices.levels.map((l) => (
@@ -154,21 +158,22 @@ export default function ApplesPage() {
                       {showCosts && <>
                         <td>${l.cost_usd.toFixed(1)}</td><td>${l.profit_usd.toFixed(1)}</td><td>{(l.margin * 100).toFixed(1)} %</td>
                       </>}
-                      <td className="text-right font-bold">🍎 {l.apples}</td>
+                      <td className="text-right font-bold">{usd(l.price_usd)}</td>
+                      <td className="text-right text-adan-muted">🍎 {apples(l.apples)}</td>
                     </tr>
                   ))}
                   {showCosts && (
                     <tr className="border-t border-adan-border font-semibold">
                       <td className="py-2">Total</td><td>${prices.total_cost_usd.toFixed(1)}</td><td>${prices.total_profit_usd.toFixed(1)}</td>
-                      <td>{(prices.margin * 100).toFixed(1)} %</td><td className="text-right">🍎 {prices.total_apples}</td>
+                      <td>{(prices.margin * 100).toFixed(1)} %</td><td className="text-right font-bold">{usd(prices.total_usd)}</td><td className="text-right text-adan-muted">🍎 {apples(prices.total_apples)}</td>
                     </tr>
                   )}
                 </tbody>
               </table>
             </div>
             <p className="mt-3 text-xs text-adan-muted">
-              Se cotiza aparte: {prices.apart.join(', ').toLowerCase()}. Ejemplo de MVP listo: una landing ~🍎 {prices.mvp_examples.landing?.apples},
-              una app sencilla ~🍎 {prices.mvp_examples.app?.apples}; ADÁN te cotiza antes de construir.
+              Se cotiza aparte: {prices.apart.join(', ').toLowerCase()}. Ejemplo de MVP listo: una landing ~{usd(prices.mvp_examples.landing?.price_usd ?? 0)} (🍎 {apples(prices.mvp_examples.landing?.apples ?? 0)}),
+              una app sencilla ~{usd(prices.mvp_examples.app?.price_usd ?? 0)} (🍎 {apples(prices.mvp_examples.app?.apples ?? 0)}); ADÁN te cotiza antes de construir.
             </p>
           </Card>
 

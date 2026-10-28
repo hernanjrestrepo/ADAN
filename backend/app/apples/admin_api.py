@@ -22,7 +22,7 @@ router = APIRouter(prefix="/admin", tags=["consola Paradixe"])
 
 
 class GiftBody(BaseModel):
-    apples: int = Field(..., ge=1, le=10000)
+    apples: int = Field(..., ge=1, le=service.MAX_GIFT)
     reason: str = Field("", max_length=120)
 
 
@@ -41,8 +41,10 @@ def summary(db: Session = Depends(get_db), _: User = Depends(require_superadmin)
         p = pricing.level_price(n)
         count = by_level.get(n, 0)
         level_rows.append({"level": n, "name": p.name, "apples": p.apples, "paid": count,
-                           "revenue": count * p.apples, "cost": round(count * p.cost_usd, 2)})
+                           "price_usd": p.price_usd, "revenue": count * p.apples,
+                           "revenue_usd": round(count * p.price_usd, 2), "cost": round(count * p.cost_usd, 2)})
     revenue_levels = sum(r["revenue"] for r in level_rows)
+    revenue_levels_usd = round(sum(r["revenue_usd"] for r in level_rows), 2)
     cost_levels = sum(r["cost"] for r in level_rows)
     return {
         "users": db.query(User).count(),
@@ -57,10 +59,12 @@ def summary(db: Session = Depends(get_db), _: User = Depends(require_superadmin)
         "apples_in_wallets": _sum(db),
         "levels": level_rows,
         "levels_revenue": revenue_levels,
+        "levels_revenue_usd": revenue_levels_usd,
         "levels_cost": round(cost_levels, 2),
-        "levels_margin": round(1 - cost_levels / revenue_levels, 4) if revenue_levels else None,
+        "levels_margin": round(1 - cost_levels / revenue_levels_usd, 4) if revenue_levels_usd else None,
         "config": {"provider": gateway.provider(), "live": settings.PAYMENTS_LIVE, "required": settings.APPLES_REQUIRED,
-                   "welcome_referral": settings.APPLES_WELCOME_REFERRAL, "trm": settings.APPLE_TRM},
+                   "welcome_referral": settings.APPLES_WELCOME_REFERRAL, "trm": settings.APPLE_TRM,
+                   "apples_per_usd": settings.APPLES_PER_USD},
     }
 
 

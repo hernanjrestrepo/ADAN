@@ -55,3 +55,36 @@ def test_structured_output_schemas_use_only_what_claude_accepts():
 
     for schema in schemas:
         walk(schema)
+
+
+# ============================================================
+# Migración 0013: cada persona conserva su valor en dólares
+# ============================================================
+
+def test_rescale_migration_multiplies_balances_by_1000_and_back(tmp_path):
+    from alembic import command
+    from sqlalchemy import create_engine, text
+
+    from app.core.migrations import alembic_config
+
+    engine = create_engine(f"sqlite:///{tmp_path / 'm.db'}")
+    with engine.begin() as conn:
+        command.upgrade(alembic_config(conn), "0012")
+        conn.execute(text("INSERT INTO apple_movements (id, user_id, kind, amount, reference, detail, created_at) "
+                          "VALUES ('m1', 'u1', 'compra', 25, 'p1', 'x', '2026-10-20'), "
+                          "('m2', 'u1', 'nivel', -5, 'c:1', 'x', '2026-10-21'), "
+                          "('m3', 'u2', 'referido', 0.025, 'c:1', 'x', '2026-10-21')"))
+        conn.execute(text("INSERT INTO apple_purchases (id, user_id, apples, amount_cop, trm, provider, status, "
+                          "checkout_url, created_at) VALUES ('p1', 'u1', 25, 100000, 4000, 'wompi', 'aprobada', '', "
+                          "'2026-10-20')"))
+        conn.execute(text("INSERT INTO apple_level_unlocks (id, company_id, level_number, user_id, apples, created_at) "
+                          "VALUES ('l1', 'c', 1, 'u1', 5, '2026-10-21')"))
+        command.upgrade(alembic_config(conn), "0013")
+        amounts = {r[0]: float(r[1]) for r in conn.execute(text("SELECT id, amount FROM apple_movements"))}
+        assert amounts == {"m1": 25_000, "m2": -5_000, "m3": 25}                       # 25 → 25.000; 0,025 → 25
+        assert conn.execute(text("SELECT apples, amount_cop FROM apple_purchases")).one() == (25_000, 100000)
+        assert float(conn.execute(text("SELECT apples FROM apple_level_unlocks")).scalar()) == 5_000
+        command.downgrade(alembic_config(conn), "0012")
+        assert {r[0]: float(r[1]) for r in conn.execute(text("SELECT id, amount FROM apple_movements"))} == {
+            "m1": 25, "m2": -5, "m3": 0.025}
+        assert conn.execute(text("SELECT apples FROM apple_purchases")).scalar() == 25

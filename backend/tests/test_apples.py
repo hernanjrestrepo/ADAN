@@ -1,8 +1,10 @@
-"""@pples: precio con margen del 90 %, compras idempotentes, pago de Niveles y referidos de 7 niveles hacia arriba."""
+"""@pples (US$ 1 = 1.000): precios, compras idempotentes, pago de Niveles y referidos de 7 niveles hacia arriba."""
 import hashlib
 
 from app.apples import pricing
 from app.core.config import settings
+
+PER = pricing.APPLES_PER_USD  # @pples por dólar
 
 
 def _user(client, email, ref=None):
@@ -18,22 +20,34 @@ def _buy(client, h, apples):
     return client.post(f"/api/v1/apples/compras/{p['id']}/simular", headers=h, json={"approve": True}).json()
 
 
-def test_level_prices_and_margin():
+def test_level_prices_are_45_dollars_at_1000_apples_per_dollar():
     table = pricing.price_table()
-    assert [lv["apples"] for lv in table["levels"]] == [5, 10, 20, 15, 15, 15, 15]
+    assert PER == 1000 and table["apples_per_usd"] == 1000
+    assert [lv["price_usd"] for lv in table["levels"]] == [2.5, 5.0, 9.5, 7.0, 7.0, 7.0, 7.0]
+    assert [lv["apples"] for lv in table["levels"]] == [2500, 5000, 9500, 7000, 7000, 7000, 7000]
+    assert table["total_usd"] == 45.0 and table["total_apples"] == 45_000
     assert [lv["cost_usd"] for lv in table["levels"]] == [1.5, 1.4, 1.7, 1.4, 1.6, 1.5, 1.5]  # hacia arriba, 1 decimal
-    assert table["total_apples"] == 95 and table["total_cost_usd"] == 10.6
-    assert 0.88 <= table["margin"] < 0.90
-    assert table["mvp_examples"]["landing"]["apples"] >= 10 * table["mvp_examples"]["landing"]["cost_usd"]
+    assert table["total_cost_usd"] == 10.6
+    assert table["margin"] == round(1 - 10.6 / 45, 4)
+    # La meta es 90 %: la tabla dice cuánto falta en cada Nivel, sin maquillarlo
+    assert table["target_margin"] == 0.9 and all(lv["margin_gap"] > 0 for lv in table["levels"])
+
+
+def test_mvp_quote_keeps_a_90_percent_margin_and_is_in_new_units():
+    quote = pricing.mvp_quote(2_000_000, 300_000)
+    assert quote["price_usd"] == round(quote["cost_usd"] / 0.10, 2)         # costo ÷ 0,10
+    assert quote["apples"] >= 10 * quote["cost_usd"] * PER                   # y en @pples a 1.000 por dólar
+    assert pricing.apples_to_usd(quote["apples"]) >= quote["price_usd"] - 0.01
 
 
 def test_a_purchase_credits_once_even_if_confirmed_twice(client):
     h = _user(client, "compra@example.com")
-    p = client.post("/api/v1/apples/compras", headers=h, json={"apples": 25}).json()
+    p = client.post("/api/v1/apples/compras", headers=h, json={"apples": 25 * PER}).json()
+    # US$ 25 = 25.000 @pples = 25 × TRM pesos
     assert p["status"] == "pendiente" and p["amount_cop"] == 25 * settings.APPLE_TRM and "simulador=1" in p["checkout_url"]
     url = f"/api/v1/apples/compras/{p['id']}/simular"
-    assert client.post(url, headers=h, json={"approve": True}).json()["balance"] == 25
-    assert client.post(url, headers=h, json={"approve": True}).json()["balance"] == 25
+    assert client.post(url, headers=h, json={"approve": True}).json()["balance"] == 25 * PER
+    assert client.post(url, headers=h, json={"approve": True}).json()["balance"] == 25 * PER
     # Nadie consulta la compra de otro
     other = _user(client, "otro@example.com")
     assert client.get(f"/api/v1/apples/compras/{p['id']}", headers=other).status_code == 404
@@ -52,9 +66,9 @@ def test_paying_a_level_pays_seven_levels_up_and_nothing_for_signing_up(client, 
     cid = client.post("/api/v1/companies/", json={"name": "Café Andino"}, headers=payer).json()["id"]
     price = pricing.apples_for(1)
     assert client.post(f"/api/v1/apples/niveles/{cid}/1", headers=payer).status_code == 409  # sin saldo
-    _buy(client, payer, price + 5)
+    _buy(client, payer, price + 5 * PER)
     paid = client.post(f"/api/v1/apples/niveles/{cid}/1", headers=payer).json()
-    assert paid["balance"] == 5
+    assert paid["balance"] == 5 * PER
     assert client.post(f"/api/v1/apples/niveles/{cid}/1", headers=payer).status_code == 409  # una sola vez
     each = round(price * 0.005, 3)
     for i in range(1, 8):
@@ -66,7 +80,7 @@ def test_paying_a_level_pays_seven_levels_up_and_nothing_for_signing_up(client, 
 
 def test_wompi_events_need_a_valid_signature(client, monkeypatch):
     h = _user(client, "wompi@example.com")
-    p = client.post("/api/v1/apples/compras", headers=h, json={"apples": 10}).json()
+    p = client.post("/api/v1/apples/compras", headers=h, json={"apples": 10 * PER}).json()
     monkeypatch.setattr(settings, "WOMPI_EVENTS_SECRET", "secreto_de_prueba")
     tx = {"id": "tx-1", "status": "APPROVED", "reference": p["id"], "amount_in_cents": p["amount_cop"] * 100}
     props = ["transaction.id", "transaction.status", "transaction.amount_in_cents"]
@@ -77,7 +91,7 @@ def test_wompi_events_need_a_valid_signature(client, monkeypatch):
     assert client.post("/api/v1/apples/webhook/wompi", json=event).status_code == 401
     event["signature"]["checksum"] = checksum
     assert client.post("/api/v1/apples/webhook/wompi", json=event).json()["ok"] is True
-    assert client.get("/api/v1/apples/billetera", headers=h).json()["balance"] == 10
+    assert client.get("/api/v1/apples/billetera", headers=h).json()["balance"] == 10 * PER
 
 
 def test_explore_starts_without_an_idea_and_brand_is_saved(client):
@@ -109,9 +123,9 @@ def test_production_keys_do_not_charge_until_live(client, monkeypatch):
     monkeypatch.setattr(settings, "WOMPI_INTEGRITY_SECRET", "prod_integrity_abc")
     assert gateway.provider() == "simulador"
     h = _user(client, "vivo@example.com")
-    assert "simulador=1" in client.post("/api/v1/apples/compras", headers=h, json={"apples": 10}).json()["checkout_url"]
+    assert "simulador=1" in client.post("/api/v1/apples/compras", headers=h, json={"apples": 10 * PER}).json()["checkout_url"]
     monkeypatch.setattr(settings, "PAYMENTS_LIVE", True)
-    url = client.post("/api/v1/apples/compras", headers=h, json={"apples": 10}).json()["checkout_url"]
+    url = client.post("/api/v1/apples/compras", headers=h, json={"apples": 10 * PER}).json()["checkout_url"]
     assert url.startswith("https://checkout.wompi.co/p/?") and "signature%3Aintegrity=" in url
 
 
@@ -139,9 +153,9 @@ def test_only_superadmins_see_the_console_and_gift_apples(client, monkeypatch):
     users = client.get("/api/v1/admin/usuarios?q=tester", headers=admin).json()
     assert [u["email"] for u in users] == ["tester@example.com"]
     url = f"/api/v1/admin/usuarios/{users[0]['id']}/regalo"
-    assert client.post(url, headers=tester, json={"apples": 50}).status_code == 403
-    assert client.post(url, headers=admin, json={"apples": 50, "reason": "pruebas"}).json()["balance"] == 50
+    assert client.post(url, headers=tester, json={"apples": 50 * PER}).status_code == 403
+    assert client.post(url, headers=admin, json={"apples": 50 * PER, "reason": "pruebas"}).json()["balance"] == 50 * PER
     summary = client.get("/api/v1/admin/resumen", headers=admin).json()
-    assert summary["apples_gifted"] == 50 and summary["users"] >= 2 and len(summary["levels"]) == 7
+    assert summary["apples_gifted"] == 50 * PER and summary["users"] >= 2 and len(summary["levels"]) == 7
     moves = client.get("/api/v1/admin/movimientos", headers=admin).json()
     assert moves[0]["kind"] == "regalo" and "jefe@paradixe.xyz" in moves[0]["detail"]
