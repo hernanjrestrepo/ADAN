@@ -12,7 +12,7 @@ Supersede a: AD-006_Domain_Model_v1.1.md (aprobado y congelado — ver su Histor
 
 # AD-006 — Domain Model (Software) — v1.2
 
-> AD-005 respondió qué es una empresa. Este documento responde cómo la representa el software de ADÁN.
+> AD-005 respondió qué es una empresa. Este documento responde cómo la representa el software de ADAN.
 
 **Qué cambia en v1.2:** una sola fila, "Score" (sección 4). AD-FUNC-07 (Sistema de Scoring), al construirse, encontró que el **Score del Responsable** (antes "Founder Score", renombrado por la misma colisión ya corregida en AD-FUNC-06) es N:1 con **Usuario Principal**, no con Empresa — la definición de v1.0/v1.1 solo contemplaba "N:1 con Empresa". Se amplía la cardinalidad para cubrir ambos casos. No es una entidad nueva — es la generalización de una relación ya existente de una entidad ya existente, aplicando el mismo principio de Economía Conceptual que ya rigió cada cambio anterior de este árbol. El resto del documento (secciones 0-3, Hallazgos 1-3, las 38 entidades) permanece exactamente igual que v1.1.
 
@@ -38,23 +38,23 @@ Supersede a: AD-006_Domain_Model_v1.1.md (aprobado y congelado — ver su Histor
 
 ---
 
-## 4. Entidades Operativas de ADÁN
+## 4. Entidades Operativas de ADAN
 
 Sin cambios salvo la fila **Score**, actualizada en esta versión:
 
 | Entidad | Definición | Relación principal |
 |---|---|---|
-| Usuario | Persona con acceso a ADÁN | N:M con Proyecto |
-| Usuario Principal *(renombrado de "Fundador" — Hallazgo 1)* | El Usuario responsable de un Proyecto ante ADÁN | 1:N con Proyecto; N:1 con Empleado cuando es parte formal de la Empresa |
-| Proyecto | El contenedor de software donde ADÁN acompaña a una Empresa | 1:1 con Empresa |
+| Usuario | Persona con acceso a ADAN | N:M con Proyecto |
+| Usuario Principal *(renombrado de "Fundador" — Hallazgo 1)* | El Usuario responsable de un Proyecto ante ADAN | 1:N con Proyecto; N:1 con Empleado cuando es parte formal de la Empresa |
+| Proyecto | El contenedor de software donde ADAN acompaña a una Empresa | 1:1 con Empresa |
 | Workspace | La interfaz que envuelve un Proyecto | 1:1 con Proyecto |
 | Nivel | Etapa del acompañamiento | 1:N con Proyecto |
 | Card | Unidad de trabajo dentro de un Nivel | 1:N con Nivel |
 | Conversación | Sesión de chat dentro de una Card | 1:N con Card |
 | Agente | Rol interno especializado | N:M con Conversación |
 | Tarea | Unidad operativa de trabajo dentro de un Nivel | 1:N con Nivel o Card |
-| Decisión *(de ADÁN)* | Registro de una recomendación aprobada por el cliente | Puede originarse en o producir una Decisión de Negocio |
-| **Score** *(actualizado en v1.2)* | Evaluación que ADÁN hace de una Empresa **o de su Usuario Principal** (Score del Responsable, Business Score...) — distinta de Indicador | **N:1 con Empresa o con Usuario Principal** (ampliado en v1.2 — antes solo "N:1 con Empresa"); declara Confidence Level (Contrato Base) |
+| Decisión *(de ADAN)* | Registro de una recomendación aprobada por el cliente | Puede originarse en o producir una Decisión de Negocio |
+| **Score** *(actualizado en v1.2)* | Evaluación que ADAN hace de una Empresa **o de su Usuario Principal** (Score del Responsable, Business Score...) — distinta de Indicador | **N:1 con Empresa o con Usuario Principal** (ampliado en v1.2 — antes solo "N:1 con Empresa"); declara Confidence Level (Contrato Base) |
 | Evento | Registro técnico append-only | Puede generarse a partir de un Suceso Empresarial |
 
 ---

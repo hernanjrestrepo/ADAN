@@ -1,4 +1,4 @@
-# WO-000 Sprint 1 — Auditoría de Fuentes del Blueprint ADÁN
+# WO-000 Sprint 1 — Auditoría de Fuentes del Blueprint ADAN
 
 **Célula:** D · **Fecha:** 2026-07-17 · **Fuente auditada:** `/docs/blueprint/source/` (37 archivos, copiados desde el repo de documentación original)
 

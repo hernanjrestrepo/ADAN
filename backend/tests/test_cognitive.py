@@ -1,5 +1,5 @@
 """
-Tests para el Sistema Cognitivo de ADÁN — WO-003.
+Tests para el Sistema Cognitivo de ADAN — WO-003.
 
 Verifica el vertical slice completo:
 Event Bus → Memory → Knowledge → Planner → Tools → Board Room → Decision Engine

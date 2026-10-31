@@ -1,4 +1,4 @@
-# WO-000 — Índice Maestro de Especificación de Producto ADÁN (v3.12)
+# WO-000 — Índice Maestro de Especificación de Producto ADAN (v3.12)
 
 **Tipo de documento:** Árbol documental — **APROBADO Y CONGELADO** (sin cambios de estructura desde v3.1).
 **Estado de la WO-000:** **WO-000 — FASE 1: COMPLETADA**, verificada por Gate Review en dos pasadas. 15 de 24 documentos originales de Fase 1 (Fundamentos + Comportamientos). AD-FUNC (Funcionalidades, 9 documentos) es la siguiente categoría.
@@ -22,7 +22,7 @@ Un Gate Review (`WO-000_GATE_REVIEW_FASE1.md`) encontró que "Fase 1" se venía 
 | Ciclo Dominio | 3 workshops (Taxonomía, Relaciones, Comportamientos de negocio) | Aprobados como base |
 | Comportamientos (6) | AD-CMP-01 a AD-CMP-06 | **Todos aprobados y congelados** |
 
-**Total de entidades y reglas fijadas:** 26 entidades de negocio + 12 operativas de ADÁN (38), 2 propiedades transversales, 4 dimensiones derivadas, 10 leyes dinámicas de dominio, 4 patrones de estado de objeto (AD-008), 6 comportamientos formales de ADÁN (AD-CMP).
+**Total de entidades y reglas fijadas:** 26 entidades de negocio + 12 operativas de ADAN (38), 2 propiedades transversales, 4 dimensiones derivadas, 10 leyes dinámicas de dominio, 4 patrones de estado de objeto (AD-008), 6 comportamientos formales de ADAN (AD-CMP).
 
 ---
 

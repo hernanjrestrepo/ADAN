@@ -31,7 +31,7 @@ Un Gemelo Digital cambia de naturaleza cuando su Empresa atraviesa una Reinvenci
 
 ## 4. Se divide
 
-Ocurre cuando una Iniciativa (AD-005) se separa de su Empresa original para convertirse en una Empresa nueva — el caso que AD-004 §4 ya anticipó como "graduación", aplicado ahora a nivel de negocio del cliente, no de Funcionalidad de ADÁN. Procedimiento:
+Ocurre cuando una Iniciativa (AD-005) se separa de su Empresa original para convertirse en una Empresa nueva — el caso que AD-004 §4 ya anticipó como "graduación", aplicado ahora a nivel de negocio del cliente, no de Funcionalidad de ADAN. Procedimiento:
 
 1. Se crea un Gemelo Digital nuevo, con su propio Proyecto nuevo (nace, sección 1).
 2. El Gemelo Digital nuevo hereda, por referencia —no por copia— el historial relevante de la Iniciativa que le dio origen: qué Decisiones, Documentos y Evidencia la produjeron.
@@ -47,7 +47,7 @@ Dos Gemelos Digitales se fusionan cuando sus Empresas correspondientes se fusion
 
 ## 6. Se archiva
 
-Ocurre tras la Ley de Muerte (AD-005 §5, Ley 8): la Empresa pierde la capacidad de generar nuevas Decisiones de Negocio respaldadas por evidencia. El Gemelo Digital nunca se elimina — pasa a estado `Archivado` (Patrón D, AD-008), sigue siendo consultable indefinidamente, en cumplimiento directo de la promesa de AD-001, Visión a 25 Años: *"el Gemelo Digital de las primeras empresas que usaron ADÁN debería seguir existiendo, seguir siendo consultable."*
+Ocurre tras la Ley de Muerte (AD-005 §5, Ley 8): la Empresa pierde la capacidad de generar nuevas Decisiones de Negocio respaldadas por evidencia. El Gemelo Digital nunca se elimina — pasa a estado `Archivado` (Patrón D, AD-008), sigue siendo consultable indefinidamente, en cumplimiento directo de la promesa de AD-001, Visión a 25 Años: *"el Gemelo Digital de las primeras empresas que usaron ADAN debería seguir existiendo, seguir siendo consultable."*
 
 ---
 

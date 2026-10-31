@@ -1,4 +1,4 @@
-# COGNITIVE_ARCHITECTURE — Cómo Piensa ADÁN
+# COGNITIVE_ARCHITECTURE — Cómo Piensa ADAN
 
 **WO:** WO-002.1  
 **Fecha:** 2026-07-24  
@@ -9,7 +9,7 @@
 
 ## 1. Visión General
 
-ADÁN no es un chatbot que responde preguntas. Es un sistema cognitivo que:
+ADAN no es un chatbot que responde preguntas. Es un sistema cognitivo que:
 
 1. **Recuerda** lo que el usuario dijo, decidió y descartó.
 2. **Comprende** el contexto de la empresa en cada momento.
@@ -26,14 +26,14 @@ La arquitectura cognitiva se modela inspirada en los sistemas de memoria humana,
 
 ### 2.1 Working Memory (Memoria de Trabajo)
 
-**Qué es:** El contexto activo de una sola interacción. Lo que ADÁN "está pensando ahora".
+**Qué es:** El contexto activo de una sola interacción. Lo que ADAN "está pensando ahora".
 
 **Contenido:**
 - Mensaje actual del usuario
 - Últimos N mensajes de la conversación (ventana deslizante)
 - Resultados de herramientas ejecutadas recientemente
 - Estado del plan actual (pasos completados, pendientes)
-- Hipótesis activas (cosas que ADÁN está considerando)
+- Hipótesis activas (cosas que ADAN está considerando)
 - Atención activa (qué entidades del knowledge graph están en foco)
 
 **Capacidad:** Limitada por el contexto window del LLM (32K tokens para Qwen 2.5). Se gestiona con:
@@ -469,7 +469,7 @@ Cuando `relevance_score < 0.1`, la entrada se marca como `archived`:
 | Recuperación por relevancia | BM25 + semantic similarity | Cuando el usuario pregunta sobre un tema |
 | Recuperación por entidad | Lookup en Knowledge Graph | Cuando se menciona una empresa/proyecto/persona |
 | Recuperación por episodio | Match por contexto emocional | Cuando el usuario recuerda un momento específico |
-| Recuperación por procedimiento | Match por trigger | Cuando ADÁN necesita saber "cómo hacer X" |
+| Recuperación por procedimiento | Match por trigger | Cuando ADAN necesita saber "cómo hacer X" |
 
 ### 10.2 Pipeline de Recuperación
 

@@ -79,7 +79,7 @@ export function Agents() {
 
       <form onSubmit={handleSubmit} className="mb-8 rounded-lg border border-adan-border bg-adan-surface p-6">
         <label className="mb-2 block text-sm text-adan-muted" htmlFor="user-input">
-          Cuéntale a ADÁN tu problema de negocio
+          Cuéntale a ADAN tu problema de negocio
         </label>
         <textarea
           id="user-input"

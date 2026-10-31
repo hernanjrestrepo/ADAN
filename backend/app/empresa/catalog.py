@@ -1,7 +1,7 @@
 """El Expediente de creación: todo lo que hay que hacer para que la empresa exista y opere, según el país.
 
-Cada ítem dice qué es, quién lo hace (`modo`: ADÁN lo produce, el fundador hace el trámite presencial o en línea),
-qué documento lo prueba (lo que se carga para validarlo) y dónde se trabaja en ADÁN. En Colombia el registro en la
+Cada ítem dice qué es, quién lo hace (`modo`: ADAN lo produce, el fundador hace el trámite presencial o en línea),
+qué documento lo prueba (lo que se carga para validarlo) y dónde se trabaja en ADAN. En Colombia el registro en la
 Cámara de Comercio se deja listo para que el fundador lo radique; en Estados Unidos se prepara todo para radicar en
 línea (el pago y la firma son del fundador). Las cifras y tarifas oficiales se consultan en la fuente vigente.
 """
@@ -9,11 +9,11 @@ from __future__ import annotations
 
 GROUPS = {"identidad": "Identidad", "numeros": "Números", "legal": "Legal y registro", "operacion": "Operación"}
 
-# id, grupo, título, qué es, modo, documento que lo prueba (vacío si lo produce ADÁN), herramienta en ADÁN
+# id, grupo, título, qué es, modo, documento que lo prueba (vacío si lo produce ADAN), herramienta en ADAN
 _COMMON = [
     ("nombre", "identidad", "Nombre de la empresa", "Un nombre fácil de recordar y de mercadear, libre en registros y marcas.",
      "adan", "", "/marca"),
-    ("dominio", "identidad", "Dominio web", "La dirección web (.com y del país). ADÁN te explica cómo comprarlo paso a paso.",
+    ("dominio", "identidad", "Dominio web", "La dirección web (.com y del país). ADAN te explica cómo comprarlo paso a paso.",
      "cliente_en_linea", "Factura o confirmación de compra del dominio", "/marca"),
     ("logo", "identidad", "Logo y manual de marca", "Logo, colores, tipografía y tono: la identidad que se usa en todo.",
      "adan", "", "/marca"),
@@ -28,7 +28,7 @@ CO = _COMMON + [
      "cliente_en_linea", "Radicado o certificado de registro de marca de la SIC", ""),
     ("estatutos", "legal", "Estatutos de la SAS", "El documento de constitución de la sociedad (SAS), listo para firmar.",
      "adan", "", "/constitucion"),
-    ("registro_mercantil", "legal", "Registro en la Cámara de Comercio", "Matrícula de la sociedad en la Cámara de Comercio de tu ciudad. ADÁN alista todo el paquete; tú lo radicas.",
+    ("registro_mercantil", "legal", "Registro en la Cámara de Comercio", "Matrícula de la sociedad en la Cámara de Comercio de tu ciudad. ADAN alista todo el paquete; tú lo radicas.",
      "cliente_presencial", "Certificado de existencia y representación legal", ""),
     ("rut", "legal", "RUT ante la DIAN", "El registro tributario de la empresa (con el NIT).",
      "cliente_en_linea", "RUT de la empresa (formulario 001)", ""),
@@ -51,13 +51,13 @@ US = _COMMON + [
      "cliente_en_linea", "Serial number o certificado de la USPTO", ""),
     ("estado", "legal", "Estado y tipo de empresa", "Elegir estado (Delaware, Wyoming, Florida…) y tipo (LLC o C-Corp) según tu caso.",
      "adan", "", ""),
-    ("articles", "legal", "Articles of Organization (registro en línea)", "El registro de la LLC en el portal del estado. ADÁN deja todos los campos listos; tú pagas y radicas.",
+    ("articles", "legal", "Articles of Organization (registro en línea)", "El registro de la LLC en el portal del estado. ADAN deja todos los campos listos; tú pagas y radicas.",
      "cliente_en_linea", "Articles of Organization o Certificate of Formation aprobado", ""),
     ("registered_agent", "legal", "Registered Agent", "El agente registrado obligatorio en el estado elegido.",
      "cliente_en_linea", "Contrato o confirmación del Registered Agent", ""),
     ("operating_agreement", "legal", "Operating Agreement", "Las reglas internas de la LLC entre los socios.",
      "adan", "", ""),
-    ("ein", "legal", "EIN ante el IRS", "El número tributario federal. ADÁN prepara las respuestas del formulario SS-4.",
+    ("ein", "legal", "EIN ante el IRS", "El número tributario federal. ADAN prepara las respuestas del formulario SS-4.",
      "cliente_en_linea", "Carta del IRS con el EIN (CP 575 o 147C)", ""),
     ("boi", "legal", "Reporte BOI (FinCEN)", "Reporte de beneficiarios finales: revisa si aplica según la norma vigente de FinCEN.",
      "cliente_en_linea", "Confirmación del reporte BOI (si aplica)", ""),
@@ -90,8 +90,8 @@ GENERIC = _COMMON + [
 
 COUNTRIES = {"CO": ("Colombia", CO), "US": ("Estados Unidos", US), "OTRO": ("Otro país", GENERIC)}
 
-MODES = {"adan": "Lo hace ADÁN contigo", "cliente_presencial": "Lo radicas tú (presencial)",
-         "cliente_en_linea": "Lo haces tú en línea (ADÁN lo deja listo)"}
+MODES = {"adan": "Lo hace ADAN contigo", "cliente_presencial": "Lo radicas tú (presencial)",
+         "cliente_en_linea": "Lo haces tú en línea (ADAN lo deja listo)"}
 
 
 def country_code(country: str | None) -> str:

@@ -1,4 +1,4 @@
-# FROZEN_INTERFACES — Interfaces Públicas Congeladas ADÁN Nivel 1
+# FROZEN_INTERFACES — Interfaces Públicas Congeladas ADAN Nivel 1
 
 **Fecha de Congelación:** 2026-07-24  
 **WO de Origen:** WO-001 (Cerrada)  

@@ -1,4 +1,4 @@
-# ADÁN — Arquitectura Maestra v1.0
+# ADAN — Arquitectura Maestra v1.0
 
 **Fecha:** 2026-07-24  
 **WO de Origen:** WO-002.3  
@@ -23,11 +23,11 @@
 
 ---
 
-## 1. Filosofía de ADÁN
+## 1. Filosofía de ADAN
 
 ### 1.1 Propósito
 
-ADÁN es un Sistema Operativo Empresarial con inteligencia artificial. Acompaña a una empresa desde una idea no validada hasta una organización madura, documentando cada decisión con evidencia, nunca con suposiciones.
+ADAN es un Sistema Operativo Empresarial con inteligencia artificial. Acompaña a una empresa desde una idea no validada hasta una organización madura, documentando cada decisión con evidencia, nunca con suposiciones.
 
 **No es un chatbot.** No es un generador de MVPs. Es un "comité de ejecutivos permanentemente disponible" que nunca pierde contexto.
 
@@ -104,7 +104,7 @@ ADÁN es un Sistema Operativo Empresarial con inteligencia artificial. Acompaña
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                              ADÁN SYSTEM                                    │
+│                              ADAN SYSTEM                                    │
 │                                                                             │
 │  ┌──────────────┐                                                           │
 │  │   Frontend   │  React 18 + Vite + Tailwind                              │
@@ -370,14 +370,14 @@ Query del usuario
 
 ### 4.1 Knowledge Graph CONGELADO
 
-El Knowledge Graph es la representación estructurada de todo lo que ADÁN sabe.
+El Knowledge Graph es la representación estructurada de todo lo que ADAN sabe.
 
 **10 Tipos de Entidad:**
 
 | Entidad | Descripción | Ejemplo |
 |---|---|---|
 | **Company** | Una organización empresarial | "Paradixe" |
-| **Project** | Un proyecto dentro de una empresa | "ADÁN" |
+| **Project** | Un proyecto dentro de una empresa | "ADAN" |
 | **Person** | Una persona relevante | "Hernán (fundador)" |
 | **Objective** | Un objetivo del proyecto | "Lanzamiento Q1 2027" |
 | **Decision** | Una decisión tomada o propuesta | "Entrar al mercado LATAM" |
@@ -1225,7 +1225,7 @@ WO-010 (Observabilidad)
 
 | Término | Definición |
 |---|---|
-| **ADÁN** | Sistema Operativo Empresarial con IA |
+| **ADAN** | Sistema Operativo Empresarial con IA |
 | **Board Room** | Sistema de 4 agentes concurrentes (CEO, CTO, CFO, CMO) |
 | **Gate Review** | Evaluación determinística de calidad (0 LLM calls) |
 | **Gemelo Digital** | Persistencia completa del estado del proyecto |
@@ -1266,7 +1266,7 @@ WO-010 (Observabilidad)
 
 ---
 
-**ESTE DOCUMENTO ES LA CONSTITUCIÓN TÉCNICA DE ADÁN.**
+**ESTE DOCUMENTO ES LA CONSTITUCIÓN TÉCNICA DE ADAN.**
 
 **Toda Work Order futura deberá construirse sobre esta arquitectura y nunca podrá contradecirla sin una revisión formal.**
 

@@ -6,7 +6,7 @@
 
 ## Contexto
 
-ADÁN tiene un blueprint conceptual completo (21 documentos congelados WO-000) pero cero código. El Board decide construir el primer vertical funcional (Nivel 1) antes de escribir más documentación de arquitectura, validando el blueprint contra la realidad.
+ADAN tiene un blueprint conceptual completo (21 documentos congelados WO-000) pero cero código. El Board decide construir el primer vertical funcional (Nivel 1) antes de escribir más documentación de arquitectura, validando el blueprint contra la realidad.
 
 ## Decisión
 

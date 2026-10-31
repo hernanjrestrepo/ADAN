@@ -245,7 +245,7 @@ class GemeloDigitalService:
         return doc
 
     def save_board_minutes(self, project: Project, minutes: str) -> Document:
-        """Acta del Board Room (AD-FUNC-02): documento generado por ADÁN, con aviso de IA."""
+        """Acta del Board Room (AD-FUNC-02): documento generado por ADAN, con aviso de IA."""
         doc = Document(
             project_id=project.id,
             title="Acta del Board Room",

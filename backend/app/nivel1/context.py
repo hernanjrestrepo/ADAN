@@ -19,9 +19,9 @@ from app.models.models import (
 
 MAX_LAYER_CHARS = 1500
 
-# Lo que ADÁN sabe con independencia de la empresa (el aprendizaje entre empresas llega en WO-118)
+# Lo que ADAN sabe con independencia de la empresa (el aprendizaje entre empresas llega en WO-118)
 GLOBAL_LAYER = (
-    "ADÁN acompaña a una empresa por 7 Niveles: 1 El Dolor, 2 Propuesta de Valor, 3 Plan de "
+    "ADAN acompaña a una empresa por 7 Niveles: 1 El Dolor, 2 Propuesta de Valor, 3 Plan de "
     "Negocios, 4 MVP, 5 Validación Simulada, 6 Lanzamiento, 7 Escalamiento. Se avanza por "
     "evidencia, nunca por pago, y toda decisión importante la aprueba el cliente."
 )

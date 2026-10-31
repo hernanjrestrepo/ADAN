@@ -12,7 +12,7 @@ Supersede a: AD-007_Gemelo_Digital_v1.0.md
 
 # AD-007 — Gemelo Digital — Especificación Estructural — v1.1
 
-> AD-005 modela qué existe en una empresa. AD-006 modela cómo ADÁN representa eso en software, más su propia estructura operativa. Este documento responde la pregunta que queda: **¿qué hace que ambos dominios —el de la empresa real y el de ADÁN— sean, en la práctica, una sola identidad persistente?** Esa identidad es el Gemelo Digital. Solo su estructura vive aquí — qué es, qué agrega, por qué existe. Su comportamiento en el tiempo (cómo nace, crece, se divide, se fusiona, se archiva) vive en AD-CMP-06, y este documento no lo duplica.
+> AD-005 modela qué existe en una empresa. AD-006 modela cómo ADAN representa eso en software, más su propia estructura operativa. Este documento responde la pregunta que queda: **¿qué hace que ambos dominios —el de la empresa real y el de ADAN— sean, en la práctica, una sola identidad persistente?** Esa identidad es el Gemelo Digital. Solo su estructura vive aquí — qué es, qué agrega, por qué existe. Su comportamiento en el tiempo (cómo nace, crece, se divide, se fusiona, se archiva) vive en AD-CMP-06, y este documento no lo duplica.
 
 **Nivel de contenido:** mixto. La definición estructural (secciones 1-3) es Principio Permanente. El detalle de qué campos exactos versiona (sección 4) es Decisión de Diseño.
 
@@ -24,7 +24,7 @@ Antes de escribir una sola línea de definición, se aplicó la prueba que el An
 
 Casi. Empresa (AD-005) más Proyecto (AD-006) más el Contrato Base (versionado, permanencia, responsable — AD-002 §§1.4, 1.5, 1.7) se acercan mucho a lo que el Gemelo Digital promete. Si se quedara ahí, el Gemelo Digital sería un nombre nuevo para algo que ya existe — exactamente el tipo de rechazo que ya se aplicó a Enterprise Genome.
 
-**Pero hay un vacío real que ni Empresa ni Proyecto, por separado, cubren:** ninguno de los dos se declaró a sí mismo como el punto de referencia que el resto del Ecosistema Paradixe consulta. AD-000 §4 (Principio de Interoperabilidad 5) exige "una sola fuente de verdad por entidad" — pero Empresa vive enteramente dentro del vocabulario de AD-005 (el mundo del cliente) y Proyecto vive enteramente dentro del vocabulario de AD-006 (el mundo interno de ADÁN). Ninguno de los dos, por diseño, se declaró como el contrato que EVA, ATO, Genexis o CSI deberían consultar. Ese vacío es real, no inventado — y es exactamente lo que el Gemelo Digital resuelve.
+**Pero hay un vacío real que ni Empresa ni Proyecto, por separado, cubren:** ninguno de los dos se declaró a sí mismo como el punto de referencia que el resto del Ecosistema Paradixe consulta. AD-000 §4 (Principio de Interoperabilidad 5) exige "una sola fuente de verdad por entidad" — pero Empresa vive enteramente dentro del vocabulario de AD-005 (el mundo del cliente) y Proyecto vive enteramente dentro del vocabulario de AD-006 (el mundo interno de ADAN). Ninguno de los dos, por diseño, se declaró como el contrato que EVA, ATO, Genexis o CSI deberían consultar. Ese vacío es real, no inventado — y es exactamente lo que el Gemelo Digital resuelve.
 
 **Veredicto: pasa la prueba, con una condición.** El Gemelo Digital se admite no como una tercera bolsa de datos nueva, sino como la **declaración formal de que Empresa (AD-005) y Proyecto (AD-006), junto con todo lo que ambos versionan, constituyen un límite de agregación único** — el objeto que el resto del ecosistema referencia. No agrega atributos nuevos; agrega una frontera.
 
@@ -43,7 +43,7 @@ Relación estructural exacta: **Gemelo Digital 1:1 Empresa, 1:1 Proyecto** — l
 Sin excepción, todo lo que AD-005 y AD-006 ya declararon versionado (Contrato Base, AD-006 §2) queda agregado bajo un solo Gemelo Digital por Empresa:
 
 - Las 26 entidades de negocio de AD-005 y su historial completo (Empleados, Contratos, Decisiones de Negocio, Activos/Pasivos, Riesgos materializados, Intangibles...).
-- Las entidades operativas de AD-006 asociadas a su Proyecto (Niveles completados, Cards, Conversaciones, Decisiones de ADÁN, Scores históricos, Eventos técnicos).
+- Las entidades operativas de AD-006 asociadas a su Proyecto (Niveles completados, Cards, Conversaciones, Decisiones de ADAN, Scores históricos, Eventos técnicos).
 - Las dimensiones de identidad de AD-005 §4 (Edad, Madurez Organizacional y su Velocidad derivada, Etapa del Ciclo de Vida derivada).
 
 No se enumeran de nuevo campo por campo — ya están definidos en AD-005 y AD-006; el Gemelo Digital no los redefine, los agrega bajo una identidad común, en cumplimiento directo de la Regla de No Duplicación.
@@ -54,9 +54,9 @@ No se enumeran de nuevo campo por campo — ya están definidos en AD-005 y AD-0
 
 Tres razones, cada una ya establecida en documentos previos, ahora conectadas:
 
-1. **Es la única entidad diseñada explícitamente para ser referenciada fuera de ADÁN.** AD-000 §3 ya declaraba que EVA, ATO, Genexis y CSI consumen "las señales que ADÁN produce" — el Gemelo Digital es, formalmente, esa señal unificada. Ningún otro componente del ecosistema necesita saber que internamente existen una Empresa (AD-005) y un Proyecto (AD-006) separados.
+1. **Es la única entidad diseñada explícitamente para ser referenciada fuera de ADAN.** AD-000 §3 ya declaraba que EVA, ATO, Genexis y CSI consumen "las señales que ADAN produce" — el Gemelo Digital es, formalmente, esa señal unificada. Ningún otro componente del ecosistema necesita saber que internamente existen una Empresa (AD-005) y un Proyecto (AD-006) separados.
 2. **Es lo único que sobrevive cuando todo lo demás cambia.** Un Proyecto puede reiniciarse operativamente (nueva sesión de trabajo); una Empresa puede cambiar de Narrativa Fundacional (Ley 9, Reinvención); Niveles, Cards y Agentes pueden rediseñarse en Fase 2 sin tocar el dominio. El Gemelo Digital es la única identidad que ninguno de esos cambios puede romper — es, literalmente, la aplicación de la Regla 1.5 de AD-002 (nada se pierde) al nivel más alto posible de agregación.
-3. **Es la unidad de la Visión a 25 Años (AD-001).** La promesa de que "el Gemelo Digital de las primeras empresas que usaron ADÁN debería seguir existiendo, seguir siendo consultable" solo tiene sentido si existe un objeto identificable de forma estable — ni "esta fila de la tabla Empresa" ni "este Proyecto activo" son identidades que sobrevivan veinticinco años de cambios de arquitectura; el Gemelo Digital, por definición, sí.
+3. **Es la unidad de la Visión a 25 Años (AD-001).** La promesa de que "el Gemelo Digital de las primeras empresas que usaron ADAN debería seguir existiendo, seguir siendo consultable" solo tiene sentido si existe un objeto identificable de forma estable — ni "esta fila de la tabla Empresa" ni "este Proyecto activo" son identidades que sobrevivan veinticinco años de cambios de arquitectura; el Gemelo Digital, por definición, sí.
 
 ---
 
@@ -71,7 +71,7 @@ DOMINIO EMPRESARIAL (AD-005)  ←──┐
                         (identidad única,
                       referenciable, permanente)
                                   │
-DOMINIO OPERATIVO DE ADÁN (AD-006) ──┘
+DOMINIO OPERATIVO DE ADAN (AD-006) ──┘
 ```
 
 El Gemelo Digital no vive "entre" ambos dominios en el sentido de contener información propia que ninguno de los dos tenga — vive **por encima** de ambos, como la frontera que los declara unificados. Esta distinción importa: evita que AD-007 termine siendo un tercer lugar donde se dupliquen datos que ya existen en AD-005 o AD-006 (lo cual habría violado tanto la Regla de No Duplicación como el propio Principio de Emergencia que este documento tuvo que pasar en la sección 0).

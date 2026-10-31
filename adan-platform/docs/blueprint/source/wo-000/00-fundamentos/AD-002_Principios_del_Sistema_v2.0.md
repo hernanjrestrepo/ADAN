@@ -12,7 +12,7 @@ Supersede a: AD-002_Principios_del_Sistema_v1.0.md (aprobado y congelado el mism
 
 # AD-002 — Principios del Sistema (v2.0)
 
-> AD-001 declaró *quién es* ADÁN — su identidad, su filosofía, lo que jamás romperá. Este documento traduce esa identidad en **reglas de sistema**: lo que debe ser verdad, siempre, en cualquier instancia del producto, independientemente de qué funcionalidad, vista o motor técnico la implemente. AD-001 responde por qué algo importa; AD-002 responde qué debe garantizarse para que siga importando en la práctica. Ninguna de las diez reglas de este documento describe *cómo* se implementa (eso es Fase 2 — Arquitectura); todas describen *qué* debe cumplirse siempre, sin excepción, para que ADÁN siga siendo ADÁN.
+> AD-001 declaró *quién es* ADAN — su identidad, su filosofía, lo que jamás romperá. Este documento traduce esa identidad en **reglas de sistema**: lo que debe ser verdad, siempre, en cualquier instancia del producto, independientemente de qué funcionalidad, vista o motor técnico la implemente. AD-001 responde por qué algo importa; AD-002 responde qué debe garantizarse para que siga importando en la práctica. Ninguna de las diez reglas de este documento describe *cómo* se implementa (eso es Fase 2 — Arquitectura); todas describen *qué* debe cumplirse siempre, sin excepción, para que ADAN siga siendo ADAN.
 
 **Nivel de contenido de este documento:** Principio Permanente en su totalidad.
 
@@ -29,7 +29,7 @@ Cada regla incluye de dónde proviene, qué garantiza, y qué escenario constitu
 Ninguna afirmación relevante del sistema se sostiene sin datos, fuente o razonamiento verificable detrás.
 
 - **Deriva de:** AD-001 §2, Filosofía #2 ("una decisión sin evidencia no es una decisión").
-- **Garantiza:** que cada score, cada recomendación y cada documento generado por ADÁN pueda defenderse ante la pregunta "¿de dónde sale esto?".
+- **Garantiza:** que cada score, cada recomendación y cada documento generado por ADAN pueda defenderse ante la pregunta "¿de dónde sale esto?".
 - **Violación de ejemplo:** un agente afirma "tu mercado objetivo tiene alta demanda" sin citar la fuente de esa afirmación.
 
 ### 1.2 Todo es trazable
@@ -61,7 +61,7 @@ Toda decisión registrada identifica quién la propuso y quién la aprobó — n
 Ninguna información generada por el sistema se descarta silenciosamente; lo que deja de ser relevante se archiva, nunca se borra.
 
 - **Deriva de:** AD-001, Visión a 25 Años; AD-001 §12 (principio inviolable #4).
-- **Garantiza:** que una empresa acompañada por ADÁN nunca pierda su historial, incluso si pivota, se pausa o cambia de fundador.
+- **Garantiza:** que una empresa acompañada por ADAN nunca pierda su historial, incluso si pivota, se pausa o cambia de fundador.
 - **Violación de ejemplo:** al reiniciar la estrategia de una empresa, se sobreescribe el historial de decisiones anteriores en vez de archivarlo y comenzar una nueva rama.
 
 ### 1.6 Toda IA debe justificar
@@ -88,7 +88,7 @@ Ninguna interacción relevante desaparece al cerrar una sesión; se resume, se c
 - **Deriva de:** AD-001 §1.
 - **Garantiza:** que el cliente nunca tenga que repetir información ya provista, sin importar cuánto tiempo haya pasado entre sesiones.
 - **Adelanto técnico:** la mecánica de resumen y jerarquía de contexto se especifica en AD-CMP-04; esta regla solo fija que debe existir, no cómo.
-- **Violación de ejemplo:** el cliente vuelve después de un mes y ADÁN le pregunta de nuevo información que ya había dado en el Nivel 1.
+- **Violación de ejemplo:** el cliente vuelve después de un mes y ADAN le pregunta de nuevo información que ya había dado en el Nivel 1.
 
 ### 1.9 Todo tiene un nivel de confianza declarado
 
@@ -104,7 +104,7 @@ Ninguna salida del sistema —recomendación, score, documento— se presenta si
 Cada concepto nuevo que se incorpora al sistema —una entidad, un término, un documento, una funcionalidad— aumenta la complejidad permanente del producto. Por eso ningún concepto nuevo se incorpora sin demostrar tres cosas a la vez: que resuelve un problema real, que no puede expresarse reutilizando un concepto ya existente, y que el valor que aporta supera la complejidad que agrega.
 
 - **Deriva de:** instrucción directa del Board tras la aprobación de AD-002 v1.0, motivada por el riesgo real de que una especificación de 58 documentos y potencialmente más de 2.000 páginas acumule complejidad conceptual no examinada.
-- **Garantiza:** que el vocabulario, el modelo de dominio y las funcionalidades de ADÁN no crezcan por inercia documental — cada pieza nueva tiene que justificar su propia existencia antes de incorporarse.
+- **Garantiza:** que el vocabulario, el modelo de dominio y las funcionalidades de ADAN no crezcan por inercia documental — cada pieza nueva tiene que justificar su propia existencia antes de incorporarse.
 - **Relación con la Regla de No Duplicación (v3.1 §1):** son complementarias, no idénticas. No duplicación evita que un concepto ya definido se redefina con otras palabras en otro lugar. Economía Conceptual evita que se defina un concepto genuinamente nuevo cuando, en realidad, no hacía falta ninguno.
 - **Violación de ejemplo:** proponer una entidad "Hito" distinta de "Evento" (AD-006) sin poder explicar qué problema resuelve "Hito" que "Evento" con un atributo adicional no resolvería igual.
 - **Aplicación inmediata:** esta regla se aplicó, por primera vez, en la autoauditoría de AD-003, entregada junto con ese documento — ver ahí el razonamiento concreto de qué términos recibieron tratamiento completo y cuáles no, precisamente en cumplimiento de esta regla.

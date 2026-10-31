@@ -28,8 +28,8 @@ function Seal({ seal }: { seal: CommunityListing['seal'] }) {
     seal.breakeven_month ? `Equilibrio en el mes ${seal.breakeven_month}` : null,
   ].filter(Boolean)
   return (
-    <div className="mt-3 rounded-xl border border-adan-accent/30 bg-adan-accent/5 p-3" title="Lo calcula ADÁN desde el Gemelo Digital: la empresa no lo puede editar">
-      <p className="text-[10px] font-semibold tracking-[0.25em] text-adan-accent">SELLO ADÁN</p>
+    <div className="mt-3 rounded-xl border border-adan-accent/30 bg-adan-accent/5 p-3" title="Lo calcula ADAN desde el Gemelo Digital: la empresa no lo puede editar">
+      <p className="text-[10px] font-semibold tracking-[0.25em] text-adan-accent">SELLO ADAN</p>
       <p className="mt-1 text-xs">{items.join(' · ')}</p>
     </div>
   )
@@ -172,7 +172,7 @@ function ListingForm({ company, onError, notify }: { company: Company; onError: 
       )}
       {published && <Seal seal={published.seal} />}
       <Button className="mt-3" onClick={save}>{published ? 'Actualizar' : 'Publicar en la Comunidad'}</Button>
-      <p className="mt-2 text-[11px] text-adan-muted">El Sello ADÁN se calcula de tu avance real (Niveles, evidencia, Board, La Arena): no se puede editar.</p>
+      <p className="mt-2 text-[11px] text-adan-muted">El Sello ADAN se calcula de tu avance real (Niveles, evidencia, Board, La Arena): no se puede editar.</p>
     </Card>
   )
 }
@@ -248,7 +248,7 @@ function Conexiones({ onError }: { onError: (m: string) => void }) {
   )
 }
 
-// La Comunidad ADÁN: empresas con Sello ADÁN, personas, inversionistas y las Selecciones Paradixe
+// La Comunidad ADAN: empresas con Sello ADAN, personas, inversionistas y las Selecciones Paradixe
 export default function ComunidadPage() {
   const [tab, setTab] = useState<Tab>('empresas')
   const [error, setError] = useState<string | null>(null)
@@ -259,8 +259,8 @@ export default function ComunidadPage() {
     <AppShell crumbs={[{ label: 'Comunidad' }]} toolbar={<Tabs tabs={TABS} active={tab} onChange={setTab} />}>
       <div className="max-w-6xl mx-auto p-4 sm:p-6 overflow-y-auto h-full">
         <div className="mb-5">
-          <h1 className="text-3xl font-bold">Comunidad ADÁN</h1>
-          <p className="text-adan-muted mt-1">Empresas que se construyen con evidencia, emprendedores, inversionistas y mentores. El Sello ADÁN muestra el avance real de cada empresa.</p>
+          <h1 className="text-3xl font-bold">Comunidad ADAN</h1>
+          <p className="text-adan-muted mt-1">Empresas que se construyen con evidencia, emprendedores, inversionistas y mentores. El Sello ADAN muestra el avance real de cada empresa.</p>
         </div>
         {error && <div className="mb-4"><Alert message={error} onClose={() => setError(null)} /></div>}
         {notice && <p className="mb-4 rounded-xl bg-adan-success/15 px-4 py-2 text-sm text-adan-success">{notice}</p>}

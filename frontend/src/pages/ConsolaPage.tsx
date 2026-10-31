@@ -12,7 +12,7 @@ import WorldMap from '../components/WorldMap'
 import { countryName } from '../lib/paises'
 import type { AdminCompany, AdminMovement, AdminPurchase, AdminSummary, AdminUser, AdminVisits } from '../types'
 
-// Consola de Paradixe (solo superadministradores): ver y controlar ADÁN, como la consola de Xmart Travel
+// Consola de Paradixe (solo superadministradores): ver y controlar ADAN, como la consola de Xmart Travel
 
 type Tab = 'resumen' | 'visitas' | 'usuarios' | 'compras' | 'movimientos' | 'empresas'
 const TABS: { id: Tab; label: string }[] = [

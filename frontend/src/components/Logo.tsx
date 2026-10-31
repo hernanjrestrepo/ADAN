@@ -1,11 +1,11 @@
 import { useId } from 'react'
 
-// Marca de ADÁN, alineada con la oficina virtual: un hexágono de neón (como los pisos de las zonas), una "A" que
+// Marca de ADAN, alineada con la oficina virtual: un hexágono de neón (como los pisos de las zonas), una "A" que
 // sube hacia una chispa (la idea que nace) y un anillo orbital como travesaño (la mesa del Board Room).
 export function AdanMark({ size = 40, className = '' }: { size?: number; className?: string }) {
   const id = useId().replace(/:/g, '')
   return (
-    <svg viewBox="0 0 64 64" width={size} height={size} className={className} role="img" aria-label="ADÁN">
+    <svg viewBox="0 0 64 64" width={size} height={size} className={className} role="img" aria-label="ADAN">
       <defs>
         <linearGradient id={`g${id}`} x1="0" y1="0" x2="1" y2="1">
           <stop offset="0" stopColor="#67e8f9" />
@@ -33,7 +33,7 @@ export function AdanMark({ size = 40, className = '' }: { size?: number; classNa
   )
 }
 
-// Logo completo: símbolo + ADÁN + "by Paradixe". `compact` muestra solo el símbolo (móvil)
+// Logo completo: símbolo + ADAN + "by Paradixe". `compact` muestra solo el símbolo (móvil)
 export default function Logo({ compact = false, size = 'md' }: { compact?: boolean; size?: 'md' | 'lg' }) {
   const lg = size === 'lg'
   return (
@@ -42,7 +42,7 @@ export default function Logo({ compact = false, size = 'md' }: { compact?: boole
       {!compact && (
         <span className="flex flex-col leading-none">
           <span className={`${lg ? 'text-4xl' : 'text-xl'} font-black tracking-[0.18em] bg-linear-to-r from-cyan-200 via-indigo-300 to-fuchsia-300 bg-clip-text text-transparent`}>
-            ADÁN
+            ADAN
           </span>
           <span className={`${lg ? 'text-xs mt-1.5' : 'text-[9px] mt-1'} font-semibold tracking-[0.32em] text-adan-muted`}>BY PARADIXE</span>
         </span>

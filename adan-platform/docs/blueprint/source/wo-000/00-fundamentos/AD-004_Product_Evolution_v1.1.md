@@ -12,7 +12,7 @@ Supersede a: AD-004_Product_Evolution_v1.0.md
 
 # AD-004 — Product Evolution — v1.1
 
-> Este documento no es un roadmap. Responde una sola pregunta: **¿cómo puede evolucionar ADÁN durante los próximos veinticinco años sin perder la identidad que AD-001 y AD-002 ya fijaron como inviolable?** Todo lo que sigue son reglas de cambio, no un plan de cambios.
+> Este documento no es un roadmap. Responde una sola pregunta: **¿cómo puede evolucionar ADAN durante los próximos veinticinco años sin perder la identidad que AD-001 y AD-002 ya fijaron como inviolable?** Todo lo que sigue son reglas de cambio, no un plan de cambios.
 
 **Nivel de contenido:** mixto. Las reglas son Principio Permanente. Los umbrales numéricos de ejemplo son Decisión de Diseño.
 
@@ -20,7 +20,7 @@ Supersede a: AD-004_Product_Evolution_v1.0.md
 
 ## Respuesta directa a la pregunta central
 
-ADÁN evoluciona **añadiendo alcance dentro de los límites que ya son inviolables, nunca renegociando esos límites**. Todo lo declarado en AD-001 §12, en AD-001 §1.1, en las diez reglas de AD-002, y en los diez Meta-Principios de Ingeniería, permanece fijo durante los veinticinco años de esta visión.
+ADAN evoluciona **añadiendo alcance dentro de los límites que ya son inviolables, nunca renegociando esos límites**. Todo lo declarado en AD-001 §12, en AD-001 §1.1, en las diez reglas de AD-002, y en los diez Meta-Principios de Ingeniería, permanece fijo durante los veinticinco años de esta visión.
 
 ---
 
@@ -37,7 +37,7 @@ ADÁN evoluciona **añadiendo alcance dentro de los límites que ya son inviolab
 ## 2. Qué nunca podrá cambiar
 
 - Los seis principios inviolables de AD-001 §12.
-- Las ocho categorías que ADÁN jamás intentará convertirse, AD-001 §1.1.
+- Las ocho categorías que ADAN jamás intentará convertirse, AD-001 §1.1.
 - Las diez reglas de sistema de AD-002 v2.0.
 - Los diez Meta-Principios de Ingeniería del Anexo v2.0.
 - La Declaración de Misión de AD-001 — puede *ampliarse*, nunca *reducirse*.
@@ -69,11 +69,11 @@ Una Funcionalidad que no puede superar el paso 1 no nace. Una que no puede super
 
 ## 4. Cuándo una Funcionalidad se convierte en un producto independiente
 
-Cuando se cumplen, a la vez: (a) su valor es útil fuera del contexto de ADÁN, (b) tiene un ciclo de vida de usuario propio, (c) extraerla reduce la complejidad interna sin reducir el valor ofrecido. Requiere, por el Meta-Principio 8 (ahora reordenado), un nivel de evidencia superior al de una Decisión ordinaria.
+Cuando se cumplen, a la vez: (a) su valor es útil fuera del contexto de ADAN, (b) tiene un ciclo de vida de usuario propio, (c) extraerla reduce la complejidad interna sin reducir el valor ofrecido. Requiere, por el Meta-Principio 8 (ahora reordenado), un nivel de evidencia superior al de una Decisión ordinaria.
 
 ## 5. Cuándo un producto pasa a formar parte del ecosistema
 
-No le corresponde a AD-004 — le corresponde a la futura Constitución de Paradixe (AD-000 §7). AD-004 solo fija las condiciones que ADÁN exige de cualquier nuevo par: No Duplicación de Capacidad y Contrato Explícito (AD-000 §4).
+No le corresponde a AD-004 — le corresponde a la futura Constitución de Paradixe (AD-000 §7). AD-004 solo fija las condiciones que ADAN exige de cualquier nuevo par: No Duplicación de Capacidad y Contrato Explícito (AD-000 §4).
 
 ## 6. Cómo se controla el crecimiento del dominio
 

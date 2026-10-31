@@ -26,7 +26,7 @@
 | 2 | **Board Room de 7 roles** (AD-FUNC-02) | Sigue el Flujo Maestro:<ol><li>El CEO abre con el objetivo y la decisión en juego.</li><li>Votan en paralelo **CTO, CFO, CMO, Legal, Producto y Operaciones**.</li><li>Consenso con quórum y disenso visible.</li><li>El CEO cierra con la síntesis, la **evidencia que falta pedirle al cliente** y los próximos pasos.</li></ol>El CEO preside y no vota (§2.3). |
 | 2 | **Participación del cliente y acta** | El cliente puede plantear su pregunta y su posición, y las dos llegan a cada especialista. Cada sesión deja un **Acta del Board Room** como documento del Gemelo Digital. La interfaz muestra el formulario, la apertura, la síntesis, la evidencia pedida y los 6 votos. |
 | 3 | **Un solo Board Room** | El Board ejecutivo de la operación continua (`/board`, OOS) usa ahora el mismo motor y los mismos 7 roles. Conserva lo suyo: memoria y decisiones pasadas como contexto, el Decision Record y su persistencia. `agents/board.py` pasa de ~740 a ~300 líneas. |
-| 4 | **Memoria en cinco capas** (AD-CMP-04) | **Global → Proyecto → Nivel → Card → Conversación** en el contexto del chat:<ul><li>perfil de la empresa;</li><li>decisiones aprobadas;</li><li>scores;</li><li>resúmenes de los Niveles cerrados;</li><li>resultado y evidencia pedida del último Board;</li><li>la Card y sus conversaciones anteriores.</li></ul>**Regla de no repetición:** si algo ya se sabe, ADÁN no lo pregunta y dice qué está asumiendo. Al cerrar un Nivel, sus Cards se completan, las conversaciones quedan resumidas y el **resumen del Nivel asciende al Proyecto**. |
+| 4 | **Memoria en cinco capas** (AD-CMP-04) | **Global → Proyecto → Nivel → Card → Conversación** en el contexto del chat:<ul><li>perfil de la empresa;</li><li>decisiones aprobadas;</li><li>scores;</li><li>resúmenes de los Niveles cerrados;</li><li>resultado y evidencia pedida del último Board;</li><li>la Card y sus conversaciones anteriores.</li></ul>**Regla de no repetición:** si algo ya se sabe, ADAN no lo pregunta y dice qué está asumiendo. Al cerrar un Nivel, sus Cards se completan, las conversaciones quedan resumidas y el **resumen del Nivel asciende al Proyecto**. |
 | — | **Modelo local de producción** | `.env.prod.example` pasa a `qwen2.5:7b` para las tareas simples. El 0,5B queda solo para desarrollo. |
 
 ## 3. Evidencia
@@ -45,7 +45,7 @@
 - **Sin verificación real con Claude.** Esta sesión no tiene `ANTHROPIC_API_KEY`: el adaptador está probado con un cliente simulado que valida la forma exacta de la petición. Con la clave, correr `python scripts/check_claude.py`, que hace una conversación y un voto del Board con JSON y muestra el modelo, los tokens y el costo.
 - **Costo:** con clave, una sesión de Board son 8 llamadas (6 votos en Opus, más apertura y cierre en Sonnet). El costo real queda medido en `llm-usage`. Si pesa, se pueden bajar los votos a Sonnet con `LLM_MODEL_COMPLEX=claude-sonnet-5`.
 - **El debate secuencial** del Board ejecutivo (cada agente respondía al anterior) se reemplazó por votos independientes con apertura y cierre del CEO, que es lo que pide AD-FUNC-02. Si se quiere una segunda ronda de réplica (AD-CMP-02), es una extensión del motor único.
-- **La capa Global** es conocimiento fijo de ADÁN. El aprendizaje entre empresas es WO-118.
+- **La capa Global** es conocimiento fijo de ADAN. El aprendizaje entre empresas es WO-118.
 - **Los resúmenes** que ascienden son extractivos y deterministas: no llaman al modelo. Los resúmenes con IA quedan para cuando haya medición de calidad.
 - **La participación del cliente durante la sesión** (réplicas en vivo, invitados sin voto) llega con la vista de Board de AD-UX. Hoy participa al inicio, con su pregunta y su posición, y al final, cuando aprueba (Patrón A).
 
@@ -57,7 +57,7 @@ ANTHROPIC_API_KEY=sk-ant-...
 python scripts/check_claude.py          # verifica conversación y voto del Board
 ```
 
-Sin clave, ADÁN sigue funcionando con Ollama, y `llm-usage` muestra las llamadas degradadas.
+Sin clave, ADAN sigue funcionando con Ollama, y `llm-usage` muestra las llamadas degradadas.
 
 ## 6. Checklist EPWO-051
 

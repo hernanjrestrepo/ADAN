@@ -9,9 +9,9 @@ import { LoadingState } from '../../components/ui/States'
 import { api, errorMessage } from '../../lib/api'
 import type { Dossier, DossierItem } from '../../types'
 
-// El Expediente de creación: todo lo que necesita la empresa para existir según su país. ADÁN prepara cada trámite
+// El Expediente de creación: todo lo que necesita la empresa para existir según su país. ADAN prepara cada trámite
 // (formularios, borradores, lista de requisitos y costos oficiales con su fuente), el fundador lo radica y sube el
-// soporte, y ADÁN lo lee y valida. En Colombia la Cámara de Comercio es presencial; en Estados Unidos todo es en línea.
+// soporte, y ADAN lo lee y valida. En Colombia la Cámara de Comercio es presencial; en Estados Unidos todo es en línea.
 
 const GROUPS: { id: DossierItem['grupo']; label: string; icon: string }[] = [
   { id: 'identidad', label: 'Identidad', icon: '🏷️' },
@@ -30,9 +30,9 @@ const STATE: Record<DossierItem['estado'], { label: string; className: string }>
 }
 
 const MODE: Record<DossierItem['modo'], string> = {
-  adan: 'Lo hace ADÁN contigo',
-  cliente_presencial: 'ADÁN lo deja listo · tú lo radicas en persona',
-  cliente_en_linea: 'ADÁN lo deja listo · tú lo envías en línea y pagas la tarifa oficial',
+  adan: 'Lo hace ADAN contigo',
+  cliente_presencial: 'ADAN lo deja listo · tú lo radicas en persona',
+  cliente_en_linea: 'ADAN lo deja listo · tú lo envías en línea y pagas la tarifa oficial',
 }
 
 const COUNTRIES = [
@@ -41,7 +41,7 @@ const COUNTRIES = [
   { id: 'OTRO', label: '🌎 Otro país' },
 ]
 
-// La herramienta de ADÁN que produce el ítem (por ejemplo /marca), abierta para esta empresa
+// La herramienta de ADAN que produce el ítem (por ejemplo /marca), abierta para esta empresa
 const toolLink = (tool: string, companyId: string): string | null => (tool ? `${tool}/${companyId}` : null)
 
 function ItemCard({ item, companyId, onChange, onError }: {
@@ -102,7 +102,7 @@ function ItemCard({ item, companyId, onChange, onError }: {
         {link && <Link to={link} className="rounded-lg border border-adan-border px-3 py-1.5 text-sm hover:border-adan-accent">Abrir herramienta</Link>}
         {(item.modo !== 'adan' || !link) && (
           <Button size="sm" onClick={prepare} loading={busy === 'prep'} disabled={Boolean(busy) && busy !== 'prep'}>
-            {item.preparado_doc ? 'Preparar de nuevo' : 'Preparar con ADÁN'}
+            {item.preparado_doc ? 'Preparar de nuevo' : 'Preparar con ADAN'}
           </Button>
         )}
         {item.preparado_doc && <Button size="sm" variant="secondary" onClick={showPack}>{open ? 'Ocultar paquete' : 'Ver paquete'}</Button>}
@@ -173,7 +173,7 @@ export default function ExpedientePage() {
               <div>
                 <h1 className="text-2xl font-bold">📁 Expediente de creación</h1>
                 <p className="text-sm text-adan-muted mt-1">
-                  Todo lo que {name} necesita para existir legalmente y operar. ADÁN prepara cada trámite; tú lo radicas, pagas las tarifas
+                  Todo lo que {name} necesita para existir legalmente y operar. ADAN prepara cada trámite; tú lo radicas, pagas las tarifas
                   oficiales y subes el soporte para dejarlo validado.
                 </p>
               </div>
@@ -187,8 +187,8 @@ export default function ExpedientePage() {
               <div className="flex justify-between text-xs text-adan-muted"><span>{dossier.hechos} de {dossier.total} listos</span><span>{pct} %</span></div>
               <div className="mt-1 h-2 rounded-full bg-adan-surface-2 overflow-hidden"><div className="h-full bg-adan-success transition-all" style={{ width: `${pct}%` }} /></div>
             </div>
-            {dossier.pais === 'CO' && <p className="mt-3 text-xs text-adan-muted">En Colombia el registro en la Cámara de Comercio se hace en persona (o en su portal si tu cámara lo permite): ADÁN te deja estatutos, formularios y lista de requisitos listos para llevar.</p>}
-            {dossier.pais === 'US' && <p className="mt-3 text-xs text-adan-muted">En Estados Unidos todo es en línea: ADÁN te deja cada formulario con los campos ya respondidos para que solo lo revises, lo envíes y pagues la tarifa del estado o del IRS.</p>}
+            {dossier.pais === 'CO' && <p className="mt-3 text-xs text-adan-muted">En Colombia el registro en la Cámara de Comercio se hace en persona (o en su portal si tu cámara lo permite): ADAN te deja estatutos, formularios y lista de requisitos listos para llevar.</p>}
+            {dossier.pais === 'US' && <p className="mt-3 text-xs text-adan-muted">En Estados Unidos todo es en línea: ADAN te deja cada formulario con los campos ya respondidos para que solo lo revises, lo envíes y pagues la tarifa del estado o del IRS.</p>}
             {dossier.pais === 'OTRO' && <p className="mt-3 text-xs text-adan-muted">Elige Colombia o Estados Unidos para ver el expediente completo de ese país. Por ahora ves los pasos que aplican en cualquier país.</p>}
           </Card>
 
@@ -204,7 +204,7 @@ export default function ExpedientePage() {
               </section>
             )
           })}
-          <p className="text-xs text-adan-muted">ADÁN no compra dominios, no radica ni paga trámites por ti: te deja todo listo y valida lo que subes. Las tarifas que ves vienen de fuentes oficiales; confírmalas antes de pagar.</p>
+          <p className="text-xs text-adan-muted">ADAN no compra dominios, no radica ni paga trámites por ti: te deja todo listo y valida lo que subes. Las tarifas que ves vienen de fuentes oficiales; confírmalas antes de pagar.</p>
         </div>
       </main>
     </AppShell>

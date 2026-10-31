@@ -1,4 +1,4 @@
-"""Navegador real para ADÁN: abre páginas hechas con JavaScript (React, Vue, Next…) en Chromium sin ventana,
+"""Navegador real para ADAN: abre páginas hechas con JavaScript (React, Vue, Next…) en Chromium sin ventana,
 espera a que se pinten, lee el texto visible y las secciones internas, y toma una captura que la visión de Kimi
 describe (cómo se ve, qué botones hay, cómo se paga).
 

@@ -52,7 +52,7 @@ def route_template(scope: dict) -> str:
 
     FastAPI guarda en `route.path` la ruta relativa a su router (`/nivel1/{company_id}/chat`);
     el prefijo (`/api/v1`) se recupera de los primeros segmentos de la URL real, porque los
-    prefijos de los routers de ADÁN son fijos.
+    prefijos de los routers de ADAN son fijos.
     """
     route_path = getattr(scope.get("route"), "path", None)
     if not route_path:

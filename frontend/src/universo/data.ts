@@ -1,6 +1,6 @@
-// Universo ADÁN: el contenido del recorrido. Fuente: AD-FUNC-01 (7 Niveles), AD-FUNC-02 (Board Room),
+// Universo ADAN: el contenido del recorrido. Fuente: AD-FUNC-01 (7 Niveles), AD-FUNC-02 (Board Room),
 // AD-FUNC-03/04 (emoción y ritmo de cada Nivel), AD-FUNC-07 (Scores) y AD-000 v2.0 (ecosistema).
-// Todo lo que aparece de una empresa es un EJEMPLO ILUSTRATIVO: en ADÁN real sale de la evidencia del cliente.
+// Todo lo que aparece de una empresa es un EJEMPLO ILUSTRATIVO: en ADAN real sale de la evidencia del cliente.
 
 export type ZoneId = 'board' | 'csi' | 'memoria' | 'genexis' | 'simulador' | 'gemelo' | 'eva' | 'mercado' | 'cafeteria' | 'arena'
 export type AgentId =
@@ -22,7 +22,7 @@ export const ZONES: Record<ZoneId, Zone> = {
   csi: { id: 'csi', name: 'Radar CSI', short: 'Inteligencia externa', position: [-14, -9], color: '#22d3ee',
     description: 'Mercado, competencia, regulación y tendencias: valida el dolor y la propuesta con fuentes externas.' },
   memoria: { id: 'memoria', name: 'Memoria Empresarial', short: 'EMS · 5 capas', position: [0, -13], color: '#a78bfa',
-    description: 'Lo que ADÁN sabe de cada empresa, en cinco capas. Nunca vuelve a preguntar lo que ya sabe.' },
+    description: 'Lo que ADAN sabe de cada empresa, en cinco capas. Nunca vuelve a preguntar lo que ya sabe.' },
   genexis: { id: 'genexis', name: 'Laboratorio Genexis', short: 'Construcción', position: [14, -9], color: '#f472b6',
     description: 'El motor interno que construye el MVP: software, piloto físico o servicio, según la empresa.' },
   simulador: { id: 'simulador', name: 'Simulador de Mercado', short: 'Clientes simulados', position: [-14, 7], color: '#fbbf24',
@@ -66,9 +66,9 @@ export interface Agent {
 }
 
 export const AGENTS: Agent[] = [
-  { id: 'ceo', look: { skin: '#e8b996', hair: 'corto', hairColor: '#d1d5db', outfit: 'traje', beard: true, glasses: true }, name: 'ADÁN', role: 'CEO', title: 'CEO · preside el Board', color: '#60a5fa', home: [-3, 1.5], seat: 0,
+  { id: 'ceo', look: { skin: '#e8b996', hair: 'corto', hairColor: '#d1d5db', outfit: 'traje', beard: true, glasses: true }, name: 'ADAN', role: 'CEO', title: 'CEO · preside el Board', color: '#60a5fa', home: [-3, 1.5], seat: 0,
     board: true, focus: 'Preside el Board: abre y cierra cada sesión, escucha a todos y nunca decide por ti.',
-    hello: 'Soy ADÁN, el CEO de tu equipo. Presido el Board: abro con el objetivo, escucho a todos y te traigo una recomendación honesta. Tú decides.' },
+    hello: 'Soy ADAN, el CEO de tu equipo. Presido el Board: abro con el objetivo, escucho a todos y te traigo una recomendación honesta. Tú decides.' },
   { id: 'cto', look: { skin: '#c68863', hair: 'rizado', hairColor: '#1f1410', outfit: 'traje', glasses: true }, name: 'Mateo', role: 'CTO', title: 'Viabilidad técnica', color: '#38bdf8', home: [-8, -6], seat: 1,
     board: true, focus: 'Factibilidad, arquitectura y riesgos tecnológicos.',
     hello: 'Soy Mateo. Miro si lo que quieres construir se puede construir, con qué y a qué riesgo.' },
@@ -293,7 +293,7 @@ export const LEVELS: Level[] = [
     gemelo: 'Nace el Gemelo Digital: narrativa fundacional, Usuario Principal, primera Decisión y Problem Score.',
     entregable: 'Diagnóstico del Dolor', score: 'Problem Score', zones: ['csi', 'board', 'memoria'],
     avance: 'Evidencia externa + testimonios de clientes + tu aprobación del diagnóstico.',
-    badge: { name: 'Nace el Gemelo', icon: '🧬', meaning: 'Tu empresa existe en ADÁN, con su primera decisión registrada.' },
+    badge: { name: 'Nace el Gemelo', icon: '🧬', meaning: 'Tu empresa existe en ADAN, con su primera decisión registrada.' },
     tasks: [
       { id: 'l1-guion', label: 'Conversar y cargar la documentación', agent: 'ceo', zone: 'memoria', xp: 40, done: 'Guion 7 de 7 y documentos leídos' },
       { id: 'l1-csi', label: 'Buscar evidencia externa', agent: 'csi', zone: 'csi', xp: 60, done: '3 fuentes externas verificadas' },
@@ -401,8 +401,8 @@ export const LEVELS: Level[] = [
     aprende: 'Cuándo reestructurar, cuándo levantar capital y qué tan rápido madura su organización.',
     gemelo: 'La Velocidad de Maduración Organizacional pasa a ser la métrica central. Nuevas iniciativas de expansión.',
     entregable: 'Diagnóstico de Escalamiento', score: 'Venture Score', zones: ['board', 'gemelo', 'mercado', 'csi'],
-    avance: 'Es continuo: ADÁN te acompaña de forma permanente, y la empresa puede volver a reinventarse.',
-    badge: { name: 'Modo continuo', icon: '♾️', meaning: 'ADÁN te acompaña de forma permanente en el crecimiento.' },
+    avance: 'Es continuo: ADAN te acompaña de forma permanente, y la empresa puede volver a reinventarse.',
+    badge: { name: 'Modo continuo', icon: '♾️', meaning: 'ADAN te acompaña de forma permanente en el crecimiento.' },
     tasks: [
       { id: 'l7-cuello', label: 'Detectar el cuello de botella', agent: 'operaciones', zone: 'gemelo', xp: 60, done: 'Cuello de botella identificado' },
       { id: 'l7-capital', label: 'Evaluar opciones de capital', agent: 'cfo', zone: 'mercado', xp: 60, done: 'Opciones de capital comparadas' },
@@ -417,13 +417,13 @@ export const LEVELS: Level[] = [
 export const TOTAL_XP = LEVELS.reduce((sum, l) => sum + l.tasks.reduce((s, t) => s + t.xp, 0), 0)
 
 export const ECOSYSTEM = [
-  { name: 'ADÁN', icon: '🧠', text: 'Crea o reinventa empresas con los 7 Niveles y suministra agentes por tiempo.' },
+  { name: 'ADAN', icon: '🧠', text: 'Crea o reinventa empresas con los 7 Niveles y suministra agentes por tiempo.' },
   { name: 'CSI', icon: '📡', text: 'Inteligencia externa: mercado, competencia, regulación y benchmarks.' },
   { name: 'Genexis', icon: '⚙️', text: 'Motor interno que construye el MVP del Nivel 4.' },
   { name: 'EVA', icon: '🎙️', text: 'Ventas y marketing con IA: campañas, voz y omnicanalidad.' },
   { name: 'Marketplace', icon: '🛒', text: 'Donde se contratan agentes por hora, día, semana o mes.' },
   { name: 'Comunidad', icon: '🤝', text: 'Red de emprendedores y empresas del ecosistema Paradixe.' },
-  { name: 'Paradixe Capital', icon: '💠', text: 'Invierte con equity negociado caso por caso. ADÁN solo aporta la evidencia.' },
+  { name: 'Paradixe Capital', icon: '💠', text: 'Invierte con equity negociado caso por caso. ADAN solo aporta la evidencia.' },
   { name: 'Enterprise Intelligence', icon: '🌐', text: 'Aprendizaje agregado, solo con datos consentidos y anonimizados.' },
 ]
 
@@ -451,5 +451,5 @@ export const CAFE_LINES = [
   '¿Otro café antes del Board? ☕', 'El CFO dice que no hay caja ni para galletas 😅', '¡Ese Problem Score me dejó loco! 🤯',
   'Hoy el abogado del diablo soy yo 😈', 'Ayer La Arena estuvo durísima…', 'Si no hay evidencia, no hay Nivel 🙅',
   '¿Viste la encuesta? 7 de 10 dijeron que sí 🙌', 'Necesito vacaciones en la empresa de turismo 🏝️',
-  'ADÁN quiere el informe para hoy 📊', 'Jajaja, ¿te acuerdas del MVP de 12 funciones? 😂',
+  'ADAN quiere el informe para hoy 📊', 'Jajaja, ¿te acuerdas del MVP de 12 funciones? 😂',
 ]

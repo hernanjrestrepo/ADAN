@@ -74,7 +74,7 @@ function useElapsed(running: boolean) {
 function Speaker({ message }: { message: Message }) {
   return (
     <button type="button" onClick={() => reactTo(message, true)} title="Que pase al frente y lo diga en la oficina"
-      aria-label={`Que ${message.agent_name ?? 'ADÁN'} lo diga en la oficina`}
+      aria-label={`Que ${message.agent_name ?? 'ADAN'} lo diga en la oficina`}
       className="h-9 w-9 shrink-0 self-start rounded-full transition-transform hover:scale-110 focus:outline-2 focus:outline-adan-accent">
       <Portrait agent={String(message.metadata_json?.agente ?? 'ceo')} size={36} />
     </button>
@@ -221,7 +221,7 @@ export default function ChatPanel({
         setWorking('')
       }
     } else {
-      // En la oficina: ADÁN se acerca y saluda mientras el equipo piensa la respuesta
+      // En la oficina: ADAN se acerca y saluda mientras el equipo piensa la respuesta
       if (scene !== 'oficina') setScene('oficina')
       const u = useUniverso.getState()
       u.select('ceo')
@@ -283,7 +283,7 @@ export default function ChatPanel({
     : working === 'board-talk' ? 'El Board está pensando su respuesta…'
       : working === 'arena' ? 'Los inversionistas están revisando tu empresa…'
         : working === 'arena-answer' ? 'Los inversionistas están decidiendo…'
-          : uploading ? 'ADÁN está leyendo lo que cargaste…' : 'El equipo está pensando tu respuesta…'
+          : uploading ? 'ADAN está leyendo lo que cargaste…' : 'El equipo está pensando tu respuesta…'
   const placeholder = scene === 'board' ? 'Respóndele al Board (a todos, o «Camila, …» a uno)…'
     : scene === 'arena' ? (arenaId ? 'Responde a los inversionistas con datos…' : 'La Arena terminó. Vuelve a la oficina o entra de nuevo.')
       : 'Escribe, dicta 🎤 o pega una captura (Ctrl+V). Enter envía.'
@@ -330,7 +330,7 @@ export default function ChatPanel({
                 title={user ? undefined : 'Clic: que lo diga en la oficina'}>
                 {!user && (
                   <div className="mb-1 flex flex-wrap items-center gap-2 text-xs">
-                    <b className="text-adan-accent">{msg.agent_name ?? 'ADÁN'}</b>
+                    <b className="text-adan-accent">{msg.agent_name ?? 'ADAN'}</b>
                     {sceneChip && <span className="text-adan-muted">{sceneChip}</span>}
                     {vote && <VoteBadge vote={vote} />}
                   </div>
@@ -416,7 +416,7 @@ export default function ChatPanel({
       )}
 
       <form ref={formRef} onSubmit={handleSubmit} className="flex gap-2 items-end">
-        <textarea aria-label="Mensaje para ADÁN" value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={handleKeyDown}
+        <textarea aria-label="Mensaje para ADAN" value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={handleKeyDown}
           onPaste={(e) => { const files = pastedFiles(e); if (files.length && onUpload) { e.preventDefault(); void upload(files) } }}
           placeholder={placeholder} maxLength={MAX_MESSAGE_CHARS} rows={Math.min(6, Math.max(2, input.split('\n').length))}
           disabled={busy || (scene === 'arena' && !arenaId)}

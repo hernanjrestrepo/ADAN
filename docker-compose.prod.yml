@@ -1,4 +1,4 @@
-# Stack de producción de ADÁN (WO-093). Guía completa: docs/operacion/RUNBOOK.md
+# Stack de producción de ADAN (WO-093). Guía completa: docs/operacion/RUNBOOK.md
 #
 #   cp .env.prod.example .env.prod   # y completar los secretos
 #   docker compose -f docker-compose.prod.yml --env-file .env.prod up -d --build

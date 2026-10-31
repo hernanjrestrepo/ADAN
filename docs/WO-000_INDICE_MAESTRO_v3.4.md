@@ -1,4 +1,4 @@
-# WO-000 — Índice Maestro de Especificación de Producto ADÁN (v3.4)
+# WO-000 — Índice Maestro de Especificación de Producto ADAN (v3.4)
 
 **Tipo de documento:** Árbol documental — **APROBADO Y CONGELADO** (sin cambios de estructura desde v3.1).
 **Estado de la WO-000:** En construcción de contenido. `AD-000` y `AD-001` aprobados y congelados. `AD-002` en v2.0 (Draft). `AD-003` en Draft, entregado junto con su primera autoauditoría formal.
@@ -44,7 +44,7 @@ El décimo principio permanente de AD-002 (v2.0, §1.10) — que ningún concept
 
 ## 3. Knowledge Graph de la WO-000
 
-Nueva infraestructura, en `docs/wo-000/knowledge-graph/` (`kg.json` + `README.md`). Registra documentos, conceptos, principios y relaciones en formato estructurado. Su propósito inmediato es responder mecánicamente preguntas de coherencia ("¿qué depende del Gemelo Digital?"); su propósito de largo plazo, alimentar el RAG interno de ADÁN cuando AD-ARQ-06 exista. Se actualiza como parte obligatoria de la autoauditoría (pregunta 6) de cada documento nuevo.
+Nueva infraestructura, en `docs/wo-000/knowledge-graph/` (`kg.json` + `README.md`). Registra documentos, conceptos, principios y relaciones en formato estructurado. Su propósito inmediato es responder mecánicamente preguntas de coherencia ("¿qué depende del Gemelo Digital?"); su propósito de largo plazo, alimentar el RAG interno de ADAN cuando AD-ARQ-06 exista. Se actualiza como parte obligatoria de la autoauditoría (pregunta 6) de cada documento nuevo.
 
 ---
 

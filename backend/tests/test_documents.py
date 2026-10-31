@@ -1,4 +1,4 @@
-"""Documentación del cliente: ADÁN extrae el texto de PDF, Word, Excel y PowerPoint y aprende de él."""
+"""Documentación del cliente: ADAN extrae el texto de PDF, Word, Excel y PowerPoint y aprende de él."""
 import io
 
 import pytest
@@ -137,7 +137,7 @@ def test_the_board_reads_what_adan_learned_from_the_documents(client, db_session
     from app.models.models import Project
     project = db_session.query(Project).filter_by(company_id=cid).one()
     brief = Nivel1Service(llm=ScriptLLM([LEARNING]), db=db_session).board_brief(project)
-    assert "Lo que ADÁN aprendió de la documentación del cliente" in brief
+    assert "Lo que ADAN aprendió de la documentación del cliente" in brief
     assert "Vacío: No hay estructura de costos" in brief and "Riesgo: Un solo horno" in brief
 
 
@@ -182,7 +182,7 @@ def test_screenshots_are_read_with_ocr_and_recordings_are_transcribed(client, mo
     body = client.post(f"/api/v1/nivel1/{cid}/documents/upload", files=files, headers=headers).json()
     assert [d["title"] for d in body["documents"]] == ["captura.png"]
     assert "transcribiendo" in body["reply"]
-    assert "150 clientes" in llm.calls[0][1].content  # ADÁN leyó la captura
+    assert "150 clientes" in llm.calls[0][1].content  # ADAN leyó la captura
     msgs = client.get(f"/api/v1/nivel1/{cid}/status", headers=headers).json()["messages"]
     # Lo adjuntado se ve en la conversación y la transcripción llega después
     assert any(m["role"] == "user" and "🖼️ captura.png" in m["content"] and "🎙️ entrevista.m4a" in m["content"] for m in msgs)

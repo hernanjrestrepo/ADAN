@@ -28,7 +28,7 @@ async def main() -> int:
     router = ModelRouter(OllamaAdapter())
     ok = True
     chat = await router.for_tier("standard").chat(
-        [LLMMessage("system", "Eres ADÁN. Responde en una frase."), LLMMessage("user", "¿Qué haces?")])
+        [LLMMessage("system", "Eres ADAN. Responde en una frase."), LLMMessage("user", "¿Qué haces?")])
     ok &= _report("Conversación (standard)", chat)
     vote = await router.for_tier("complex").chat_json(
         [LLMMessage("system", AGENT_PROMPTS["CFO"]["system"]),

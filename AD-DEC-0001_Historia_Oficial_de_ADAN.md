@@ -1,7 +1,7 @@
-# AD-DEC-0001 — Historia Oficial de ADÁN
+# AD-DEC-0001 — Historia Oficial de ADAN
 
 **Fecha de redacción:** 2026-07-31
-**Estado:** ✅ DECIDIDO — 2026-07-31, por Hernán (CTO ADÁN). Ver sección 5.
+**Estado:** ✅ DECIDIDO — 2026-07-31, por Hernán (CTO ADAN). Ver sección 5.
 **Ubicación deliberada:** raíz física de `repos-active/adan/`, fuera de los árboles de Build A, B o C, para no sesgar el documento hacia ninguna de las tres líneas antes de que exista una decisión.
 **Origen:** reconstrucción forense de una serie de auditorías de solo lectura sobre el historial de git, archivos sin versionar y memoria de proyecto. Ningún archivo de código fue modificado para producir este documento.
 
@@ -9,7 +9,7 @@
 
 ## 1. Resumen ejecutivo
 
-Existen **tres construcciones de código distintas** que responden al nombre "ADÁN", más una fuente documental compartida que las precede a todas. No hay, en ningún lugar del repositorio ni de la documentación revisada, una declaración explícita de cuál de las tres es "la oficial". Este documento no la inventa — la deja pendiente en la sección 5.
+Existen **tres construcciones de código distintas** que responden al nombre "ADAN", más una fuente documental compartida que las precede a todas. No hay, en ningún lugar del repositorio ni de la documentación revisada, una declaración explícita de cuál de las tres es "la oficial". Este documento no la inventa — la deja pendiente en la sección 5.
 
 ```
                  Fuente documental compartida
@@ -53,7 +53,7 @@ Existen **tres construcciones de código distintas** que responden al nombre "AD
 
 ### Demostrado (con evidencia verificable)
 
-- **A → B es una migración real, no una coincidencia.** Commit `b5acfabd7` ("*integra plataforma ADÁN... al monorepo compartido*"), corroborado por un registro de memoria de proyecto escrito en tiempo real durante la migración, y por hash MD5 idéntico de `WO-000_INDICE_MAESTRO_v3.21.md` entre ambos árboles.
+- **A → B es una migración real, no una coincidencia.** Commit `b5acfabd7` ("*integra plataforma ADAN... al monorepo compartido*"), corroborado por un registro de memoria de proyecto escrito en tiempo real durante la migración, y por hash MD5 idéntico de `WO-000_INDICE_MAESTRO_v3.21.md` entre ambos árboles.
 - **Build C reutiliza la misma fuente documental compartida** (`docs/wo-000/*`) que usaron A y B — MD5 idéntico verificado.
 - **Build C no tiene ningún commit en ninguna rama del monorepo**, y su código/documentación **no contiene ninguna referencia textual** a Build B, a la rama `adan/platform-integration`, a `CHAIN_CLOSURE.md` ni a `v1.0.0`.
 
@@ -65,7 +65,7 @@ Existen **tres construcciones de código distintas** que responden al nombre "AD
 
 ### La contradicción central (sin resolver)
 
-`ADR-001-Vertical-Nivel-1.md`, fechado **2026-07-23**, afirma textualmente: *"ADÁN tiene un blueprint conceptual completo... pero cero código."* Build B había cerrado su cadena completa (51 commits, tag `v1.0.0`) **tres días antes**, el 2026-07-20. No existe ningún documento que explique este salto.
+`ADR-001-Vertical-Nivel-1.md`, fechado **2026-07-23**, afirma textualmente: *"ADAN tiene un blueprint conceptual completo... pero cero código."* Build B había cerrado su cadena completa (51 commits, tag `v1.0.0`) **tres días antes**, el 2026-07-20. No existe ningún documento que explique este salto.
 
 ---
 
@@ -81,9 +81,9 @@ Este documento **no elige entre estas tres** — no hay evidencia suficiente par
 
 ## 5. Preguntas de gobierno — RESUELTAS
 
-Estas cuatro preguntas eran decisiones de producto/negocio que ningún análisis de archivos podía responder. Decididas por Hernán (CTO ADÁN) el 2026-07-31.
+Estas cuatro preguntas eran decisiones de producto/negocio que ningún análisis de archivos podía responder. Decididas por Hernán (CTO ADAN) el 2026-07-31.
 
-**5.1 — ¿Cuál línea representa oficialmente a ADÁN hoy?**
+**5.1 — ¿Cuál línea representa oficialmente a ADAN hoy?**
 ✅ **Build C.**
 Justificación registrada: no por superioridad técnica, sino porque es el desarrollo más reciente, es sobre el que se ha trabajado activamente en las últimas semanas, e incorpora la visión de producto vigente (Cerebro, EMS, TEF, Board, OOS, DKA, Voice). Criterio explícito: *"la oficialidad la determina la estrategia del producto, no la antigüedad del código."*
 
@@ -93,7 +93,7 @@ Justificación registrada: no por superioridad técnica, sino porque es el desar
 **5.3 — ¿Cuál queda como experimental (se puede seguir explorando, sin comprometerse a ella)?**
 ✅ **Build B** (rama `adan/platform-integration`). Pasa de "certificado" a "repositorio de referencia técnica" — conserva valor real (PostgreSQL, pgvector, arquitectura enterprise, implementaciones ya probadas) pero no compite con Build C ni recibe más desarrollo bajo ese rol.
 
-**5.4 — ¿Cuál será la base técnica de "ADÁN Enterprise"?**
+**5.4 — ¿Cuál será la base técnica de "ADAN Enterprise"?**
 ✅ **Build C, con una condición explícita: migrar su motor de datos de SQLite a PostgreSQL + pgvector**, conservando el resto de su arquitectura funcional tal como está. No se adopta SQLite como estándar; se adopta la arquitectura de Build C sobre el motor de datos ya validado en Build A/B.
 
 Los valores concretos que se derivan de esta decisión (repositorio, rama, numeración de WO, documentación canónica) están en `AD-ROOT-0001`, ya actualizado.

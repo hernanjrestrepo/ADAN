@@ -1,1 +1,1 @@
-"""Comunidad ADÁN: perfiles, vitrina de empresas con Sello ADÁN, conexiones y Selecciones Paradixe."""
+"""Comunidad ADAN: perfiles, vitrina de empresas con Sello ADAN, conexiones y Selecciones Paradixe."""

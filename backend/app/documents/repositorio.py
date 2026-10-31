@@ -85,7 +85,7 @@ async def fetch(url: str, llm: LLMAdapter, goal: str, token: str = "") -> dict:
 
 
 REVIEW_PROMPT = (
-    "Eres Mateo, CTO del equipo de ADÁN, revisando el código del producto del fundador. Con el árbol y los archivos "
+    "Eres Mateo, CTO del equipo de ADAN, revisando el código del producto del fundador. Con el árbol y los archivos "
     "explica en español claro (sin jerga innecesaria): 1) qué hace el producto según el código y con qué tecnología, "
     "2) cómo está organizado, 3) lo que está bien hecho, 4) riesgos concretos (seguridad, pagos, datos, escalabilidad, "
     "deuda técnica) citando el archivo, 5) qué falta para el objetivo de la revisión, y 6) las 3 acciones más "

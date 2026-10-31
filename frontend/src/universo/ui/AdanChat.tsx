@@ -11,7 +11,7 @@ import { useUniverso } from '../store'
 import { api, errorMessage } from '../../lib/api'
 import type { Company, Message } from '../../types'
 
-// ADÁN, el CEO, lleva el control desde que entras: saluda, explica el proceso, aclara lo de la cuenta y empieza a
+// ADAN, el CEO, lleva el control desde que entras: saluda, explica el proceso, aclara lo de la cuenta y empieza a
 // conocer a la persona, la empresa y los socios. Con sesión iniciada conversa de verdad (el guion del Nivel 1),
 // lee los documentos que subas y te deja hablar por micrófono.
 
@@ -20,7 +20,7 @@ const ACCEPTED_DOCS = '.pdf,.docx,.xlsx,.pptx,.txt,.md,.csv,.json,.png,.jpg,.jpe
 
 interface Line { id: string; from: 'adan' | 'tu'; text: string }
 
-const PROCESO = `Hola, ¿cómo estás? Soy **ADÁN**, el CEO de tu equipo directivo de inteligencia artificial. Así vamos a trabajar:
+const PROCESO = `Hola, ¿cómo estás? Soy **ADAN**, el CEO de tu equipo directivo de inteligencia artificial. Así vamos a trabajar:
 
 1. **Te conozco a ti, a tu empresa y a tus socios.** Te hago preguntas una por una y, si tienes documentos (plan de negocio, estados financieros, presentaciones, actas), los subes con 📎 y yo los leo.
 2. **Recorremos 7 Niveles**, del dolor del cliente al escalamiento. En cada uno mi equipo trabaja y te entrega un reporte.
@@ -168,20 +168,20 @@ export default function AdanChat({ open, onToggle }: { open: boolean; onToggle: 
 
   if (!open) {
     return (
-      <button type="button" onClick={onToggle} aria-label="Hablar con ADÁN"
-        className="u-no-print u-glass u-pulse fixed z-40 bottom-4 right-4 flex items-center gap-2 rounded-full py-2 pl-2 pr-4 text-sm font-bold">
-        <AdanMark size={34} /> Hablar con ADÁN
+      <button type="button" onClick={onToggle} aria-label="Hablar con ADAN"
+        className="u-no-print u-glass u-pulse fixed z-40 bottom-12 right-4 flex items-center gap-2 rounded-full py-2 pl-2 pr-4 text-sm font-bold">
+        <AdanMark size={34} /> Hablar con ADAN
       </button>
     )
   }
 
   return (
-    <section aria-label="Conversación con ADÁN"
-      className="u-no-print u-glass u-rise fixed z-40 flex flex-col rounded-3xl inset-x-1 bottom-1 h-[52dvh] md:h-auto md:inset-x-auto md:right-3 md:top-32 2xl:top-20 md:bottom-3 md:w-[420px]">
+    <section aria-label="Conversación con ADAN"
+      className="u-no-print u-glass u-rise fixed z-40 flex flex-col rounded-3xl inset-x-1 bottom-10 h-[52dvh] md:h-auto md:inset-x-auto md:right-3 md:top-32 2xl:top-20 md:bottom-12 md:w-[420px]">
       <header className="flex items-center gap-3 border-b border-white/10 px-4 py-3">
         <AdanMark size={38} />
         <div className="min-w-0 flex-1 leading-tight">
-          <p className="font-bold">ADÁN <span className="text-xs font-normal text-slate-400">· CEO de tu equipo</span></p>
+          <p className="font-bold">ADAN <span className="text-xs font-normal text-slate-400">· CEO de tu equipo</span></p>
           <p className="truncate text-[11px] text-slate-400">
             {user ? (company ? `Trabajando en ${company.name}` : `Sesión de ${user.name.split(' ')[0]}`) : 'Sin sesión: modo demostración'}
           </p>
@@ -228,7 +228,7 @@ export default function AdanChat({ open, onToggle }: { open: boolean; onToggle: 
                 ))}
               </div>
               <button type="submit" disabled={!newName.trim() || Boolean(busy)} className="w-full rounded-xl u-cta px-4 py-2 text-xs font-bold disabled:opacity-50">
-                Empezar con ADÁN
+                Empezar con ADAN
               </button>
             </form>
           </div>
@@ -237,7 +237,7 @@ export default function AdanChat({ open, onToggle }: { open: boolean; onToggle: 
         {lines.map((l) => <Bubble key={l.id} from={l.from} text={l.text} />)}
         {busy && (
           <p className="text-xs text-slate-400 animate-pulse">
-            {busy === 'leyendo' ? 'ADÁN está leyendo tus documentos…' : busy === 'cargando' ? 'Preparando la conversación…' : 'ADÁN está pensando…'}
+            {busy === 'leyendo' ? 'ADAN está leyendo tus documentos…' : busy === 'cargando' ? 'Preparando la conversación…' : 'ADAN está pensando…'}
           </p>
         )}
         {error && <p role="alert" className="rounded-xl bg-orange-500/10 p-2 text-xs text-orange-200">{error}</p>}
@@ -247,7 +247,7 @@ export default function AdanChat({ open, onToggle }: { open: boolean; onToggle: 
       {user && companyId ? (
         <div className="border-t border-white/10 p-3">
           <form onSubmit={send} className="flex items-end gap-2">
-            <textarea aria-label="Mensaje para ADÁN" value={input} onChange={(e) => setInput(e.target.value)} rows={2} maxLength={8000}
+            <textarea aria-label="Mensaje para ADAN" value={input} onChange={(e) => setInput(e.target.value)} rows={2} maxLength={8000}
               onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) { e.preventDefault(); void send() } }}
               placeholder="Escribe, dicta o pega una captura…"
               onPaste={(e) => { const files = pastedFiles(e); if (files.length) { e.preventDefault(); void upload(files) } }} disabled={Boolean(busy)}

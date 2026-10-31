@@ -36,11 +36,11 @@ function Certificate({ g }: { g: Graduation }) {
   return (
     <div id="certificado" className="relative overflow-hidden rounded-2xl border-4 bg-white p-6 text-center text-slate-800 sm:p-10"
       style={{ borderColor: color }}>
-      <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">ADÁN by Paradixe certifica que</p>
+      <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">ADAN by Paradixe certifica que</p>
       {g.identidad?.logo && <img src={g.identidad.logo} alt="" className="mx-auto mt-4 h-16 max-w-[180px] object-contain" />}
       <h2 className="mt-3 text-3xl font-bold sm:text-4xl" style={{ color }}>{g.empresa}</h2>
       <p className="mt-2 text-sm">fundada por <b>{g.fundador}</b></p>
-      <p className="mx-auto mt-4 max-w-xl text-base">completó los <b>7 Niveles</b> de creación de empresa de ADÁN: el dolor, la propuesta de valor, el modelo de negocio y los números, el MVP, la validación, el lanzamiento y el escalamiento.</p>
+      <p className="mx-auto mt-4 max-w-xl text-base">completó los <b>7 Niveles</b> de creación de empresa de ADAN: el dolor, la propuesta de valor, el modelo de negocio y los números, el MVP, la validación, el lanzamiento y el escalamiento.</p>
       {g.frase && <p className="mt-4 text-lg italic" style={{ color }}>«{g.frase}»</p>}
       <div className="mt-6 flex flex-wrap items-end justify-center gap-8 text-xs text-slate-500">
         <span>{g.fecha ? new Date(g.fecha).toLocaleDateString('es-CO', { day: 'numeric', month: 'long', year: 'numeric' }) : ''}</span>
@@ -104,13 +104,13 @@ export default function GraduacionPage() {
           {!g.nivel7_cerrado ? (
             <Card>
               <h1 className="text-2xl font-bold">🎓 La graduación</h1>
-              <p className="mt-2">Cuando cierres el Nivel 7, ADÁN convoca la sesión final del Board, te entrega el <b>Libro de la Empresa</b> con todo lo construido y el plan de 90 días, emite tu certificado y pasa a <b>modo continuo</b>.</p>
+              <p className="mt-2">Cuando cierres el Nivel 7, ADAN convoca la sesión final del Board, te entrega el <b>Libro de la Empresa</b> con todo lo construido y el plan de 90 días, emite tu certificado y pasa a <b>modo continuo</b>.</p>
               <Link to={`/nivel/7/${companyId}`} className="mt-4 inline-block rounded-xl bg-adan-accent px-4 py-2 font-semibold text-white">Ir al Nivel 7</Link>
             </Card>
           ) : g.estado === 'preparando' ? (
             <Card>
               <h1 className="text-2xl font-bold">🎓 Preparando tu graduación…</h1>
-              <p className="mt-2 animate-pulse text-sm">El Board sesiona por última vez y ADÁN escribe el Libro de la Empresa. Toma unos minutos; esta página se actualiza sola.</p>
+              <p className="mt-2 animate-pulse text-sm">El Board sesiona por última vez y ADAN escribe el Libro de la Empresa. Toma unos minutos; esta página se actualiza sola.</p>
             </Card>
           ) : !g.graduada ? (
             <Card>

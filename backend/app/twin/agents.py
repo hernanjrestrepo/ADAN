@@ -1,4 +1,4 @@
-"""Catálogo de Agentes (AD-006 §4): los 7 roles del Board Room (AD-FUNC-02) y ADÁN."""
+"""Catálogo de Agentes (AD-006 §4): los 7 roles del Board Room (AD-FUNC-02) y ADAN."""
 from __future__ import annotations
 
 from sqlalchemy.orm import Session
@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 # Copia fija de los roles de app/nivel1/board_room.py y app/agents/board.py. La migración
 # 0004 siembra esta misma lista; si el Board cambia de roles, se agrega una migración.
 AGENT_CATALOG: list[tuple[str, str, str]] = [
-    ("ADAN", "ADÁN", "Orquestador: conversa con el cliente y coordina a los agentes"),
+    ("ADAN", "ADAN", "Orquestador: conversa con el cliente y coordina a los agentes"),
     ("CEO", "CEO Agent", "Preside el Board: abre la sesión y da la síntesis (no vota)"),
     ("CTO", "CTO", "Viabilidad técnica: factibilidad, arquitectura, riesgos tecnológicos"),
     ("CFO", "CFO", "Viabilidad financiera: costos, ingresos, caja, sostenibilidad"),

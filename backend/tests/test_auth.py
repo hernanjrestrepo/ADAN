@@ -8,7 +8,7 @@ def test_health(client):
     assert resp.status_code == 200
     data = resp.json()
     assert data["status"] == "ok"
-    assert data["app"] == "ADÁN"
+    assert data["app"] == "ADAN"
 
 
 def test_register(client):

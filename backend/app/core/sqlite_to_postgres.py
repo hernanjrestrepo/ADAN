@@ -127,7 +127,7 @@ def reindex_embeddings(engine) -> int:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Migra los datos de ADÁN de SQLite a PostgreSQL")
+    parser = argparse.ArgumentParser(description="Migra los datos de ADAN de SQLite a PostgreSQL")
     parser.add_argument("--from", dest="source", required=True, help="URL de SQLite de origen")
     parser.add_argument("--to", dest="target", required=True, help="URL de PostgreSQL de destino")
     parser.add_argument("--no-reindex", action="store_true", help="No recalcular embeddings")

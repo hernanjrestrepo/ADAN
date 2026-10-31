@@ -67,7 +67,7 @@ interface State {
   jolts: Partial<Record<string, number>>
   // Piso que se está viendo en la Sala (null en el Universo, que usa `level`)
   floor: number | null
-  // Bromas del equipo sobre el proyecto (las genera ADÁN una vez al día)
+  // Bromas del equipo sobre el proyecto (las genera ADAN una vez al día)
   jokes: { agente: string; texto: string }[]
   start: (archetypeId: string, name: string, mode: 'crear' | 'reinventar') => void
   reset: () => void
@@ -217,7 +217,7 @@ export function computeBoard(levelNumber: number, doneTasks: string[], archetype
   if (revealsRisk) missing = [...missing, level.riesgo.task.label]
   else if (riskKnown && !riskDone) missing = [...missing, level.riesgo.task.label]
   const yes = votes.filter((v) => v.vote === 'PROCEED').length
-  // Como en ADÁN real: avanzar exige 5 de 6 a favor y nada pendiente
+  // Como en ADAN real: avanzar exige 5 de 6 a favor y nada pendiente
   const recommendation: Vote = missing.length === 0 && yes >= 5 ? 'PROCEED' : 'PIVOT'
   const synthesis = recommendation === 'PROCEED'
     ? `El Board recomienda avanzar (${yes} de 6 a favor). ${levelNumber === 5 ? 'Antes de cerrar, te toca convencer a los inversionistas en La Arena.' : `El ${level.entregable} está listo.`} La decisión es tuya.`
@@ -282,7 +282,7 @@ export const useUniverso = create<State>((set, get) => ({
     const a = archetypeOf(archetypeId)
     set({ started: true, archetypeId, companyName: name.trim() || a.example, mode, level: 1, doneTasks: [], closedLevels: [],
       revealed: [], arenaPassed: false, jobs: {}, board: null, arena: null, panel: 'mision' })
-    get().log(`${mode === 'crear' ? 'Nace' : 'Se reinventa'} ${name.trim() || a.example}. ADÁN abre el Nivel 1: El Dolor.`, '#34d399')
+    get().log(`${mode === 'crear' ? 'Nace' : 'Se reinventa'} ${name.trim() || a.example}. ADAN abre el Nivel 1: El Dolor.`, '#34d399')
     get().say('ceo', AGENT_BY_ID.ceo.hello, 6000)
     get().feel('ceo', 'feliz', 4000)
   },
@@ -348,7 +348,7 @@ export const useUniverso = create<State>((set, get) => ({
   convene: () => {
     const { level, doneTasks, archetypeId, revealed } = get()
     set({ board: computeBoard(level, doneTasks, archetypeOf(archetypeId), revealed), focusZone: 'board', selected: null })
-    get().log(`ADÁN convoca al Board Room para el Nivel ${level}.`, '#60a5fa')
+    get().log(`ADAN convoca al Board Room para el Nivel ${level}.`, '#60a5fa')
   },
   advanceBoard: () => {
     const b = get().board

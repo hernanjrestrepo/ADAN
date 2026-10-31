@@ -1,5 +1,5 @@
 """La Sala de cada Nivel (2 a 7): misma conversación con el equipo que en el Nivel 1, con el guion, los entregables
-y los indicadores del Nivel. ADÁN abre cada Nivel con la agenda y lo cierra con el fundador."""
+y los indicadores del Nivel. ADAN abre cada Nivel con la agenda y lo cierra con el fundador."""
 from __future__ import annotations
 
 import re
@@ -101,7 +101,7 @@ async def chat(n: int, company_id: str, body: ChatBody, background: BackgroundTa
         .order_by(Message.created_at.desc()).first()
     if (last is not None and (last.metadata_json or {}).get("propone_cierre") and level.status == NivelStatus.ACTIVE
             and _YES.match(text) and len(text) < 60):
-        # ADÁN propuso cerrar y el fundador dijo que sí: se cierra aquí mismo, sin botones ni formularios
+        # ADAN propuso cerrar y el fundador dijo que sí: se cierra aquí mismo, sin botones ni formularios
         timeline.post(db, project, text, role="user", nivel=n)
         result, closing = _close(db, project, level, n, "")
         background.add_task(entregables.build_later, db.get_bind(), llm, company_id, [n])
@@ -150,7 +150,7 @@ def _close(db: Session, project: Project, level: Level, n: int, reason: str) -> 
     script = script_for(n)
     if missing and script.dimension:
         scoring.record_agent_inference(
-            db, project, "ADÁN", dimension=script.dimension, polarity=engine.CONTRADICTS, confidence=min(90.0, 30.0 + 10 * len(missing)),
+            db, project, "ADAN", dimension=script.dimension, polarity=engine.CONTRADICTS, confidence=min(90.0, 30.0 + 10 * len(missing)),
             claim=f"El fundador cerró el Nivel {n} con temas pendientes ({'; '.join(missing)}). Motivo: {reason[:300]}")
     level.status = NivelStatus.COMPLETED
     level.completed_at = datetime.now(timezone.utc)
@@ -170,6 +170,6 @@ def _close(db: Session, project: Project, level: Level, n: int, reason: str) -> 
     return {"closed": True, "pending": missing, "next": n + 1 if nxt is not None else None}, msg
 
 
-# «Sí», «dale», «cerremos»…: la respuesta del fundador cuando ADÁN propone cerrar el Nivel
+# «Sí», «dale», «cerremos»…: la respuesta del fundador cuando ADAN propone cerrar el Nivel
 _YES = re.compile(r"^\s*(s[ií]|sip|dale|de una|listo|ok(ay)?|claro|hag[aá]moslo|cerr(emos|alo|amos)|adelante|perfecto|"
                   r"va|vamos|aprobado|confirmo)\b", re.I)

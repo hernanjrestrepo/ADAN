@@ -35,7 +35,7 @@ class Plan:
     reasoning: str
 
 
-PLANNER_SYSTEM_PROMPT = """Eres el Planner de ADÁN. Tu trabajo es analizar la solicitud del usuario y generar un plan de ejecución.
+PLANNER_SYSTEM_PROMPT = """Eres el Planner de ADAN. Tu trabajo es analizar la solicitud del usuario y generar un plan de ejecución.
 
 CONTEXTO DEL SISTEMA:
 - Tienes acceso a: Knowledge Engine (datos de la empresa), Board Room (4 agentes: CEO, CTO, CFO, CMO), LLM (generación de texto), Tool Manager (herramientas).

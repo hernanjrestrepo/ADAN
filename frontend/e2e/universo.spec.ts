@@ -8,9 +8,9 @@ const URL = '/universo?escena=0'
 test('el Universo se recorre sin cuenta: se elige la empresa, se encarga evidencia y se ve el entregable', async ({ page }) => {
   await new FakeApi().install(page)
   await page.goto(URL)
-  await expect(page.getByRole('heading', { name: /Hola, soy ADÁN/ })).toBeVisible({ timeout: 15000 })
-  // ADÁN recibe con el chat: explica el proceso y cómo crear la cuenta
-  const chat = page.getByRole('region', { name: 'Conversación con ADÁN' })
+  await expect(page.getByRole('heading', { name: /Hola, soy ADAN/ })).toBeVisible({ timeout: 15000 })
+  // ADAN recibe con el chat: explica el proceso y cómo crear la cuenta
+  const chat = page.getByRole('region', { name: 'Conversación con ADAN' })
   await expect(chat.getByText(/Recorremos 7 Niveles/)).toBeVisible()
   await expect(chat.getByRole('link', { name: 'Crear mi cuenta' })).toBeVisible()
 

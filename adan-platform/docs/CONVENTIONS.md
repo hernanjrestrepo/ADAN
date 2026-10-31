@@ -1,6 +1,6 @@
-# Convenciones — ADÁN Platform
+# Convenciones — ADAN Platform
 
-Rige la Metodología Paradixe – Work Order Execution v2, con las Enmiendas 1 y 2 del Plan Maestro de Ejecución ADÁN v1.0. Este documento fija solo lo operativo del día a día.
+Rige la Metodología Paradixe – Work Order Execution v2, con las Enmiendas 1 y 2 del Plan Maestro de Ejecución ADAN v1.0. Este documento fija solo lo operativo del día a día.
 
 ## Idiomas
 

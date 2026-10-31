@@ -1,4 +1,4 @@
-# ADÁN — Baseline Oficial Nivel 1
+# ADAN — Baseline Oficial Nivel 1
 
 **Versión:** 1.0  
 **Fecha de Congelación:** 2026-07-24  

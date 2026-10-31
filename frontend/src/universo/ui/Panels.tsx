@@ -57,8 +57,8 @@ export function RoutePanel() {
 export function EcosystemPanel() {
   const focus = useUniverso((s) => s.focus)
   return (
-    <Shell kicker="PARADIXE" title="El ecosistema de ADÁN">
-      <p className="text-sm text-slate-400">ADÁN orquesta; cada componente hace lo suyo. Toca una zona de la oficina para verla trabajar.</p>
+    <Shell kicker="PARADIXE" title="El ecosistema de ADAN">
+      <p className="text-sm text-slate-400">ADAN orquesta; cada componente hace lo suyo. Toca una zona de la oficina para verla trabajar.</p>
       <ul className="mt-4 grid gap-2">
         {ECOSYSTEM.map((e) => (
           <li key={e.name} className="flex gap-3 rounded-2xl bg-white/[0.03] p-3">
@@ -72,7 +72,7 @@ export function EcosystemPanel() {
           <button key={id} type="button" onClick={() => focus(id)} className="rounded-xl border border-white/10 px-3 py-2 hover:border-cyan-300/50">📍 {label}</button>
         ))}
       </div>
-      <p className="mt-5 text-[11px] text-slate-500">ADÁN nunca decide por ti, no vende desarrollo de software y no se presenta como asesoría profesional (AD-000 §6).</p>
+      <p className="mt-5 text-[11px] text-slate-500">ADAN nunca decide por ti, no vende desarrollo de software y no se presenta como asesoría profesional (AD-000 §6).</p>
     </Shell>
   )
 }

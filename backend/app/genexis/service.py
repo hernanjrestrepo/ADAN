@@ -1,12 +1,12 @@
 """Genexis, el constructor del MVP (Nivel 4).
 
 Para una empresa que es idea: escribe la especificación del producto, construye una landing de validación con la
-marca (incluida en el Nivel 4) y un prototipo navegable (cobrado aparte en @pples), los publica en ADÁN con su
+marca (incluida en el Nivel 4) y un prototipo navegable (cobrado aparte en @pples), los publica en ADAN con su
 enlace, los ajusta conversando y entrega el código descargable. Para una empresa que ya tiene producto: lo
 recorre, lee su código si lo hay y deja un plan de mejoras con cotización.
 
 Las páginas se generan con IA y se sirven con una política de seguridad «sandbox»: corren en un origen aislado,
-sin acceso a la sesión de ADÁN. El formulario de interesados lo pone ADÁN (no la IA), con la autorización de
+sin acceso a la sesión de ADAN. El formulario de interesados lo pone ADAN (no la IA), con la autorización de
 datos de la Ley 1581 a nombre de la empresa del fundador.
 """
 from __future__ import annotations
@@ -39,14 +39,14 @@ TWEAK_TOKENS = (30_000, 16_000)
 FREE_TWEAKS = 3
 
 BUILDER = (
-    "Eres Genexis, el constructor de ADÁN: diseñas y programas páginas web modernas, rápidas y hermosas. Devuelves "
+    "Eres Genexis, el constructor de ADAN: diseñas y programas páginas web modernas, rápidas y hermosas. Devuelves "
     "UN SOLO archivo HTML completo (empieza en <!DOCTYPE html>), con todo el CSS y el JavaScript dentro del "
     "archivo, responsive (se ve perfecto en celular), accesible y en el idioma del mercado de la empresa. Usa la "
     "marca de la empresa: sus colores (variables CSS), su nombre, su slogan y su logo con <img src=\"{{LOGO}}\">. "
     "Puedes usar Google Fonts. No uses otras librerías externas, ni imágenes de internet (usa formas, degradados, "
     "emojis o SVG en línea). Nada de datos inventados presentados como reales: si muestras cifras o testimonios, "
     "que sean ejemplos marcados como tales. Donde va el formulario de interesados escribe exactamente "
-    "<!--FORMULARIO--> (ADÁN pone ahí el formulario con la autorización de datos). Solo el HTML, sin explicaciones."
+    "<!--FORMULARIO--> (ADAN pone ahí el formulario con la autorización de datos). Solo el HTML, sin explicaciones."
 )
 
 
@@ -102,7 +102,7 @@ def consent_text(company_name: str) -> str:
 
 
 def form_html(slug: str, company_name: str, color: str) -> str:
-    """El formulario de interesados: lo pone ADÁN, nunca la IA, con la autorización de datos."""
+    """El formulario de interesados: lo pone ADAN, nunca la IA, con la autorización de datos."""
     c = html.escape(color or "#2563eb")
     return (
         f'<form method="post" action="/api/v1/sitio/{html.escape(slug)}/interes" '
@@ -123,7 +123,7 @@ def form_html(slug: str, company_name: str, color: str) -> str:
 
 
 def render(data: dict, identity: dict, company_name: str) -> str:
-    """El HTML listo para servir: con el logo y el formulario de ADÁN."""
+    """El HTML listo para servir: con el logo y el formulario de ADAN."""
     page = data.get("html") or ""
     logo = identity.get("logo") or ""
     if not logo:
@@ -180,7 +180,7 @@ class Genexis:
     async def spec(self, project: Project, company: Company) -> Document:
         resp = await self.llm.chat([
             LLMMessage("system", (
-                "Eres Genexis, arquitecto de producto de ADÁN. Escribe la especificación del MVP de esta empresa en "
+                "Eres Genexis, arquitecto de producto de ADAN. Escribe la especificación del MVP de esta empresa en "
                 "Markdown: 1) problema y cliente, 2) propuesta de valor, 3) alcance del MVP (lo que entra y lo que NO "
                 "entra), 4) historias de usuario priorizadas (formato «Como… quiero… para…» con criterios de "
                 "aceptación), 5) pantallas y flujo principal, 6) modelo de datos (entidades y campos), 7) "
@@ -258,13 +258,13 @@ class Genexis:
             if spec:
                 z.writestr("especificacion.md", spec.content or "")
             z.writestr("README.md", (
-                f"# {company.name} — MVP construido con ADÁN (Genexis)\n\n"
+                f"# {company.name} — MVP construido con ADAN (Genexis)\n\n"
                 + "".join(f"- `{n}/index.html`: {'landing de validación' if n == 'landing' else 'prototipo navegable'}\n"
                           for n in names)
                 + "- `especificacion.md`: la especificación del producto (historias de usuario, pantallas y datos).\n\n"
                 "## Cómo verlo\nAbre cualquier `index.html` en el navegador: no necesita instalar nada.\n\n"
                 "## Cómo publicarlo\nArrastra la carpeta a Netlify Drop o Vercel, o súbela a tu hosting.\n\n"
-                "## Formulario de interesados\nEn ADÁN, el formulario envía los datos a tu cuenta (con la autorización "
+                "## Formulario de interesados\nEn ADAN, el formulario envía los datos a tu cuenta (con la autorización "
                 "de la Ley 1581). Si lo publicas por tu cuenta, cambia el `action` del formulario a tu propio servicio "
                 "(por ejemplo Formspree o tu backend) y conserva el texto de autorización.\n\n"
                 "## Siguiente paso\nPara el software de producción (pagos, cuentas, base de datos), Paradixe cotiza el "

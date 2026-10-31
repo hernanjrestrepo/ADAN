@@ -17,7 +17,7 @@ from app.core.config import settings
 # Costo promedio medido por tipo de llamada (USD)
 CALL_COST_USD = {"llamada": 0.0061, "busqueda": 0.034, "documento": 0.05}
 
-# Llamadas que hace ADÁN en cada Nivel (por empresa)
+# Llamadas que hace ADAN en cada Nivel (por empresa)
 LEVEL_CALLS: dict[int, dict[str, int]] = {
     1: {"llamada": 54, "busqueda": 5, "documento": 1},   # guion de 7 temas, documentos, Board x2, encuesta, Gate
     2: {"llamada": 43, "busqueda": 6, "documento": 1},   # propuesta de valor y prueba de humo

@@ -27,14 +27,14 @@ export default function BoardOverlay() {
 
   return (
     <section aria-label="Sesión del Board Room" aria-live="polite"
-      className="u-no-print u-glass u-rise fixed z-30 bottom-3 left-2 right-2 md:left-[410px] md:right-3 lg:left-1/2 lg:right-auto lg:-translate-x-1/2 lg:w-[760px] rounded-3xl p-5">
+      className="u-no-print u-glass u-rise fixed z-30 bottom-12 left-2 right-2 md:left-[410px] md:right-3 lg:left-1/2 lg:right-auto lg:-translate-x-1/2 lg:w-[760px] rounded-3xl p-5">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
           <p className="text-[11px] font-semibold tracking-[0.3em] text-sky-300">BOARD ROOM · NIVEL {level.number}</p>
           <h2 className="text-lg font-bold">{level.name}: {level.tagline}</h2>
         </div>
         <span className="rounded-full bg-white/5 px-3 py-1 text-xs">
-          {board.phase === 'gathering' ? 'El equipo llega a la sala…' : board.phase === 'opening' ? 'ADÁN abre la sesión' : `${yes} a favor · ${shown.length - yes} pivotar`}
+          {board.phase === 'gathering' ? 'El equipo llega a la sala…' : board.phase === 'opening' ? 'ADAN abre la sesión' : `${yes} a favor · ${shown.length - yes} pivotar`}
         </span>
       </div>
 
@@ -58,7 +58,7 @@ export default function BoardOverlay() {
         <div className="mt-4 u-rise">
           <div className={`flex gap-3 rounded-2xl p-3 ${board.revealsRisk ? 'bg-red-500/10 ring-1 ring-red-400/40' : 'bg-white/[0.04]'}`}>
             <Avatar id="ceo" size={34} />
-            <p className="text-sm text-slate-200"><b>ADÁN (CEO):</b> {board.synthesis}</p>
+            <p className="text-sm text-slate-200"><b>ADAN (CEO):</b> {board.synthesis}</p>
           </div>
           <div className="mt-3 flex flex-wrap justify-end gap-2">
             <button type="button" onClick={dismiss} className="rounded-xl bg-white/10 px-4 py-2 text-sm font-semibold hover:bg-white/20">

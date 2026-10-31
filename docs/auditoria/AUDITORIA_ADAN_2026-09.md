@@ -1,4 +1,4 @@
-# Auditoría técnica de ADÁN — septiembre 2026
+# Auditoría técnica de ADAN — septiembre 2026
 
 **Fecha:** 2026-09-24
 **Alcance:** Build C (línea oficial) completa: `backend/app` (13.184 líneas, 90 archivos), `backend/tests` (4.597 líneas), `frontend/src` (940 líneas), Docker y scripts. Build A (`adan-platform/`) revisado a nivel de inventario para reutilización. Blueprint: `ADAN_Blueprint_v1.pdf`, `docs/wo-000/*`, `adan-platform/docs/blueprint/*`, `ADAN_MASTER_ARCHITECTURE_v1.0.md` y documentos de gobierno.
@@ -8,7 +8,7 @@
 
 ---
 
-## 1. Qué es ADÁN
+## 1. Qué es ADAN
 
 Un "Sistema Operativo Empresarial" con IA: acompaña a una empresa desde la idea hasta la operación a través de **7 Niveles** (El Dolor → Propuesta de Valor → Plan de Negocios → MVP → Validación Simulada → Lanzamiento → Escalamiento). En cada Nivel, un **Board Room** de agentes ejecutivos (CEO, CTO, CFO, CMO, Legal, Producto, Operaciones) delibera con el cliente, todo queda registrado en un **Gemelo Digital** de la empresa, y el avance entre Niveles se aprueba por **evidencia**, nunca por pago. Después de los 7 Niveles, la empresa pasa a operación continua por suscripción. Se integra con el ecosistema Paradixe: EVA (finanzas), ARQAI (voz), Genexis (construcción de software) y CSI (inteligencia de mercado).
 
@@ -23,7 +23,7 @@ Un "Sistema Operativo Empresarial" con IA: acompaña a una empresa desde la idea
 
 ---
 
-## 3. Avance: ~22 % hacia ADÁN Enterprise v1
+## 3. Avance: ~22 % hacia ADAN Enterprise v1
 
 **Definición de 100 %:** los 7 Niveles funcionando de punta a punta según el blueprint (AD-FUNC-01 a 09), sobre una plataforma apta para producción (PostgreSQL, seguridad por empresa, CI/CD, observabilidad). Quedan fuera las reservas de negocio (WO-100) y de SaaS (WO-101 → 106), que requieren aprobación propia.
 
@@ -203,6 +203,6 @@ Build B (WO-000 → WO-012, tag `v1.0.0`) cubre además Gemelo Digital v1, Board
 
 ## 8. Recomendación
 
-1. Aprobar y fusionar **WO-094** (este PR) antes de exponer cualquier instancia de ADÁN a una red.
+1. Aprobar y fusionar **WO-094** (este PR) antes de exponer cualquier instancia de ADAN a una red.
 2. Cerrar **WO-090** (tag de baseline y revisión humana, EPWO-053) y ejecutar **WO-095** (bugs B1–B18; ✅ fusionada) y **WO-096** (importar Build B y unificar la documentación) antes de construir funcionalidad nueva.
 3. Seguir el plan `docs/auditoria/PLAN_WO_ADAN_100.md`: primero la plataforma (PostgreSQL, seguridad por empresa, TypeScript, producción), después el núcleo (Gemelo, Board Room único, memoria, scoring) y por último los Niveles 2–7.

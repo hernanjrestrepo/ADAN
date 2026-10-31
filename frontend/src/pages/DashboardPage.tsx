@@ -99,7 +99,7 @@ function CompanyCard({ company, onArchived }: { company: Company; onArchived: (i
   const [menu, setMenu] = useState(false)
   const [archiving, setArchiving] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  // Archivar: la empresa sale de la lista y queda guardada (ADÁN nunca borra la historia de una empresa)
+  // Archivar: la empresa sale de la lista y queda guardada (ADAN nunca borra la historia de una empresa)
   const archive = async () => {
     if (!window.confirm(`¿Archivar «${company.name}»? Sale de tu lista; su historia queda guardada.`)) return
     setArchiving(true)

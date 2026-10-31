@@ -237,7 +237,7 @@ class KnowledgeEngine:
         if ctx.conversation_history:
             parts.append("Historial reciente de conversación:")
             for msg in ctx.conversation_history[-5:]:
-                role = "Usuario" if msg["role"] == "user" else "ADÁN"
+                role = "Usuario" if msg["role"] == "user" else "ADAN"
                 parts.append(f"  {role}: {msg['content'][:200]}")
 
         return "\n".join(parts)

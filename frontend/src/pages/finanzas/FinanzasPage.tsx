@@ -19,7 +19,7 @@ const money = (n: number | null | undefined, cur = '') =>
 
 const ROLE: Record<OrgRole['tipo'], { label: string; className: string }> = {
   humano: { label: 'Persona', className: 'border-sky-400/50 bg-sky-400/10' },
-  agente_adan: { label: 'Agente ADÁN', className: 'border-violet-400/50 bg-violet-400/10' },
+  agente_adan: { label: 'Agente ADAN', className: 'border-violet-400/50 bg-violet-400/10' },
   servicio_paradixe: { label: 'Servicio Paradixe', className: 'border-orange-400/50 bg-orange-400/10' },
 }
 
@@ -35,7 +35,7 @@ function OrgSection({ companyId, org, setOrg, onError }: { companyId: string; or
       <Card>
         <h2 className="text-xl font-bold">Organigrama híbrido</h2>
         <p className="text-sm text-adan-muted mt-1">
-          Quién compone tu empresa en sus primeros 24 meses: personas donde hace falta criterio, firma o trabajo físico; agentes de ADÁN y
+          Quién compone tu empresa en sus primeros 24 meses: personas donde hace falta criterio, firma o trabajo físico; agentes de ADAN y
           servicios de Paradixe (EVA, Omnicanal, BPO…) donde hacen el trabajo mejor y más barato. Su costo entra solo al flujo de caja.
         </p>
         <Button className="mt-4" onClick={build} loading={busy}>{org ? 'Rediseñar el organigrama' : 'Diseñar mi organigrama'}</Button>
@@ -134,10 +134,10 @@ function CashSection({ companyId, model, setModel, hasOrg, onError }: { companyI
       <Card>
         <h2 className="text-xl font-bold">Estructura de costos y flujo de caja</h2>
         <p className="text-sm text-adan-muted mt-1">
-          El CFO de ADÁN propone los supuestos contrastados con datos del sector; las cuentas las hace el sistema, mes a mes, a 24 meses.
+          El CFO de ADAN propone los supuestos contrastados con datos del sector; las cuentas las hace el sistema, mes a mes, a 24 meses.
           Cambia cualquier supuesto y se recalcula al instante. {!hasOrg && 'Consejo: diseña primero el organigrama para que su costo entre al flujo.'}
         </p>
-        <Button className="mt-4" onClick={build} loading={busy}>{model ? 'Rehacer los supuestos con ADÁN' : 'Armar mi flujo de caja'}</Button>
+        <Button className="mt-4" onClick={build} loading={busy}>{model ? 'Rehacer los supuestos con ADAN' : 'Armar mi flujo de caja'}</Button>
       </Card>
       {busy && <LoadingState label="Buscando benchmarks del sector y armando los supuestos… (1 a 2 minutos)" />}
       {model && k && !busy && (
@@ -239,7 +239,7 @@ function ReportSection({ companyId, report, setReport, onError }: { companyId: s
         <h2 className="text-xl font-bold">Informe ejecutivo</h2>
         <p className="text-sm text-adan-muted mt-1">
           Al estilo de una consultora de primer nivel: la respuesta primero y luego los argumentos con evidencia. Incluye Lean Canvas,
-          benchmark, matriz de riesgos, Six Sigma y el plan de 90 días. Usa todo lo que ADÁN sabe: documentos, Board, La Arena, finanzas y ruta legal.
+          benchmark, matriz de riesgos, Six Sigma y el plan de 90 días. Usa todo lo que ADAN sabe: documentos, Board, La Arena, finanzas y ruta legal.
         </p>
         <div className="mt-4 flex flex-wrap gap-2">
           <Button onClick={build} loading={busy}>{report ? 'Actualizar el informe' : 'Escribir el informe'}</Button>
@@ -307,7 +307,7 @@ function ReportSection({ companyId, report, setReport, onError }: { companyId: s
               <li key={i} className="grid gap-1 md:grid-cols-[90px_1fr_160px_1fr] rounded-xl border border-adan-border p-3"><span className="font-semibold">Sem. {p.semanas}</span><span>{p.accion}</span><span className="text-adan-muted">{p.responsable}</span><span className="text-adan-muted">→ {p.entregable}</span></li>))}</ol>
           </Card>
           <Card className="border-adan-success/40!"><p className="text-xs font-semibold tracking-[0.25em] text-adan-success">RECOMENDACIÓN</p><p className="mt-2">{report.recomendacion}</p></Card>
-          <p className="text-xs text-adan-muted">ADÁN es una inteligencia artificial: este informe orienta y no reemplaza la asesoría profesional.</p>
+          <p className="text-xs text-adan-muted">ADAN es una inteligencia artificial: este informe orienta y no reemplaza la asesoría profesional.</p>
         </article>
       )}
     </div>

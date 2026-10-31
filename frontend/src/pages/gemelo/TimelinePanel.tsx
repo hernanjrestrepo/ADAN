@@ -5,7 +5,7 @@ import { ACTOR_LABELS, describeEvent } from './labels'
 
 // Timeline (AD-UX-08): cada transición, alta o archivo del Gemelo genera un Evento (AD-008 §4)
 function actorOf(e: TimelineEvent): string {
-  if (!e.actor_type) return 'ADÁN'
+  if (!e.actor_type) return 'ADAN'
   if (e.actor_type === 'agent' && e.actor_id) return e.actor_id
   return ACTOR_LABELS[e.actor_type] ?? e.actor_type
 }

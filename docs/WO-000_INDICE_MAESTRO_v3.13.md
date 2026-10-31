@@ -1,4 +1,4 @@
-# WO-000 — Índice Maestro de Especificación de Producto ADÁN (v3.13)
+# WO-000 — Índice Maestro de Especificación de Producto ADAN (v3.13)
 
 **Tipo de documento:** Árbol documental — **APROBADO Y CONGELADO** (sin cambios de estructura desde v3.1).
 **Estado de la WO-000:** Fase 1 completada (15 documentos). Categoría Funcionalidades (AD-FUNC) iniciada: AD-FUNC-01 construido y autoauditado.
@@ -9,7 +9,7 @@
 ## 0. Qué cambió respecto a v3.12
 
 1. **AD-004 pasó a v1.1** — se agregó el Criterio de Existencia (§3.1): ninguna Funcionalidad puede existir si no modifica el Gemelo Digital, mejora el conocimiento del cliente, o produce evidencia útil para la siguiente decisión. Regla transversal para toda la categoría AD-FUNC.
-2. **AD-FUNC-01 — Los 7 Niveles, construido y autoauditado.** Primer documento de Funcionalidades. Resuelve la pregunta abierta de 6 vs. 7 Niveles (con evidencia: **7**). Cada Nivel especificado como transformación empresarial —qué descubre ADÁN, qué aprende el cliente, qué cambia en el Gemelo Digital— y verificado explícitamente contra el Criterio de Existencia.
+2. **AD-FUNC-01 — Los 7 Niveles, construido y autoauditado.** Primer documento de Funcionalidades. Resuelve la pregunta abierta de 6 vs. 7 Niveles (con evidencia: **7**). Cada Nivel especificado como transformación empresarial —qué descubre ADAN, qué aprende el cliente, qué cambia en el Gemelo Digital— y verificado explícitamente contra el Criterio de Existencia.
 
 ---
 

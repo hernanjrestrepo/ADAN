@@ -1,4 +1,4 @@
-// Gráficos que ADÁN puede pedir en sus respuestas: un bloque ```chart con este JSON
+// Gráficos que ADAN puede pedir en sus respuestas: un bloque ```chart con este JSON
 
 export interface ChartSpec {
   type: 'bar' | 'line' | 'pie'

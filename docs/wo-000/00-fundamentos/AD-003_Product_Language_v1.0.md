@@ -15,7 +15,7 @@ Aprobador: Hernán / Junta Directiva
 
 **Nivel de contenido de este documento:** mixto por naturaleza. La *existencia* de un lenguaje controlado es Principio Permanente (hereda de AD-002, Regla de No Duplicación, v3.1 §1). El *conjunto específico de 21 términos* tratados aquí es Decisión de Diseño — crecerá con cada documento nuevo que introduzca vocabulario genuinamente nuevo, sujeto a la Regla de Economía Conceptual (AD-002 v2.0 §1.10).
 
-**Aplicación de Economía Conceptual (AD-002 v2.0 §1.10):** este documento no trata con las diez dimensiones completas cada palabra usada en la WO-000 — solo los términos que (a) se usan repetidamente en múltiples documentos, y (b) tienen riesgo real de ambigüedad ya demostrado en las fuentes de origen. Se seleccionaron 21 términos bajo ese criterio, divididos en dos grupos: Vocabulario del Producto (16 términos que un usuario final de ADÁN encontraría) y Vocabulario del Proceso de Documentación (5 términos que solo existen dentro de la WO-000 misma). Ningún término de este documento es un concepto nuevo — los 21 ya existían, dispersos y a veces inconsistentes, en Chat 1.docx, Blueprint v1, o los documentos ya aprobados de esta WO-000; el trabajo de AD-003 es fijarlos, no inventarlos.
+**Aplicación de Economía Conceptual (AD-002 v2.0 §1.10):** este documento no trata con las diez dimensiones completas cada palabra usada en la WO-000 — solo los términos que (a) se usan repetidamente en múltiples documentos, y (b) tienen riesgo real de ambigüedad ya demostrado en las fuentes de origen. Se seleccionaron 21 términos bajo ese criterio, divididos en dos grupos: Vocabulario del Producto (16 términos que un usuario final de ADAN encontraría) y Vocabulario del Proceso de Documentación (5 términos que solo existen dentro de la WO-000 misma). Ningún término de este documento es un concepto nuevo — los 21 ya existían, dispersos y a veces inconsistentes, en Chat 1.docx, Blueprint v1, o los documentos ya aprobados de esta WO-000; el trabajo de AD-003 es fijarlos, no inventarlos.
 
 ---
 
@@ -23,24 +23,24 @@ Aprobador: Hernán / Junta Directiva
 
 ### Ecosistema Paradixe
 
-- **Definición oficial:** el conjunto de componentes de IA especializados —EVA, ARQAI, ATO, Genexis (y otros motores de construcción), CSI, Marketplace, Paradixe Capital, ADÁN y futuros componentes— que colaboran, mediante contratos explícitos, para cubrir cualquier etapa del ciclo de vida de una empresa.
+- **Definición oficial:** el conjunto de componentes de IA especializados —EVA, ARQAI, ATO, Genexis (y otros motores de construcción), CSI, Marketplace, Paradixe Capital, ADAN y futuros componentes— que colaboran, mediante contratos explícitos, para cubrir cualquier etapa del ciclo de vida de una empresa.
 - **Definición prohibida:** no es un conjunto de productos SaaS independientes que compiten por el mismo cliente. No es sinónimo de "Paradixe" como organización (Paradixe construye el ecosistema; el ecosistema es lo que Paradixe construye).
 - **Sinónimos aceptados:** "el ecosistema" (minúscula, dentro de un documento que ya estableció el contexto).
 - **Sinónimos prohibidos:** "la plataforma", "la suite de productos", "el stack Paradixe".
-- **Contexto de uso:** al describir cómo ADÁN se relaciona con otros componentes; nunca al describir la interfaz de un solo producto.
+- **Contexto de uso:** al describir cómo ADAN se relaciona con otros componentes; nunca al describir la interfaz de un solo producto.
 - **Documentos donde aparece:** AD-000 (definición completa), AD-001, este documento.
 - **Responsable del concepto:** AD-000.
 - **Fecha de creación:** 2026-07-14.
 - **Nivel de estabilidad:** Estable.
 - **Dependencias:** ninguna — es el concepto raíz.
 
-### ADÁN
+### ADAN
 
 - **Definición oficial:** la inteligencia orquestadora del Ecosistema Paradixe aplicada a una empresa específica (definición completa en AD-001 §1).
 - **Definición prohibida:** no es un chatbot, no es un generador de documentos, no es un asistente de propósito general con conocimiento de negocios.
 - **Sinónimos aceptados:** ninguno — nombre propio, no se abrevia ni se traduce.
-- **Sinónimos prohibidos:** "la IA", "el asistente", "el bot", "la plataforma" (cuando se refiere específicamente a ADÁN, no al ecosistema completo).
-- **Contexto de uso:** siempre "ADÁN", con tilde y mayúsculas, en comunicación oficial.
+- **Sinónimos prohibidos:** "la IA", "el asistente", "el bot", "la plataforma" (cuando se refiere específicamente a ADAN, no al ecosistema completo).
+- **Contexto de uso:** siempre "ADAN", con tilde y mayúsculas, en comunicación oficial.
 - **Documentos donde aparece:** todos.
 - **Responsable del concepto:** AD-001.
 - **Fecha de creación:** origen del proyecto, formalizado en AD-001.
@@ -49,20 +49,20 @@ Aprobador: Hernán / Junta Directiva
 
 ### Orquestador
 
-- **Definición oficial:** el rol que cumple ADÁN dentro del ecosistema — decide qué capacidades activar, en qué orden y con qué Motor, según el punto de entrada de una empresa (AD-000 §5).
-- **Definición prohibida:** no es una entidad de software separada de ADÁN, ni un componente adicional del ecosistema — es la función que ADÁN cumple.
-- **Sinónimos aceptados:** "rol orquestador", en contexto donde ya se estableció que se habla de ADÁN.
+- **Definición oficial:** el rol que cumple ADAN dentro del ecosistema — decide qué capacidades activar, en qué orden y con qué Motor, según el punto de entrada de una empresa (AD-000 §5).
+- **Definición prohibida:** no es una entidad de software separada de ADAN, ni un componente adicional del ecosistema — es la función que ADAN cumple.
+- **Sinónimos aceptados:** "rol orquestador", en contexto donde ya se estableció que se habla de ADAN.
 - **Sinónimos prohibidos:** "controlador", "gestor", "director" — implican jerarquía sobre otros componentes, que AD-000 §4 principio 2 rechaza explícitamente.
-- **Contexto de uso:** al describir la relación de ADÁN con el resto del ecosistema; nunca su relación con el cliente (ahí, "comité ejecutivo", AD-001 §1).
+- **Contexto de uso:** al describir la relación de ADAN con el resto del ecosistema; nunca su relación con el cliente (ahí, "comité ejecutivo", AD-001 §1).
 - **Documentos donde aparece:** AD-000, AD-001.
 - **Responsable del concepto:** AD-000.
 - **Fecha de creación:** 2026-07-14 (revisión de AD-000 que reemplazó el modelo de cadena por el de red).
 - **Nivel de estabilidad:** Estable.
-- **Dependencias:** ADÁN, Ecosistema Paradixe.
+- **Dependencias:** ADAN, Ecosistema Paradixe.
 
 ### Motor (de Capacidad)
 
-- **Definición oficial:** cualquier proveedor —interno o externo— que ejecuta una capacidad específica que ADÁN orquesta pero no posee en exclusiva (ej. Genexis como motor de construcción). Ver AD-000 §4, principio 3.
+- **Definición oficial:** cualquier proveedor —interno o externo— que ejecuta una capacidad específica que ADAN orquesta pero no posee en exclusiva (ej. Genexis como motor de construcción). Ver AD-000 §4, principio 3.
 - **Definición prohibida:** no es una dependencia fija — nombrar "el motor de X" no implica que sea el único proveedor posible de esa capacidad, ahora ni en el futuro.
 - **Sinónimos aceptados:** "motor de construcción" (para la capacidad de desarrollo de software específicamente).
 - **Sinónimos prohibidos:** "proveedor exclusivo", "dependencia" sin calificar que es reemplazable.
@@ -75,7 +75,7 @@ Aprobador: Hernán / Junta Directiva
 
 ### Gemelo Digital
 
-- **Definición oficial:** la entidad estructural que representa a una Empresa dentro de ADÁN — agrega y versiona sus decisiones, documentos, código, procesos, KPIs y evidencias a lo largo de toda su relación con el sistema. Especificación completa pendiente en AD-007.
+- **Definición oficial:** la entidad estructural que representa a una Empresa dentro de ADAN — agrega y versiona sus decisiones, documentos, código, procesos, KPIs y evidencias a lo largo de toda su relación con el sistema. Especificación completa pendiente en AD-007.
 - **Definición prohibida:** no es un perfil de usuario estático ni un expediente — es una entidad viva y versionada (su ciclo de vida se define en AD-CMP-06, Digital Twin Lifecycle).
 - **Sinónimos aceptados:** "el Gemelo" (dentro de un documento que ya estableció el contexto).
 - **Sinónimos prohibidos:** "perfil de empresa", "expediente", "ficha".
@@ -88,11 +88,11 @@ Aprobador: Hernán / Junta Directiva
 
 ### Empresa
 
-- **Definición oficial:** la organización real —naciente o madura— que un Gemelo Digital representa dentro de ADÁN. Modelo de dominio completo pendiente en AD-005 (Enterprise Domain Model).
-- **Definición prohibida:** no es sinónimo de "Proyecto" — Empresa es el concepto de dominio de negocio; Proyecto es su contraparte de dominio de software dentro de ADÁN (ver más abajo).
+- **Definición oficial:** la organización real —naciente o madura— que un Gemelo Digital representa dentro de ADAN. Modelo de dominio completo pendiente en AD-005 (Enterprise Domain Model).
+- **Definición prohibida:** no es sinónimo de "Proyecto" — Empresa es el concepto de dominio de negocio; Proyecto es su contraparte de dominio de software dentro de ADAN (ver más abajo).
 - **Sinónimos aceptados:** ninguno formal.
-- **Sinónimos prohibidos:** "startup" — una Empresa acompañada por ADÁN puede tener treinta años; no todas son startups (AD-001, Declaración de Misión).
-- **Contexto de uso:** al hablar del cliente real de ADÁN y su organización. Para el contenedor de software correspondiente, usar "Proyecto".
+- **Sinónimos prohibidos:** "startup" — una Empresa acompañada por ADAN puede tener treinta años; no todas son startups (AD-001, Declaración de Misión).
+- **Contexto de uso:** al hablar del cliente real de ADAN y su organización. Para el contenedor de software correspondiente, usar "Proyecto".
 - **Documentos donde aparece:** AD-000, AD-001; modelo completo pendiente en AD-005.
 - **Responsable del concepto:** AD-005 *(pendiente)*.
 - **Fecha de creación:** 2026-07-14 (distinción formal Empresa/Proyecto introducida al separar Enterprise Domain Model de Domain Model en la revisión de la WO-000).
@@ -101,11 +101,11 @@ Aprobador: Hernán / Junta Directiva
 
 ### Proyecto
 
-- **Definición oficial:** el contenedor de software dentro de ADÁN donde vive el acompañamiento a una Empresa — la unidad principal de organización de la interfaz, no el chat. Especificación completa pendiente en AD-006.
+- **Definición oficial:** el contenedor de software dentro de ADAN donde vive el acompañamiento a una Empresa — la unidad principal de organización de la interfaz, no el chat. Especificación completa pendiente en AD-006.
 - **Definición prohibida:** no es sinónimo de "Empresa" — un Proyecto es la representación de software de una Empresa, no la empresa misma.
 - **Sinónimos aceptados:** ninguno.
 - **Sinónimos prohibidos:** "workspace de la empresa" — confunde Proyecto con Workspace, un concepto de interfaz distinto (ver más abajo).
-- **Contexto de uso:** al hablar de estructura de software y navegación dentro de ADÁN.
+- **Contexto de uso:** al hablar de estructura de software y navegación dentro de ADAN.
 - **Documentos donde aparece:** este documento; modelo completo pendiente en AD-006.
 - **Responsable del concepto:** AD-006 *(pendiente)*.
 - **Fecha de creación:** conversaciones fundacionales del producto; formalizado como entidad de dominio en esta WO-000.
@@ -114,7 +114,7 @@ Aprobador: Hernán / Junta Directiva
 
 ### Nivel
 
-- **Definición oficial:** cada una de las etapas secuenciales y obligatorias del acompañamiento de ADÁN dentro de un Proyecto. Especificación completa en AD-FUNC-01 *(pendiente)*.
+- **Definición oficial:** cada una de las etapas secuenciales y obligatorias del acompañamiento de ADAN dentro de un Proyecto. Especificación completa en AD-FUNC-01 *(pendiente)*.
 - **Definición prohibida:** no es una funcionalidad opcional ni un módulo que se pueda saltar — el avance entre Niveles está gobernado por evidencia, no por elección libre (AD-CMP-01).
 - **Sinónimos aceptados:** ninguno.
 - **Sinónimos prohibidos:** "fase" — usado libremente en las conversaciones de origen, pero "Nivel" es el término oficial de esta WO-000; "fase" queda reservado exclusivamente para "Fase 1 / Fase 2" del proceso de construcción de la propia WO-000, un concepto no confundible.
@@ -192,7 +192,7 @@ Aprobador: Hernán / Junta Directiva
 
 ### Entregable
 
-- **Definición oficial:** documento o artefacto formal que ADÁN produce al cierre de una Card o un Nivel, sintetizando decisiones, evidencia y resultados (ej. Diagnóstico_Dolor.pdf).
+- **Definición oficial:** documento o artefacto formal que ADAN produce al cierre de una Card o un Nivel, sintetizando decisiones, evidencia y resultados (ej. Diagnóstico_Dolor.pdf).
 - **Definición prohibida:** no es cualquier archivo generado durante una conversación — un Entregable tiene un propósito de síntesis y cierre, definido por el Nivel o Card que lo produce.
 - **Sinónimos aceptados:** el nombre específico del documento (ej. "Business Model Canvas") cuando aplica.
 - **Sinónimos prohibidos:** "output", "resultado" — términos genéricos que no distinguen un Entregable formal de una respuesta conversacional.
@@ -205,16 +205,16 @@ Aprobador: Hernán / Junta Directiva
 
 ### Agente
 
-- **Definición oficial:** la unidad interna de especialización de ADÁN (ej. rol de CEO, CTO, CFO) que participa en el análisis y la generación de una respuesta, invisible y no administrable por el usuario salvo que este decida inspeccionarla (AD-UX-11).
-- **Definición prohibida:** no es un chatbot independiente con el que el usuario conversa directamente — el usuario conversa con ADÁN; los Agentes son internos (AD-001 §1).
+- **Definición oficial:** la unidad interna de especialización de ADAN (ej. rol de CEO, CTO, CFO) que participa en el análisis y la generación de una respuesta, invisible y no administrable por el usuario salvo que este decida inspeccionarla (AD-UX-11).
+- **Definición prohibida:** no es un chatbot independiente con el que el usuario conversa directamente — el usuario conversa con ADAN; los Agentes son internos (AD-001 §1).
 - **Sinónimos aceptados:** "agente especializado" para énfasis.
 - **Sinónimos prohibidos:** "bot", "asistente" — implican una entidad independiente de cara al usuario, lo cual contradice AD-001 §1.
-- **Contexto de uso:** al describir la arquitectura interna multiagente, nunca la experiencia del usuario (ahí, siempre "ADÁN").
+- **Contexto de uso:** al describir la arquitectura interna multiagente, nunca la experiencia del usuario (ahí, siempre "ADAN").
 - **Documentos donde aparece:** Chat 1.docx; comportamiento en AD-CMP-02; arquitectura pendiente en AD-ARQ-03.
 - **Responsable del concepto:** AD-ARQ-03 *(pendiente)*.
 - **Fecha de creación:** origen del proyecto.
 - **Nivel de estabilidad:** Estable en el concepto; En evolución en la especificación técnica.
-- **Dependencias:** ADÁN, Orquestador.
+- **Dependencias:** ADAN, Orquestador.
 
 ### Board Room
 
@@ -233,7 +233,7 @@ Aprobador: Hernán / Junta Directiva
 
 ## 2. Vocabulario del Proceso de Documentación (WO-000)
 
-Estos cinco términos no los encontrará un usuario final de ADÁN — existen para gobernar cómo se escribe la especificación misma. Se incluyen aquí, en vez de en un documento aparte, en cumplimiento directo de la Regla de Economía Conceptual: cinco términos no justifican un nuevo documento cuando ya existe uno diseñado exactamente para fijar vocabulario.
+Estos cinco términos no los encontrará un usuario final de ADAN — existen para gobernar cómo se escribe la especificación misma. Se incluyen aquí, en vez de en un documento aparte, en cumplimiento directo de la Regla de Economía Conceptual: cinco términos no justifican un nuevo documento cuando ya existe uno diseñado exactamente para fijar vocabulario.
 
 ### Comportamiento
 
@@ -277,7 +277,7 @@ Estos cinco términos no los encontrará un usuario final de ADÁN — existen p
 ### Decisión de Diseño
 
 - **Definición oficial:** en el contexto de la WO-000, una elección concreta (una lista, un ejemplo, un mecanismo específico) que ilustra un Principio Permanente en el estado actual del producto, pero que puede evolucionar sin comprometer el principio que ilustra (AD-001, nota metodológica).
-- **Definición prohibida:** no es lo mismo que el objeto "Decisión" del vocabulario de producto (sección 1) — "Decisión" es una entidad de ADÁN; "Decisión de Diseño" es una categoría de contenido de la documentación de la WO-000. *Esta coincidencia de nombre es una fuente de confusión real — ver Preguntas Abiertas.*
+- **Definición prohibida:** no es lo mismo que el objeto "Decisión" del vocabulario de producto (sección 1) — "Decisión" es una entidad de ADAN; "Decisión de Diseño" es una categoría de contenido de la documentación de la WO-000. *Esta coincidencia de nombre es una fuente de confusión real — ver Preguntas Abiertas.*
 - **Sinónimos aceptados:** ninguno.
 - **Sinónimos prohibidos:** "decisión de producto" — para evitar la confusión con el objeto Decisión, se usa siempre "Decisión de Diseño" completo, nunca abreviado a "Decisión".
 - **Contexto de uso:** en la etiqueta explícita "Nivel de contenido" de cualquier documento de la WO-000.
@@ -289,7 +289,7 @@ Estos cinco términos no los encontrará un usuario final de ADÁN — existen p
 
 ### Confidence Level
 
-- **Definición oficial:** indicador de 0 a 100% que declara cuánto de un contenido —de un documento de la WO-000 o, más adelante, de una salida de ADÁN— está respaldado por evidencia frente a cuánto es hipótesis (v3.1 §1; AD-002 regla 1.9).
+- **Definición oficial:** indicador de 0 a 100% que declara cuánto de un contenido —de un documento de la WO-000 o, más adelante, de una salida de ADAN— está respaldado por evidencia frente a cuánto es hipótesis (v3.1 §1; AD-002 regla 1.9).
 - **Definición prohibida:** no es una nota de calidad de redacción — es una nota de certeza de la información.
 - **Sinónimos aceptados:** "nivel de confianza" en prosa; el término técnico se mantiene en inglés por convención ya establecida desde v3.1.
 - **Sinónimos prohibidos:** "score de calidad".

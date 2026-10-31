@@ -169,7 +169,7 @@ class MemoryEngine:
             if role == "user":
                 parts.append(f"Usuario: {content}")
             elif role == "assistant":
-                parts.append(f"ADÁN: {content}")
+                parts.append(f"ADAN: {content}")
 
         return "\n".join(parts)
 

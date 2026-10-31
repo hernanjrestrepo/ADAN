@@ -1,4 +1,4 @@
-# WO-000 — Índice Maestro de Especificación de Producto ADÁN (v1.0)
+# WO-000 — Índice Maestro de Especificación de Producto ADAN (v1.0)
 
 **Tipo de documento:** Árbol documental para revisión. No contiene especificación de producto.
 **Estado de la WO-000:** En diseño — pendiente de aprobación del árbol antes de redactar cualquier documento.
@@ -15,7 +15,7 @@ Cada fila define un documento maestro con:
 - **Alcance** — qué cubre y, cuando es relevante, qué NO cubre (para evitar solapamiento con otro documento).
 - **Dependencias** — códigos de documentos que deben aprobarse antes, porque este hereda definiciones de ellos.
 - **Prioridad** — `P0` bloqueante (nada se construye sin esto) · `P1` crítico para el producto final · `P2` necesario pero puede iterar · `P3` fase posterior / visión.
-- **Estado de insumos** — `Insumos en Chat 1.docx` (ya se discutió en las conversaciones ADÁN y solo falta formalizar) · `Definido en Blueprint v1` (el PDF ya lo nombra conceptualmente) · `No iniciado` (no existe insumo previo, se redacta desde cero).
+- **Estado de insumos** — `Insumos en Chat 1.docx` (ya se discutió en las conversaciones ADAN y solo falta formalizar) · `Definido en Blueprint v1` (el PDF ya lo nombra conceptualmente) · `No iniciado` (no existe insumo previo, se redacta desde cero).
 - **Responsable** — quién redacta el borrador. `CC` = Claude Code (redacción asistida). `LEGAL` = requiere abogado externo antes de que el borrador pueda aprobarse. La aprobación final de **todo** documento es siempre de Hernán / Junta — eso no varía fila a fila y no se repite en la tabla.
 - **Págs. / Complejidad** — estimado, para dimensionar la WO-000 en su totalidad.
 
@@ -27,7 +27,7 @@ Total de documentos: **60**. El pedido original fijaba un mínimo de referencia 
 
 | Código | Nombre | Objetivo | Alcance | Dependencias | Prioridad | Estado insumos | Resp. | Págs. | Complejidad |
 |---|---|---|---|---|---|---|---|---|---|
-| AD-GOV-01 | Constitución del Producto | Fijar qué es y qué NO es ADÁN, de forma que ninguna decisión futura pueda contradecirla | Definición irrevocable: unidad principal = Proyecto (no chat), agentes invisibles, evidencia > afirmación, cliente decide. Incluye cómo se aprueban y versionan los demás documentos (gobernanza documental) | — | P0 | Insumos en Chat 1.docx | CC | 6-8 | Media |
+| AD-GOV-01 | Constitución del Producto | Fijar qué es y qué NO es ADAN, de forma que ninguna decisión futura pueda contradecirla | Definición irrevocable: unidad principal = Proyecto (no chat), agentes invisibles, evidencia > afirmación, cliente decide. Incluye cómo se aprueban y versionan los demás documentos (gobernanza documental) | — | P0 | Insumos en Chat 1.docx | CC | 6-8 | Media |
 | AD-GOV-02 | Filosofía y Principios de Diseño | Traducir "pensar como Apple" en criterios verificables, no en gusto estético | Checklist de justificación obligatoria (UX / Ingeniería / Escalabilidad / Multiagentes / Performance / Seguridad / Costo) que todo documento posterior debe satisfacer | AD-GOV-01 | P0 | No iniciado | CC | 4-6 | Media |
 | AD-GOV-03 | Arquitectura de Decisiones (Decision Log) | Especificar el objeto `DEC-XXXX` como ciudadano de primera clase del sistema, no solo como vista de UI | Esquema del objeto decisión, ciclo de vida (propuesta→debate→aprobada/rechazada), trazabilidad hacia Cards/Niveles/Documentos afectados | AD-GOV-01 | P0 | Insumos en Chat 1.docx | CC | 5-7 | Alta |
 | AD-GOV-04 | Glosario Maestro y Taxonomía | Una sola definición autorizada por término (Proyecto, Nivel, Card, Score, Gemelo Digital, Board Room, etc.) | Diccionario canónico referenciado por todos los demás documentos; sin esto, cada documento reinterpretará los términos a su manera | AD-GOV-01 | P0 | No iniciado | CC | 4-5 | Baja |
@@ -54,11 +54,11 @@ Total de documentos: **60**. El pedido original fijaba un mínimo de referencia 
 
 | Código | Nombre | Objetivo | Alcance | Dependencias | Prioridad | Estado insumos | Resp. | Págs. | Complejidad |
 |---|---|---|---|---|---|---|---|---|---|
-| AD-PRD-01 | Product Vision & Experience Vision | Fijar el norte de producto y de experiencia en un solo documento rector | Qué se siente usar ADÁN, comparables explícitos (Notion/Linear/Cursor, no ChatGPT), qué NUNCA debe sentirse (chatbot genérico) | AD-GOV-01, AD-GOV-02 | P0 | Insumos en Chat 1.docx | CC | 5-7 | Media |
+| AD-PRD-01 | Product Vision & Experience Vision | Fijar el norte de producto y de experiencia en un solo documento rector | Qué se siente usar ADAN, comparables explícitos (Notion/Linear/Cursor, no ChatGPT), qué NUNCA debe sentirse (chatbot genérico) | AD-GOV-01, AD-GOV-02 | P0 | Insumos en Chat 1.docx | CC | 5-7 | Media |
 | AD-PRD-02 | Gemelo Digital — Especificación Funcional | Especificar el objeto central del sistema: qué representa, qué versiona, quién lo lee/escribe | Empresa, producto, fundador, mercado; versionado de decisiones/documentos/código/KPIs/evidencias. Es la base de datos conceptual de la que dependen casi todos los demás documentos | AD-GOV-01, AD-GOV-04 | **P0 — el más referenciado de toda la WO-000** | Definido en Blueprint v1 (nombrado, no especificado) | CC | 8-10 | Muy Alta |
 | AD-PRD-03 | Product Requirements Document (7 Niveles) | Consolidar los 7 niveles ya discutidos en un PRD único con criterios de entrada/salida por nivel | Objetivo, preguntas clave, documentación solicitada, metodologías, entregables, criterio de avance y precio por cada uno de los 7 niveles | AD-PRD-02, AD-GOV-03 | P0 | Insumos en Chat 1.docx (niveles 1-6 ya discutidos en detalle; nivel 7 falta) | CC | 14-18 | Alta |
 | AD-PRD-04 | User Journey Map | Mapear el recorrido completo para los perfiles que ya se identificaron como distintos en las conversaciones (técnico vs. no técnico, individual vs. institucional) | Journey desde descubrimiento hasta suscripción activa, con puntos de fricción y abandono explícitos | AD-PRD-03 | P1 | Insumos en Chat 1.docx (perfilamiento por lenguaje técnico ya discutido) | CC | 6-8 | Media |
-| AD-PRD-05 | Experience Engine | Especificar el subsistema nombrado en el Blueprint v1: gamificación, avatares, voz, Shark Tank simulado, Índice ADÁN | Mecánicas de progreso, integración con voz (ARQAI/Claro), simulación tipo Shark Tank para Nivel 5-6 | AD-PRD-01, AD-INT-02 | P2 | Definido en Blueprint v1 | CC | 7-9 | Alta |
+| AD-PRD-05 | Experience Engine | Especificar el subsistema nombrado en el Blueprint v1: gamificación, avatares, voz, Shark Tank simulado, Índice ADAN | Mecánicas de progreso, integración con voz (ARQAI/Claro), simulación tipo Shark Tank para Nivel 5-6 | AD-PRD-01, AD-INT-02 | P2 | Definido en Blueprint v1 | CC | 7-9 | Alta |
 | AD-PRD-06 | Marketplace de Agentes y SaaS | Especificar el marketplace nombrado en el Blueprint v1 (publicación de SaaS, agentes, servicios Paradixe, APIs, partners) | Reglas de publicación, curaduría, revenue share — fase posterior al núcleo de 7 niveles | AD-PRD-02, AD-BIZ-01 | P3 | Definido en Blueprint v1 | CC | 6-8 | Media |
 | AD-PRD-07 | Board Room — Producto y Mecánica de Comité Ejecutivo | Especificar el subsistema nombrado en el Blueprint v1: CEO/CTO/CFO/CMO/Legal/Producto/Operaciones debatiendo, con cliente y terceros invitados, votaciones y actas | Reglas de debate, cómo se documentan desacuerdos entre agentes, quién tiene voto, cómo se genera el acta; se apoya en AD-ARQ-03 para el mecanismo técnico subyacente | AD-GOV-03, AD-ARQ-03 | P1 | Definido en Blueprint v1 | CC | 7-9 | Alta |
 
@@ -138,10 +138,10 @@ Esta es la categoría con más peso deliberadamente: coincide con el nivel de de
 
 | Código | Nombre | Objetivo | Alcance | Dependencias | Prioridad | Estado insumos | Resp. | Págs. | Complejidad |
 |---|---|---|---|---|---|---|---|---|---|
-| AD-INT-01 | Integración EVA | Especificar el contrato con el cerebro financiero/estratégico | Qué datos entrega ADÁN a EVA, qué recibe de vuelta (análisis financiero, KPIs, riesgos, proyecciones) | AD-ARQ-08 | P1 | Definido en Blueprint v1 (relación conceptual "ADÁN diseña, EVA evalúa") | CC | 4-5 | Media |
+| AD-INT-01 | Integración EVA | Especificar el contrato con el cerebro financiero/estratégico | Qué datos entrega ADAN a EVA, qué recibe de vuelta (análisis financiero, KPIs, riesgos, proyecciones) | AD-ARQ-08 | P1 | Definido en Blueprint v1 (relación conceptual "ADAN diseña, EVA evalúa") | CC | 4-5 | Media |
 | AD-INT-02 | Integración ARQAI | Especificar el contrato con el motor de voz/agente conversacional | Uso de voz en Experience Engine (AD-PRD-05), reutilización del runtime GPU existente | AD-ARQ-08 | P1 | Insumos externos (repo Claro/ARQAI ya existente) | CC | 4-5 | Media |
-| AD-INT-03 | Integración Genexis | Especificar el contrato con el motor de construcción de software | Qué especificación entrega ADÁN (Nivel 4/6), qué entrega Genexis (MVP construido) | AD-ARQ-08 | P1 | Definido en Blueprint v1 (relación conceptual "ADÁN diseña, Genexis construye") | CC | 4-5 | Media |
-| AD-INT-04 | Integración CSI | Especificar el contrato con el sistema de inteligencia de mercado | Qué investigación/competencia/tendencias entrega CSI para validación en Niveles 1-2 | AD-ARQ-08 | P1 | Definido en Blueprint v1 (relación conceptual "ADÁN decide, CSI suministra información") | CC | 4-5 | Media |
+| AD-INT-03 | Integración Genexis | Especificar el contrato con el motor de construcción de software | Qué especificación entrega ADAN (Nivel 4/6), qué entrega Genexis (MVP construido) | AD-ARQ-08 | P1 | Definido en Blueprint v1 (relación conceptual "ADAN diseña, Genexis construye") | CC | 4-5 | Media |
+| AD-INT-04 | Integración CSI | Especificar el contrato con el sistema de inteligencia de mercado | Qué investigación/competencia/tendencias entrega CSI para validación en Niveles 1-2 | AD-ARQ-08 | P1 | Definido en Blueprint v1 (relación conceptual "ADAN decide, CSI suministra información") | CC | 4-5 | Media |
 
 *(El contrato técnico común a las cuatro integraciones — autenticación, formato de payload, versionado — se especifica una sola vez en AD-ARQ-08 y no se repite en cada documento de integración, para evitar redundancia de cuatro especificaciones de API casi idénticas.)*
 
@@ -151,7 +151,7 @@ Esta es la categoría con más peso deliberadamente: coincide con el nivel de de
 
 | Código | Nombre | Objetivo | Alcance | Dependencias | Prioridad | Estado insumos | Resp. | Págs. | Complejidad |
 |---|---|---|---|---|---|---|---|---|---|
-| AD-COM-01 | Onboarding | Especificar la primera sesión de un usuario nuevo, retail o institucional | Flujo desde registro hasta primera pregunta de ADÁN en Nivel 1 | AD-UX-02, AD-PRD-03 | P0 | Insumos en Chat 1.docx (flujo "login→dashboard→ADÁN inicia conversación" ya descrito) | CC | 4-5 | Media |
+| AD-COM-01 | Onboarding | Especificar la primera sesión de un usuario nuevo, retail o institucional | Flujo desde registro hasta primera pregunta de ADAN en Nivel 1 | AD-UX-02, AD-PRD-03 | P0 | Insumos en Chat 1.docx (flujo "login→dashboard→ADAN inicia conversación" ya descrito) | CC | 4-5 | Media |
 | AD-COM-02 | Playbook de Ventas | Especificar cómo se vende a canal institucional | Guion de venta, objeciones frecuentes, materiales de apoyo (deriva de AD-BIZ-06, sin repetirlo) | AD-BIZ-07 | P2 | No iniciado | CC | 4-5 | Baja |
 | AD-COM-03 | Convenios Institucionales | Especificar el modelo de convenio con SENA, Cámaras de Comercio y universidades | Estructura de licencia por cohorte, reportería a la institución, condiciones de exclusividad — este documento es prerequisito de AD-BIZ-07, no al revés | AD-GOV-05, AD-BIZ-02 | P0 | Insumos en Chat 1.docx (mencionado para Uninorte, SENA, Cámara de Comercio) | CC | 5-7 | Media |
 
@@ -167,7 +167,7 @@ El pedido original listaba un piso de referencia. Estos 10 documentos se añadie
 4. **AD-BIZ-07 Estrategia GTM Institucional** — el documento base menciona SENA/Cámara/Uninorte como ocurrencia, no como estrategia. El modelo retail ($5) y el modelo institucional (licencia por cohorte) no pueden coexistir sin definir cuál es el motor principal.
 5. **AD-BIZ-08 Operación Continua** — el Blueprint v1 nombra la suscripción post-Nivel-7 como el negocio recurrente real, pero no hay ningún documento que la especifique; es el ingreso de mayor valor a largo plazo y hoy es la pieza menos definida.
 6. **AD-PRD-02 Gemelo Digital** — nombrado en el Blueprint v1 como pilar de arquitectura pero nunca especificado; es la estructura de datos de la que dependen Dashboard, Timeline, Decisiones, Scoring y Memoria. Sin este documento, esos cinco documentos se escribirían sin un modelo de datos común y se contradirían entre sí.
-7. **AD-PRD-07 Board Room** — nombrado explícitamente en el Blueprint v1 ("CEO ADÁN, CTO, CFO... debate visible... votaciones y actas") pero ausente del listado original; es el mecanismo que hace creíble la promesa de "comité ejecutivo permanente".
+7. **AD-PRD-07 Board Room** — nombrado explícitamente en el Blueprint v1 ("CEO ADAN, CTO, CFO... debate visible... votaciones y actas") pero ausente del listado original; es el mecanismo que hace creíble la promesa de "comité ejecutivo permanente".
 8. **AD-ARQ-05 Context Engineering** — ya estaba en el listado original bajo Arquitectura, se mantiene aquí solo para señalar su dependencia directa con AD-BIZ-03: es la palanca principal de reducción de costo de tokens, así que su diseño condiciona si el negocio es rentable.
 9. **AD-EI-02 Motor de Scoring (framework general)** — el listado original salta directo a los scores individuales (Founder, Venture, Business); sin un framework común de pesos y umbrales antes, cada score se inventaría su propia metodología.
 10. **AD-COM-03 Convenios Institucionales** — consecuencia directa de #4: si la estrategia GTM es institucional, el contrato de convenio es un entregable comercial de primer orden, no un anexo.

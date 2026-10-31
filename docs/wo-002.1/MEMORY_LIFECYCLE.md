@@ -1,4 +1,4 @@
-# MEMORY_LIFECYCLE — Ciclo de Vida de la Memoria en ADÁN
+# MEMORY_LIFECYCLE — Ciclo de Vida de la Memoria en ADAN
 
 **WO:** WO-002.1  
 **Fecha:** 2026-07-24  
@@ -9,7 +9,7 @@
 
 ## 1. Visión General
 
-La memoria de ADÁN no es estática — vive, crece, se comprime, se archiva y eventualmente se de-prioriza. Este documento define el ciclo de vida completo de cada tipo de memoria.
+La memoria de ADAN no es estática — vive, crece, se comprime, se archiva y eventualmente se de-prioriza. Este documento define el ciclo de vida completo de cada tipo de memoria.
 
 **Principio:** La información nunca se destruye. Se transforma, se comprime, se archiva, pero siempre es recuperable.
 

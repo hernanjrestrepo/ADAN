@@ -384,7 +384,7 @@ Usuario          Frontend         Backend          Ollama         SQLite
 | 2. Sin aprobación no hay avance | ✅ | Gate Review requiere score ≥80 |
 | 3. Razonamiento disponible | ✅ | Cada voto incluye justificación |
 | 4. Gemelo Digital permanente | ✅ | Todo persiste, nada se borra |
-| 5. Límites de ecosistema | ✅ | ADÁN no compite con EVA/ARQAI |
+| 5. Límites de ecosistema | ✅ | ADAN no compite con EVA/ARQAI |
 | 6. Humildad Intelectual | ⚠️ | Implementada en prompts, no verificable |
 
 ### 8.2 Reglas de Sistema (AD-002)

@@ -1,6 +1,6 @@
-"""Guion del Descubrimiento del Dolor (Nivel 1): siete temas en orden y lo que ADÁN ya entendió.
+"""Guion del Descubrimiento del Dolor (Nivel 1): siete temas en orden y lo que ADAN ya entendió.
 
-Antes, la conversación solo dependía de cuántos mensajes llevaba el cliente: ADÁN preguntaba sin
+Antes, la conversación solo dependía de cuántos mensajes llevaba el cliente: ADAN preguntaba sin
 orden, repetía y no dejaba constancia de lo respondido. Ahora cada turno hace dos cosas en una
 sola llamada al modelo (salida estructurada):
 
@@ -8,7 +8,7 @@ sola llamada al modelo (salida estructurada):
    es dato o supuesto), y propone como evidencia solo lo verificable (AD-CMP-05).
 2. Responde: confirma lo que entendió y hace UNA pregunta, sobre el primer tema que falte.
 
-El estado queda en los metadatos del mensaje de ADÁN (Registro Permanente): el último es el vigente.
+El estado queda en los metadatos del mensaje de ADAN (Registro Permanente): el último es el vigente.
 """
 from __future__ import annotations
 
@@ -226,8 +226,8 @@ def brief(state: dict, script: Script | None = None) -> str:
                                     for tid in script.topic_ids) else ""
 
 
-# Cómo conversa ADÁN (lecciones de las conversaciones reales: era repetitivo, preguntaba lo ya contestado, anclaba
-# en el primer mensaje aunque el cliente lo corrigiera y le pedía al cliente investigar lo que ADÁN puede buscar)
+# Cómo conversa ADAN (lecciones de las conversaciones reales: era repetitivo, preguntaba lo ya contestado, anclaba
+# en el primer mensaje aunque el cliente lo corrigiera y le pedía al cliente investigar lo que ADAN puede buscar)
 CONVERSATION_RULES = (
     "CÓMO ERES: el equipo es el patrocinador del proyecto, no un auditor. Te importa que la empresa salga adelante: "
     "eres cálido, motivador y realista a la vez. Celebras los avances concretos, reconoces el esfuerzo y la "
@@ -249,7 +249,7 @@ CONVERSATION_RULES = (
     "dile que use el botón «🧭 Recorrer una página» del chat, donde da usuario y clave sin que queden guardados. "
     "Puedes REVISAR CÓDIGO: si pega el enlace de su repositorio de GitHub, Mateo lo lee; si es privado, que use el "
     "botón «💻 Revisar código» con un token de solo lectura.\n"
-    "Puedes abrir páginas web: cuando el fundador pega un enlace (su sitio, un competidor, una nota), ADÁN lo abre y "
+    "Puedes abrir páginas web: cuando el fundador pega un enlace (su sitio, un competidor, una nota), ADAN lo abre y "
     "te da su contenido. Si menciona su web o redes sin el enlace, pídeselo para revisarlas.\n"
     "4. CERO cifras inventadas: cada número trae su fuente con enlace, o va marcado como «estimación» explicando "
     "cómo se calculó. Revisa el sentido común antes de escribirlo (orden de magnitud frente a la población y el "
@@ -263,10 +263,10 @@ CONVERSATION_RULES = (
     "ENCUESTA SIMULADA con el Simulador de Mercado. No pongas «(Tema N de M)».\n"
     "7. `habla`: responde quien corresponde al tema, en primera persona: Santiago (cmo) el mercado y los clientes, "
     "Iris (investigador) la investigación, Camila (cfo) el dinero, Andrés (producto) la solución, Sofía (operaciones), "
-    "Mateo (cto), Lucía (legal); ADÁN (ceo) cuando es general, saluda, resume o presenta a alguien («te paso con "
+    "Mateo (cto), Lucía (legal); ADAN (ceo) cuando es general, saluda, resume o presenta a alguien («te paso con "
     "Santiago»). Si el fundador nombra a alguien, responde esa persona.\n"
     "8. UN SOLO PERSONAJE POR TURNO: responde solo quien tiene la palabra; los demás no intervienen salvo que el "
-    "fundador pida «¿qué opinan todos?». ADÁN modera: si el siguiente tema es de otra área, cierra con «Te paso con "
+    "fundador pida «¿qué opinan todos?». ADAN modera: si el siguiente tema es de otra área, cierra con «Te paso con "
     "Camila» y en el siguiente turno habla ella. No pongas tu nombre al inicio del mensaje.\n"
     "PROPOSITIVO SIEMPRE (lo más importante): la conversación debe avanzar sola. Nunca te quedes pidiendo datos ni "
     "insistas en algo que el fundador ya respondió o descartó. Si falta un dato, PROPÓN tú una respuesta concreta "
@@ -321,7 +321,7 @@ def system_prompt(state: dict, structured: bool = True, script: Script | None = 
                 "corta («¿cerramos el Nivel y pasamos al siguiente piso?»); el fundador solo tiene que decir que sí"
                 + (" (después de la sesión del Board)." if script.board else "."))
     intro = (
-        "Eres el equipo de ADÁN (un CEO y sus especialistas), patrocinador del proyecto del fundador. Estás en el "
+        "Eres el equipo de ADAN (un CEO y sus especialistas), patrocinador del proyecto del fundador. Estás en el "
         f"Nivel {script.number}, {script.name}: {script.goal}. Hablas en español, cálido, claro y directo, de tú.\n"
         f"Método de este Nivel: {script.method}\n"
         + (f"Entregables del Nivel: {'; '.join(script.deliverables)}. Indicadores: {'; '.join(script.kpis)}.\n"

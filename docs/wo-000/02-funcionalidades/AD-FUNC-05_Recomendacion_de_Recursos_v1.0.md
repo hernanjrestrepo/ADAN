@@ -27,14 +27,14 @@ Tres identidades en una misma sesión de trabajo, cada una descartada por una ra
 2. **"Recomendación de Recursos"** — corrigió lo anterior, pero seguía asumiendo que el objeto central era el *recurso* (qué SaaS, qué mentor, qué plantilla). El Board observó que ningún empresario piensa en recursos — piensa en problemas ("necesito vender más", no "necesito un CRM"). El recurso era, siempre, la respuesta a una pregunta que el documento no se hacía todavía: ¿qué capacidad hace falta, y por qué? Descartado por incompleto, no por incorrecto.
 3. **"Motor de Estrategias Empresariales"** (esta versión) — el recurso deja de ser el objeto de la funcionalidad y pasa a ser, en el mejor de los casos, el último eslabón de una cadena de razonamiento que empieza en el problema real de la Empresa y termina en una secuencia de acciones concretas con impacto estimado. La recomendación es una consecuencia del análisis estratégico, no el propósito del documento.
 
-**Verificación de nombre contra AD-003:** "Motor" ya es un término fijo — "Motor (de Capacidad)" (AD-003 §1) — pero AD-003 mismo restringe su uso a "la relación de ADÁN con el resto del ecosistema; nunca su relación con el cliente." Este documento es exactamente lo segundo (la relación de ADÁN con el cliente, ayudándolo a crecer), por lo que no colisiona — es el mismo patrón seguro que ya usan Experience Engine y Gamification Engine (AD-FUNC-03, AD-FUNC-04), ambos "Motor/Engine" internos orientados al cliente sin conflicto con el "Motor" ecosistémico. La única precaución real: dentro de este mismo documento aparecerán los dos sentidos juntos (una Estrategia puede recomendar usar un Motor del Ecosistema, ej. Genexis) — por disciplina de redacción, todo Motor del Ecosistema se nombra siempre completo ("Motor del Ecosistema", nunca "Motor" a secas) para no confundirlo con el título de este documento.
+**Verificación de nombre contra AD-003:** "Motor" ya es un término fijo — "Motor (de Capacidad)" (AD-003 §1) — pero AD-003 mismo restringe su uso a "la relación de ADAN con el resto del ecosistema; nunca su relación con el cliente." Este documento es exactamente lo segundo (la relación de ADAN con el cliente, ayudándolo a crecer), por lo que no colisiona — es el mismo patrón seguro que ya usan Experience Engine y Gamification Engine (AD-FUNC-03, AD-FUNC-04), ambos "Motor/Engine" internos orientados al cliente sin conflicto con el "Motor" ecosistémico. La única precaución real: dentro de este mismo documento aparecerán los dos sentidos juntos (una Estrategia puede recomendar usar un Motor del Ecosistema, ej. Genexis) — por disciplina de redacción, todo Motor del Ecosistema se nombra siempre completo ("Motor del Ecosistema", nunca "Motor" a secas) para no confundirlo con el título de este documento.
 
 La justificación arquitectónica completa de por qué este modelo es superior al de "Recomendación de Recursos" se entrega en la sección 13, después de especificar el modelo completo — para que la comparación se haga contra algo construido, no contra una promesa.
 
 **Sobre "Motor de Evolución Empresarial" (propuesto en la revisión más reciente del Board, no adoptado):** el argumento de fondo es correcto — crear, transformar, operar, escalar, reinventar, recuperar, fusionar e internacionalizar son todas formas de evolución, y "Estrategia" nombra el mecanismo, no el fenómeno completo. Pero el nombre propuesto se evaluó y no se adopta, por dos razones concretas, no por preferencia:
 
-1. **Colisión de nivel con AD-004 ("Product Evolution").** AD-004 ya gobierna cómo evoluciona *el producto ADÁN mismo* (qué puede cambiar, qué no, cómo nace una Funcionalidad). "Motor de Evolución Empresarial" pondría la palabra "Evolución" a nombrar, en el mismo árbol, dos cosas distintas — la evolución del producto (AD-004) y la evolución de la empresa cliente (este documento) — exactamente el mismo patrón de colisión que ya se resolvió con Proyecto, Decisión, Evento, Documento, Ecosistema, Marketplace y Capacidad. Es resoluble (como todas las anteriores), pero no gratis.
-2. **Sobre-alcance frente a la Declaración de Misión y AD-FUNC-01.** La Declaración de Misión de AD-001 ya dice "diseñar, validar, construir, operar, transformar y escalar" — eso es, literalmente, "evolución empresarial" a nivel de **todo ADÁN**, no de una sola Funcionalidad. Los 7 Niveles (AD-FUNC-01) ya llevan a una empresa desde el Dolor hasta el Escalamiento — también evolución, en otro sentido. Nombrar este documento "Motor de Evolución Empresarial" lo haría sonar como si reclamara la misión completa de ADÁN, no una Funcionalidad entre nueve.
+1. **Colisión de nivel con AD-004 ("Product Evolution").** AD-004 ya gobierna cómo evoluciona *el producto ADAN mismo* (qué puede cambiar, qué no, cómo nace una Funcionalidad). "Motor de Evolución Empresarial" pondría la palabra "Evolución" a nombrar, en el mismo árbol, dos cosas distintas — la evolución del producto (AD-004) y la evolución de la empresa cliente (este documento) — exactamente el mismo patrón de colisión que ya se resolvió con Proyecto, Decisión, Evento, Documento, Ecosistema, Marketplace y Capacidad. Es resoluble (como todas las anteriores), pero no gratis.
+2. **Sobre-alcance frente a la Declaración de Misión y AD-FUNC-01.** La Declaración de Misión de AD-001 ya dice "diseñar, validar, construir, operar, transformar y escalar" — eso es, literalmente, "evolución empresarial" a nivel de **todo ADAN**, no de una sola Funcionalidad. Los 7 Niveles (AD-FUNC-01) ya llevan a una empresa desde el Dolor hasta el Escalamiento — también evolución, en otro sentido. Nombrar este documento "Motor de Evolución Empresarial" lo haría sonar como si reclamara la misión completa de ADAN, no una Funcionalidad entre nueve.
 
 En vez del renombre literal, se incorpora la sustancia del argumento sin el riesgo de nombre: se agrega **"Recuperación ante crisis"** como tipo de Estrategia (sección 5, cluster nuevo), conectado explícitamente a las Leyes 6 y 7 del Workshop de Comportamientos (Crisis y Recuperación) — el único verbo de la lista del Board ("recuperar") que de verdad faltaba; "crear" es territorio de AD-FUNC-01, "reinventar" ya conectaba con la Ley 9, y "fusionar"/"internacionalizar" ya estaban cubiertos desde la Revisión 2. "Motor de Estrategias Empresariales" se mantiene como nombre, ahora con cobertura completa de los ocho verbos del Board sin tocar el alcance de ningún otro documento.
 
@@ -42,7 +42,7 @@ En vez del renombre literal, se incorpora la sustancia del argumento sin el ries
 
 ## 1. Qué es esta Funcionalidad
 
-Dado un problema real que enfrenta una Empresa — detectado en cualquier punto de su relación con ADÁN, dentro de cualquiera de los 7 Niveles (AD-FUNC-01) — este Funcionalidad diagnostica la brecha real detrás del problema, identifica qué capacidad falta, evalúa todas las formas razonables de cerrarla (empezando siempre por lo que la Empresa ya tiene), simula el impacto esperado de cada una, y entrega una secuencia de acciones recomendadas — nunca una lista de herramientas para explorar.
+Dado un problema real que enfrenta una Empresa — detectado en cualquier punto de su relación con ADAN, dentro de cualquiera de los 7 Niveles (AD-FUNC-01) — este Funcionalidad diagnostica la brecha real detrás del problema, identifica qué capacidad falta, evalúa todas las formas razonables de cerrarla (empezando siempre por lo que la Empresa ya tiene), simula el impacto esperado de cada una, y entrega una secuencia de acciones recomendadas — nunca una lista de herramientas para explorar.
 
 Lo que NO es, por instrucción explícita del Board:
 
@@ -68,7 +68,7 @@ Toda estrategia diseñada por este documento sigue esta secuencia, sin excepció
 | 7 | **ROI esperado** | Cuantificación de beneficio contra costo y tiempo, por Estrategia — sección 6 | — |
 | 8 | **Secuencia óptima** | Orden de ejecución cuando hay Estrategias con dependencias entre sí — sección 8 | — |
 | 9 | **Recomendación** | La consecuencia de los ocho pasos anteriores — nunca el punto de partida | AD-FUNC-02 (Board Room la presenta) |
-| 10 | **Ejecución** | Decisión y acción del cliente — nunca de ADÁN — sección 9 | Autoridad de ejecución (AD-001 §5, AD-FUNC-02) |
+| 10 | **Ejecución** | Decisión y acción del cliente — nunca de ADAN — sección 9 | Autoridad de ejecución (AD-001 §5, AD-FUNC-02) |
 | 11 | **Aprendizaje** | Comparación entre lo esperado y lo real, alimentando el Learning Engine — sección 10 | AD-FUNC-09 (semilla) |
 
 ---
@@ -77,7 +77,7 @@ Toda estrategia diseñada por este documento sigue esta secuencia, sin excepció
 
 Por instrucción explícita del Board: no se crea "Capacidad Empresarial". Se usa **Capacidad**, el mismo término que AD-003 ya usaba en "Motor (de Capacidad)" — actualizado en AD-003 v1.1 para declarar explícitamente que "Capacidad" es el concepto general (una habilidad de producir un resultado), aplicable en dos niveles distinguibles por contexto:
 
-- **Capacidad que el Ecosistema Paradixe provee a ADÁN** — sentido original de AD-003, ejecutada por un Motor del Ecosistema (Genexis, EVA, ARQAI...).
+- **Capacidad que el Ecosistema Paradixe provee a ADAN** — sentido original de AD-003, ejecutada por un Motor del Ecosistema (Genexis, EVA, ARQAI...).
 - **Capacidad que una Empresa cliente necesita desarrollar o ya posee** — el sentido que este documento trabaja.
 
 Ambos son la misma idea en dos escalas — no dos conceptos. Y hay una relación real entre ellos, no solo lingüística: cuando la Capacidad que falta en la Empresa cliente es algo que el Ecosistema Paradixe ya sabe proveer (ej. "necesito construir software"), un Motor del Ecosistema (Genexis) es directamente una de las Estrategias posibles (sección 5) — la unificación de término no es solo económica conceptualmente, también evita modelar dos veces la misma relación.
@@ -86,7 +86,7 @@ Ambos son la misma idea en dos escalas — no dos conceptos. Y hay una relación
 
 ## 4. Recursos internos primero (Principio Permanente)
 
-Antes de evaluar cualquier alternativa externa, ADÁN evalúa si la Capacidad requerida ya puede cerrarse con lo que la Empresa ya tiene. Esto no es un paso opcional de cortesía — es la aplicación más literal del principio "ADÁN primero es asesor" heredado de la Revisión 1: la mejor recomendación posible es a veces "no necesitas nada nuevo."
+Antes de evaluar cualquier alternativa externa, ADAN evalúa si la Capacidad requerida ya puede cerrarse con lo que la Empresa ya tiene. Esto no es un paso opcional de cortesía — es la aplicación más literal del principio "ADAN primero es asesor" heredado de la Revisión 1: la mejor recomendación posible es a veces "no necesitas nada nuevo."
 
 Ninguna categoría de recurso interno necesita entidad nueva — las seis que pidió el Board ya son entidades de AD-005 de primera clase:
 
@@ -146,8 +146,8 @@ Cada Estrategia declara, cuando exista evidencia suficiente para hacerlo — y d
 | Campo | Qué mide | Distinto de |
 |---|---|---|
 | **Impacto esperado** | Cuánto mejora un Indicador o Meta real de la Empresa (AD-005 §2.5) si la Estrategia funciona | Confidence Level — ver nota |
-| **Confidence Level** | Qué tan seguro está ADÁN de que el Impacto esperado es correcto (AD-002 §1.9) | Impacto esperado |
-| **Probabilidad de éxito** | Qué tan probable es que *esta* Estrategia específica funcione, dado el contexto de *esta* Empresa — no una medida general de certeza de ADÁN, sino un juicio sobre la Estrategia misma | Confidence Level — el Confidence Level puede ser alto sobre una Probabilidad de éxito baja ("estoy seguro de que esto tiene 30% de probabilidad de funcionar aquí") |
+| **Confidence Level** | Qué tan seguro está ADAN de que el Impacto esperado es correcto (AD-002 §1.9) | Impacto esperado |
+| **Probabilidad de éxito** | Qué tan probable es que *esta* Estrategia específica funcione, dado el contexto de *esta* Empresa — no una medida general de certeza de ADAN, sino un juicio sobre la Estrategia misma | Confidence Level — el Confidence Level puede ser alto sobre una Probabilidad de éxito baja ("estoy seguro de que esto tiene 30% de probabilidad de funcionar aquí") |
 | **ROI esperado** | Retorno cuantificado — tiempo de recuperación o beneficio neto | — |
 | **Tiempo estimado** | Duración calendario de la implementación | Esfuerzo esperado |
 | **Esfuerzo esperado** | Carga operativa real — horas-persona, disrupción organizacional — necesaria para ejecutar la Estrategia | Tiempo estimado (una Estrategia puede tomar poco tiempo calendario y mucho esfuerzo concentrado, o al revés) |
@@ -214,7 +214,7 @@ Lo que sí es nuevo es la **forma del contenido**: en vez de que una Iniciativa 
 
 ## 9. Autoridad de ejecución — recordatorio explícito (Principio Permanente)
 
-Este documento diseña, simula y recomienda. **Nunca ejecuta.** La autoridad de ejecución es siempre del cliente — sin excepción, sin importar cuántos datos respalden una Estrategia (AD-001 §5: "ADÁN nunca sustituye el juicio final del dueño de la empresa"; AD-FUNC-02 §2, autoridad de ejecución vs. autoridad de fundamentación). Esto se reafirma aquí con más fuerza que en la Revisión 1 porque el nombre "Motor de Estrategias Empresariales" suena más autónomo que "Recomendación de Recursos" — y no lo es. Contratar, despedir, fusionarse, levantar inversión: cada una de estas acciones ocurre en el mundo real, ejecutada por el cliente, nunca por ADÁN. Lo que ADÁN aporta es el razonamiento, la evidencia y la secuencia — nunca el acto.
+Este documento diseña, simula y recomienda. **Nunca ejecuta.** La autoridad de ejecución es siempre del cliente — sin excepción, sin importar cuántos datos respalden una Estrategia (AD-001 §5: "ADAN nunca sustituye el juicio final del dueño de la empresa"; AD-FUNC-02 §2, autoridad de ejecución vs. autoridad de fundamentación). Esto se reafirma aquí con más fuerza que en la Revisión 1 porque el nombre "Motor de Estrategias Empresariales" suena más autónomo que "Recomendación de Recursos" — y no lo es. Contratar, despedir, fusionarse, levantar inversión: cada una de estas acciones ocurre en el mundo real, ejecutada por el cliente, nunca por ADAN. Lo que ADAN aporta es el razonamiento, la evidencia y la secuencia — nunca el acto.
 
 ---
 
@@ -232,7 +232,7 @@ La comparación entre ROI esperado (sección 6) y ROI real es, en sí misma, un 
 
 ### 10.1 El Playbook Empresarial (activo futuro, no construido aquí)
 
-El Board señaló algo real: una vez que ADÁN acumule suficientes ciclos completos del aprendizaje anterior a través de muchas Empresas distintas, podrá reconocer patrones del tipo *"las empresas SaaS B2B de salud con menos de 10 empleados que ejecutaron esta combinación de Estrategias crecieron 2.8 veces más."* Eso es conocimiento propietario agregado — un **Playbook Empresarial** — y sería, potencialmente, uno de los activos más valiosos del ecosistema.
+El Board señaló algo real: una vez que ADAN acumule suficientes ciclos completos del aprendizaje anterior a través de muchas Empresas distintas, podrá reconocer patrones del tipo *"las empresas SaaS B2B de salud con menos de 10 empleados que ejecutaron esta combinación de Estrategias crecieron 2.8 veces más."* Eso es conocimiento propietario agregado — un **Playbook Empresarial** — y sería, potencialmente, uno de los activos más valiosos del ecosistema.
 
 Este documento **no lo construye** — por la misma disciplina de evidencia que gobierna todo el proyecto (Riesgo de sobre-alcance ya declarado en la Revisión 2): no existe todavía un solo caso real ejecutado, y diseñar el mecanismo de un Playbook sin datos reales sería exactamente el tipo de complejidad prematura que la Economía Conceptual (AD-002 v2.0 §1.10) prohíbe. Lo que sí se registra, formalmente:
 
@@ -269,7 +269,7 @@ Esto confirma, en sentido inverso, que la decisión de no crear entidades era co
 
 ---
 
-## 13. Por qué este modelo representa mejor la misión de ADÁN que "Recomendación de Recursos"
+## 13. Por qué este modelo representa mejor la misión de ADAN que "Recomendación de Recursos"
 
 La Declaración de Misión de AD-001 dice: *"diseñar, validar, construir, operar, **transformar** y escalar empresas extraordinarias."* El verbo "transformar" llevaba congelado desde AD-001 v1.0 sin que ninguna Funcionalidad le diera contenido real — ni Los 7 Niveles (que diseña, valida, construye, opera y escala, pero no transforma una empresa ya existente), ni Board Room, ni Experience/Gamification Engine. "Recomendación de Recursos" tampoco lo hacía: sugerir un SaaS o un mentor no transforma una empresa, la equipa marginalmente.
 
@@ -285,13 +285,13 @@ Ninguna de las tres diferencias requirió romper la Regla de Entidades, tocar AD
 
 ## 14. Autoauditoría obligatoria (10 preguntas)
 
-1. **¿Contradice AD-000, AD-001 o AD-002?** No. Se verificó explícitamente contra AD-001 §1.1 (Qué NO es ADÁN) y §5 (Qué nunca hará) — ninguna de las ocho exclusiones ni las seis prohibiciones de §5 choca con diseñar/simular estrategias; al contrario, el documento cita y refuerza "ADÁN nunca sustituye el juicio final del dueño" con más fuerza que antes (sección 9).
+1. **¿Contradice AD-000, AD-001 o AD-002?** No. Se verificó explícitamente contra AD-001 §1.1 (Qué NO es ADAN) y §5 (Qué nunca hará) — ninguna de las ocho exclusiones ni las seis prohibiciones de §5 choca con diseñar/simular estrategias; al contrario, el documento cita y refuerza "ADAN nunca sustituye el juicio final del dueño" con más fuerza que antes (sección 9).
 2. **¿Todo concepto nuevo está justificado?** Brecha, Capacidad y Estrategia se verificaron uno por uno contra el Principio de Emergencia y la Regla de Entidades en la sección 11 — ninguno requiere entidad nueva ni versión nueva de AD-005.
 3. **¿Hay duplicación con un documento existente?** No — se verificó explícitamente contra AD-FUNC-04 §2.1 (ranking social, sección 8 de este documento) y contra Nivel 5/Validación Simulada (AD-FUNC-01, sección 7 de este documento), en ambos casos con la distinción escrita explícitamente para prevenir confusión futura, no solo evitada por casualidad.
 4. **¿Qué impacto tiene sobre documentos futuros?** AD-FUNC-09 (Learning Engine) hereda una dependencia explícita más rica que la semilla original (sección 10). AD-UX deberá diseñar la interfaz del flujo de 11 pasos sin saltarse ninguno. Un futuro AD-INT deberá conectar los Motores del Ecosistema como una fuente real de Estrategias de tipo "comprar/desarrollar software".
 5. **¿Introduce un riesgo arquitectónico nuevo?** Sí, uno: la ambición del alcance (contratar, despedir, M&A, cambio de modelo de negocio) es mucho mayor que "sugerir un SaaS" — el Riesgo de responsabilidad legal/humana por estrategias de personal o M&A se declara explícitamente abajo, no se minimiza.
 6. **¿El Confidence Level es honesto?** 35% — bajó de 38% (Revisión 2), a propósito: se agregaron Estrategias Compuestas, Estrategias Adaptativas y un cluster de Recuperación sin un solo caso real que los valide — más alcance con la misma evidencia real (ninguna) baja la confianza honesta, no la sube.
-7. **Prueba "si este documento desapareciera":** ADÁN volvería a ser un recomendador de herramientas de un solo camino fijo — perdería la capacidad de decir "no necesitas comprar nada", de combinar Estrategias en un paquete coherente, y de ramificar un plan según lo que realmente ocurra, en vez de asumir que el futuro sale como se proyectó.
+7. **Prueba "si este documento desapareciera":** ADAN volvería a ser un recomendador de herramientas de un solo camino fijo — perdería la capacidad de decir "no necesitas comprar nada", de combinar Estrategias en un paquete coherente, y de ramificar un plan según lo que realmente ocurra, en vez de asumir que el futuro sale como se proyectó.
 8. **Prueba "válido en 10 años":** el flujo, los clusters de Estrategia y el mecanismo de Estrategias Adaptativas no dependen de qué tecnología exista en el mercado — son la misma disciplina de un asesor de negocios serio en cualquier década; el propio mecanismo condición→acción es más parecido a cómo piensa un CEO real (con planes de contingencia) que a un plan fijo de consultoría.
 9. **¿Se verificó contra colisiones de nombre?** Sí — "Motor" contra AD-003 (sección 0), "Capacidad" contra AD-003 (sección 3, resuelto en AD-003 v1.1), "Simulación" contra Nivel 5 (sección 7), "ranking"/secuencia contra AD-FUNC-04 §2.1 (sección 8), y "Motor de Evolución Empresarial" contra AD-004 y contra la Declaración de Misión de AD-001 (sección 0 — evaluado y explícitamente no adoptado, con razones).
 10. **¿La autoauditoría se entrega junto con el documento, no después?** Sí — esta sección, entregada en el mismo ciclo de construcción, antes de que el Board la revise.

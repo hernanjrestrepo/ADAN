@@ -1,12 +1,12 @@
 """Agentes por tiempo (WO-109, AD-DEC-0002 decisión 1): catálogo, contratos y registro de trabajo.
 
-- `hire_offerings`: el catálogo de agentes que ADÁN suministra (rol, habilidades, herramientas de
+- `hire_offerings`: el catálogo de agentes que ADAN suministra (rol, habilidades, herramientas de
   TEF y nivel de modelo de WO-099). Lleva a persistencia la `agent_factory`, que solo existía en
   memoria.
 - `hire_contracts`: contratación por hora, día, semana o mes. La capacidad se mide en horas de
   trabajo efectivo del agente. El precio lo fija WO-100: aquí no se inventa.
 - `hire_work_logs`: cada ejecución deja su constancia (Registro Permanente): tiempo real, tokens,
-  costo del modelo para ADÁN y herramientas usadas. De ahí sale el reporte al cliente.
+  costo del modelo para ADAN y herramientas usadas. De ahí sale el reporte al cliente.
 """
 from __future__ import annotations
 

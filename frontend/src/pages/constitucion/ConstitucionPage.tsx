@@ -46,7 +46,7 @@ function NameSection({ companyId, initial, country, onError }: { companyId: stri
     <Card>
       <p className="text-xs font-semibold tracking-[0.25em] text-adan-accent">PASO 1</p>
       <h2 className="text-xl font-bold mt-1">El nombre y el dominio</h2>
-      <p className="text-sm text-adan-muted mt-1">ADÁN busca si ya existe una empresa o marca con ese nombre y qué dominios están libres.</p>
+      <p className="text-sm text-adan-muted mt-1">ADAN busca si ya existe una empresa o marca con ese nombre y qué dominios están libres.</p>
       <div className="mt-4 flex flex-col sm:flex-row gap-3">
         <input aria-label="Nombre de la empresa" value={name} onChange={(e) => setName(e.target.value)} maxLength={120} className={input} />
         <Button onClick={() => check()} loading={busy} disabled={name.trim().length < 2}>Verificar</Button>
@@ -130,7 +130,7 @@ function GuideSection({ companyId, guide, setGuide, onError }: { companyId: stri
     <Card>
       <p className="text-xs font-semibold tracking-[0.25em] text-adan-accent">PASO 2</p>
       <h2 className="text-xl font-bold mt-1">¿En qué país la vas a crear?</h2>
-      <p className="text-sm text-adan-muted mt-1">Escoge el país pensando en tu mercado y en los impuestos. ADÁN arma la ruta legal completa, explicada paso a paso.</p>
+      <p className="text-sm text-adan-muted mt-1">Escoge el país pensando en tu mercado y en los impuestos. ADAN arma la ruta legal completa, explicada paso a paso.</p>
       <div className="mt-4 flex flex-col sm:flex-row gap-3">
         <input aria-label="País" list="paises" value={country} onChange={(e) => setCountry(e.target.value)} maxLength={80} placeholder="Colombia" className={input} />
         <datalist id="paises">{COUNTRIES.map((c) => <option key={c} value={c} />)}</datalist>

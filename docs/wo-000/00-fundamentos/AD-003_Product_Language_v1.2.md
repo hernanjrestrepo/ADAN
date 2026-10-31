@@ -21,7 +21,7 @@ Aprobador: Hernán / Junta Directiva (validación en el próximo Gate Review)
 
 ## 1. Vocabulario del Producto
 
-*(Los términos "Ecosistema Paradixe", "ADÁN", "Orquestador", "Motor (de Capacidad)", "Gemelo Digital", "Empresa", "Proyecto", "Nivel", "Card", "Workspace", "Decisión", "Evidencia", "Entregable", "Agente", "Board Room" no cambian respecto a v1.0/v1.1 — no se repiten aquí.)*
+*(Los términos "Ecosistema Paradixe", "ADAN", "Orquestador", "Motor (de Capacidad)", "Gemelo Digital", "Empresa", "Proyecto", "Nivel", "Card", "Workspace", "Decisión", "Evidencia", "Entregable", "Agente", "Board Room" no cambian respecto a v1.0/v1.1 — no se repiten aquí.)*
 
 ### Score — entrada actualizada en v1.2
 

@@ -4,7 +4,7 @@ import { type Look } from '../data'
 import { type Rig } from './rig'
 
 // El cuerpo humano de cada personaje: piel, pelo, ropa (traje, falda o vestido), barba, bigote, gafas y una cara
-// que cambia con el ánimo. Lo comparten el equipo de ADÁN y los inversionistas de La Arena.
+// que cambia con el ánimo. Lo comparten el equipo de ADAN y los inversionistas de La Arena.
 
 function tint(color: string, to: string, t: number): string {
   return '#' + new Color(color).lerp(new Color(to), t).getHexString()

@@ -209,8 +209,8 @@ export default function EvidencePanel({ companyId, onChanged }: EvidencePanelPro
           <h3 className="font-bold">Inteligencia externa (CSI)</h3>
           <p className="text-sm text-adan-muted">
             {csiConnected
-              ? 'ADÁN puede pedirle a CSI estudios y datos sobre tu problema. Tú decides cuáles cuentan.'
-              : 'CSI todavía no está conectado. Mientras tanto, ADÁN verifica cada fuente que registras.'}
+              ? 'ADAN puede pedirle a CSI estudios y datos sobre tu problema. Tú decides cuáles cuentan.'
+              : 'CSI todavía no está conectado. Mientras tanto, ADAN verifica cada fuente que registras.'}
           </p>
           {csiNote && <p className="text-sm mt-2">{csiNote}</p>}
         </div>

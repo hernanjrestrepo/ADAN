@@ -19,7 +19,7 @@ test("registro real via API, login via UI, dashboard visible", async ({ page }) 
   await page.getByRole("button", { name: /entrar/i }).click();
 
   await expect(page).toHaveURL(/\/dashboard/);
-  await expect(page.getByText("ADÁN — Workspace")).toBeVisible();
+  await expect(page.getByText("ADAN — Workspace")).toBeVisible();
   await expect(page.getByText(/^ok ·/)).toBeVisible({ timeout: 10_000 });
 });
 

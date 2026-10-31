@@ -1,7 +1,7 @@
-# BLUEPRINT CONSOLIDADO ADÁN — v1.0
+# BLUEPRINT CONSOLIDADO ADAN — v1.0
 
 **Producido por:** Célula D, WO-000 Sprint 5 · **Fecha:** 2026-07-17
-**Fuente única de verdad funcional** de la cadena WO-000 → WO-012 (Plan Maestro de Ejecución ADÁN v1.0, §0.3).
+**Fuente única de verdad funcional** de la cadena WO-000 → WO-012 (Plan Maestro de Ejecución ADAN v1.0, §0.3).
 
 Este documento no repite el contenido de cada AD-XXX — sería duplicación directa, prohibida por la Regla de No Duplicación (AD-002 v3.1 §1). Unifica el árbol, resuelve las contradicciones detectadas en la auditoría de Sprint 1, y da el mapa completo para cualquier célula que necesite ubicar una pieza del dominio.
 
@@ -11,8 +11,8 @@ Este documento no repite el contenido de cada AD-XXX — sería duplicación dir
 
 | Doc | Nombre | Versión vigente | Qué fija |
 |---|---|---|---|
-| AD-000 | Paradixe Ecosystem Vision | v1.0 | ADÁN como componente de un ecosistema mayor (EVA, ARQAI, ATO, Genexis, CSI, Marketplace, Paradixe Capital), nunca aislado |
-| AD-001 | Product DNA | v1.1 | Misión ("diseñar, validar, construir, operar, transformar y escalar"), qué NO es ADÁN, qué nunca hará, Principio de Emoción Reflejada |
+| AD-000 | Paradixe Ecosystem Vision | v1.0 | ADAN como componente de un ecosistema mayor (EVA, ARQAI, ATO, Genexis, CSI, Marketplace, Paradixe Capital), nunca aislado |
+| AD-001 | Product DNA | v1.1 | Misión ("diseñar, validar, construir, operar, transformar y escalar"), qué NO es ADAN, qué nunca hará, Principio de Emoción Reflejada |
 | AD-002 | Principios del Sistema | v2.0 | 10 reglas de sistema (trazabilidad, versión, confianza declarada, Economía Conceptual...) |
 | AD-003 | Product Language | **v1.2** | Lenguaje controlado — 21 términos + Score actualizado en esta WO |
 | AD-004 | Product Evolution | v1.1 | Qué puede/no puede cambiar; Criterio de Existencia §3.1; Regla de Entidades |
@@ -55,7 +55,7 @@ Este documento no repite el contenido de cada AD-XXX — sería duplicación dir
 
 ## 5. Modelo de entidades — 38 totales, ninguna nueva en esta WO
 
-26 de dominio de negocio (AD-005) + 12 operativas de ADÁN (AD-006 §4). Ver AD-006 v1.2 para la tabla completa. Ningún documento de esta WO creó una entidad nueva — Sprint 2-4 verificaron explícitamente contra la Regla de Entidades en cada autoauditoría.
+26 de dominio de negocio (AD-005) + 12 operativas de ADAN (AD-006 §4). Ver AD-006 v1.2 para la tabla completa. Ningún documento de esta WO creó una entidad nueva — Sprint 2-4 verificaron explícitamente contra la Regla de Entidades en cada autoauditoría.
 
 ## 6. Knowledge Graph
 

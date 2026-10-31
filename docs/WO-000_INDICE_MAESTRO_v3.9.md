@@ -1,4 +1,4 @@
-# WO-000 — Índice Maestro de Especificación de Producto ADÁN (v3.9)
+# WO-000 — Índice Maestro de Especificación de Producto ADAN (v3.9)
 
 **Tipo de documento:** Árbol documental — **APROBADO Y CONGELADO** (sin cambios de estructura desde v3.1).
 **Estado de la WO-000:** Fase 1 (Fundamentos) completa: AD-000 a AD-005, Anexo y Ciclo Dominio. AD-006 es el siguiente documento.

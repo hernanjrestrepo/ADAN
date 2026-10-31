@@ -136,7 +136,7 @@ export default function ScoresPanel({
           )}
           {advancedDecision && (
             <div className="mt-4 text-sm">
-              ADÁN recomienda seguir trabajando el Nivel, pero la decisión es tuya. Para cerrarlo igual, elige
+              ADAN recomienda seguir trabajando el Nivel, pero la decisión es tuya. Para cerrarlo igual, elige
               «Cerrar el Nivel 1» y registra los riesgos y la responsabilidad que asumes.{' '}
               <Link to={`/gemelo/${companyId}?tab=decisions`} className="text-adan-accent hover:underline font-medium">
                 Ir a Decisiones →

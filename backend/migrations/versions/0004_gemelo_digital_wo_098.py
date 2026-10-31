@@ -7,7 +7,7 @@
 - Score con sujeto polimórfico (AD-006 v1.2); eventos con categoría, empresa y actor.
 - Registros permanentes (Patrón C, AD-008): triggers que impiden UPDATE y DELETE en
   events, scores, business_occurrences, entity_versions y twin_lineage.
-- Siembra el catálogo de Agentes (los 7 roles del Board y ADÁN).
+- Siembra el catálogo de Agentes (los 7 roles del Board y ADAN).
 
 Revision ID: 0004
 Revises: 0003
@@ -958,7 +958,7 @@ def _drop_append_only_triggers() -> None:
 
 
 AGENTS = [
-    ("ADAN", "ADÁN", "Orquestador: conversa con el cliente y coordina a los agentes"),
+    ("ADAN", "ADAN", "Orquestador: conversa con el cliente y coordina a los agentes"),
     ("CEO", "CEO Agent", "Preside el Board: abre la sesión y da la síntesis (no vota)"),
     ("CTO", "CTO", "Viabilidad técnica: factibilidad, arquitectura, riesgos tecnológicos"),
     ("CFO", "CFO", "Viabilidad financiera: costos, ingresos, caja, sostenibilidad"),

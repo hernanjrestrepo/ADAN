@@ -1,4 +1,4 @@
-# ADÁN en https://adan.paradixe.xyz
+# ADAN en https://adan.paradixe.xyz
 
 Desplegado el 2026-10-24 en el servidor Oracle de Paradixe (157.137.200.15), el mismo que corre Xmart Travel.
 
@@ -14,7 +14,7 @@ Desplegado el 2026-10-24 en el servidor Oracle de Paradixe (157.137.200.15), el 
 | IA | Kimi (Moonshot), `LLM_CLOUD_PROVIDER=kimi`, misma cuenta que Xmart. Ollama local con `qwen2.5:0.5b` (respaldo) y `nomic-embed-text` (memoria). |
 
 El bloque de Caddy vive en el repositorio de Xmart (`infrastructure/produccion/Caddyfile`, variable `ADAN_DOMINIO`), para que
-un despliegue de Xmart no lo borre. Si ADÁN está caído, solo `adan.paradixe.xyz` responde error: Xmart no se entera.
+un despliegue de Xmart no lo borre. Si ADAN está caído, solo `adan.paradixe.xyz` responde error: Xmart no se entera.
 
 ## Actualizar
 

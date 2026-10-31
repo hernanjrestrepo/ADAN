@@ -41,7 +41,7 @@ export function Cafeteria() {
           <meshBasicMaterial color="#fbbf24" toneMapped={false} />
         </mesh>
         <Html position={[0.6, 2.1, 0]} center distanceFactor={16} pointerEvents="none" zIndexRange={[5, 0]}>
-          <div className="u-holo-level" style={{ color: '#fbbf24', borderColor: '#f59e0b' }}>☕ CAFÉ ADÁN</div>
+          <div className="u-holo-level" style={{ color: '#fbbf24', borderColor: '#f59e0b' }}>☕ CAFÉ ADAN</div>
         </Html>
       </group>
       {/* Mesas redondas con taburetes y tazas humeantes */}

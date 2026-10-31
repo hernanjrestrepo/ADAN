@@ -19,7 +19,7 @@ export function Dashboard() {
   return (
     <div className="min-h-screen p-8">
       <header className="mb-8 flex items-center justify-between">
-        <h1 className="text-xl font-semibold">ADÁN — Workspace</h1>
+        <h1 className="text-xl font-semibold">ADAN — Workspace</h1>
         <button onClick={logout} className="text-sm text-adan-muted hover:text-adan-text">
           Cerrar sesión
         </button>

@@ -2,7 +2,7 @@
 sociedad, régimen tributario, paso a paso) y el borrador de estatutos. Explicado para alguien que no sabe nada.
 
 Cada respuesta investiga en internet (Kimi, $web_search) y cita fuentes. Si la búsqueda no está disponible,
-el resultado lo dice (`searched: False`) y nada se presenta como verificado. ADÁN es una IA: no reemplaza a un
+el resultado lo dice (`searched: False`) y nada se presenta como verificado. ADAN es una IA: no reemplaza a un
 abogado ni a un contador, y lo advierte siempre.
 """
 from __future__ import annotations
@@ -16,7 +16,7 @@ from app.ai.base import LLMAdapter, LLMMessage
 from app.ai.router import for_tier
 from app.models.models import Company, Document, Project
 
-DISCLAIMER = ("ADÁN es una inteligencia artificial: esta guía orienta, pero no reemplaza la asesoría de un abogado "
+DISCLAIMER = ("ADAN es una inteligencia artificial: esta guía orienta, pero no reemplaza la asesoría de un abogado "
               "y un contador del país. Verifica cada paso en las fuentes oficiales antes de actuar.")
 
 NAME_SCHEMA = {
@@ -77,7 +77,7 @@ GUIDE_SCHEMA = {
     },
 }
 
-EXPERT = ("Eres el área legal y tributaria de ADÁN. Explicas a una persona que NO sabe nada de empresas: cada "
+EXPERT = ("Eres el área legal y tributaria de ADAN. Explicas a una persona que NO sabe nada de empresas: cada "
           "término técnico se explica la primera vez con palabras sencillas y un ejemplo. Eres preciso: cifras, "
           "nombres de entidades y leyes vigentes, con la fuente oficial (sitio .gov o de la entidad) y su fecha. Si "
           "algo cambió recientemente o no estás seguro, lo dices. Español, de tú.")
@@ -95,7 +95,7 @@ def company_context(db: Session, project: Project, company: Company) -> str:
     if company.description:
         parts.append(f"Descripción: {company.description}")
     if digest and digest.content:
-        parts.append("Lo que ADÁN sabe de su documentación:\n" + digest.content[:2500])
+        parts.append("Lo que ADAN sabe de su documentación:\n" + digest.content[:2500])
     return "\n".join(parts)
 
 

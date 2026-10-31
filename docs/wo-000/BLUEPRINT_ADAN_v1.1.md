@@ -1,4 +1,4 @@
-# Blueprint consolidado de ADÁN — v1.1
+# Blueprint consolidado de ADAN — v1.1
 
 **Fecha:** 2026-09-24 · **WO:** WO-096 · **Redacción:** Claude Code
 **Parte de:** `adan-platform/docs/blueprint/v1.0/BLUEPRINT_ADAN_v1.0.md` (Build A, WO-000 Sprint 5, 2026-07-17).
@@ -15,8 +15,8 @@
 
 | Doc | Nombre | Vigente | Qué fija |
 |---|---|---|---|
-| AD-000 | Paradixe Ecosystem Vision | **v2.0** | Lugar de ADÁN en el ecosistema. Desde AD-DEC-0002: EVA (antes ARQAI) = ventas y marketing; Genexis interno; Comunidad; agentes por tiempo |
-| AD-001 | Product DNA | v1.1 | Misión, qué no es ADÁN, qué nunca hará, Principio de Emoción Reflejada |
+| AD-000 | Paradixe Ecosystem Vision | **v2.0** | Lugar de ADAN en el ecosistema. Desde AD-DEC-0002: EVA (antes ARQAI) = ventas y marketing; Genexis interno; Comunidad; agentes por tiempo |
+| AD-001 | Product DNA | v1.1 | Misión, qué no es ADAN, qué nunca hará, Principio de Emoción Reflejada |
 | AD-002 | Principios del Sistema | v2.0 | 10 reglas de sistema: trazabilidad, versión, confianza declarada, Economía Conceptual… |
 | AD-003 | Product Language | **v1.2** | Lenguaje controlado: 21 términos, con "Score" actualizado |
 | AD-004 | Product Evolution | v1.1 | Qué puede y qué no puede cambiar; Criterio de Existencia; Regla de Entidades |

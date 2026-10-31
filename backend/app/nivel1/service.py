@@ -66,7 +66,7 @@ _PENDING = re.compile(r"\b(describa|describan|conseguir|consigue|deber[ií]a|nec
 
 
 def auto_register_evidence(db: Session, project: Project, user, message: Message) -> int:
-    """La evidencia que el cliente menciona o que ADÁN encuentra investigando se registra sola, sin confirmar
+    """La evidencia que el cliente menciona o que ADAN encuentra investigando se registra sola, sin confirmar
     (decisión de Hernán, 2026-10-24). Solo entran hechos con fuente; lo que es una tarea por conseguir, no."""
     state = (message.metadata_json or {}).get("discovery") or {}
     dimension = script_of(db, db.get(Conversation, message.conversation_id)).dimension
@@ -101,7 +101,7 @@ def _work(parsed: dict, repo_url: str | None, degraded) -> dict | None:
     return None
 
 
-_NAMES = ("ADÁN", "Adán", "Santiago", "Camila", "Mateo", "Lucía", "Andrés", "Sofía", "Iris", "Orión", "Eva", "Teo")
+_NAMES = ("ADAN", "Adan", "Santiago", "Camila", "Mateo", "Lucía", "Andrés", "Sofía", "Iris", "Orión", "Eva", "Teo")
 _NAME_PREFIX = re.compile(r"^\s*(?:(?:" + "|".join(_NAMES) + r")(?:\s*(?:·|,|-)\s*[A-Za-zÁÉÍÓÚáéíóú ]{2,20})?"
                           r"(?:\s+aquí)?\s*[.:,—-]\s+)", re.I)
 
@@ -259,7 +259,7 @@ class Nivel1Service:
                 "contienen; úsalo, cita lo que dicen y no le pidas que te lo describa ni digas que tienes "
                 "restricciones para navegar:\n\n" + "\n\n---\n\n".join(blocks) + note + repo_note)
 
-    # --- Step 2: Chat with ADÁN ---
+    # --- Step 2: Chat with ADAN ---
 
     async def chat(
         self,
@@ -268,7 +268,7 @@ class Nivel1Service:
         user_message: str,
         conversation: Conversation | None = None,
     ) -> tuple[Message, Conversation]:
-        """Un turno del guion de descubrimiento: ADÁN entiende la respuesta y hace la siguiente pregunta.
+        """Un turno del guion de descubrimiento: ADAN entiende la respuesta y hace la siguiente pregunta.
 
         Una sola llamada con salida estructurada devuelve la respuesta y el estado de los siete temas
         (discovery.py). Si responde el modelo local de respaldo, el estado no se toca y el mensaje
@@ -342,7 +342,7 @@ class Nivel1Service:
         speaker = parsed.get("habla") if parsed.get("habla") in timeline.TEAM else "ceo"
         if not degraded:
             memoria.remember(self.db, project, parsed.get("acuerdos") or [], script.number)
-        # Con todos los temas cubiertos, ADÁN propone el cierre y el fundador solo confirma
+        # Con todos los temas cubiertos, ADAN propone el cierre y el fundador solo confirma
         closing = (not degraded and reply.strip() and discovery.next_topic(state, script) is None
                    and level.status != NivelStatus.COMPLETED)
         assistant_msg = Message(
@@ -385,7 +385,7 @@ class Nivel1Service:
         prev = memoria.summary_of(self.db, project, key)
         if len(older) < 6 or len(older) - prev.get("mensajes", 0) < 8:
             return
-        transcript = "\n".join(f"{'Fundador' if m.role == 'user' else (m.agent_name or 'ADÁN')}: {m.content[:700]}"
+        transcript = "\n".join(f"{'Fundador' if m.role == 'user' else (m.agent_name or 'ADAN')}: {m.content[:700]}"
                                for m in older[prev.get("mensajes", 0):])
         try:
             resp = await self.llm.chat([
@@ -401,7 +401,7 @@ class Nivel1Service:
             memoria.set_summary(self.db, project, key, resp.content.strip(), len(older))
 
     async def complete_research(self, conversation: Conversation, query: str) -> Message | None:
-        """Investiga en internet lo que ADÁN anunció y responde con los hallazgos en un mensaje nuevo."""
+        """Investiga en internet lo que ADAN anunció y responde con los hallazgos en un mensaje nuevo."""
         history = self._history(conversation)
         script = script_of(self.db, conversation)
         state = discovery.current_state(history, script)
@@ -409,7 +409,7 @@ class Nivel1Service:
         if not research["text"]:
             return None
         messages = self.build_llm_messages(conversation, state) + [LLMMessage(role="user", content=(
-            "[Investigación hecha por ADÁN en internet"
+            "[Investigación hecha por ADAN en internet"
             + ("" if research["searched"] else ", SIN búsqueda verificada: márcalo como estimación")
             + f" sobre «{query}»]\n{research['text'][:6000]}\n\n"
             "Responde ahora al cliente con esos hallazgos, sin repetir lo que ya le dijiste. NO vuelques los datos: "
@@ -439,7 +439,7 @@ class Nivel1Service:
         """Búsqueda en internet (Kimi $web_search). Sin búsqueda disponible, responde con lo que sabe y lo marca."""
         search = getattr(self.llm, "chat_search", None)
         msgs = [LLMMessage(role="system", content=(
-            "Eres el investigador de ADÁN. Busca en internet datos actuales y verificables para responder. Da cifras "
+            "Eres el investigador de ADAN. Busca en internet datos actuales y verificables para responder. Da cifras "
             "con año y la URL EXACTA de cada fuente; si no encuentras una fuente real, dilo: nunca inventes un número "
             "ni una fuente. Revisa que cada cifra tenga sentido común frente a la población y el mercado reales. Si "
             "hay estimaciones distintas, muestra el rango. Español, máximo 250 palabras.")),
@@ -456,7 +456,7 @@ class Nivel1Service:
     # --- Documentación del cliente ---
 
     async def learn_from_documents(self, project: Project, level: Level, docs: list[tuple[str, str]]) -> dict:
-        """ADÁN lee la documentación cargada: actualiza el guion del dolor, propone evidencia verificable y
+        """ADAN lee la documentación cargada: actualiza el guion del dolor, propone evidencia verificable y
         deja escrito qué entendió, qué falta y qué riesgos ve. El resultado queda en la conversación
         (Registro Permanente) y en un Documento que el Board lee antes de votar."""
         card = self.get_or_create_level_card(project, level)
@@ -478,7 +478,7 @@ class Nivel1Service:
                        + " Pídeme que los revise de nuevo en un momento.")
             parsed = {}
         digest = {k: parsed.get(k) for k in ("resumen", "etapa", "hechos", "vacios", "riesgos")} if parsed else {}
-        self.db.add(Message(conversation_id=conversation.id, role="assistant", agent_name="ADÁN", content=content,
+        self.db.add(Message(conversation_id=conversation.id, role="assistant", agent_name="ADAN", content=content,
                             metadata_json={"model": response.model, "degraded": degraded, "discovery": state,
                                            "documents": [name for name, _ in docs], "learning": digest}))
         if digest.get("resumen"):
@@ -487,7 +487,7 @@ class Nivel1Service:
                       if isinstance(h, dict)]
             lines += [f"Vacío: {v}" for v in (digest.get("vacios") or [])[:10]]
             lines += [f"Riesgo: {r}" for r in (digest.get("riesgos") or [])[:10]]
-            self.db.add(Document(project_id=project.id, title=f"Lo que ADÁN aprendió de: {names}"[:255],
+            self.db.add(Document(project_id=project.id, title=f"Lo que ADAN aprendió de: {names}"[:255],
                                  content="\n".join(lines), doc_type="client_docs_digest", origin="generated_by_adan"))
         self.db.commit()
         return {"reply": content, "degraded": degraded, "learning": digest}
@@ -531,7 +531,7 @@ class Nivel1Service:
                 "temas rápido, encuentra dónde se rompe el negocio (el problema, el cliente, el canal, el precio o la "
                 "ejecución) y propone con optimismo realista qué ajustar o pivotar, apoyándote en sus datos reales."
                 + ("" if company.logo else
-                   " Esta empresa ya tiene marca pero ADÁN aún no tiene su logo: en algún momento natural pídele el "
+                   " Esta empresa ya tiene marca pero ADAN aún no tiene su logo: en algún momento natural pídele el "
                    "enlace de su web (lo tomamos de ahí) o que lo suba en 🏷️ Marca → «Ya tengo logo»; no inventes uno."))
         if conversation.summary:
             system_prompt += f"\n\nResumen de lo que el cliente contó antes: {conversation.summary}"
@@ -565,7 +565,7 @@ class Nivel1Service:
         product = next((v for k, v in ficha.items() if "producto" in k.lower() or "lanz" in k.lower()), "")
         closed = self.db.query(Level).filter(Level.project_id == project.id, Level.status == NivelStatus.COMPLETED).count()
         return (f"Nivel {level_number}, {script.name}: {script.goal}. Entregables de este Nivel: "
-                f"{'; '.join(script.deliverables)}. Niveles ya cerrados con el equipo de ADÁN: {closed} de 7."
+                f"{'; '.join(script.deliverables)}. Niveles ya cerrados con el equipo de ADAN: {closed} de 7."
                 + (f" Estado del producto: {product}." if product else ""))
 
     async def refresh_memory(self, project: Project, max_age_hours: float = 2.0) -> None:
@@ -592,7 +592,7 @@ class Nivel1Service:
 
     async def arena_brief(self, project: Project, level_number: int) -> str:
         """Lo que reciben los inversionistas de La Arena: la misma verdad que el Board (etapa, ficha, acuerdos y
-        entregables), para que no evalúen una empresa distinta a la que construyó el equipo de ADÁN."""
+        entregables), para que no evalúen una empresa distinta a la que construyó el equipo de ADAN."""
         await self.refresh_memory(project)
         parts = [f"Etapa: {self.stage_of(project, level_number)}"]
         memory = memoria.context(self.db, project, query="pitch inversión mercado modelo", nivel=level_number)
@@ -601,7 +601,7 @@ class Nivel1Service:
         delivered = self.db.query(Document).filter(Document.project_id == project.id, Document.doc_type == "entregable") \
             .order_by(Document.title).limit(30).all()
         if delivered:
-            parts.append("Entregables del equipo de ADÁN:\n" + "\n\n".join(f"### {d.title}\n{(d.content or '')[:500]}"
+            parts.append("Entregables del equipo de ADAN:\n" + "\n\n".join(f"### {d.title}\n{(d.content or '')[:500]}"
                                                                            for d in delivered))
         history = self.board_brief(project, level_number)
         if history:
@@ -630,11 +630,11 @@ class Nivel1Service:
         memory = memoria.context(self.db, project, query=pain_description[:2000], nivel=level_number)
         if memory:
             conversation_context += "\n\n" + memory
-        # Lo que el equipo de ADÁN ya entregó en los Niveles: el Board construye sobre eso
+        # Lo que el equipo de ADAN ya entregó en los Niveles: el Board construye sobre eso
         delivered = self.db.query(Document).filter(Document.project_id == project.id, Document.doc_type == "entregable") \
             .order_by(Document.title).limit(30).all()
         if delivered:
-            conversation_context += "\n\nEntregables que el equipo de ADÁN ya construyó con el fundador:\n" + "\n\n".join(
+            conversation_context += "\n\nEntregables que el equipo de ADAN ya construyó con el fundador:\n" + "\n\n".join(
                 f"### {d.title}\n{(d.content or '')[:700]}" for d in delivered)
 
         # Cuántas sesiones van: el abogado del diablo rota entre los especialistas
@@ -698,7 +698,7 @@ class Nivel1Service:
         return self._level1_brief(project)
 
     def _level1_brief(self, project: Project) -> str:
-        """Lo que el Board evalúa: lo que ADÁN entendió (guion), la evidencia registrada y las palabras
+        """Lo que el Board evalúa: lo que ADAN entendió (guion), la evidencia registrada y las palabras
         del cliente. Las respuestas del modelo de respaldo y el resto de la charla no entran: antes el
         Board leía la conversación cruda, con ruido y respuestas sin sentido."""
         card = self.db.query(Card).filter(Card.project_id == project.id, Card.card_type == "pain_discovery").first()
@@ -708,7 +708,7 @@ class Nivel1Service:
         parts = []
         understood = discovery.brief(state)
         if understood:
-            parts.append("Lo que ADÁN entendió del dolor (guion del Nivel 1):\n" + understood)
+            parts.append("Lo que ADAN entendió del dolor (guion del Nivel 1):\n" + understood)
         evidence = scoring.active_evidence(self.db, project, "problem")
         if evidence:
             labels = {"external": "fuente externa", "testimony": "testimonio de clientes", "inference": "inferencia"}
@@ -721,7 +721,7 @@ class Nivel1Service:
                                                  Document.doc_type == "client_docs_digest").order_by(
             Document.created_at.desc()).limit(3).all()
         if digests:
-            parts.append("Lo que ADÁN aprendió de la documentación del cliente:\n"
+            parts.append("Lo que ADAN aprendió de la documentación del cliente:\n"
                          + "\n\n".join((d.content or "")[:2500] for d in digests))
         words = [m.content.strip()[:800] for m in history if m.role == "user" and len(m.content.strip()) >= 10]
         if words:
@@ -779,7 +779,7 @@ class Nivel1Service:
 
         response = await self.llm.generate(
             prompt=prompt,
-            system="Diagnóstico ADÁN. Profesional, honesto. Español.",
+            system="Diagnóstico ADAN. Profesional, honesto. Español.",
             temperature=0.5,
             max_tokens=1024,
         )
@@ -815,7 +815,7 @@ class Nivel1Service:
 
         response = await self.llm.generate(
             prompt=prompt,
-            system="Eres el asesor de recomendaciones de ADÁN. Genera recomendaciones específicas, accionables y priorizadas. Habla en español.",
+            system="Eres el asesor de recomendaciones de ADAN. Genera recomendaciones específicas, accionables y priorizadas. Habla en español.",
             temperature=0.5,
             max_tokens=1536,
         )
@@ -858,7 +858,7 @@ class Nivel1Service:
     def advance_without_evidence(self, project: Project) -> Decision:
         """El cliente quiere avanzar sin evidencia suficiente (AD-CMP-01 §3).
 
-        ADÁN no bloquea ni decide por él: propone la decisión recomendando seguir trabajando el
+        ADAN no bloquea ni decide por él: propone la decisión recomendando seguir trabajando el
         Nivel. Elegir cerrarlo es decidir distinto a lo recomendado y exige los 6 campos.
         """
         evaluation, _score = scoring.evaluate_gate(self.db, project, 1)

@@ -30,7 +30,7 @@ export default function SurveyPublicPage() {
   return (
     <div className="min-h-screen bg-adan-bg px-4 py-8">
       <main className="mx-auto max-w-xl">
-        <p className="text-xs font-semibold tracking-[0.25em] text-adan-accent">ENCUESTA · ADÁN by Paradixe</p>
+        <p className="text-xs font-semibold tracking-[0.25em] text-adan-accent">ENCUESTA · ADAN by Paradixe</p>
         {error && !survey && <p className="mt-6 rounded-xl bg-adan-danger/10 p-4 text-sm">{error}</p>}
         {survey && (sent ? (
           <div className="mt-6 rounded-2xl border border-adan-success/40 bg-adan-success/10 p-6 text-center" data-testid="survey-thanks">

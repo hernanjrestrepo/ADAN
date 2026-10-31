@@ -1,4 +1,4 @@
-"""ADÁN Backend — FastAPI application entry point."""
+"""ADAN Backend — FastAPI application entry point."""
 from __future__ import annotations
 
 import logging
@@ -35,12 +35,12 @@ logger = setup_logging(settings.LOG_LEVEL)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Startup/shutdown lifecycle."""
-    logger.info("ADÁN backend starting up (%s)", settings.ADAN_ENV)
+    logger.info("ADAN backend starting up (%s)", settings.ADAN_ENV)
     check_settings(settings)
     init_db()
     logger.info("Database initialized (%s)", engine.dialect.name)
     yield
-    logger.info("ADÁN backend shutting down")
+    logger.info("ADAN backend shutting down")
 
 
 # En producción no se publica la documentación interactiva de la API

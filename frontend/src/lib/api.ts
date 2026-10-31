@@ -151,7 +151,7 @@ export const api = {
     request<{ deleted: boolean }>(`/admin/empresas/${companyId}`, { method: 'DELETE', body: JSON.stringify({ confirmar }) }),
   trackVisit: (ruta: string, referente: string) =>
     request<void>('/visitas', { method: 'POST', body: JSON.stringify({ ruta, referente: referente || null }) }),
-  // Comunidad ADÁN
+  // Comunidad ADAN
   listCommunityCompanies: (f: { q: string; stage: string; looking_for: string; seleccion: boolean }) => {
     const params = new URLSearchParams({ q: f.q, stage: f.stage, looking_for: f.looking_for, seleccion: String(f.seleccion) })
     return request<CommunityListing[]>(`/comunidad/empresas?${params.toString()}`)
@@ -361,8 +361,8 @@ export const api = {
 
 export function errorMessage(err: unknown): string {
   if (err instanceof DOMException && err.name === 'TimeoutError') {
-    return 'ADÁN tardó demasiado en responder. Tu mensaje quedó guardado: vuelve a intentarlo en un momento.'
+    return 'ADAN tardó demasiado en responder. Tu mensaje quedó guardado: vuelve a intentarlo en un momento.'
   }
-  if (err instanceof TypeError) return 'No hay conexión con ADÁN. Revisa tu conexión e inténtalo de nuevo.'
+  if (err instanceof TypeError) return 'No hay conexión con ADAN. Revisa tu conexión e inténtalo de nuevo.'
   return err instanceof Error ? err.message : String(err)
 }

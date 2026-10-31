@@ -1,4 +1,4 @@
-"""Recorridos con clics: ADÁN navega una página como un usuario (clic, escribir, enviar) para llegar a un objetivo
+"""Recorridos con clics: ADAN navega una página como un usuario (clic, escribir, enviar) para llegar a un objetivo
 («llega hasta el pago», «pide un viaje a Cartagena», «entra con mi cuenta y revisa el panel»).
 
 En cada paso la IA ve la pantalla resumida (texto y elementos con número) y decide la siguiente acción. Reglas
@@ -140,7 +140,7 @@ async def walk(llm: LLMAdapter, url: str, goal: str, user: str = "", password: s
                         steps[-1]["nota"] += " (elemento no encontrado)"
                         continue
                     if action == "clic" and _PAY_WORDS.search(target["label"]):
-                        steps[-1]["nota"] += " — me detengo: ese botón confirma un pago y ADÁN nunca paga."
+                        steps[-1]["nota"] += " — me detengo: ese botón confirma un pago y ADAN nunca paga."
                         break
                     # Si la IA puso la etiqueta del campo (o nada) como texto, se escribe lo que pide el objetivo
                     if (action == "escribir" and target and target["type"] not in ("email", "password", "tel")

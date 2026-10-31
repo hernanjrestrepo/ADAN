@@ -34,7 +34,7 @@ export default function Celebration() {
         </div>
         <button type="button" onClick={close} autoFocus
           className="mt-6 w-full rounded-2xl u-cta px-5 py-3 font-bold">
-          {last ? 'ADÁN te acompaña en modo continuo ♾️' : `Continuar al Nivel ${n + 1}: ${next?.name} →`}
+          {last ? 'ADAN te acompaña en modo continuo ♾️' : `Continuar al Nivel ${n + 1}: ${next?.name} →`}
         </button>
       </div>
     </div>

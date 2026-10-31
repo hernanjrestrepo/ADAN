@@ -1,4 +1,4 @@
-"""Decisión de ADÁN (AD-CMP-03, AD-FUNC-02 §2.5) — WO-098.
+"""Decisión de ADAN (AD-CMP-03, AD-FUNC-02 §2.5) — WO-098.
 
 Ciclo (Patrón A): Propuesta → Presentada al cliente → Aprobada / Rechazada → Ejecutada.
 
@@ -170,7 +170,7 @@ def execute(
             db.add(BusinessDecision(
                 company_id=project.company_id, title=business_title[:255],
                 description=decision.description, adan_decision_id=decision.id, state="executed",
-                evidence_source=f"Decisión de ADÁN {decision.id}",
+                evidence_source=f"Decisión de ADAN {decision.id}",
             ))
         db.commit()
     db.refresh(decision)

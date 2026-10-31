@@ -1,4 +1,4 @@
-"""ADÁN aprende de la documentación del cliente: un solo llamado al modelo lee los documentos y devuelve
+"""ADAN aprende de la documentación del cliente: un solo llamado al modelo lee los documentos y devuelve
 qué entendió, cómo avanza el guion del dolor, qué evidencia hay de verdad y qué falta.
 
 Regla de honestidad (AD-CMP-05): lo que el documento solo afirma, sin fuente ni cifra verificable, es un
@@ -38,7 +38,7 @@ SCHEMA = {
 }
 
 INSTRUCTIONS = (
-    "Eres ADÁN, el comité ejecutivo de IA que acompaña a la empresa. El cliente te entregó su documentación "
+    "Eres ADAN, el comité ejecutivo de IA que acompaña a la empresa. El cliente te entregó su documentación "
     "para que la conozcas a fondo. Tu misión: que esta empresa no sea parte del 90 % que cierra en sus primeros "
     "cinco años por falta de información, planeación o preparación. Lee con ojo crítico, como un analista "
     "exigente, no como un admirador.\n\n"
@@ -85,7 +85,7 @@ async def learn(llm: LLMAdapter, state: dict, docs: list[tuple[str, str]], conte
     current = "\n".join(f"- {tid} [{state['temas'][tid]['estado']}]: {state['temas'][tid]['resumen'] or 'sin datos'}"
                         for tid in discovery.TOPIC_IDS)
     goals = "\n".join(f"- {tid}: {label} ({goal})" for tid, label, goal in discovery.TOPICS)
-    system = (f"{INSTRUCTIONS}\n\nLos siete temas del guion:\n{goals}\n\nLo que ADÁN ya sabía antes de leer:\n{current}"
+    system = (f"{INSTRUCTIONS}\n\nLos siete temas del guion:\n{goals}\n\nLo que ADAN ya sabía antes de leer:\n{current}"
               + (f"\n\n{context}" if context else ""))
     messages = [LLMMessage("system", system), LLMMessage("user", "Documentación del cliente:\n\n" + _corpus(docs))]
     return await llm.chat_json(messages, SCHEMA, temperature=0.3, max_tokens=4096)

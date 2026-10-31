@@ -1,4 +1,4 @@
-"""Finanzas y estrategia: organigrama híbrido (personas, agentes de ADÁN y servicios de Paradixe), supuestos
+"""Finanzas y estrategia: organigrama híbrido (personas, agentes de ADAN y servicios de Paradixe), supuestos
 financieros contrastados con benchmarks y el informe ejecutivo (estilo consultora: la respuesta primero).
 """
 from __future__ import annotations
@@ -31,7 +31,7 @@ PARADIXE_SERVICES = {
                  "persona. USD 0,10 por minuto.",
     "BPO Paradixe": "Procesos tercerizados operados por agentes y personas: contabilidad, facturación, nómina, cobranza, "
                     "soporte, llamadas. USD 0,10 por minuto.",
-    "Agentes por tiempo": "Agentes de ADÁN por hora, día, semana o mes: investigación, análisis financiero, redacción, operaciones.",
+    "Agentes por tiempo": "Agentes de ADAN por hora, día, semana o mes: investigación, análisis financiero, redacción, operaciones.",
     "Genexis": "Construcción del MVP y del software de la empresa (Nivel 4).",
     "CSI": "Inteligencia de mercado: competencia, regulación, tendencias y benchmarks.",
 }
@@ -118,10 +118,10 @@ REPORT_SCHEMA = {
     },
 }
 
-CFO = ("Eres el CFO de ADÁN. Tus cifras se contrastan con datos reales del sector y del país: nada de soñar con cifras "
+CFO = ("Eres el CFO de ADAN. Tus cifras se contrastan con datos reales del sector y del país: nada de soñar con cifras "
        "que no son. Eres conservador: ante la duda, menos ventas y más costos. Cada supuesto dice de dónde sale. "
        "Explicas para alguien que no sabe de finanzas. Español.")
-STRATEGIST = ("Eres el socio de estrategia de ADÁN y escribes como una consultora de primer nivel: principio de la "
+STRATEGIST = ("Eres el socio de estrategia de ADAN y escribes como una consultora de primer nivel: principio de la "
               "pirámide (la respuesta primero, luego los argumentos con evidencia), frases cortas, cifras concretas, cero "
               "relleno. Usas Lean Startup, Lean Canvas, Six Sigma (DMAIC) y benchmark. Eres honesto: si la empresa no está "
               "lista, lo dices y dices qué falta. Español, de tú.")
@@ -164,7 +164,7 @@ class Finanzas:
         catalog = "\n".join(f"- {k}: {v}" for k, v in PARADIXE_SERVICES.items())
         prompt = (f"{context}\n\nDiseña el organigrama de esta empresa para sus primeros 24 meses, como organización híbrida "
                   "eficiente. Cada rol es de uno de tres tipos: `humano` (lo que exige criterio, relaciones, firma legal o "
-                  "trabajo físico), `agente_adan` (tareas repetibles de conocimiento que hace un agente de IA de ADÁN) o "
+                  "trabajo físico), `agente_adan` (tareas repetibles de conocimiento que hace un agente de IA de ADAN) o "
                   "`servicio_paradixe` (cuando un servicio del ecosistema cubre el rol mejor que contratar):\n"
                   f"{catalog}\n\nReglas: no reemplaces con IA lo que exige una persona (dirección, ventas complejas, "
                   "responsabilidad legal, oficio físico). `servicio`: el nombre exacto del servicio de Paradixe, o vacío. "
@@ -262,7 +262,7 @@ class Finanzas:
         a = resp.parsed if isinstance(resp.parsed, dict) else {}
         if not a:
             raise ValueError("No se pudieron proponer los supuestos esta vez; intenta de nuevo en un momento.")
-        fixed = [{"concepto": f"{r['cargo']} ({'persona' if r['tipo'] == 'humano' else r['servicio'] or 'agente ADÁN'})",
+        fixed = [{"concepto": f"{r['cargo']} ({'persona' if r['tipo'] == 'humano' else r['servicio'] or 'agente ADAN'})",
                   "monto_mensual": r["costo_mensual"], "desde_mes": r["desde_mes"], "tipo": r["tipo"],
                   "base": "organigrama híbrido"} for r in (org or {}).get("roles", [])]
         fixed += [{"concepto": g.get("concepto"), "monto_mensual": g.get("monto"), "desde_mes": g.get("mes") or 1,
@@ -330,7 +330,7 @@ class Finanzas:
 
 def report_markdown(r: dict) -> str:
     """El informe en Markdown (para Word)."""
-    lines = [f"# {r.get('titulo') or 'Informe ejecutivo'}", "", f"**{r.get('company', '')}** · ADÁN by Paradixe", "",
+    lines = [f"# {r.get('titulo') or 'Informe ejecutivo'}", "", f"**{r.get('company', '')}** · ADAN by Paradixe", "",
              "## La respuesta", r.get("respuesta", ""), "", "## Situación, complicación, pregunta y respuesta"]
     s = r.get("scqa") or {}
     lines += [f"- **Situación:** {s.get('situacion', '')}", f"- **Complicación:** {s.get('complicacion', '')}",
@@ -349,5 +349,5 @@ def report_markdown(r: dict) -> str:
     lines += ["## Plan de 90 días"] + [f"- **Semanas {p.get('semanas')}:** {p.get('accion')} · {p.get('responsable')} · "
                                        f"entregable: {p.get('entregable')}" for p in r.get("plan_90_dias") or []] + [""]
     lines += ["## Recomendación", r.get("recomendacion", ""), "",
-              "ADÁN es una inteligencia artificial: este informe orienta y no reemplaza la asesoría profesional."]
+              "ADAN es una inteligencia artificial: este informe orienta y no reemplaza la asesoría profesional."]
     return "\n".join(lines)

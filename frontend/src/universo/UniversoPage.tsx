@@ -47,7 +47,7 @@ export default function UniversoPage() {
   const [autopilot, setAutopilot] = useState(false)
   const stop = useCallback(() => setAutopilot(false), [])
   useAutopilot(autopilot && started, stop)
-  // ADÁN recibe a la persona con el chat abierto; se recoge cuando sesiona el Board, La Arena o se mira a alguien
+  // ADAN recibe a la persona con el chat abierto; se recoge cuando sesiona el Board, La Arena o se mira a alguien
   const [chatOpen, setChatOpen] = useState(true)
   useEffect(() => useUniverso.subscribe((s, prev) => {
     if ((s.board && !prev.board) || (s.arena && !prev.arena) || (s.selected && !prev.selected)) setChatOpen(false)

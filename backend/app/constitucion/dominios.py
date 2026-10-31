@@ -1,5 +1,5 @@
 """Dominios: si están libres (RDAP, el protocolo oficial de los registros, gratis y sin cuenta), precios de
-referencia y enlaces para comprar en el registrador que el cliente elija. ADÁN no compra ni cobra dominios.
+referencia y enlaces para comprar en el registrador que el cliente elija. ADAN no compra ni cobra dominios.
 """
 from __future__ import annotations
 

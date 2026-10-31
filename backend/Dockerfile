@@ -25,7 +25,7 @@ FROM base AS production
 RUN useradd --uid 10001 --create-home --shell /usr/sbin/nologin adan
 RUN mkdir -p /home/adan/.cache/huggingface && chown -R adan:adan /home/adan/.cache
 COPY --from=deps /install /usr/local
-# Navegador real (Chromium sin ventana) para que ADÁN vea las páginas web hechas con JavaScript
+# Navegador real (Chromium sin ventana) para que ADAN vea las páginas web hechas con JavaScript
 ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
 RUN playwright install --with-deps --only-shell chromium && chmod -R o+rx /ms-playwright && rm -rf /var/lib/apt/lists/*
 COPY --chown=adan:adan alembic.ini ./

@@ -11,7 +11,7 @@ Aprobador: Hernán / Junta Directiva (validación en el próximo Gate Review)
 
 # AD-CMP-03 — Comportamiento de Decisiones
 
-> Especifica el ciclo de vida del objeto Decisión (de ADÁN, AD-006) usando el Patrón A (Ciclo de Aprobación) ya fijado en AD-008: quién propone, quién aprueba, cómo se documenta un desacuerdo, y la consulta previa que evita contradicciones.
+> Especifica el ciclo de vida del objeto Decisión (de ADAN, AD-006) usando el Patrón A (Ciclo de Aprobación) ya fijado en AD-008: quién propone, quién aprueba, cómo se documenta un desacuerdo, y la consulta previa que evita contradicciones.
 
 **Nivel de contenido:** Principio Permanente en su totalidad.
 
@@ -25,7 +25,7 @@ Ninguna Decisión pasa a `Ejecutada` sin haber pasado por `Aprobada` — es la t
 
 ## 2. Consulta previa obligatoria
 
-Antes de proponer una Decisión nueva, el procedimiento exige consultar las Decisiones ya `Aprobadas` o `Ejecutadas` relevantes para la misma Empresa (accesibles vía el Gemelo Digital, AD-007) — esto evita que ADÁN proponga algo que contradice una decisión ya tomada, sin tener que confiar en que un Agente "recuerde" el historial. Es la aplicación operativa de la Regla 1.8 de AD-002 (todo genera memoria) al objeto Decisión específicamente.
+Antes de proponer una Decisión nueva, el procedimiento exige consultar las Decisiones ya `Aprobadas` o `Ejecutadas` relevantes para la misma Empresa (accesibles vía el Gemelo Digital, AD-007) — esto evita que ADAN proponga algo que contradice una decisión ya tomada, sin tener que confiar en que un Agente "recuerde" el historial. Es la aplicación operativa de la Regla 1.8 de AD-002 (todo genera memoria) al objeto Decisión específicamente.
 
 ## 3. Cómo se documenta un desacuerdo
 
@@ -33,7 +33,7 @@ Si la propuesta de una Decisión surgió de un proceso de Consenso Multiagente (
 
 ## 4. Relación con Decisión de Negocio
 
-Una Decisión (de ADÁN) `Ejecutada` puede *originar* una Decisión de Negocio (AD-005) cuando el cliente actúa en el mundo real siguiendo la recomendación — pero esa transición no es automática ni garantizada: el cliente puede aprobar una Decisión de ADÁN y aun así, en la práctica, tomar un curso de acción distinto. Ambos objetos se relacionan (Workshop de Relaciones), nunca se fusionan.
+Una Decisión (de ADAN) `Ejecutada` puede *originar* una Decisión de Negocio (AD-005) cuando el cliente actúa en el mundo real siguiendo la recomendación — pero esa transición no es automática ni garantizada: el cliente puede aprobar una Decisión de ADAN y aun así, en la práctica, tomar un curso de acción distinto. Ambos objetos se relacionan (Workshop de Relaciones), nunca se fusionan.
 
 ---
 

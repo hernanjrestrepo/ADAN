@@ -3,7 +3,7 @@ import { AGENT_BY_ID } from '../data'
 import { levelOf, tasksOf, useUniverso } from '../store'
 import Avatar from './Avatar'
 
-// La misión del Nivel: qué descubre ADÁN, qué aprendes, qué cambia en el Gemelo, y las tareas del Gate
+// La misión del Nivel: qué descubre ADAN, qué aprendes, qué cambia en el Gemelo, y las tareas del Gate
 export default function MissionPanel() {
   const levelNumber = useUniverso((s) => s.level)
   const done = useUniverso((s) => s.doneTasks)
@@ -49,7 +49,7 @@ export default function MissionPanel() {
           </div>
 
           <dl className="mt-4 space-y-2.5 text-sm">
-            {[['🔍', 'Qué descubre ADÁN', level.descubre], ['💡', 'Qué aprendes', level.aprende], ['🧬', 'Qué cambia en el Gemelo', level.gemelo]].map(([icon, k, v]) => (
+            {[['🔍', 'Qué descubre ADAN', level.descubre], ['💡', 'Qué aprendes', level.aprende], ['🧬', 'Qué cambia en el Gemelo', level.gemelo]].map(([icon, k, v]) => (
               <div key={k} className="rounded-xl bg-white/[0.03] p-3">
                 <dt className="text-xs font-semibold text-slate-400"><span aria-hidden="true">{icon}</span> {k}</dt>
                 <dd className="mt-0.5 text-slate-200">{v}</dd>

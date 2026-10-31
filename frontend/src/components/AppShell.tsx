@@ -26,7 +26,7 @@ function initials(name = '') {
   return name.split(/\s+/).filter(Boolean).slice(0, 2).map((p) => p[0]?.toUpperCase()).join('') || '·'
 }
 
-// Los colores de la empresa reemplazan los de ADÁN mientras trabajas en ella
+// Los colores de la empresa reemplazan los de ADAN mientras trabajas en ella
 function brandStyle(company: Company | null): CSSProperties | undefined {
   if (!company?.brand_color) return undefined
   return { '--color-adan-accent': company.brand_color, '--color-adan-secondary': company.brand_accent ?? company.brand_color } as CSSProperties
@@ -77,7 +77,7 @@ export default function AppShell({ crumbs = [], status, toolbar, children, fixed
       <header className="sticky top-0 z-40 border-b border-adan-border bg-adan-bg/85 backdrop-blur-sm px-4 sm:px-6 py-3">
         <div className="flex items-center justify-between max-w-7xl mx-auto gap-4">
           <nav aria-label="Ubicación" className="flex items-center gap-2 text-sm min-w-0">
-            <Link to="/dashboard" aria-label="ADÁN, ir a Mis Empresas" className="shrink-0">
+            <Link to="/dashboard" aria-label="ADAN, ir a Mis Empresas" className="shrink-0">
               <span className="sm:hidden"><Logo compact /></span>
               <span className="hidden sm:inline"><Logo /></span>
             </Link>
@@ -113,7 +113,7 @@ export default function AppShell({ crumbs = [], status, toolbar, children, fixed
               <Link to="/consola" className="hidden md:inline text-sm font-semibold text-adan-warning hover:text-adan-text" title="Consola de Paradixe">🛡️ Consola</Link>
             )}
             <Link to="/comunidad" className="hidden md:inline text-sm text-adan-muted hover:text-adan-text" title="La red de empresas e inversionistas">🤝 Comunidad</Link>
-            <Link to="/universo" className="hidden md:inline text-sm text-adan-muted hover:text-adan-text" title="La oficina 3D de ADÁN">🌌 Universo</Link>
+            <Link to="/universo" className="hidden md:inline text-sm text-adan-muted hover:text-adan-text" title="La oficina 3D de ADAN">🌌 Universo</Link>
             <span className="hidden sm:flex items-center gap-2" title={user?.email}>
               <span aria-hidden="true"
                 className="grid h-8 w-8 place-items-center rounded-full bg-adan-surface-2 text-xs font-semibold text-adan-text">

@@ -1,9 +1,9 @@
 """Evidencia externa del Nivel 1 (AD-FUNC-01, WO-108).
 
-1. **Verificación de fuentes:** cuando el cliente registra un dato con un enlace, ADÁN lo abre
+1. **Verificación de fuentes:** cuando el cliente registra un dato con un enlace, ADAN lo abre
    (con la protección SSRF de app/core/net.py) y deja constancia de si la fuente existe y de su
    título. "Verificable" pasa a ser "verificado" o "no se pudo verificar", y el cliente lo ve.
-2. **CSI** (AD-000 §3): la inteligencia externa del ecosistema. ADÁN le pide señales sobre el
+2. **CSI** (AD-000 §3): la inteligencia externa del ecosistema. ADAN le pide señales sobre el
    dolor por un contrato versionado (`POST {CSI_BASE_URL}/v0/signals`; AD-000 §4 regla 4: nunca
    acceso directo a su base). Lo que llega entra como evidencia *propuesta*: cuenta para el Score
    solo cuando el cliente la confirma (AD-CMP-01: aprobación explícita).

@@ -4,7 +4,7 @@
 
 ## Resultado consolidado
 
-Monorepo operativo. `docker compose up` levanta el sistema completo (Postgres 16+pgvector, Redis, API FastAPI, Web React) desde cero. CI configurado (lint+unit+funcional+build+E2E nocturno). Núcleo backend con auth JWT propia, manejo de errores, logging estructurado. 37 tablas del modelo de entidades (26 de negocio + 12 operativas de ADÁN, AD-005/AD-006) migradas y verificadas contra Postgres real. Shell de frontend con login real, ruta privada, dashboard con estado de salud en vivo. Smoke E2E completo verificado contra el stack real en Docker.
+Monorepo operativo. `docker compose up` levanta el sistema completo (Postgres 16+pgvector, Redis, API FastAPI, Web React) desde cero. CI configurado (lint+unit+funcional+build+E2E nocturno). Núcleo backend con auth JWT propia, manejo de errores, logging estructurado. 37 tablas del modelo de entidades (26 de negocio + 12 operativas de ADAN, AD-005/AD-006) migradas y verificadas contra Postgres real. Shell de frontend con login real, ruta privada, dashboard con estado de salud en vivo. Smoke E2E completo verificado contra el stack real en Docker.
 
 ## Evidencias
 

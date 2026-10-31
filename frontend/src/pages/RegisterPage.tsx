@@ -54,7 +54,7 @@ export default function RegisterPage() {
               <Link to="/privacidad" target="_blank" className="text-adan-accent hover:underline">
                 política de tratamiento de datos
               </Link>{' '}
-              para que ADÁN me preste el servicio. <span className="text-adan-muted">(Obligatorio)</span>
+              para que ADAN me preste el servicio. <span className="text-adan-muted">(Obligatorio)</span>
             </span>
           </label>
           <label className="flex gap-3 items-start">

@@ -71,7 +71,7 @@ function DecisionCard({ decision, busy, onPresent, onDecide, onExecute }: Decisi
         <div>
           <h3 className="font-bold">{decision.title}</h3>
           <p className="text-xs text-adan-muted">
-            Propuesta por {decision.proposed_by ?? 'ADÁN'} · {new Date(decision.created_at).toLocaleString('es-CO')}
+            Propuesta por {decision.proposed_by ?? 'ADAN'} · {new Date(decision.created_at).toLocaleString('es-CO')}
           </p>
         </div>
         <Badge tone={status.tone}>{status.label}</Badge>
@@ -134,7 +134,7 @@ function DecisionCard({ decision, busy, onPresent, onDecide, onExecute }: Decisi
           {diverging && (
             <div className="p-4 rounded-lg border border-adan-border space-y-3" data-testid="divergence-form">
               <p className="text-sm">
-                Estás eligiendo una opción distinta a la recomendada. Es tu decisión: para que ADÁN
+                Estás eligiendo una opción distinta a la recomendada. Es tu decisión: para que ADAN
                 aprenda de ella, registra los riesgos que asumes y tu responsabilidad.
               </p>
               <TextAreaField label="Riesgos que asumes (uno por línea)" value={risks}

@@ -1,4 +1,4 @@
-"""Consola de Paradixe (superadministradores): ver y controlar ADÁN. Usuarios, empresas, @pples, compras, Niveles
+"""Consola de Paradixe (superadministradores): ver y controlar ADAN. Usuarios, empresas, @pples, compras, Niveles
 pagados y la red; regalar @pples para pruebas, soporte o campañas. Todo regalo queda escrito con quién y por qué."""
 from __future__ import annotations
 

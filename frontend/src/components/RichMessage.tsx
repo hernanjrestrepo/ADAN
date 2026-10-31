@@ -2,7 +2,7 @@ import ReactMarkdown, { type Components } from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { CHART_COLORS as COLORS, parseChart, type ChartSpec } from '../lib/chart'
 
-// Respuesta de ADÁN con tablas, enlaces y gráficos: un bloque ```chart con JSON se dibuja como gráfico (barras,
+// Respuesta de ADAN con tablas, enlaces y gráficos: un bloque ```chart con JSON se dibuja como gráfico (barras,
 // líneas o torta) en SVG, sin librerías pesadas.
 
 function fmt(n: number) {

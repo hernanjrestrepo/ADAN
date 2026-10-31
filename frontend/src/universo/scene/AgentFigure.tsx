@@ -14,7 +14,7 @@ const ARENA_TEAM: string[] = ['ceo', 'cfo', 'cmo']
 
 type Vec2 = [number, number]
 
-// Un integrante del equipo de ADÁN: camina por la oficina, trabaja en las zonas y se sienta en el Board.
+// Un integrante del equipo de ADAN: camina por la oficina, trabaja en las zonas y se sienta en el Board.
 export default function AgentFigure({ agent }: { agent: Agent }) {
   const root = useRef<Group>(null)
   const rig = useRef<Rig | null>(null)

@@ -1,4 +1,4 @@
-"""ADÁN abre las páginas web que el fundador pega en el chat."""
+"""ADAN abre las páginas web que el fundador pega en el chat."""
 import httpx
 import pytest
 

@@ -108,7 +108,7 @@ def catalog(db: Session, project: Project, company: Company) -> dict:
                          "nivel": 2, "origen": "adan", "creado": None, "actualizado": None, "legible": True,
                          "herramienta": f"/marca/{company.id}", "descarga": f"/empresa/{company.id}/marca/manual.docx",
                          "ext": "docx", "palabras": None})
-    from app.nivel1 import memoria  # la memoria del proyecto que custodia ADÁN, visible para el fundador
+    from app.nivel1 import memoria  # la memoria del proyecto que custodia ADAN, visible para el fundador
 
     pending = entregables.missing(db, project)
     return {"marca": brand, "secciones": SECTIONS, "documentos": items,

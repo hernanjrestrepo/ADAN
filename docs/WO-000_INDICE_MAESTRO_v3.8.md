@@ -1,4 +1,4 @@
-# WO-000 — Índice Maestro de Especificación de Producto ADÁN (v3.8)
+# WO-000 — Índice Maestro de Especificación de Producto ADAN (v3.8)
 
 **Tipo de documento:** Árbol documental — **APROBADO Y CONGELADO** (sin cambios de estructura desde v3.1).
 **Estado de la WO-000:** Núcleo filosófico congelado. Anexo de Meta-Principios en **v2.0 aprobado y congelado**. Ciclo Dominio (Taxonomía → Relaciones → Comportamientos) completo y **aprobado como base para AD-005**. AD-005 es el siguiente paso.

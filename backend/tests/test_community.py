@@ -1,4 +1,4 @@
-"""Comunidad: perfiles públicos opcionales, vitrina con Sello ADÁN, conexiones y Selecciones Paradixe."""
+"""Comunidad: perfiles públicos opcionales, vitrina con Sello ADAN, conexiones y Selecciones Paradixe."""
 from app.core.config import settings
 from tests.test_discovery import _setup
 

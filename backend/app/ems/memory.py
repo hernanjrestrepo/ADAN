@@ -21,7 +21,7 @@ from app.ems.chunking import TextChunker
 
 class EnterpriseMemorySystem:
     """
-    Sistema de Memoria Empresarial de ADÁN.
+    Sistema de Memoria Empresarial de ADAN.
     
     Cada empresa tiene su propio espacio de conocimiento,
     separado completamente de las demás.

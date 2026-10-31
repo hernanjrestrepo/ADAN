@@ -12,7 +12,7 @@ async function openNivel1(page: import('@playwright/test').Page) {
 
 test('la conversación envía el mensaje y muestra la respuesta', async ({ page }) => {
   const api = await openNivel1(page)
-  await page.getByLabel('Mensaje para ADÁN').fill('Las panaderías pierden pan cada día')
+  await page.getByLabel('Mensaje para ADAN').fill('Las panaderías pierden pan cada día')
   await page.getByRole('button', { name: 'Enviar' }).click()
   await expect(page.getByText('¿Cuánto pan se pierde al día?')).toBeVisible()
   expect(api.callsTo('POST', '/nivel1/c1/chat')[0]?.body).toMatchObject({ message: 'Las panaderías pierden pan cada día' })
@@ -22,18 +22,18 @@ test('el avance del guion se ve en una línea y la evidencia se registra sola', 
   await openNivel1(page)
   await page.setViewportSize({ width: 1400, height: 900 })
   await expect(page.getByText('0/7')).toBeVisible()
-  await page.getByLabel('Mensaje para ADÁN').fill('Las panaderías botan pan cada día')
-  await page.getByLabel('Mensaje para ADÁN').press('Enter')
+  await page.getByLabel('Mensaje para ADAN').fill('Las panaderías botan pan cada día')
+  await page.getByLabel('Mensaje para ADAN').press('Enter')
   await expect(page.getByText('¿Cuánto pan se pierde al día?')).toBeVisible()
   await expect(page.getByText('2/7')).toBeVisible()
   // Sin paneles ni botones de confirmar evidencia
   await expect(page.getByRole('button', { name: 'Registrar como evidencia' })).toHaveCount(0)
 })
 
-test('si responde el modelo de respaldo, ADÁN lo dice y el guion no avanza', async ({ page }) => {
+test('si responde el modelo de respaldo, ADAN lo dice y el guion no avanza', async ({ page }) => {
   const api = await openNivel1(page)
   api.chatDegraded = 'Claude no disponible (AuthenticationError)'
-  await page.getByLabel('Mensaje para ADÁN').fill('Hola')
+  await page.getByLabel('Mensaje para ADAN').fill('Hola')
   await page.getByRole('button', { name: 'Enviar' }).click()
   await expect(page.getByTestId('degraded-note')).toContainText('AuthenticationError')
 })
@@ -61,12 +61,12 @@ test('un error del backend se muestra en la página, sin diálogos del navegador
   const api = await openNivel1(page)
   api.overrides.set('POST /nivel1/c1/chat', [429, { detail: 'Demasiadas solicitudes al modelo; espera un momento' }])
   page.on('dialog', () => { throw new Error('No debe abrirse un diálogo del navegador') })
-  await page.getByLabel('Mensaje para ADÁN').fill('Hola')
+  await page.getByLabel('Mensaje para ADAN').fill('Hola')
   await page.getByRole('button', { name: 'Enviar' }).click()
   await expect(page.getByRole('alert')).toContainText('Demasiadas solicitudes al modelo')
 })
 
-test('el cliente carga su documentación y ADÁN cuenta lo que aprendió', async ({ page }) => {
+test('el cliente carga su documentación y ADAN cuenta lo que aprendió', async ({ page }) => {
   const api = await openNivel1(page)
   await expect(page.getByTestId('upload-invite')).toBeVisible()
   await page.getByTestId('upload-input').setInputFiles({ name: 'plan.pdf', mimeType: 'application/pdf', buffer: Buffer.from('%PDF-1.4 plan') })

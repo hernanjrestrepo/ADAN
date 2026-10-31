@@ -28,7 +28,7 @@ Antes de diseñar nada, se aplicó el Principio de Emergencia (Anexo v2.0 §2) y
 
 Aplica a entidades donde una parte (frecuentemente un Agente) propone algo que otra parte (frecuentemente el Usuario Principal) debe aprobar antes de que tenga efecto — la traducción operativa directa del principio inviolable de AD-001 §12 ("ninguna decisión importante avanza sin aprobación explícita del cliente").
 
-**Entidades:** Decisión (de ADÁN), Decisión de Negocio, Iniciativa, Contrato (de negocio).
+**Entidades:** Decisión (de ADAN), Decisión de Negocio, Iniciativa, Contrato (de negocio).
 
 ### Patrón B — Progreso Secuencial
 `Bloqueado → Activo → Completado`
@@ -64,7 +64,7 @@ Cuatro actores posibles sobre cualquier acción:
 | **Agente** | Proponer (Patrón A), generar Registros (Patrón C), avanzar internamente dentro de un Nivel/Card ya activo |
 | **Usuario Principal** | Aprobar o rechazar cualquier transición del Patrón A que AD-001 §12 marque como "decisión importante"; pausar o archivar un Proyecto |
 | **Usuario** (no Principal) | Consultar; proponer dentro del alcance que el Usuario Principal le delegue — el mecanismo exacto de delegación es Decisión de Diseño para AD-FUNC, no se resuelve aquí |
-| **ADÁN (sistema)** | Ejecutar automáticamente una transición del Patrón B cuando la evidencia requerida ya está completa (AD-CMP-01) — nunca ejecuta automáticamente una transición del Patrón A, eso violaría el principio inviolable de aprobación explícita |
+| **ADAN (sistema)** | Ejecutar automáticamente una transición del Patrón B cuando la evidencia requerida ya está completa (AD-CMP-01) — nunca ejecuta automáticamente una transición del Patrón A, eso violaría el principio inviolable de aprobación explícita |
 
 **Regla general, sin excepciones:** ningún Agente puede, por sí mismo, mover una entidad del Patrón A a "Ejecutado". Solo puede proponerla. Es la misma regla que AD-001 §5 y §12 ya declararon a nivel de identidad — aquí se vuelve verificable a nivel de permisos por entidad.
 

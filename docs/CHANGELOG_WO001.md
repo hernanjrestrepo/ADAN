@@ -10,7 +10,7 @@
 
 ## Resumen Ejecutivo
 
-WO-001 transformó ADÁN de un concepto arquitectónico a un sistema funcionando de extremo a extremo. Se construyó el backend completo, el frontend funcional, la integración con Ollama, el sistema multi-agente Board Room, el Gate Review determinístico, y el Gemelo Digital con persistencia total.
+WO-001 transformó ADAN de un concepto arquitectónico a un sistema funcionando de extremo a extremo. Se construyó el backend completo, el frontend funcional, la integración con Ollama, el sistema multi-agente Board Room, el Gate Review determinístico, y el Gemelo Digital con persistencia total.
 
 **Resultado:** 36 tests passing, flujo completo Nivel 1 en 42.47s (target <45s), 4 agentes concurrentes, 0 crash en stress test.
 
@@ -126,7 +126,7 @@ WO-001 transformó ADÁN de un concepto arquitectónico a un sistema funcionando
 - `ApiClient` class con JWT management y localStorage
 - `react-router-dom` para routing
 - `react-markdown` para renderizado de diagnósticos
-- Tailwind CSS con paleta de colores personalizada ADÁN
+- Tailwind CSS con paleta de colores personalizada ADAN
 - Tema oscuro con scrollbars personalizados
 
 ### Diseño
@@ -376,7 +376,7 @@ Con el cierre de WO-001, se ejecuta WO-002 para:
 
 **WO-001 queda oficialmente CERRADA.**
 
-El Nivel 1 de ADÁN funciona completamente de extremo a extremo:
+El Nivel 1 de ADAN funciona completamente de extremo a extremo:
 - docker compose up → sistema arranca
 - Registro → JWT auth
 - Crear empresa → persistencia

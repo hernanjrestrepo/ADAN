@@ -1,4 +1,4 @@
-# DECISION_ENGINE — Motor de Decisiones de ADÁN
+# DECISION_ENGINE — Motor de Decisiones de ADAN
 
 **WO:** WO-002.1  
 **Fecha:** 2026-07-24  
@@ -9,7 +9,7 @@
 
 ## 1. Visión General
 
-ADÁN toma decisiones constantemente: qué herramienta usar, qué agente invocar, qué información recuperar, cuándo preguntar al usuario. Este documento define cómo se toman esas decisiones.
+ADAN toma decisiones constantemente: qué herramienta usar, qué agente invocar, qué información recuperar, cuándo preguntar al usuario. Este documento define cómo se toman esas decisiones.
 
 **Principio:** Toda decisión debe ser justificada, rastreable y, cuando sea apropiada, revisable.
 
@@ -34,13 +34,13 @@ ADÁN toma decisiones constantemente: qué herramienta usar, qué agente invocar
                         │
 ┌─────────────────────────────────────────────────┐
 │  NIVEL 2: DECISIÓN OPERACIONAL                   │
-│  (ADÁN decide solo, reporta al usuario)          │
+│  (ADAN decide solo, reporta al usuario)          │
 │  Ej: "Usar web_search para encontrar datos"      │
 └─────────────────────────────────────────────────┘
                         │
 ┌─────────────────────────────────────────────────┐
 │  NIVEL 1: DECISIÓN AUTÓNOMA                      │
-│  (ADÁN decide sin consultar a nadie)             │
+│  (ADAN decide sin consultar a nadie)             │
 │  Ej: "Ordernar resultados por relevancia"        │
 └─────────────────────────────────────────────────┘
 ```
@@ -299,11 +299,11 @@ def record_decision(decision: Decision):
 
 ---
 
-## 4. Cuándo Decide Solo ADÁN
+## 4. Cuándo Decide Solo ADAN
 
 ### 4.1 Decisiones Autónomas (Nivel 1)
 
-ADÁN decide sin consultar a nadie cuando:
+ADAN decide sin consultar a nadie cuando:
 
 | Condición | Ejemplo |
 |---|---|
@@ -314,7 +314,7 @@ ADÁN decide sin consultar a nadie cuando:
 
 ### 4.2 Decisiones Operacionales (Nivel 2)
 
-ADÁN decide solo pero reporta al usuario:
+ADAN decide solo pero reporta al usuario:
 
 | Condición | Ejemplo |
 |---|---|
@@ -384,7 +384,7 @@ class UserConsultation:
     question: str                       # pregunta clara y específica
     context: str                        # contexto para que el usuario entienda
     options: list[UserOption]           # opciones con pros/contras
-    recommendation: str | None          # recomendación de ADÁN (si la hay)
+    recommendation: str | None          # recomendación de ADAN (si la hay)
     deadline: datetime | None           # cuándo se necesita la respuesta
     
 class UserOption:
@@ -393,7 +393,7 @@ class UserOption:
     pros: list[str]                     # ventajas
     cons: list[str]                     # desventajas
     estimated_impact: str               # impacto estimado
-    confidence: float                   # confianza de ADÁN en esta opción
+    confidence: float                   # confianza de ADAN en esta opción
 ```
 
 ### 6.3 Ejemplo
@@ -439,7 +439,7 @@ Toda decisión debe incluir:
 4. **Alternativas consideradas:** Qué más se evaluó
 5. **Por qué no las otras:** Razón de descarte
 6. **Riesgos:** Qué puede salir mal
-7. **Confianza:** Qué tan seguro está ADÁN
+7. **Confianza:** Qué tan seguro está ADAN
 
 ### 7.2 Ejemplo de Justificación
 
@@ -659,7 +659,7 @@ def learn_from_decision(decision: Decision, outcome: DecisionOutcome, quality: f
 
 | Pregunta | Respuesta |
 |---|---|
-| ¿Cuándo decide solo ADÁN? | Cuando el impacto es bajo y la reversibilidad es alta |
+| ¿Cuándo decide solo ADAN? | Cuando el impacto es bajo y la reversibilidad es alta |
 | ¿Cuándo consulta agentes? | Cuando se necesita análisis multi-perspectiva o consenso |
 | ¿Cuándo consulta al usuario? | Cuando el impacto es alto, la reversibilidad es baja, o la confianza es baja |
 | ¿Cómo justifica? | Con hechos, episodios, alternativas evaluadas y riesgos |

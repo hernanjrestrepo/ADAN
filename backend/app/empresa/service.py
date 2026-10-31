@@ -51,7 +51,7 @@ def _save(db: Session, project: Project, doc_type: str, title: str, data: dict) 
 # =========================================================================================
 
 PREPARER = (
-    "Eres el área legal, tributaria y de operación de ADÁN. Preparas para el fundador TODO lo necesario de un trámite "
+    "Eres el área legal, tributaria y de operación de ADAN. Preparas para el fundador TODO lo necesario de un trámite "
     "de creación de empresa, para alguien que no sabe nada de empresas: qué es y para qué sirve, documentos que debe "
     "llevar o cargar, los textos ya redactados con los datos de su empresa (dejando entre [corchetes] lo que solo él "
     "sabe), el paso a paso exacto (presencial o en línea), dónde se hace (entidad y sitio oficial con su URL) y "
@@ -60,7 +60,7 @@ PREPARER = (
 )
 
 VALIDATOR = (
-    "Eres el validador de documentos de ADÁN. Revisas un documento oficial cargado por el fundador y comparas sus "
+    "Eres el validador de documentos de ADAN. Revisas un documento oficial cargado por el fundador y comparas sus "
     "datos con los de su empresa. Eres estricto y honesto: si el documento no es del tipo esperado, está incompleto o "
     "los datos no coinciden, lo dices con precisión."
 )
@@ -93,7 +93,7 @@ class Expediente:
             items.append({**it, "estado": st.get("estado", "pendiente"), "nota": st.get("nota", ""),
                           "preparado_doc": st.get("preparado_doc"), "validacion": st.get("validacion"),
                           "actualizado": st.get("actualizado")})
-        # Lo que ya existe en ADÁN cuenta solo
+        # Lo que ya existe en ADAN cuenta solo
         marca = _load(self.db, project, "marca")
         auto = {"nombre": bool(marca.get("nombre_elegido")), "logo": bool(marca.get("logo_elegido")),
                 "presupuesto": _latest(self.db, project, "financial_model") is not None,
@@ -102,7 +102,7 @@ class Expediente:
         for it in items:
             if auto.get(it["id"]) and it["estado"] in ("pendiente", "en_curso"):
                 it["estado"] = "validado" if it["modo"] == "adan" else "preparado"
-                it["nota"] = it["nota"] or "Hecho en ADÁN."
+                it["nota"] = it["nota"] or "Hecho en ADAN."
         done = sum(1 for i in items if i["estado"] in ("validado", "no_aplica"))
         return {"pais": code, "pais_nombre": COUNTRIES.get(code, COUNTRIES["OTRO"])[0], "items": items,
                 "hechos": done, "total": len(items), "identificacion": data.get("identificacion", {})}
@@ -120,8 +120,8 @@ class Expediente:
 
     async def prepare(self, project: Project, company: Company, item: dict, context: str, country_name: str) -> Document:
         prompt = (f"{context}\n\nPaís: {country_name}.\nTrámite: {item['titulo']} — {item['que_es']}\n"
-                  f"Quién lo hace: {item['modo']}. Documento que lo prueba: {item['documento'] or 'lo produce ADÁN'}.\n\n"
-                  "Prepara el paquete completo de este trámite para ESTA empresa. Si es un documento que ADÁN redacta "
+                  f"Quién lo hace: {item['modo']}. Documento que lo prueba: {item['documento'] or 'lo produce ADAN'}.\n\n"
+                  "Prepara el paquete completo de este trámite para ESTA empresa. Si es un documento que ADAN redacta "
                   "(política de datos, contratos, Operating Agreement, campos de los Articles, respuestas del SS-4), "
                   "redáctalo completo. Si es presencial, deja el checklist de lo que debe llevar y el paso a paso en la "
                   "oficina. Si es en línea, el portal oficial y qué poner en cada campo.")
@@ -131,7 +131,7 @@ class Expediente:
         self.db.add(doc)
         self.db.commit()
         self.db.refresh(doc)
-        self.set_status(project, item["id"], "preparado", "ADÁN dejó listo el paquete.", preparado_doc=doc.id)
+        self.set_status(project, item["id"], "preparado", "ADAN dejó listo el paquete.", preparado_doc=doc.id)
         return doc
 
     async def validate(self, project: Project, company: Company, item: dict, filename: str, text: str) -> dict:
@@ -154,7 +154,7 @@ class Expediente:
                              doc_type="expediente_soporte", origin="received_from_client", content=text[:200000]))
         self.db.commit()
         self.set_status(project, item["id"], "validado" if result["valido"] else "observado",
-                        "Documento validado por ADÁN." if result["valido"] else "; ".join(result["observaciones"])[:500],
+                        "Documento validado por ADAN." if result["valido"] else "; ".join(result["observaciones"])[:500],
                         validacion=result)
         if result["valido"] and result["numero_identificacion"]:
             data = _load(self.db, project, "expediente")
@@ -168,7 +168,7 @@ class Expediente:
 # =========================================================================================
 
 NAMER = (
-    "Eres el estratega de marca de ADÁN. Creas nombres de empresa pegajosos y fáciles de mercadear con base en la "
+    "Eres el estratega de marca de ADAN. Creas nombres de empresa pegajosos y fáciles de mercadear con base en la "
     "ciencia del naming:\n"
     "- Fluidez de procesamiento (Alter y Oppenheimer): nombres fáciles de pronunciar y leer se perciben más confiables "
     "y se recuerdan mejor; 2 o 3 sílabas, idealmente menos de 10 letras.\n"
@@ -195,7 +195,7 @@ NAMES_SCHEMA = {
                        "fluidez": {"type": "integer"}, "memorabilidad": {"type": "integer"}, "distintividad": {"type": "integer"}}}}},
 }
 
-# Íconos disponibles para los logos (Lucide, licencia ISC) y tipografías incluidas en ADÁN
+# Íconos disponibles para los logos (Lucide, licencia ISC) y tipografías incluidas en ADAN
 ICONS = ["Plane", "Globe", "Map", "Compass", "Rocket", "Leaf", "Heart", "Star", "Sun", "Mountain", "Coffee", "ShoppingBag",
          "Store", "Briefcase", "Building2", "House", "Car", "Truck", "Ship", "Wallet", "CreditCard", "PiggyBank",
          "TrendingUp", "Lightbulb", "Brain", "Cpu", "Code", "Shield", "Lock", "Key", "Zap", "Flame", "Droplet", "Wind",
@@ -224,7 +224,7 @@ SLOGAN_SCHEMA = {
 }
 
 DESIGNER = (
-    "Eres el director de arte de ADÁN. Diseñas identidades corporativas con psicología del color (azul confianza, verde "
+    "Eres el director de arte de ADAN. Diseñas identidades corporativas con psicología del color (azul confianza, verde "
     "crecimiento y sostenibilidad, naranja energía, violeta creatividad y premium, rojo urgencia, negro lujo), "
     "contraste suficiente para leer (WCAG AA) y formas coherentes con la personalidad de la marca. Los colores van en "
     "hexadecimal #RRGGBB. Español."
@@ -314,7 +314,7 @@ class Marca:
         return self._store(project, logo_elegido=concept)
 
     def adopt_existing(self, project: Project, company: Company, image: str, colors: list[str], source: str) -> dict:
-        """El logo que la empresa ya tiene (de su web o subido por el fundador) pasa a ser su identidad en ADÁN."""
+        """El logo que la empresa ya tiene (de su web o subido por el fundador) pasa a ser su identidad en ADAN."""
         primary = colors[0] if colors else (company.brand_color or "#2563eb")
         accent = colors[1] if len(colors) > 1 else (company.brand_accent or primary)
         concept = {"id": "actual", "nombre_concepto": "Logo actual de la empresa", "estilo": "actual", "icono": "",

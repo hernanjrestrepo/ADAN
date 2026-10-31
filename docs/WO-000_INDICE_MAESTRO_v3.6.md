@@ -1,4 +1,4 @@
-# WO-000 — Índice Maestro de Especificación de Producto ADÁN (v3.6)
+# WO-000 — Índice Maestro de Especificación de Producto ADAN (v3.6)
 
 **Tipo de documento:** Árbol documental — **APROBADO Y CONGELADO** (sin cambios de estructura desde v3.1).
 **Estado de la WO-000:** El núcleo filosófico (AD-000 a AD-004 + Anexo de Meta-Principios) queda íntegramente aprobado y congelado. Se ejecutó un Enterprise Taxonomy Workshop (documento de trabajo, no forma parte del árbol) como preparación de AD-005.
@@ -39,4 +39,4 @@ El detalle de los 58 documentos permanece sin cambios en `WO-000_INDICE_MAESTRO_
 
 ## 3. Nota de cierre
 
-Con el núcleo filosófico cerrado, la WO-000 entra en su fase más delicada según el propio Board: el Ciclo Dominio, que empieza a responder no "quién es ADÁN" sino "qué es una empresa". El Enterprise Taxonomy Workshop ya entregado es el primer paso de ese ciclo — el siguiente, pendiente de dirección del Board, es un Workshop de Relaciones o directamente AD-005, según se decida tras revisar el workshop de taxonomía.
+Con el núcleo filosófico cerrado, la WO-000 entra en su fase más delicada según el propio Board: el Ciclo Dominio, que empieza a responder no "quién es ADAN" sino "qué es una empresa". El Enterprise Taxonomy Workshop ya entregado es el primer paso de ese ciclo — el siguiente, pendiente de dirección del Board, es un Workshop de Relaciones o directamente AD-005, según se decida tras revisar el workshop de taxonomía.

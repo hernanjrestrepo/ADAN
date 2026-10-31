@@ -104,7 +104,7 @@ export default function RoutePage() {
                       )}
                       {level.status === 'active' && level.number > 1 && (
                         <p className="mt-3 text-sm text-adan-muted">
-                          Este Nivel ya está abierto; su espacio de trabajo llega en una próxima versión de ADÁN.
+                          Este Nivel ya está abierto; su espacio de trabajo llega en una próxima versión de ADAN.
                         </p>
                       )}
                     </div>

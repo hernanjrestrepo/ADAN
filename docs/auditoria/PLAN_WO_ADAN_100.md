@@ -1,4 +1,4 @@
-# Plan de Work Orders para llevar ADÁN al 100 %
+# Plan de Work Orders para llevar ADAN al 100 %
 
 **Fecha:** 2026-09-24 (v2: incorpora `AD-DEC-0002`, decisiones de modelo de negocio y ecosistema)
 **Estado:** aprobado por Hernán para ejecución ("sí a todas", 2026-09-24). Cada WO igual pasa su Fase -1 (Regla 7 de `AD-GOV-0001`) y el Gate de Inicio (EPWO-052) al abrirse.
@@ -9,7 +9,7 @@
 
 ## 0. Qué significa "100 %"
 
-**ADÁN Enterprise v1:**
+**ADAN Enterprise v1:**
 - Los 7 Niveles funcionando de punta a punta según AD-FUNC-01 a 09.
 - Agentes por tiempo para las empresas, Marketplace y Comunidad.
 - Integración con el ecosistema: EVA para ventas y marketing, CSI e internamente Genexis.
@@ -56,7 +56,7 @@ WO-094 ✅ ─► WO-095 ✅ ─► WO-096
   WO-116 Experiencia  WO-117 Estrategias  WO-118 Learning  WO-119 EVA/CSI/canales  WO-120 Marketplace ─► WO-121 Comunidad
        └──────────────────┴─────────────────┴───────────────────┴─────────────────┘
                                          ▼
-                           WO-122 Certificación ADÁN Enterprise v1
+                           WO-122 Certificación ADAN Enterprise v1
 ```
 
 ## 3. Hitos
@@ -67,7 +67,7 @@ WO-094 ✅ ─► WO-095 ✅ ─► WO-096
 | H2 — Plataforma enterprise | 091, 097, 092, 093 | PostgreSQL, aislamiento por empresa, frontend TS, CI/CD | ~35 % |
 | H3 — Núcleo, Nivel 1 real e ingreso recurrente | 098, 099, 107, 108, 109 | Nivel 1 completo con piloto real; primeros agentes por tiempo | ~55 % |
 | H4 — Los 7 Niveles | 110 → 115 | Recorrido completo de creación o reinvención de empresa | ~75 % |
-| H5 — Experiencia, estrategia y aprendizaje | 116, 117, 118 | ADÁN se siente como lo diseña el blueprint y aprende de las decisiones | ~85 % |
+| H5 — Experiencia, estrategia y aprendizaje | 116, 117, 118 | ADAN se siente como lo diseña el blueprint y aprende de las decisiones | ~85 % |
 | H6 — Ecosistema, comunidad y certificación | 119, 120, 121, 122 | EVA, CSI, Marketplace, Comunidad y red de comisiones; Gate de Producción | 100 % |
 
 ---
@@ -199,7 +199,7 @@ Criterio de cierre común (EPWO-051), además de lo específico de cada ficha:
 
 ### WO-109 — Agentes por tiempo ✅
 - **Estado:** primera versión fusionada (`docs/wo/WO-109_REPORTE.md`). Los precios se fijan en WO-100.
-- **Objetivo:** que ADÁN suministre agentes por hora, día, semana o mes para tareas específicas de cada empresa (`AD-DEC-0002` decisión 1). Es el ingreso recurrente de ADÁN.
+- **Objetivo:** que ADAN suministre agentes por hora, día, semana o mes para tareas específicas de cada empresa (`AD-DEC-0002` decisión 1). Es el ingreso recurrente de ADAN.
 - **Alcance:**
   - Catálogo de agentes: rol, habilidades, herramientas y modelo, construido sobre la `agent_factory` actual llevada a persistencia.
   - Contratación por período y asignación de tareas mediante las Work Orders del OOS.
@@ -231,7 +231,7 @@ Cada Nivel se construye con la misma plantilla:
   - 7 emociones y 7 ritmos.
   - XP y logros ligados solo a cambios del Gemelo.
   - Regla anti-manipulación.
-  - Índice ADÁN.
+  - Índice ADAN.
   - Journey de AD-FUNC-08.
 - **Estimación:** 8–12 días.
 
@@ -266,7 +266,7 @@ Cada Nivel se construye con la misma plantilla:
 - **Depende de:** WO-100 (términos) y WO-120.
 - **Estimación:** 10–15 días.
 
-### WO-122 — Certificación ADÁN Enterprise v1
+### WO-122 — Certificación ADAN Enterprise v1
 - **Alcance:**
   - E2E de los 7 Niveles con empresas reales.
   - Auditoría de seguridad externa.

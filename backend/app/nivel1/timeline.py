@@ -9,7 +9,7 @@ from app.models.models import Card, CardStatus, Conversation, Level, Message, Pr
 
 # Quién es quién en el equipo (los mismos personajes de la oficina)
 TEAM = {
-    "ceo": ("ADÁN", "CEO"), "cto": ("Mateo", "CTO"), "cfo": ("Camila", "CFO"), "cmo": ("Santiago", "CMO"),
+    "ceo": ("ADAN", "CEO"), "cto": ("Mateo", "CTO"), "cfo": ("Camila", "CFO"), "cmo": ("Santiago", "CMO"),
     "legal": ("Lucía", "Legal"), "producto": ("Andrés", "Producto"), "operaciones": ("Sofía", "Operaciones"),
     "csi": ("Orión", "CSI"), "eva": ("Eva", "EVA"), "investigador": ("Iris", "Investigadora"), "analista": ("Teo", "Analista"),
     "genexis": ("Forja", "Genexis"),

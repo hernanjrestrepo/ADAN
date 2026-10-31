@@ -133,7 +133,7 @@ export default function SurveysPanel({ companyId, onError, onChanged, simulatedO
       <Card>
         <h2 className="text-2xl font-bold">Encuestas a clientes reales</h2>
         <p className="text-sm text-adan-muted mt-1">
-          ADÁN diseña la encuesta con lo que ya entendió de tu idea, preguntando por lo que la gente hizo y pagó (no por lo que haría).
+          ADAN diseña la encuesta con lo que ya entendió de tu idea, preguntando por lo que la gente hizo y pagó (no por lo que haría).
           Mientras la real llega, la simulada te deja avanzar; las conclusiones se registran solas como evidencia.
         </p>
         <div className="mt-4 flex flex-col sm:flex-row gap-3">
@@ -160,7 +160,7 @@ export default function SurveysPanel({ companyId, onError, onChanged, simulatedO
             <h3 className="font-bold">🧪 Encuesta simulada (para avanzar ya)</h3>
             <p className="text-xs text-adan-muted mt-1">
               El Simulador de Mercado responde como 50 personas del segmento. Sirve para no perder el ritmo mientras llegan las
-              respuestas reales; cuando lleguen, ADÁN las contrasta y marca con ⚠️ las diferencias fuertes.
+              respuestas reales; cuando lleguen, ADAN las contrasta y marca con ⚠️ las diferencias fuertes.
             </p>
             {simulation ? (
               <p className="mt-2 text-xs">Simulada con {simulation.size} personas: {simulation.perfil}. {simulation.supuestos.join(' · ')}</p>
@@ -246,7 +246,7 @@ export default function SurveysPanel({ companyId, onError, onChanged, simulatedO
               ))}
             </div>
             <Button className="mt-4" onClick={analyze} loading={busy === 'insights'} disabled={results.responses < 3}>
-              {results.responses < 3 ? 'Se necesitan al menos 3 respuestas para analizar' : 'Analizar con ADÁN'}
+              {results.responses < 3 ? 'Se necesitan al menos 3 respuestas para analizar' : 'Analizar con ADAN'}
             </Button>
             {insights && (
               <div className="mt-4 space-y-3 text-sm" data-testid="survey-insights">

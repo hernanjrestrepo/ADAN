@@ -1,7 +1,7 @@
 """Lo que construye Genexis y lo que capta: interesados reales que dejan sus datos en la landing de una empresa.
 
 Los datos personales son del fundador (responsable del tratamiento, Ley 1581): se piden con autorización expresa,
-solo él los ve y los exporta, y ADÁN solo cuenta cuántos llegan como evidencia de demanda.
+solo él los ve y los exporta, y ADAN solo cuenta cuántos llegan como evidencia de demanda.
 """
 from __future__ import annotations
 

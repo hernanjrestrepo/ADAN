@@ -1,6 +1,6 @@
 """Leer páginas web que el fundador comparte en el chat (su sitio, el de un competidor, una nota de prensa).
 
-ADÁN abre el enlace con el cliente HTTP seguro (bloquea redes internas, también en redirecciones), saca el título,
+ADAN abre el enlace con el cliente HTTP seguro (bloquea redes internas, también en redirecciones), saca el título,
 la descripción, los encabezados y el texto visible, y se lo da al equipo como contexto del turno. Sólo HTML y
 texto; un PDF enlazado se lee con el extractor de documentos.
 """
