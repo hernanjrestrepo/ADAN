@@ -29,7 +29,7 @@ from app.nivel1 import timeline
 logger = logging.getLogger(__name__)
 router = APIRouter(tags=["genexis"])
 
-# La página generada corre aislada: origen opaco, sin la sesión de ADÁN, solo puede mostrar y enviar el formulario
+# La página generada corre aislada: origen opaco, sin la sesión de ADAN, solo puede mostrar y enviar el formulario
 SANDBOX = "sandbox allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox"
 _EMAIL = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 TIPOS = ("landing", "prototipo")

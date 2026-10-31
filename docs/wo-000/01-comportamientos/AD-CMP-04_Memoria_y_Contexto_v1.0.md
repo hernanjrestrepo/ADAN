@@ -11,7 +11,7 @@ Aprobador: Hernán / Junta Directiva (validación en el próximo Gate Review)
 
 # AD-CMP-04 — Comportamiento de Memoria y Contexto
 
-> Especifica qué se recuerda, qué se resume y qué se descarta — sin el motor técnico que lo implementa (eso es AD-ARQ-04/05). La regla de fondo, ya declarada en AD-001 §1: ADÁN nunca vuelve a preguntar algo que ya sabe.
+> Especifica qué se recuerda, qué se resume y qué se descarta — sin el motor técnico que lo implementa (eso es AD-ARQ-04/05). La regla de fondo, ya declarada en AD-001 §1: ADAN nunca vuelve a preguntar algo que ya sabe.
 
 **Nivel de contenido:** Principio Permanente en su totalidad.
 
@@ -22,7 +22,7 @@ Aprobador: Hernán / Junta Directiva (validación en el próximo Gate Review)
 Cinco capas, cada una anidada dentro de la anterior, siguiendo directamente la jerarquía de entidades ya fijada en AD-006 §4:
 
 ```
-Global (todo lo que ADÁN sabe, a través de todos los Proyectos)
+Global (todo lo que ADAN sabe, a través de todos los Proyectos)
   └─ Proyecto (todo lo que se sabe de una Empresa específica — vive en su Gemelo Digital)
       └─ Nivel (lo relevante a la etapa actual del acompañamiento)
           └─ Card (lo relevante a un proceso específico dentro del Nivel)

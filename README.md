@@ -20,14 +20,14 @@ Los historiales importados se reescribieron para vivir bajo su carpeta, con auto
 
 ## Estado actual (2026-10-02)
 
-**Avance: ~60 %** hacia ADÁN Enterprise v1 (era ~22 % en la auditoría). Están cerrados:
+**Avance: ~60 %** hacia ADAN Enterprise v1 (era ~22 % en la auditoría). Están cerrados:
 - H1: base segura.
 - H2: plataforma enterprise (PostgreSQL, seguridad por empresa, frontend TypeScript, CI y producción).
 - WO-099: IA por complejidad con Claude, Board Room de 7 roles y memoria en cinco capas.
 - WO-098: Gemelo Digital con las 38 entidades, los 4 Patrones, versiones, eventos inmutables, la Decisión con los 6 campos, el ciclo de vida y las vistas de Decisiones y Timeline (`/gemelo/<empresa>`).
 
 - WO-107: Evidencia y Scoring. El Nivel 1 se cierra con evidencia verificable, no con palabras clave; los 8 Scores declaran su confianza.
-- WO-108 (parte técnica): onboarding de una sola pregunta, con ADÁN preguntando en segundos; consentimiento de datos (Ley 1581); evidencia externa verificada y contrato con CSI; ruta de 7 Niveles. Falta el piloto real.
+- WO-108 (parte técnica): onboarding de una sola pregunta, con ADAN preguntando en segundos; consentimiento de datos (Ley 1581); evidencia externa verificada y contrato con CSI; ruta de 7 Niveles. Falta el piloto real.
 - WO-109: agentes por hora, día, semana o mes (`/agentes/<empresa>`), con tareas como Work Orders, herramientas de TEF, aprobación del cliente y medición del trabajo. Los precios quedan para WO-100.
 
 H3 está completo salvo el piloto de WO-108 (Hernán). Sigue H4: los Niveles 2 a 7 (WO-110 a WO-115).
@@ -39,7 +39,7 @@ Qué se hizo, qué falta, cuándo se puede ver la plataforma y qué le toca a He
 0. `docs/ESTADO_ADAN_2026-09-25.md`: resumen del estado y de lo pendiente.
 1. `AD-ROOT-0001_Canon_del_Proyecto.md`: repositorio, rama, arquitectura y numeración oficiales. Leer antes de escribir código.
 2. `AD-DEC-0001_Historia_Oficial_de_ADAN.md`: por qué existen tres builds y cuál es la oficial.
-   `AD-DEC-0002_Modelo_de_Negocio_y_Ecosistema.md`: qué hace ADÁN dentro de Paradixe, cómo se monetiza y qué decidió Hernán el 2026-09-24.
+   `AD-DEC-0002_Modelo_de_Negocio_y_Ecosistema.md`: qué hace ADAN dentro de Paradixe, cómo se monetiza y qué decidió Hernán el 2026-09-24.
 3. `AD-GOV-0001_Reglas_de_Desarrollo.md`: reglas de proceso.
 4. `REPORTE_CONSOLIDACION_WO090.md`: estado de Build C al 2026-07-31 (WO-090 abierta).
 5. `docs/wo-000/BLUEPRINT_ADAN_v1.1.md`: mapa del blueprint (qué versión de cada documento está vigente y qué está implementado).
@@ -47,7 +47,7 @@ Qué se hizo, qué falta, cuándo se puede ver la plataforma y qué le toca a He
 6. `docs/auditoria/AUDITORIA_ADAN_2026-09.md`: auditoría completa del código, avance de partida (~22 %), bugs y brechas frente al blueprint.
 7. `docs/auditoria/PLAN_WO_ADAN_100.md`: plan de Work Orders propuesto para llegar al 100 %.
 8. `docs/wo/`: reportes de cierre de cada Work Order, con su evidencia, y el mapa de reutilización de Build A (`WO-096_MAPA_REUTILIZACION.md`).
-9. `docs/operacion/RUNBOOK.md`: cómo desplegar, revertir, respaldar y observar ADÁN en producción.
+9. `docs/operacion/RUNBOOK.md`: cómo desplegar, revertir, respaldar y observar ADAN en producción.
 
 Este repositorio y su rama `main` son los oficiales desde el 2026-09-24 (`AD-ROOT-0001 §1-2`).
 

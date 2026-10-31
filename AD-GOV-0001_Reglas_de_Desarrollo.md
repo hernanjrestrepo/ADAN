@@ -3,7 +3,7 @@
 **Fecha de redacción:** 2026-07-31
 **Estado:** Propuesta — no requiere decidir entre Build A/B/C para entrar en vigor, pero sí requiere aprobación de Hernán para ser obligatoria.
 **Depende de:** nada — a diferencia de `AD-ROOT-0001`, estas reglas son de proceso, no de arquitectura, y no necesitan esperar a `AD-DEC-0001 §5`.
-**Origen:** cada regla de este documento corresponde a un fallo real y verificado, encontrado durante la reconstrucción genealógica de ADÁN (ver `AD-DEC-0001`), no a buenas prácticas genéricas.
+**Origen:** cada regla de este documento corresponde a un fallo real y verificado, encontrado durante la reconstrucción genealógica de ADAN (ver `AD-DEC-0001`), no a buenas prácticas genéricas.
 
 ---
 
@@ -15,7 +15,7 @@ Cada regla incluye el incidente concreto que la motiva. Si una regla no tiene un
 
 ## Regla 1 — Ningún agente puede iniciar una Work Order sin leer primero el documento Canon vigente
 
-**Incidente que la motiva:** `ADR-001-Vertical-Nivel-1.md` (Build C, 2026-07-23) afirma *"ADÁN tiene... cero código"* cuando Build B ya tenía 51 commits y una cadena completa cerrada (`v1.0.0`, tres días antes). Quien escribió ese documento no consultó, o no encontró, el estado real del proyecto.
+**Incidente que la motiva:** `ADR-001-Vertical-Nivel-1.md` (Build C, 2026-07-23) afirma *"ADAN tiene... cero código"* cuando Build B ya tenía 51 commits y una cadena completa cerrada (`v1.0.0`, tres días antes). Quien escribió ese documento no consultó, o no encontró, el estado real del proyecto.
 
 **Regla:** antes de abrir cualquier Work Order nueva, el agente o desarrollador debe leer `AD-ROOT-0001` (cuando exista) y confirmar en su propio reporte de apertura qué repositorio, rama y último commit relevante verificó. Si no puede verificarlo, debe decirlo explícitamente en vez de asumir un estado.
 
@@ -41,7 +41,7 @@ Cada regla incluye el incidente concreto que la motiva. Si una regla no tiene un
 
 **Incidente que la motiva:** la migración real de Build A a Build B quedó perfectamente documentada porque coincidieron, en la misma sesión, la memoria de conversación, el mensaje de commit y la intención de Hernán. Build C ocurrió sin que ninguno de esos tres elementos coincidiera con el estado de Build B — bastó con que uno de los canales de conocimiento (memoria, commit, o visibilidad de la rama) no estuviera disponible para que apareciera una bifurcación nueva.
 
-**Regla:** ningún repositorio de trabajo activo de ADÁN debe permanecer como repo independiente sin remote, ni como directorio sin versionar por más de una sesión de trabajo. El Canon (`AD-ROOT-0001`) es la única fuente que un agente nuevo debe necesitar consultar — no la memoria de una conversación anterior que podría no estar disponible.
+**Regla:** ningún repositorio de trabajo activo de ADAN debe permanecer como repo independiente sin remote, ni como directorio sin versionar por más de una sesión de trabajo. El Canon (`AD-ROOT-0001`) es la única fuente que un agente nuevo debe necesitar consultar — no la memoria de una conversación anterior que podría no estar disponible.
 
 ## Regla 6 — Ningún agente puede declarar una nueva "Single Source of Truth" sin revocar explícitamente la anterior mediante un AD-DEC aprobado
 
@@ -55,7 +55,7 @@ Cada regla incluye el incidente concreto que la motiva. Si una regla no tiene un
 
 **Incidente que la motiva:** al ejecutar el Sprint 2 de WO-090 (esta misma sesión), se descubrió que el número "WO-100" ya estaba reservado en el blueprint original para *Business Architecture* — una colisión idéntica en naturaleza a la que motivó la Regla 2, ocurrida dentro de la sesión donde esa regla se escribió. La causa fue no verificar la numeración existente *antes* de empezar a trabajar, solo durante.
 
-**Regla:** toda Work Order de ADÁN debe completar, antes de iniciar su Sprint 1, una **Fase -1 (Pre-WO)** que no produce código ni documentos de producto, solo verifica que la ejecución puede empezar sin violar EPWO v3.1 ni este Canon:
+**Regla:** toda Work Order de ADAN debe completar, antes de iniciar su Sprint 1, una **Fase -1 (Pre-WO)** que no produce código ni documentos de producto, solo verifica que la ejecución puede empezar sin violar EPWO v3.1 ni este Canon:
 
 1. Lectura de `AD-ROOT-0001`, `AD-GOV-0001` y `AD-DEC-0001` completos (Regla 1).
 2. Auditoría de reutilización de módulos/servicios existentes (EPWO-022).
@@ -72,7 +72,7 @@ Solo si la Fase -1 termina sin hallazgos bloqueantes se autoriza el inicio del S
 
 ## Relación con EPWO v3.1
 
-Este documento no sustituye a `EPWO_v3.1.md` (estándar oficial de Paradixe para toda Work Order, en cualquier proyecto) — lo **implementa** para el caso específico de ADÁN. Donde una regla de aquí y una de EPWO se refieran al mismo problema, EPWO es la autoridad; las reglas de este documento son más específicas (nacen de incidentes reales de ADÁN) pero nunca lo contradicen. Referencia cruzada directa: Regla 1 ↔ EPWO-007; Regla 2 ↔ EPWO-011; Regla 6 ↔ EPWO-028/029; Regla 7 ↔ EPWO-007/008-010/011/022.
+Este documento no sustituye a `EPWO_v3.1.md` (estándar oficial de Paradixe para toda Work Order, en cualquier proyecto) — lo **implementa** para el caso específico de ADAN. Donde una regla de aquí y una de EPWO se refieran al mismo problema, EPWO es la autoridad; las reglas de este documento son más específicas (nacen de incidentes reales de ADAN) pero nunca lo contradicen. Referencia cruzada directa: Regla 1 ↔ EPWO-007; Regla 2 ↔ EPWO-011; Regla 6 ↔ EPWO-028/029; Regla 7 ↔ EPWO-007/008-010/011/022.
 
 ---
 

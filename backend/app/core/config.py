@@ -54,7 +54,7 @@ class Settings:
     KIMI_PRICE_INPUT: float = float(os.getenv("KIMI_PRICE_INPUT", "0.95"))   # USD por millón (lista, oct-2026)
     KIMI_PRICE_OUTPUT: float = float(os.getenv("KIMI_PRICE_OUTPUT", "4.0"))
 
-    # CSI (AD-000 §3): inteligencia externa del ecosistema Paradixe. Sin URL, ADÁN no inventa datos
+    # CSI (AD-000 §3): inteligencia externa del ecosistema Paradixe. Sin URL, ADAN no inventa datos
     # externos: solo verifica las fuentes que aporta el cliente (WO-108).
     CSI_BASE_URL: str = os.getenv("CSI_BASE_URL", "").rstrip("/")
     CSI_API_KEY: str = os.getenv("CSI_API_KEY", "")
@@ -128,7 +128,7 @@ class Settings:
     CORS_ORIGINS: list[str] = os.getenv("CORS_ORIGINS", "http://localhost:5173").split(",")
 
     # App
-    APP_NAME: str = "ADÁN"
+    APP_NAME: str = "ADAN"
     APP_VERSION: str = "0.1.0"
 
 

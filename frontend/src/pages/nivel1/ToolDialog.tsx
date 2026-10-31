@@ -2,7 +2,7 @@ import { useState, type FormEvent } from 'react'
 import Button from '../../components/ui/Button'
 
 // Pedirle al equipo un recorrido con clics por una página (con la cuenta del fundador si hace falta) o la revisión del
-// código del producto en GitHub. Usuario, clave y token se usan solo para esa tarea: no se guardan en ADÁN.
+// código del producto en GitHub. Usuario, clave y token se usan solo para esa tarea: no se guardan en ADAN.
 
 export type Tool = 'recorrido' | 'repositorio'
 

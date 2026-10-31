@@ -1,4 +1,4 @@
-"""Comunidad ADÁN: la red de empresas, emprendedores, inversionistas y mentores del ecosistema Paradixe."""
+"""Comunidad ADAN: la red de empresas, emprendedores, inversionistas y mentores del ecosistema Paradixe."""
 from __future__ import annotations
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -129,7 +129,7 @@ def my_listing(company_id: str, db: Session = Depends(get_db), user: User = Depe
 
 @router.put("/mis-empresas/{company_id}")
 def publish(company_id: str, body: ListingBody, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
-    """Publicar (o actualizar) la vitrina de una empresa propia; el Sello ADÁN se recalcula del Gemelo Digital."""
+    """Publicar (o actualizar) la vitrina de una empresa propia; el Sello ADAN se recalcula del Gemelo Digital."""
     company = get_owned_company(db, company_id, user)
     return listing_out(Community(db).publish(user, company, body.model_dump()), user)
 

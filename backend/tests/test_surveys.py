@@ -1,4 +1,4 @@
-"""Encuestas: ADÁN las diseña, se responden sin cuenta con consentimiento y los resultados se vuelven evidencia."""
+"""Encuestas: ADAN las diseña, se responden sin cuenta con consentimiento y los resultados se vuelven evidencia."""
 import json
 
 from app.ai.base import LLMAdapter, LLMResponse

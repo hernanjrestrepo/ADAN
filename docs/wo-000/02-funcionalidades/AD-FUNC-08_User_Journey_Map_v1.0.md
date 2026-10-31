@@ -23,7 +23,7 @@ Verificación contra el Principio de Emergencia, antes de escribir una sola etap
 
 | Etapa de Journey | Identidad Progresiva equivalente (AD-FUNC-06 §3.1) | Qué ocurre |
 |---|---|---|
-| **Descubrimiento** | Anónimo → Visitante | La persona conoce ADÁN, sin registro todavía |
+| **Descubrimiento** | Anónimo → Visitante | La persona conoce ADAN, sin registro todavía |
 | **Onboarding** | Visitante → Usuario | Cubierto en su totalidad por AD-FUNC-06 — este documento no repite su contenido, lo referencia |
 | **Uso** | Usuario → Responsable de Empresa | Niveles 1-5 (AD-FUNC-01) — construcción del Diagnóstico, Plan, MVP, Validación |
 | **Adopción** | Responsable de Empresa → Líder Activo | Primera Decisión de Negocio real, primer Entregable prometido y cumplido (AD-FUNC-06 §3.1) |
@@ -42,7 +42,7 @@ El índice original (v3.1) pide distinguir el journey por "técnico vs. no técn
 ## 2. Las 7 etapas
 
 ### Descubrimiento
-- **Qué hace el cliente:** conoce ADÁN por cualquier punto de entrada del Ecosistema Paradixe (AD-000 §5) — no necesariamente por búsqueda directa de ADÁN.
+- **Qué hace el cliente:** conoce ADAN por cualquier punto de entrada del Ecosistema Paradixe (AD-000 §5) — no necesariamente por búsqueda directa de ADAN.
 - **Emoción:** no gobernada por AD-FUNC-03 (esa especificación empieza en Nivel 1) — se rige por el principio general de AD-001 §14, confianza calmada, nunca urgencia artificial, incluso en un anuncio o landing.
 - **Touchpoint:** variable, fuera del alcance de esta Funcionalidad (marketing/canales, WO-100).
 - **Métrica:** fuera de alcance de producto — pertenece a instrumentación de marketing.
@@ -145,4 +145,4 @@ Ninguna nueva.
 
 | Versión | Fecha | Cambio | Motivo |
 |---|---|---|---|
-| v1.0 | 2026-07-17 | Creación inicial: las 7 etapas del journey mapeadas 1:1 contra la Identidad Progresiva ya fijada en AD-FUNC-06 §3.1, sin crear una segunda taxonomía; touchpoints y métricas por etapa heredados de AD-FUNC-01/03/05/07 sin duplicación | WO-000 Sprint 3 del Plan Maestro de Ejecución ADÁN v1.0 |
+| v1.0 | 2026-07-17 | Creación inicial: las 7 etapas del journey mapeadas 1:1 contra la Identidad Progresiva ya fijada en AD-FUNC-06 §3.1, sin crear una segunda taxonomía; touchpoints y métricas por etapa heredados de AD-FUNC-01/03/05/07 sin duplicación | WO-000 Sprint 3 del Plan Maestro de Ejecución ADAN v1.0 |

@@ -1,7 +1,7 @@
 # REPORTE_CONSOLIDACION_WO090
 
-**WO-090 — Consolidación Oficial de ADÁN Enterprise** (renumerada de la propuesta original "WO-100" — ver hallazgo bloqueante §3)
-**Fecha:** 2026-07-31 · **Ejecutor:** esta sesión (Claude Code) · **Autoriza:** Hernán (CTO ADÁN)
+**WO-090 — Consolidación Oficial de ADAN Enterprise** (renumerada de la propuesta original "WO-100" — ver hallazgo bloqueante §3)
+**Fecha:** 2026-07-31 · **Ejecutor:** esta sesión (Claude Code) · **Autoriza:** Hernán (CTO ADAN)
 **Formato:** EPWO-050 (cierre de Work Order) · **Checklist:** EPWO-051
 **Estado:** 🟡 **ABIERTA.** No cumple simultáneamente el checklist de EPWO-051 — ver §7. Esto es esperado en este punto, no un error: el propio alcance de esta WO deja el commit de congelación pendiente de aprobación explícita.
 

@@ -109,7 +109,7 @@ class TestSlackConnector:
         await connector.connect({})
         result = await connector.execute("send_message", {
             "channel": "#general",
-            "text": "Hello from ADÁN",
+            "text": "Hello from ADAN",
         })
         assert result.status == "success"
 

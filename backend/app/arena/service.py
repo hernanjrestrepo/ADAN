@@ -1,4 +1,4 @@
-"""La Arena de ADÁN: el fundador presenta su empresa a cuatro inversionistas simulados, cada uno con su
+"""La Arena de ADAN: el fundador presenta su empresa a cuatro inversionistas simulados, cada uno con su
 propio criterio. Primero preguntan lo más difícil; el fundador responde; luego cada uno decide si invierte,
 con cuánto y con qué condiciones. Se pasa si al menos dos invierten (o lo harían con condiciones) y ninguno
 encuentra una falla fatal. Es una simulación (AD-FUNC-01, Nivel 5): prepara, no reemplaza, a los
@@ -35,7 +35,7 @@ INVESTORS = [
 BY_ID = {i["id"]: i for i in INVESTORS}
 
 PERSONA = (
-    "Eres {name}, {role}, en La Arena de ADÁN. Evalúas empresas con este criterio: {lens}. Has visto cientos de "
+    "Eres {name}, {role}, en La Arena de ADAN. Evalúas empresas con este criterio: {lens}. Has visto cientos de "
     "pitches y sabes que 9 de cada 10 empresas cierran en sus primeros cinco años: no regalas tu dinero ni tu "
     "aprobación. Eres exigente y directo, pero justo y profesional: si algo está bien respaldado, lo reconoces, y "
     "nunca usas adjetivos despectivos («teatro», «fantasía», «cementerio», «humo»). Hablas en español, de tú. Nada "
@@ -99,7 +99,7 @@ class Arena:
 
     async def start(self, project: Project, brief: str, pitch: str = "") -> dict:
         """El pitch y la primera ronda: cada inversionista dice qué ve y hace sus dos preguntas más difíciles."""
-        prompt = (f"Lo que se sabe de la empresa (ficha, acuerdos y entregables del equipo de ADÁN):\n{brief}\n\n"
+        prompt = (f"Lo que se sabe de la empresa (ficha, acuerdos y entregables del equipo de ADAN):\n{brief}\n\n"
                   + (f"El pitch del fundador:\n{pitch}\n\n" if pitch else "")
                   + "`first_impression`: lo que ves, en máximo 60 palabras. `questions`: tus 2 preguntas más difíciles, "
                     "las que decidirían tu inversión. `red_flags`: máximo 3 alertas concretas.")

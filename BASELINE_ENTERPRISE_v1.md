@@ -1,4 +1,4 @@
-# BASELINE_ENTERPRISE_v1 — ADÁN Build C (WO-090, Sprint 4)
+# BASELINE_ENTERPRISE_v1 — ADAN Build C (WO-090, Sprint 4)
 
 **Fecha:** 2026-07-31 · **Método:** ejecución real contra el código de `repos-active/adan` tal como está en disco (rama `feature/voice-quality`, sin comitear todavía). Ningún resultado de este documento es simulado — donde algo no se pudo verificar realmente, se dice explícitamente en vez de asumir éxito.
 **Entorno de ejecución:** Python 3.11.9 (el sistema no tiene Python 3.12, que es lo que especifica `ADR-001-Vertical-Nivel-1.md` — discrepancia real, ver Limitaciones). Node/npm del sistema. Docker 29.1.2. Ollama nativo 0.30.10 corriendo en el host.
@@ -50,7 +50,7 @@ Build limpio, sin errores. `npm install` reportó **4 vulnerabilidades (3 modera
 
 ## 4. Backend — flujo real end-to-end (sin Docker, backend levantado directo con uvicorn en puerto de prueba 8059, detenido al terminar)
 
-- `GET /health` → `{"status":"ok","app":"ADÁN","version":"0.1.0"}` (200)
+- `GET /health` → `{"status":"ok","app":"ADAN","version":"0.1.0"}` (200)
 - `POST /api/v1/auth/register` con dominio `.local` → **rechazado correctamente** por `email-validator` (422, "reserved name") — el mismo patrón de bug que la memoria de Build A documentó en su momento (ahí era un problema porque los datos demo usaban `.local`; acá se verifica que la validación en sí funciona).
 - `POST /api/v1/auth/register` con dominio real de prueba (`wo090-verify@example.com`) → **201**, JWT emitido.
 - `POST /api/v1/auth/login` con las mismas credenciales → **200**, JWT emitido.

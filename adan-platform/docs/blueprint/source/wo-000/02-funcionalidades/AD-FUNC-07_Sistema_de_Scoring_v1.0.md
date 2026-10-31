@@ -59,7 +59,7 @@ Especifica, para cada uno de los 8 Scores del producto: qué mide, en qué momen
 | **Market Score** | 5 — Validación Simulada | Qué tan bien resiste la propuesta los escenarios simulados de mercado | Habilita, junto con Execution Score, avance a Nivel 6 |
 | **Execution Score** | 5 — Validación Simulada | Qué tan bien ejecuta el equipo bajo presión simulada | Habilita, junto con Market Score, avance a Nivel 6 |
 
-**Familia 2 — Scores continuos** (2 scores): no ligados a un Nivel específico, activos desde su primer cálculo y actualizados de forma permanente mientras dure la relación con ADÁN.
+**Familia 2 — Scores continuos** (2 scores): no ligados a un Nivel específico, activos desde su primer cálculo y actualizados de forma permanente mientras dure la relación con ADAN.
 
 | Score | Cuándo nace | Qué mide | Qué acción habilita |
 |---|---|---|---|
@@ -97,7 +97,7 @@ Todo Score de este documento —los 6 de diagnóstico, los 2 continuos, y cualqu
 
 ## 7. Verificación contra la Regla de Entidades y el Principio de Emergencia
 
-Ninguna entidad nueva. **Score** ya existe en AD-006 §4 ("evaluación que ADÁN hace de una Empresa... N:1 con Empresa; declara Confidence Level"). Este documento necesita un ajuste menor a esa definición: el Score del Responsable requiere que la cardinalidad de Score se amplíe de "N:1 con Empresa" a "N:1 con Empresa **o** Usuario Principal" — no es una entidad nueva, es una generalización de una relación ya existente, y se resuelve en AD-006 v1.2 (Impacto sobre otros módulos). Los 8 nombres de Score son Decisión de Diseño (etiquetas de significado), no entidades — la entidad de datos sigue siendo una sola.
+Ninguna entidad nueva. **Score** ya existe en AD-006 §4 ("evaluación que ADAN hace de una Empresa... N:1 con Empresa; declara Confidence Level"). Este documento necesita un ajuste menor a esa definición: el Score del Responsable requiere que la cardinalidad de Score se amplíe de "N:1 con Empresa" a "N:1 con Empresa **o** Usuario Principal" — no es una entidad nueva, es una generalización de una relación ya existente, y se resuelve en AD-006 v1.2 (Impacto sobre otros módulos). Los 8 nombres de Score son Decisión de Diseño (etiquetas de significado), no entidades — la entidad de datos sigue siendo una sola.
 
 ## 8. Verificación contra el Criterio de Existencia (AD-004 v1.1 §3.1)
 
@@ -117,7 +117,7 @@ Ninguna entidad nueva. **Score** ya existe en AD-006 §4 ("evaluación que ADÁN
 4. **¿Qué impacto tiene sobre documentos futuros?** AD-ARQ-10 implementa la fórmula real de los 8 Scores. AD-UX-03 (Dashboard) muestra Venture Score como resumen ejecutivo. AD-FUNC-09 (Learning Engine) consume Score por Estrategia como su evidencia primaria de aprendizaje.
 5. **¿Introduce un riesgo arquitectónico nuevo?** Uno: el ajuste de cardinalidad de Score (N:1 Empresa → Empresa o Usuario Principal) toca una entidad ya congelada — se gestiona como versión menor (v1.2), no como ruptura.
 6. **¿El Confidence Level es honesto?** 50% — el modelo de reconciliación es sólido y evidenciado contra AD-FUNC-01 ya aprobado, pero ningún Score tiene todavía un caso real calculado (eso es AD-ARQ-10 + WO-006 de este mismo plan).
-7. **Prueba "si este documento desapareciera":** ADÁN tendría 8 nombres de score sin significado de producto — números sin qué acción habilitan ni cuándo se muestran.
+7. **Prueba "si este documento desapareciera":** ADAN tendría 8 nombres de score sin significado de producto — números sin qué acción habilitan ni cuándo se muestran.
 8. **Prueba "válido en 10 años":** la distinción diagnóstico-secuencial vs. continuo, y la regla genérica de aplicación a Objetivo/Estrategia, no dependen de qué modelo de IA calcule los números — es una decisión de significado, no de cómputo.
 9. **¿Se verificó contra colisiones de nombre?** Sí — "Founder Score" contra el mismo hallazgo ya resuelto en AD-FUNC-06 (sección 0).
 10. **¿La autoauditoría se entrega junto con el documento?** Sí, esta sección.
@@ -164,4 +164,4 @@ Ninguna nueva.
 
 | Versión | Fecha | Cambio | Motivo |
 |---|---|---|---|
-| v1.0 | 2026-07-17 | Creación inicial: reconciliación de las dos taxonomías de score (índice original de 8 nombres vs. Plan Maestro de 7 categorías); corrección "Founder Score"→"Score del Responsable"; distinción diagnóstico-secuencial (6, ya anclados por AD-FUNC-01) vs. continuo (2: Responsable, Venture); regla genérica de aplicación a Objetivo/Estrategia sin crear scores fijos adicionales; Confidence Level explícitamente no tratado como score separado | WO-000 Sprint 2 del Plan Maestro de Ejecución ADÁN v1.0 |
+| v1.0 | 2026-07-17 | Creación inicial: reconciliación de las dos taxonomías de score (índice original de 8 nombres vs. Plan Maestro de 7 categorías); corrección "Founder Score"→"Score del Responsable"; distinción diagnóstico-secuencial (6, ya anclados por AD-FUNC-01) vs. continuo (2: Responsable, Venture); regla genérica de aplicación a Objetivo/Estrategia sin crear scores fijos adicionales; Confidence Level explícitamente no tratado como score separado | WO-000 Sprint 2 del Plan Maestro de Ejecución ADAN v1.0 |

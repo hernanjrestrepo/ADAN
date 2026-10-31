@@ -11,7 +11,7 @@ Aprobador: Hernán / Junta Directiva (validación en el próximo Gate Review)
 
 # AD-FUNC-02 — Board Room
 
-> Especifica la funcionalidad de comité ejecutivo: CEO/CTO/CFO/CMO/Legal/Producto/Operaciones debatiendo con cliente y terceros invitados, votaciones y actas. Este documento resuelve, de forma explícita, algo que ningún documento anterior había respondido directamente: **quién tiene la última palabra cuando el Board, ADÁN y el cliente no coinciden.**
+> Especifica la funcionalidad de comité ejecutivo: CEO/CTO/CFO/CMO/Legal/Producto/Operaciones debatiendo con cliente y terceros invitados, votaciones y actas. Este documento resuelve, de forma explícita, algo que ningún documento anterior había respondido directamente: **quién tiene la última palabra cuando el Board, ADAN y el cliente no coinciden.**
 
 **Nivel de contenido:** mixto. La jerarquía de autoridad (sección 2) y el Flujo Maestro de Orquestación (sección 3) son Principio Permanente. La mecánica visual de votación es Decisión de Diseño para AD-UX.
 
@@ -25,7 +25,7 @@ Antes de escribir el Flujo Maestro de Orquestación y el mecanismo de resolució
 
 ## 1. Qué es el Board Room
 
-Una sesión formal, visible al cliente, donde los Agentes especializados (CEO, CTO, CFO, CMO, Legal, Producto, Operaciones) deliberan sobre una decisión de peso suficiente para justificar hacerlas visibles (a diferencia de la conversación normal, donde son invisibles por defecto, AD-001 §1). El CEO Agent preside — es, dentro de esta funcionalidad, la forma concreta en que "ADÁN habla": no existe una voz de "ADÁN" separada de lo que el Board Room produce. Puede incluir terceros invitados (ej. un asesor externo del cliente) sin autoridad de voto.
+Una sesión formal, visible al cliente, donde los Agentes especializados (CEO, CTO, CFO, CMO, Legal, Producto, Operaciones) deliberan sobre una decisión de peso suficiente para justificar hacerlas visibles (a diferencia de la conversación normal, donde son invisibles por defecto, AD-001 §1). El CEO Agent preside — es, dentro de esta funcionalidad, la forma concreta en que "ADAN habla": no existe una voz de "ADAN" separada de lo que el Board Room produce. Puede incluir terceros invitados (ej. un asesor externo del cliente) sin autoridad de voto.
 
 **Cuándo se convoca un Board Room formal** (en vez de resolverse en la conversación normal vía AD-CMP-02): cuando la discrepancia entre Agentes es material y no se resuelve por evidencia ponderada (AD-CMP-02 §2), o cuando la decisión afecta una transición de Nivel, un compromiso financiero relevante, o un Riesgo de severidad alta (AD-005 §3).
 
@@ -43,15 +43,15 @@ Se responde distinguiendo **dos autoridades distintas**, porque tratarlas como u
 
 **La evidencia, no la jerarquía.** El Board no vota por preferencia — vota ponderando evidencia (AD-CMP-02 §2, Meta-Principio 3 del Anexo). El resultado de esa votación es la recomendación mejor fundamentada que el Board puede producir, no una orden.
 
-### 2.3 Por qué "el Board recomienda A, ADÁN recomienda B" no debería ocurrir
+### 2.3 Por qué "el Board recomienda A, ADAN recomienda B" no debería ocurrir
 
-El escenario que motivó este documento asumía tres voces independientes: Board, ADÁN, cliente. Verificado contra la arquitectura ya congelada, esa premisa tiene un error estructural: **el CEO Agent no es una cuarta opinión — es cómo el Board Room produce la voz que el cliente escucha como "ADÁN".** Si el CEO Agent, personalmente, favorece una postura distinta a la que el Board vota, eso es un desacuerdo *entre Agentes* (cae bajo AD-CMP-02 y AD-CMP-03, no bajo un mecanismo nuevo) — se documenta en el acta como disenso interno, visible al cliente, nunca se presenta como una segunda recomendación de "ADÁN" compitiendo con "el Board". No existen tres voces. Existen dos: la del Board (con su disenso interno documentado si lo hay) y la del cliente.
+El escenario que motivó este documento asumía tres voces independientes: Board, ADAN, cliente. Verificado contra la arquitectura ya congelada, esa premisa tiene un error estructural: **el CEO Agent no es una cuarta opinión — es cómo el Board Room produce la voz que el cliente escucha como "ADAN".** Si el CEO Agent, personalmente, favorece una postura distinta a la que el Board vota, eso es un desacuerdo *entre Agentes* (cae bajo AD-CMP-02 y AD-CMP-03, no bajo un mecanismo nuevo) — se documenta en el acta como disenso interno, visible al cliente, nunca se presenta como una segunda recomendación de "ADAN" compitiendo con "el Board". No existen tres voces. Existen dos: la del Board (con su disenso interno documentado si lo hay) y la del cliente.
 
 ### 2.4 El caso real: Board recomienda A, cliente quiere C
 
 1. El Board presenta A al cliente, con su evidencia y, si existió, el disenso interno no resuelto por votación (sección 2.3) — nunca oculto (Regla 1.6 de AD-002).
 2. El cliente puede aceptar A, pedir alternativas, o elegir C.
-3. **Si el cliente elige C:** la Decisión avanza como Patrón A (AD-008) hacia `Aprobada` porque el cliente tiene autoridad de ejecución (sección 2.1) — nada lo bloquea. Pero ADÁN declara explícitamente el Confidence Level de C frente al de A (Regla 1.9, Principio de Humildad Intelectual, AD-001 §6.1): si C tiene menos evidencia que A, eso se registra en la propia Decisión, visible para consultas futuras — no se finge que ambas opciones estaban igual de fundamentadas.
+3. **Si el cliente elige C:** la Decisión avanza como Patrón A (AD-008) hacia `Aprobada` porque el cliente tiene autoridad de ejecución (sección 2.1) — nada lo bloquea. Pero ADAN declara explícitamente el Confidence Level de C frente al de A (Regla 1.9, Principio de Humildad Intelectual, AD-001 §6.1): si C tiene menos evidencia que A, eso se registra en la propia Decisión, visible para consultas futuras — no se finge que ambas opciones estaban igual de fundamentadas.
 4. La autoridad de ejecución del cliente nunca está condicionada a que su elección sea la mejor fundamentada — pero su elección siempre queda registrada con la verdad sobre qué tan fundamentada es.
 
 **Esta es la respuesta completa a "¿quién tiene la última palabra?": el cliente tiene la última palabra sobre qué ocurre. La evidencia tiene la última palabra sobre qué tan bien fundamentado está lo que ocurre. Nunca se confunden.**
@@ -69,7 +69,7 @@ Cuando ocurre el caso de la sección 2.4, la Decisión (Patrón A, AD-008) regis
 
 **Por qué el sexto campo no es una cláusula legal.** No se registra para proteger a Paradixe de una reclamación — ese tipo de protección, si se necesita, es materia de WO-100/legal, fuera de esta especificación. Se registra porque es **materia prima de aprendizaje**. La Regla 1.8 de AD-002 (todo genera memoria) y la Ley de Aprendizaje de AD-005 §5 (Ley 2: Decisión de Negocio → Suceso Empresarial → Evidencia del resultado → ajuste de la siguiente Decisión) ya establecen que toda Decisión se conecta, con el tiempo, a la evidencia de lo que produjo. Una Decisión tomada en contra de una recomendación, con su Confidence Level declarado en el momento, es exactamente el tipo de dato que permite responder después: *"esta decisión fue tomada por el cliente, contra la recomendación del Board, con un Confidence Level del 41%, y produjo este resultado."* Ninguna entidad nueva hace falta para esto — es la Ley 2 ya existente, aplicada con prioridad a las decisiones que más enseñan: las que no siguieron la recomendación.
 
-**Principio que se desprende de aquí, y que gobierna el futuro Learning Engine (AD-FUNC-09, no escrito todavía):** ADÁN no aprende solo del éxito. Aprende de las decisiones — incluidas las que resultan mal — porque lo que hace valiosa a una Decisión no es que haya acertado, es que haya quedado explícita, fundamentada y trazable antes de que su resultado se conociera. El sistema no depende de que el cliente elija siempre la opción mejor fundamentada; depende de que cada elección, sea cual sea, quede registrada con la verdad completa sobre su fundamento en el momento en que se tomó. Este documento planta esa regla; su desarrollo completo —cómo se agrega ese aprendizaje a través de muchas Empresas, cómo se detectan patrones— le corresponde a AD-FUNC-09.
+**Principio que se desprende de aquí, y que gobierna el futuro Learning Engine (AD-FUNC-09, no escrito todavía):** ADAN no aprende solo del éxito. Aprende de las decisiones — incluidas las que resultan mal — porque lo que hace valiosa a una Decisión no es que haya acertado, es que haya quedado explícita, fundamentada y trazable antes de que su resultado se conociera. El sistema no depende de que el cliente elija siempre la opción mejor fundamentada; depende de que cada elección, sea cual sea, quede registrada con la verdad completa sobre su fundamento en el momento en que se tomó. Este documento planta esa regla; su desarrollo completo —cómo se agrega ese aprendizaje a través de muchas Empresas, cómo se detectan patrones— le corresponde a AD-FUNC-09.
 
 ---
 
@@ -80,7 +80,7 @@ Sección interna de esta Funcionalidad — no es un documento independiente, por
 | # | Pregunta | Respuesta |
 |---|---|---|
 | 1 | ¿Quién habla primero? | El CEO Agent, abriendo con el objetivo de la sesión y qué decisión está en juego — nunca un Agente especializado sin contexto previo |
-| 2 | ¿Cuándo interviene ADÁN? | Siempre — el CEO Agent preside toda la sesión (sección 1) |
+| 2 | ¿Cuándo interviene ADAN? | Siempre — el CEO Agent preside toda la sesión (sección 1) |
 | 3 | ¿Cuándo deliberan los Agentes? | Cuando la pregunta convocada toca más de una especialidad (AD-CMP-02 §1) |
 | 4 | ¿Cuándo participa el cliente? | Desde el inicio de forma visible (a diferencia de la conversación normal); activamente cuando se le solicita evidencia o cuando debe aprobar (Patrón A) |
 | 5 | ¿Cuándo se solicita evidencia? | Antes de que cualquier posición del Board pase de `Propuesta` a presentarse formalmente (AD-CMP-05) |
@@ -103,7 +103,7 @@ Sección interna de esta Funcionalidad — no es un documento independiente, por
 
 - AD-UX (vista de Board Room, mecánica visual de votación — Decisión de Diseño, no resuelta aquí)
 - AD-FUNC-01 (las decisiones de transición de Nivel son un disparador típico de escalamiento a Board, sección 1)
-- AD-FUNC-09 Learning Engine (no escrito todavía) — hereda directamente el principio de la sección 2.5: ADÁN aprende de las decisiones, no solo del éxito
+- AD-FUNC-09 Learning Engine (no escrito todavía) — hereda directamente el principio de la sección 2.5: ADAN aprende de las decisiones, no solo del éxito
 
 ## Impacto sobre otros módulos
 
@@ -128,5 +128,5 @@ Ninguna nueva.
 | Versión | Fecha | Cambio | Motivo |
 |---|---|---|---|
 | v1.0 (Revisión 1) | 2026-07-14 | Creación inicial: Board Room, Flujo Maestro de Orquestación (sección interna, 8 preguntas), jerarquía de autoridad de dos dimensiones (ejecución vs. fundamentación) resolviendo explícitamente el mecanismo de resolución de conflictos Board/Agente/cliente | Segundo documento de la categoría Funcionalidades |
-| v1.0 (Revisión 2 — pre-aprobación) | 2026-07-14 | Se agrega la sección 2.5: seis campos de registro cuando el cliente decide distinto a lo recomendado, incluyendo el nuevo campo "Responsabilidad asumida" — no como protección legal, sino como materia prima de aprendizaje (Ley 2 de AD-005, ya existente). Se declara el principio "ADÁN aprende de las decisiones, no solo del éxito", heredado por el futuro AD-FUNC-09 | Retroalimentación explícita del Board tras revisión de la Revisión 1 |
+| v1.0 (Revisión 2 — pre-aprobación) | 2026-07-14 | Se agrega la sección 2.5: seis campos de registro cuando el cliente decide distinto a lo recomendado, incluyendo el nuevo campo "Responsabilidad asumida" — no como protección legal, sino como materia prima de aprendizaje (Ley 2 de AD-005, ya existente). Se declara el principio "ADAN aprende de las decisiones, no solo del éxito", heredado por el futuro AD-FUNC-09 | Retroalimentación explícita del Board tras revisión de la Revisión 1 |
 | v1.0 — Aprobada | 2026-07-14 | Aprobación formal del Board. Se congela | Cierre del ciclo de revisión de AD-FUNC-02 |

@@ -1,4 +1,4 @@
-"""Encuestas de validación: ADÁN las redacta a partir del dolor que entendió, se comparten por enlace (el cliente
+"""Encuestas de validación: ADAN las redacta a partir del dolor que entendió, se comparten por enlace (el cliente
 las envía por WhatsApp desde su teléfono) y las respuestas se vuelven evidencia que el cliente decide registrar.
 
 Privacidad (Ley 1581 de 2012): la encuesta no pide datos personales, exige consentimiento informado y los números
@@ -48,7 +48,7 @@ INSIGHTS_SCHEMA = {
 }
 
 DESIGNER = (
-    "Eres el investigador de mercado de ADÁN. Diseñas encuestas cortas para validar si un problema es real, siguiendo "
+    "Eres el investigador de mercado de ADAN. Diseñas encuestas cortas para validar si un problema es real, siguiendo "
     "el método The Mom Test: preguntas por lo que la persona HIZO y PAGÓ en el pasado, nunca por lo que haría o "
     "pagaría en hipótesis, y nunca vendes la idea dentro de la pregunta. Lenguaje sencillo, sin tecnicismos. Español."
 )
@@ -70,7 +70,7 @@ SIM_SCHEMA = {
 SIM_SIZE = 50
 
 SIMULATOR = (
-    "Eres el Simulador de Mercado de ADÁN. Simulas cómo respondería una muestra de personas REALISTA del segmento "
+    "Eres el Simulador de Mercado de ADAN. Simulas cómo respondería una muestra de personas REALISTA del segmento "
     "descrito, con diversidad (no todas sufren el problema igual; algunas no lo sufren). No eres optimista: te basas "
     "en cómo se comporta la gente de verdad. Es una simulación para avanzar mientras llega la encuesta real; nunca la "
     "presentes como datos reales. Español."
@@ -101,7 +101,7 @@ class Surveys:
         self.db = db
 
     async def create(self, project: Project, company: Company, brief: str, objective: str = "") -> dict:
-        prompt = (f"Empresa: {company.name}\nLo que ADÁN sabe del problema y del segmento:\n{brief or 'sin datos aún'}\n\n"
+        prompt = (f"Empresa: {company.name}\nLo que ADAN sabe del problema y del segmento:\n{brief or 'sin datos aún'}\n\n"
                   + (f"Lo que el fundador quiere averiguar: {objective}\n\n" if objective else "")
                   + "Diseña una encuesta de 6 a 9 preguntas para personas del segmento. Incluye: una pregunta filtro "
                     "(¿le pasa o le pasó el problema?), con qué frecuencia le pasa, cómo lo resuelve hoy, cuánto le cuesta "
@@ -226,7 +226,7 @@ class Surveys:
     async def simulate(self, project: Project, survey: dict, brief: str) -> dict:
         """Respuestas simuladas de 50 personas del segmento. Se guardan aparte y se contrastan con las reales."""
         qs = [{k: q[k] for k in ("id", "texto", "tipo", "opciones")} for q in survey["preguntas"]]
-        prompt = (f"Segmento y problema (lo que ADÁN sabe):\n{brief[:5000]}\n\nEncuesta:\n"
+        prompt = (f"Segmento y problema (lo que ADAN sabe):\n{brief[:5000]}\n\nEncuesta:\n"
                   f"{json.dumps(qs, ensure_ascii=False)}\n\n"
                   f"Simula {SIM_SIZE} respuestas. Por pregunta (`id`): `conteos` = cuántas personas eligieron cada opción "
                   "(opcion y multiple; en escala, las claves '1' a '5'); `promedio` = promedio para escala y numero (0 si no "
@@ -273,7 +273,7 @@ class Surveys:
         resp = await self.llm.chat_json([LLMMessage("system", DESIGNER), LLMMessage("user", prompt)], INSIGHTS_SCHEMA,
                                         temperature=0.2, max_tokens=2500)
         data = resp.parsed if isinstance(resp.parsed, dict) else {}
-        source = f"Encuesta ADÁN «{survey['titulo']}» ({results['responses']} respuestas, {survey['created_at'][:10]})"
+        source = f"Encuesta ADAN «{survey['titulo']}» ({results['responses']} respuestas, {survey['created_at'][:10]})"
         return {"resumen": normalize_string(data.get("resumen")), "hallazgos": normalize_list(data.get("hallazgos")),
                 "alertas": normalize_list(data.get("alertas")),
                 "evidencia_sugerida": [{"afirmacion": normalize_string(e.get("afirmacion")), "tipo": "testimony",

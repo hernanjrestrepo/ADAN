@@ -21,7 +21,7 @@ export default function TopBar({ autopilot, onAutopilot }: { autopilot: boolean;
       <div className="u-glass flex items-center gap-3 rounded-2xl px-3 py-2">
         <AdanMark size={34} className="drop-shadow-[0_0_10px_rgba(124,155,255,0.5)]" />
         <div className="leading-tight">
-          <p className="text-[11px] u-brand">ADÁN <span className="font-semibold tracking-[0.2em] text-slate-500" style={{ WebkitTextFillColor: 'currentColor' }}>BY PARADIXE</span></p>
+          <p className="text-[11px] u-brand">ADAN <span className="font-semibold tracking-[0.2em] text-slate-500" style={{ WebkitTextFillColor: 'currentColor' }}>BY PARADIXE</span></p>
           <p className="text-sm font-bold max-w-[11rem] truncate">{a.icon} {company}</p>
         </div>
       </div>
@@ -73,7 +73,7 @@ export default function TopBar({ autopilot, onAutopilot }: { autopilot: boolean;
               <button key={p} type="button" onClick={() => setPanel(p)} className="md:hidden block w-full rounded-lg px-3 py-2 text-left hover:bg-white/5 capitalize">{p}</button>
             ))}
             <button type="button" onClick={reset} className="block w-full rounded-lg px-3 py-2 text-left hover:bg-white/5">Empezar otra empresa</button>
-            <Link to="/dashboard" className="block rounded-lg px-3 py-2 hover:bg-white/5">Ir a mi ADÁN →</Link>
+            <Link to="/dashboard" className="block rounded-lg px-3 py-2 hover:bg-white/5">Ir a mi ADAN →</Link>
           </div>
         </details>
       </div>

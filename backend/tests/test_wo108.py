@@ -187,7 +187,7 @@ def test_unreachable_source_is_recorded_honestly(client, user, local_site):
 def test_private_addresses_are_never_fetched(client, user):
     cid = _start(client, user)["company_id"]
     resp = client.post(f"/api/v1/scoring/{cid}/evidence", json={
-        "claim": "Intento de que ADÁN lea una red interna", "kind": "external",
+        "claim": "Intento de que ADAN lea una red interna", "kind": "external",
         "source": "http://169.254.169.254/latest/meta-data"}, headers=user)
     assert resp.json()["verification"]["status"] == "blocked"
 

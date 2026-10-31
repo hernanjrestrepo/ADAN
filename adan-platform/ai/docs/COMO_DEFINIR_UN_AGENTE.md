@@ -1,6 +1,6 @@
 # Cómo definir un Agente nuevo
 
-Un Agente (AD-003: "la unidad interna de especialización de ADÁN, ej. rol de CEO, CTO, CFO") se define en 4 pasos. Usa `ai/agents/diagnostico.py` como referencia completa.
+Un Agente (AD-003: "la unidad interna de especialización de ADAN, ej. rol de CEO, CTO, CFO") se define en 4 pasos. Usa `ai/agents/diagnostico.py` como referencia completa.
 
 ## 1. Crear el archivo de definición
 

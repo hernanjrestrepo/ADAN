@@ -54,7 +54,7 @@ function Swatch({ nombre, hex }: { nombre: string; hex: string }) {
 }
 
 // La ficha de la empresa: los parámetros que usa todo el equipo (comisión, pasarela, mercado…). El fundador la
-// corrige aquí y ADÁN la puede reconstruir releyendo todas las conversaciones.
+// corrige aquí y ADAN la puede reconstruir releyendo todas las conversaciones.
 function Ficha({ companyId, initial, onError }: { companyId: string; initial: Record<string, string>; onError: (m: string) => void }) {
   const [rows, setRows] = useState<[string, string][]>(() => Object.entries(initial))
   const [editing, setEditing] = useState(false)
@@ -80,13 +80,13 @@ function Ficha({ companyId, initial, onError }: { companyId: string; initial: Re
         </div>
         <div className="flex gap-2">
           <Button size="sm" variant="secondary" onClick={rebuild} loading={busy === 'rebuild'} disabled={Boolean(busy)}
-            title="ADÁN relee todas las conversaciones, recupera los acuerdos y quita contradicciones">🧠 Reordenar la memoria</Button>
+            title="ADAN relee todas las conversaciones, recupera los acuerdos y quita contradicciones">🧠 Reordenar la memoria</Button>
           {editing
             ? <Button size="sm" onClick={save} loading={busy === 'save'}>Guardar</Button>
             : <Button size="sm" variant="secondary" onClick={() => setEditing(true)}>✏️ Editar</Button>}
         </div>
       </div>
-      {rows.length === 0 && !editing && <p className="mt-3 text-sm text-adan-muted">Todavía no hay ficha: toca «Reordenar la memoria» para que ADÁN la arme con lo que han hablado.</p>}
+      {rows.length === 0 && !editing && <p className="mt-3 text-sm text-adan-muted">Todavía no hay ficha: toca «Reordenar la memoria» para que ADAN la arme con lo que han hablado.</p>}
       <div className="mt-3 grid gap-2 sm:grid-cols-2">
         {rows.map(([k, v], i) => editing ? (
           <div key={i} className="flex gap-1">
@@ -122,7 +122,7 @@ export default function BibliotecaPage() {
     void load().then(async (l) => {
       const pending = (l.faltan ?? []).reduce((n, f) => n + f.entregables.length, 0)
       if (!pending || cancelled) return
-      // Niveles cerrados sin sus entregables: ADÁN los redacta y se van mostrando a medida que quedan listos
+      // Niveles cerrados sin sus entregables: ADAN los redacta y se van mostrando a medida que quedan listos
       const res = await api.prepareDeliverables(companyId)
       if (cancelled || !res.pendientes) return
       setWriting(res.pendientes)
@@ -217,7 +217,7 @@ export default function BibliotecaPage() {
 
           {lib.memoria && lib.memoria.length > 0 && (
             <Card>
-              <h2 className="text-lg font-bold">🧠 Lo que ADÁN recuerda de tu proyecto</h2>
+              <h2 className="text-lg font-bold">🧠 Lo que ADAN recuerda de tu proyecto</h2>
               <p className="text-sm text-adan-muted">Los acuerdos de las conversaciones: todo el equipo los conoce y no los vuelve a preguntar.</p>
               <ul className="mt-3 grid gap-2 sm:grid-cols-2">
                 {lib.memoria.slice(0, 40).map((a) => (
@@ -250,7 +250,7 @@ export default function BibliotecaPage() {
             </div>
             {writing > 0 && (
               <p className="mt-4 rounded-xl border border-adan-accent/40 bg-adan-accent/5 p-3 text-sm animate-pulse" data-testid="redactando">
-                ✍️ ADÁN está redactando {writing} entregable{writing === 1 ? '' : 's'} de los Niveles que ya cerraste. Van apareciendo aquí solos.
+                ✍️ ADAN está redactando {writing} entregable{writing === 1 ? '' : 's'} de los Niveles que ya cerraste. Van apareciendo aquí solos.
               </p>
             )}
             {docs.length === 0 ? (
@@ -268,7 +268,7 @@ export default function BibliotecaPage() {
                       <div className="min-w-0 flex-1">
                         <p className="font-medium truncate">{d.titulo}</p>
                         <p className="text-xs text-adan-muted">
-                          {d.tipo}{d.nivel ? ` · Nivel ${d.nivel}` : ''} · {d.origen === 'tuyo' ? 'lo subiste tú' : 'hecho con ADÁN'}
+                          {d.tipo}{d.nivel ? ` · Nivel ${d.nivel}` : ''} · {d.origen === 'tuyo' ? 'lo subiste tú' : 'hecho con ADAN'}
                           {d.actualizado ? ` · ${date(d.actualizado)}` : ''}{d.palabras ? ` · ${d.palabras.toLocaleString('es-CO')} palabras` : ''}
                         </p>
                       </div>

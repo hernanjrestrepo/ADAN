@@ -1,1 +1,1 @@
-"""Documentación del cliente: extracción de texto y aprendizaje de ADÁN."""
+"""Documentación del cliente: extracción de texto y aprendizaje de ADAN."""

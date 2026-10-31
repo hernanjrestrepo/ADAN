@@ -1,4 +1,4 @@
-# Estado de ADÁN — 2026-09-25
+# Estado de ADAN — 2026-09-25
 
 **Para:** Hernán · **Preparado por:** Claude Code, al pausar el trabajo antes de WO-098
 > **Actualización (2026-09-25, después):** WO-099 quedó cerrada (`docs/wo/WO-099_REPORTE.md`), así que el avance sube a **~40 %**. Hay IA por complejidad: Claude Sonnet para la conversación, Claude Opus para los votos y Ollama para lo simple. El Board Room tiene los 7 roles con el Flujo Maestro, participación del cliente y acta, y hay un solo Board. La memoria tiene cinco capas y se mide el costo por empresa. **Para la demo solo falta poner `ANTHROPIC_API_KEY`** y correr `python scripts/check_claude.py`.
@@ -17,14 +17,14 @@
 
 > **Actualización (2026-10-02, más tarde):** la parte técnica de WO-108 está hecha (`docs/wo/WO-108_REPORTE.md`), así que el avance sube a **~55 %**.
 > - Registro con consentimiento de datos (Ley 1581).
-> - Una sola pregunta de bienvenida, y ADÁN hace su primera pregunta en 2 a 3 segundos.
+> - Una sola pregunta de bienvenida, y ADAN hace su primera pregunta en 2 a 3 segundos.
 > - Las fuentes de la evidencia se verifican.
 > - Contrato listo para conectar CSI.
 > - Ruta de 7 Niveles.
 >
 > **Lo que sigue depende de Hernán:** el piloto real con una empresa de Paradixe, que es el criterio de cierre de WO-108. Necesita el despliegue y la clave de Anthropic.
 
-**En una línea:** ADÁN pasó de **~22 % a ~35 %** del camino a ADÁN Enterprise v1. Quedaron cerradas la **base segura (H1)** y la **plataforma enterprise (H2)**. Lo que sigue es el producto: Gemelo Digital, la IA de calidad y los Niveles 2 a 7.
+**En una línea:** ADAN pasó de **~22 % a ~35 %** del camino a ADAN Enterprise v1. Quedaron cerradas la **base segura (H1)** y la **plataforma enterprise (H2)**. Lo que sigue es el producto: Gemelo Digital, la IA de calidad y los Niveles 2 a 7.
 
 ---
 
@@ -32,8 +32,8 @@
 
 | Paso | Resultado | Detalle |
 |---|---|---|
-| Unificación | Todo ADÁN vive ahora en un solo repositorio público, `hernanjrestrepo/ADAN`, con `main` como rama oficial. Build A quedó en `adan-platform/` y el prototipo de 2024 en `autonomous/`, los dos con su historial completo. Del monorepo de la laptop solo se subió la carpeta de ADÁN: los datos de clientes nunca salieron de la laptop. | `README.md`, `AD-ROOT-0001` (Canon), `AD-DEC-0001` |
-| Decisiones de negocio | Se registró qué es ADÁN en Paradixe: crea o reinventa empresas, alquila agentes por tiempo, usa Ollama y Anthropic según la complejidad, tiene comisiones multinivel y participación por negociación, lleva avisos de IA siempre y recorre 7 Niveles. | `AD-DEC-0002` |
+| Unificación | Todo ADAN vive ahora en un solo repositorio público, `hernanjrestrepo/ADAN`, con `main` como rama oficial. Build A quedó en `adan-platform/` y el prototipo de 2024 en `autonomous/`, los dos con su historial completo. Del monorepo de la laptop solo se subió la carpeta de ADAN: los datos de clientes nunca salieron de la laptop. | `README.md`, `AD-ROOT-0001` (Canon), `AD-DEC-0001` |
+| Decisiones de negocio | Se registró qué es ADAN en Paradixe: crea o reinventa empresas, alquila agentes por tiempo, usa Ollama y Anthropic según la complejidad, tiene comisiones multinivel y participación por negociación, lleva avisos de IA siempre y recorre 7 Niveles. | `AD-DEC-0002` |
 | Auditoría al 100 % del código | Avance medido en ~22 %, con la lista de bugs y brechas frente al blueprint. De ahí salió un plan de 24 Work Orders para llegar al 100 %. | `docs/auditoria/AUDITORIA_ADAN_2026-09.md`, `docs/auditoria/PLAN_WO_ADAN_100.md` |
 | **WO-094** Hotfix de seguridad ✅ | Se cerraron la ejecución remota de código en TEF y el SSRF. | Plan §4 |
 | **WO-095** Estabilización ✅ | Bugs críticos de Nivel 1 corregidos. El Board Room ahora tiene quórum y disenso visible, y las respuestas de IA llevan su aviso. | `docs/wo/WO-095_REPORTE.md` |
@@ -68,7 +68,7 @@ Todo está verificado en CI:
 - Registro e ingreso.
 - Crear una empresa.
 - En el Nivel 1:
-  - conversación con ADÁN sobre el dolor;
+  - conversación con ADAN sobre el dolor;
   - Board Room de 4 agentes, con votos, quórum y disenso;
   - diagnóstico y scores;
   - Gate Review, donde el cliente aprueba o rechaza cerrar el Nivel.
@@ -81,9 +81,9 @@ Todo está verificado en CI:
 | **La plataforma en internet** | Elegir servidor, dominio con TLS, backups externos y monitoreo (criterios 16 a 19 del Gate). El despliegue ya es un comando: `scripts/deploy.sh`. | Pocos días después de elegir la infraestructura |
 | **Una demo con calidad para mostrar** | WO-099 ya está hecha. Solo falta la API key de Anthropic. | **Apenas se configure la clave** |
 | **Piloto real con una empresa de Paradixe** | Cerrar H3 (WO-098, 099, 107, 108) | ~36–55 días de trabajo (2–3 meses) |
-| **ADÁN completo, 7 Niveles (100 %)** | H3 a H6 | ~130–200 días de trabajo: 6–10 meses con un frente, 4–7 meses con dos |
+| **ADAN completo, 7 Niveles (100 %)** | H3 a H6 | ~130–200 días de trabajo: 6–10 meses con un frente, 4–7 meses con dos |
 
-**Recomendación:** si lo primero es **ver y mostrar** ADÁN, conviene adelantar **WO-099** (IA de calidad) antes de WO-098. Es lo que más cambia la experiencia visible.
+**Recomendación:** si lo primero es **ver y mostrar** ADAN, conviene adelantar **WO-099** (IA de calidad) antes de WO-098. Es lo que más cambia la experiencia visible.
 
 ## 4. Siguiente paso técnico: WO-098 (Gemelo Digital y Decisiones)
 

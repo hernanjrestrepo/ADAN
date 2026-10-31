@@ -24,7 +24,7 @@ Hallazgo bloqueante **solo para el punto de Build B**. El resto de la WO avanzó
 | Entregable | Resultado |
 |---|---|
 | Blueprint más nuevo en `docs/wo-000/` | Se copiaron desde Build A: `AD-003` v1.2, `AD-006` v1.2, `AD-FUNC-07` (Scoring), `AD-FUNC-08` (User Journey) y `AD-FUNC-09` (Learning Engine). `kg.json` se reemplazó por la versión de Build A, con las rutas corregidas a `docs/wo-000/`. Build A queda intacto. |
-| AD-000 v2.0 | `docs/wo-000/00-fundamentos/AD-000_Paradixe_Ecosystem_Vision_v2.0.md`, según AD-DEC-0002: EVA (antes ARQAI) = ventas y marketing; Genexis interno; Comunidad; agentes por tiempo; finanzas del Nivel 3 con el CFO de ADÁN + CSI; aviso de IA. La v1.0 se conserva. Lista los documentos que quedan desactualizados y la WO que actualiza cada uno. |
+| AD-000 v2.0 | `docs/wo-000/00-fundamentos/AD-000_Paradixe_Ecosystem_Vision_v2.0.md`, según AD-DEC-0002: EVA (antes ARQAI) = ventas y marketing; Genexis interno; Comunidad; agentes por tiempo; finanzas del Nivel 3 con el CFO de ADAN + CSI; aviso de IA. La v1.0 se conserva. Lista los documentos que quedan desactualizados y la WO que actualiza cada uno. |
 | Mapa del blueprint | `docs/wo-000/BLUEPRINT_ADAN_v1.1.md`: parte de la v1.0 de Build A, sin la frase "fuente única de verdad" (Regla 6). Agrega el estado de implementación en Build C y tres hallazgos nuevos: H-6 (solapamiento EVA–ATO), H-7 (ERP y contabilidad sin dueño) y H-8 (concepto duplicado en `kg.json`). |
 | Grafo de conocimiento | AD-000 → v2.0. 3 conceptos nuevos: *Agente por tiempo*, *Comunidad* y *Aviso de IA*. 5 relaciones nuevas. Totales: 39 conceptos y 106 relaciones. Todas las rutas del grafo existen en disco (verificado). |
 | Mapa de reutilización A → C | `docs/wo/WO-096_MAPA_REUTILIZACION.md`: 20 piezas de Build A con su equivalente en Build C, la decisión (traer, adaptar, referencia o descartar) y la WO que las usa. Encontró que el API del grafo de Build A autentica pero no verifica que el proyecto sea del usuario; solo se trae con esa verificación (WO-097). La sección de Build B queda con los candidatos, pendiente de la importación. |
@@ -47,7 +47,7 @@ No se tocó código de backend: la suite de pruebas no cambia (261 passed en WO-
 
 ## 4. Pendiente: importar Build B (requiere la laptop)
 
-Build B está en la rama `adan/platform-integration` del monorepo `C:\Users\herna\Documents\Paradixe\repos`, carpeta `repos-active/adan`. Ese monorepo tiene datos de contactos de Claro, **así que nunca se sube completo**. Solo se extrae la carpeta de ADÁN, con su historial.
+Build B está en la rama `adan/platform-integration` del monorepo `C:\Users\herna\Documents\Paradixe\repos`, carpeta `repos-active/adan`. Ese monorepo tiene datos de contactos de Claro, **así que nunca se sube completo**. Solo se extrae la carpeta de ADAN, con su historial.
 
 Pasos en PowerShell, uno a la vez:
 

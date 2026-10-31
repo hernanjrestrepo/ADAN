@@ -229,7 +229,7 @@ export class FakeApi {
       this.messages.push({ id: `m${this.messages.length}`, role: 'user', content: body.message, created_at: now })
       if (!this.chatDegraded) this.discoveryDone = Math.min(7, this.discoveryDone + 2)
       const reply = { id: `m${this.messages.length}`, role: 'assistant', content: '¿Cuánto pan se pierde al día?', created_at: now,
-        agent_name: 'ADÁN', metadata_json: { degraded: this.chatDegraded } }
+        agent_name: 'ADAN', metadata_json: { degraded: this.chatDegraded } }
       this.messages.push(reply)
       return this.json(route, 200, { message: reply, conversation_id: 'conv1', card_id: null, disclaimer: 'aviso' })
     }
@@ -252,7 +252,7 @@ export class FakeApi {
     if (method === 'POST' && path.endsWith('/documents/upload')) {
       const now = new Date().toISOString()
       this.discoveryDone = Math.max(this.discoveryDone, 3)
-      const reply = { id: `m${this.messages.length}`, role: 'assistant', agent_name: 'ADÁN', created_at: now,
+      const reply = { id: `m${this.messages.length}`, role: 'assistant', agent_name: 'ADAN', created_at: now,
         content: '📎 Leí 1 documento(s): plan.pdf.\n\nVendes pan por suscripción. Lo más débil: no hay ventas reales.' }
       this.messages.push(reply)
       return this.json(route, 200, { documents: [{ id: 'd1', title: 'plan.pdf', kind: 'PDF', pages: 3, chars: 5000, truncated: false }],
@@ -344,7 +344,7 @@ export class FakeApi {
 
   private consents() {
     return {
-      data_processing: { purpose: 'data_processing', text: 'Tratamiento de mis datos para prestarme el servicio de ADÁN',
+      data_processing: { purpose: 'data_processing', text: 'Tratamiento de mis datos para prestarme el servicio de ADAN',
         granted: true, policy_version: '2026-10', since: '2026-10-02T00:00:00' },
       aggregated_intelligence: { purpose: 'aggregated_intelligence', text: 'Uso de mis datos anonimizados y agregados',
         granted: this.aggregated, policy_version: '2026-10', since: '2026-10-02T00:00:00' },

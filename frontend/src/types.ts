@@ -71,7 +71,7 @@ export interface Message {
     reaccion?: { agente: string; emocion: string; frase: string } | null
     investigado?: { consulta: string; verificado: boolean } | null
     investigando?: { consulta: string } | null
-    // ADÁN propone cerrar el Nivel (el fundador confirma con un clic o diciendo que sí)
+    // ADAN propone cerrar el Nivel (el fundador confirma con un clic o diciendo que sí)
     propone_cierre?: boolean
     // Respuestas rápidas que el fundador puede tocar en vez de escribir
     opciones?: string[]
@@ -87,7 +87,7 @@ export interface Message {
   } | null
 }
 
-// Guion del Descubrimiento del Dolor: siete temas y lo que ADÁN ya entendió de cada uno
+// Guion del Descubrimiento del Dolor: siete temas y lo que ADAN ya entendió de cada uno
 export type DiscoveryStatus = 'pendiente' | 'parcial' | 'respondido' | 'sin_dato'
 
 export interface DiscoveryTopic {
@@ -494,7 +494,7 @@ export interface ContractReport {
   price_note: string
 }
 
-// Documentación del cliente: lo que se cargó y lo que ADÁN aprendió de ella
+// Documentación del cliente: lo que se cargó y lo que ADAN aprendió de ella
 export interface UploadedDocument {
   id: string
   title: string
@@ -769,7 +769,7 @@ export interface ExecutiveReport {
   generated_at: string
 }
 
-// Comunidad ADÁN
+// Comunidad ADAN
 export interface CommunityProfile {
   id?: string
   display_name: string

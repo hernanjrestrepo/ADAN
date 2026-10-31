@@ -536,7 +536,7 @@
     },
     {
       "id": "concept:adan",
-      "term": "ADÁN",
+      "term": "ADAN",
       "group": "producto",
       "defined_in": "AD-003",
       "authoritative_owner": "AD-001",
@@ -849,7 +849,7 @@
       "defined_in": "AD-000",
       "authoritative_owner": "AD-000",
       "stability": "nuevo",
-      "note": "Agente de ADÁN contratado por hora, día, semana o mes para tareas específicas de una empresa. Ingreso recurrente de ADÁN; reemplaza la membresía operativa de planes fijos (AD-DEC-0002 §3.2). Se publica y contrata en el Marketplace. Especificación de producto pendiente: WO-109."
+      "note": "Agente de ADAN contratado por hora, día, semana o mes para tareas específicas de una empresa. Ingreso recurrente de ADAN; reemplaza la membresía operativa de planes fijos (AD-DEC-0002 §3.2). Se publica y contrata en el Marketplace. Especificación de producto pendiente: WO-109."
     },
     {
       "id": "concept:comunidad",
@@ -867,7 +867,7 @@
       "defined_in": "AD-000",
       "authoritative_owner": "AD-000",
       "stability": "estable",
-      "note": "Texto único visible en interfaz, documentos y API: ADÁN es una IA, no reemplaza la asesoría profesional y Paradixe no responde por los resultados (AD-DEC-0002 decisión 6; implementado en WO-095)."
+      "note": "Texto único visible en interfaz, documentos y API: ADAN es una IA, no reemplaza la asesoría profesional y Paradixe no responde por los resultados (AD-DEC-0002 decisión 6; implementado en WO-095)."
     }
   ],
   "principles": [

@@ -68,7 +68,7 @@ Ningún ranking comparativo entre empresarios distintos se admite por defecto. C
 Aplicación directa, a nivel de mecánica, del principio ya fijado en AD-001 §14.1 (Emoción Reflejada) y del Criterio de Existencia (AD-004 §3.1). Prohibido, sin excepción:
 
 - **Notificaciones de urgencia artificial** ("tu racha se va a perder", "quedan 2 horas") — ya prohibidas por AD-001 §14.
-- **Streaks que castigan la ausencia con culpa.** Un founder que se ausenta porque está atendiendo su negocio real —la razón misma por la que usa ADÁN— nunca debe sentir que "falló" al sistema.
+- **Streaks que castigan la ausencia con culpa.** Un founder que se ausenta porque está atendiendo su negocio real —la razón misma por la que usa ADAN— nunca debe sentir que "falló" al sistema.
 - **Rankings sociales forzados o visibles por defecto** (sección 2.1).
 - **Recompensas desconectadas de evidencia real** (Criterio de Existencia, sección 2).
 - **Cualquier mecánica que aumente el tiempo en la plataforma sin aumentar evidencia real en el Gemelo Digital.** Esta es la prueba más general y la más importante: si una mecánica hace que el empresario pase más tiempo interactuando sin que eso produzca una sola entidad nueva o actualizada en su Gemelo Digital, esa mecánica compite con el objetivo real del empresario en vez de servirlo — y no se admite, sin importar cuánto "enganche" produzca.

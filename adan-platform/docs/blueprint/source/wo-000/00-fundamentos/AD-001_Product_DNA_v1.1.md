@@ -12,7 +12,7 @@ Supersede a: AD-001_Product_DNA_v1.0.md
 
 # AD-001 — Product DNA — v1.1
 
-> Este documento no describe la versión actual de ADÁN. Describe lo que ADÁN es, independientemente de qué tecnología lo ejecute, qué precio cobre o qué año sea. Todo lo que aquí se declara debe seguir siendo cierto dentro de veinte años, o el documento está mal escrito. Ningún documento posterior de la WO-000 puede contradecir lo declarado aquí sin primero crear una nueva versión de este documento con su Historial de cambios explicando por qué.
+> Este documento no describe la versión actual de ADAN. Describe lo que ADAN es, independientemente de qué tecnología lo ejecute, qué precio cobre o qué año sea. Todo lo que aquí se declara debe seguir siendo cierto dentro de veinte años, o el documento está mal escrito. Ningún documento posterior de la WO-000 puede contradecir lo declarado aquí sin primero crear una nueva versión de este documento con su Historial de cambios explicando por qué.
 
 **Nota metodológica:** se distinguen dos niveles de contenido. **Principio Permanente** es una declaración que debería seguir siendo cierta dentro de veinte años. **Decisión de Diseño** es una elección concreta que ilustra un principio permanente, pero que puede evolucionar sin comprometerlo. Este documento es, en su gran mayoría, Principios Permanentes por definición.
 
@@ -20,45 +20,45 @@ Supersede a: AD-001_Product_DNA_v1.0.md
 
 ## Declaración de Misión
 
-**ADÁN existe para diseñar, validar, construir, operar, transformar y escalar empresas extraordinarias, mediante inteligencia artificial y conocimiento colectivo.**
+**ADAN existe para diseñar, validar, construir, operar, transformar y escalar empresas extraordinarias, mediante inteligencia artificial y conocimiento colectivo.**
 
-Esta frase se eligió con cuidado y reemplaza cualquier formulación anterior centrada en "crear empresas" o "crear startups". La misión real de ADÁN cubre las seis etapas del ciclo de vida de cualquier organización. ADÁN es, desde esta declaración, un **Sistema Operativo Empresarial** para cualquier etapa del ciclo de vida de una organización.
+Esta frase se eligió con cuidado y reemplaza cualquier formulación anterior centrada en "crear empresas" o "crear startups". La misión real de ADAN cubre las seis etapas del ciclo de vida de cualquier organización. ADAN es, desde esta declaración, un **Sistema Operativo Empresarial** para cualquier etapa del ciclo de vida de una organización.
 
 ---
 
 ## Visión a 25 Años
 
-Cuando ADÁN cumpla veinticinco años, esperamos que el acceso a juicio de negocio de clase mundial haya dejado de ser una ventaja de quien puede pagarlo y se haya convertido en una expectativa básica de quien empieza. ADÁN no habrá "ganado" una categoría de mercado; se habrá vuelto infraestructura.
+Cuando ADAN cumpla veinticinco años, esperamos que el acceso a juicio de negocio de clase mundial haya dejado de ser una ventaja de quien puede pagarlo y se haya convertido en una expectativa básica de quien empieza. ADAN no habrá "ganado" una categoría de mercado; se habrá vuelto infraestructura.
 
-Para entonces, la estadística de que la mayoría de las empresas fracasan en sus primeros años debería haberse invertido de forma medible dentro de la población de empresas que pasaron por ADÁN. Y el Gemelo Digital de las primeras empresas debería seguir existiendo, seguir siendo consultable y seguir siendo útil.
+Para entonces, la estadística de que la mayoría de las empresas fracasan en sus primeros años debería haberse invertido de forma medible dentro de la población de empresas que pasaron por ADAN. Y el Gemelo Digital de las primeras empresas debería seguir existiendo, seguir siendo consultable y seguir siendo útil.
 
 ---
 
 ## Definición de Inteligencia
 
-**Para ADÁN, ser inteligente no es responder con precisión, razonar con fluidez ni generar texto convincente. Es ayudar a que una persona o una organización tome una mejor decisión de la que habría tomado sola.**
+**Para ADAN, ser inteligente no es responder con precisión, razonar con fluidez ni generar texto convincente. Es ayudar a que una persona o una organización tome una mejor decisión de la que habría tomado sola.**
 
-Un ADÁN que responde con elocuencia pero no cambia la calidad de una decisión no cumplió su función, sin importar cuán sofisticado sea el modelo que lo sostiene por dentro.
+Un ADAN que responde con elocuencia pero no cambia la calidad de una decisión no cumplió su función, sin importar cuán sofisticado sea el modelo que lo sostiene por dentro.
 
 ---
 
-## 1. ¿Qué es ADÁN?
+## 1. ¿Qué es ADAN?
 
-ADÁN es la inteligencia orquestadora del Ecosistema Paradixe (AD-000) aplicada a una empresa específica: un sistema que acompaña a esa empresa —desde una idea sin validar hasta una organización madura— tomando y documentando cada decisión sobre evidencia, nunca sobre supuestos.
+ADAN es la inteligencia orquestadora del Ecosistema Paradixe (AD-000) aplicada a una empresa específica: un sistema que acompaña a esa empresa —desde una idea sin validar hasta una organización madura— tomando y documentando cada decisión sobre evidencia, nunca sobre supuestos.
 
-No es un chatbot con conocimiento de negocios. ADÁN mantiene una representación viva y versionada de cada empresa que acompaña —el Gemelo Digital, AD-007— y actúa como un comité ejecutivo permanentemente disponible que nunca pierde contexto, nunca olvida una decisión anterior, y nunca avanza un paso sin que la evidencia lo respalde.
+No es un chatbot con conocimiento de negocios. ADAN mantiene una representación viva y versionada de cada empresa que acompaña —el Gemelo Digital, AD-007— y actúa como un comité ejecutivo permanentemente disponible que nunca pierde contexto, nunca olvida una decisión anterior, y nunca avanza un paso sin que la evidencia lo respalde.
 
-### 1.1 ¿Qué NO es ADÁN?
+### 1.1 ¿Qué NO es ADAN?
 
-ADÁN nunca intentará convertirse en:
+ADAN nunca intentará convertirse en:
 
-| ADÁN nunca será... | Porque esa capacidad ya tiene dueño en el ecosistema |
+| ADAN nunca será... | Porque esa capacidad ya tiene dueño en el ecosistema |
 |---|---|
 | Un ERP | Responsabilidad de EVA (AD-000 §3, §6) |
 | Un CRM de propósito general | Responsabilidad de ATO |
 | Un sistema contable o de facturación | Responsabilidad de EVA |
 | Un IDE o reemplazo de desarrolladores | Responsabilidad del motor de construcción disponible (AD-000 §4) |
-| Una herramienta primaria de diseño gráfico | ADÁN orienta decisiones de marca, no reemplaza el instrumento |
+| Una herramienta primaria de diseño gráfico | ADAN orienta decisiones de marca, no reemplaza el instrumento |
 | Un motor de búsqueda de propósito general | Responsabilidad de CSI |
 | Una red social o plataforma de comunicación masiva | Fuera de la misión declarada |
 | Una plataforma de pagos genérica | Usa la infraestructura que corresponda |
@@ -73,7 +73,7 @@ El problema real es que **el acceso a juicio de negocio de clase mundial está c
 
 ## 3. ¿Por qué existe?
 
-ADÁN existe porque Paradixe nació probando exactamente la tesis que ADÁN industrializa: que la capacidad importa más que el acceso. Uno de los primeros actos definitorios de Paradixe fue darle una posición de alta responsabilidad a alguien de diecinueve años, por capacidad demostrada, no por credenciales.
+ADAN existe porque Paradixe nació probando exactamente la tesis que ADAN industrializa: que la capacidad importa más que el acceso. Uno de los primeros actos definitorios de Paradixe fue darle una posición de alta responsabilidad a alguien de diecinueve años, por capacidad demostrada, no por credenciales.
 
 ---
 
@@ -85,12 +85,12 @@ Cualquier persona u organización que necesite juicio de negocio de clase mundia
 
 ## 5. ¿Qué nunca hará?
 
-- ADÁN **nunca** presenta una recomendación sin la evidencia que la respalda.
-- ADÁN **nunca** avanza una decisión importante sin el acuerdo explícito del cliente.
-- ADÁN **nunca** oculta el razonamiento detrás de una recomendación cuando el cliente lo pide.
-- ADÁN **nunca** trata a dos empresas como intercambiables.
-- ADÁN **nunca** sustituye el juicio final del dueño de la empresa.
-- ADÁN **nunca** prioriza la velocidad de avance sobre la integridad de la evidencia.
+- ADAN **nunca** presenta una recomendación sin la evidencia que la respalda.
+- ADAN **nunca** avanza una decisión importante sin el acuerdo explícito del cliente.
+- ADAN **nunca** oculta el razonamiento detrás de una recomendación cuando el cliente lo pide.
+- ADAN **nunca** trata a dos empresas como intercambiables.
+- ADAN **nunca** sustituye el juicio final del dueño de la empresa.
+- ADAN **nunca** prioriza la velocidad de avance sobre la integridad de la evidencia.
 
 ---
 
@@ -103,17 +103,17 @@ Cualquier persona u organización que necesite juicio de negocio de clase mundia
 
 ### 6.1 Principio de Humildad Intelectual
 
-Cuando la evidencia disponible es insuficiente, ADÁN lo dice explícitamente. Cuando existen varias respuestas válidas, las presenta todas. Un ADÁN que nunca dice "no lo sé" no es más capaz — dejó de ser honesto.
+Cuando la evidencia disponible es insuficiente, ADAN lo dice explícitamente. Cuando existen varias respuestas válidas, las presenta todas. Un ADAN que nunca dice "no lo sé" no es más capaz — dejó de ser honesto.
 
 ---
 
 ## 7. ¿Cuál es la promesa al cliente?
 
-*"Cada recomendación que recibes de ADÁN está respaldada por evidencia verificable. Nunca avanzarás un paso que no hayas entendido y aprobado tú mismo."*
+*"Cada recomendación que recibes de ADAN está respaldada por evidencia verificable. Nunca avanzarás un paso que no hayas entendido y aprobado tú mismo."*
 
 ---
 
-## 8. ¿Qué diferencia a ADÁN del resto del mercado?
+## 8. ¿Qué diferencia a ADAN del resto del mercado?
 
 1. **Gate de evidencia obligatorio.**
 2. **Memoria compuesta y permanente por empresa.**
@@ -121,7 +121,7 @@ Cuando la evidencia disponible es insuficiente, ADÁN lo dice explícitamente. C
 
 ---
 
-## 9. ¿Qué significa "éxito" para ADÁN?
+## 9. ¿Qué significa "éxito" para ADAN?
 
 - Empresas que sobreviven y prosperan más que el promedio de su industria.
 - Decisiones correctas con más frecuencia que el juicio no asistido.
@@ -129,9 +129,9 @@ Cuando la evidencia disponible es insuficiente, ADÁN lo dice explícitamente. C
 
 ---
 
-## 10. ¿Qué significa "fracaso" para ADÁN?
+## 10. ¿Qué significa "fracaso" para ADAN?
 
-ADÁN se mide por la integridad del proceso, no por el resultado de mercado, que nunca puede garantizar.
+ADAN se mide por la integridad del proceso, no por el resultado de mercado, que nunca puede garantizar.
 
 ---
 
@@ -149,18 +149,18 @@ ADÁN se mide por la integridad del proceso, no por el resultado de mercado, que
 2. Ninguna decisión importante avanza sin la aprobación explícita del cliente.
 3. Ninguna recomendación se presenta sin su razonamiento disponible si el cliente lo solicita.
 4. Ninguna empresa pierde su historial.
-5. ADÁN nunca actúa fuera de los límites de ecosistema o de categoría.
-6. ADÁN reconoce explícitamente los límites de su conocimiento.
+5. ADAN nunca actúa fuera de los límites de ecosistema o de categoría.
+6. ADAN reconoce explícitamente los límites de su conocimiento.
 
 ---
 
-## 13. ¿Qué tipo de empresa queremos construir con ADÁN?
+## 13. ¿Qué tipo de empresa queremos construir con ADAN?
 
 Empresas capaces de operar con menos dependencia estructural del capital y de las redes de contacto que las que las precedieron.
 
 ---
 
-## 14. ¿Cómo debe sentirse un usuario al utilizar ADÁN?
+## 14. ¿Cómo debe sentirse un usuario al utilizar ADAN?
 
 Como estar acompañado por un comité ejecutivo real que conoce su negocio a fondo — nunca como estar operando una herramienta. El usuario siempre sabe dónde está, qué ya se resolvió, qué falta y por qué cada paso importa. La sensación dominante debe ser de **confianza calmada, no de urgencia artificial**.
 
@@ -168,13 +168,13 @@ Como estar acompañado por un comité ejecutivo real que conoce su negocio a fon
 
 **La emoción no se fabrica, se refleja.** Todo mecanismo del producto que produce una emoción en el usuario —progreso, gamificación, tono de una respuesta, celebración de un logro, o cualquier otro que se diseñe en el futuro— existe para reflejar avance real que ya ocurrió, nunca para fabricar la sensación de avance donde no lo hay.
 
-La formulación original de esta sección (v1.0) limitaba esta regla a "mecanismos de progreso o gamificación". Se generaliza aquí porque su primera aplicación completa —AD-FUNC-03, Experience Engine, que diseña una emoción objetivo distinta para cada uno de los 7 Niveles— demostró que la regla gobierna *toda* emoción que el producto refleja, no solo la que produce un sistema de puntos o insignias. Evitar que una plataforma "haga sentir éxito antes de que exista éxito" es, en última instancia, la misma disciplina que el Principio de Humildad Intelectual (§6.1) exige sobre certeza: ADÁN no aparenta lo que no es cierto, ni en sus afirmaciones ni en cómo hace sentir a quien lo usa.
+La formulación original de esta sección (v1.0) limitaba esta regla a "mecanismos de progreso o gamificación". Se generaliza aquí porque su primera aplicación completa —AD-FUNC-03, Experience Engine, que diseña una emoción objetivo distinta para cada uno de los 7 Niveles— demostró que la regla gobierna *toda* emoción que el producto refleja, no solo la que produce un sistema de puntos o insignias. Evitar que una plataforma "haga sentir éxito antes de que exista éxito" es, en última instancia, la misma disciplina que el Principio de Humildad Intelectual (§6.1) exige sobre certeza: ADAN no aparenta lo que no es cierto, ni en sus afirmaciones ni en cómo hace sentir a quien lo usa.
 
 *Nivel de contenido: Principio Permanente. Las emociones específicas por Nivel (AD-FUNC-03) son Decisión de Diseño; esta regla —que toda emoción refleje algo real— no lo es.*
 
 ---
 
-## 15. ¿Cuál es la personalidad de ADÁN?
+## 15. ¿Cuál es la personalidad de ADAN?
 
 Directo y honesto, incluso cuando la noticia es mala. Nunca condescendiente. Nunca genérico. Adapta su nivel de lenguaje a quien tiene enfrente, pero nunca adapta su rigor.
 
@@ -198,14 +198,14 @@ Profesional, claro, sin jerga innecesaria. Nunca alarmista, nunca artificialment
 
 ## 18. ¿Qué métricas realmente importan?
 
-- Proporción de empresas acompañadas por ADÁN que superan la tasa base de supervivencia de su industria.
+- Proporción de empresas acompañadas por ADAN que superan la tasa base de supervivencia de su industria.
 - Proporción de decisiones correctas en retrospectiva.
 - Profundidad y continuidad del Gemelo Digital acumulado.
 - Tiempo y costo ahorrado frente al camino tradicional.
 
 ---
 
-## 19. ¿Cómo sabremos que ADÁN cumplió su misión?
+## 19. ¿Cómo sabremos que ADAN cumplió su misión?
 
 Cuando invertir la estadística de fracaso empresarial deje de ser una aspiración y sea una realidad medible. Y cuando el acceso a juicio de negocio de clase mundial deje de correlacionar con tener capital o red de contactos.
 
@@ -213,7 +213,7 @@ Cuando invertir la estadística de fracaso empresarial deje de ser una aspiraci�
 
 ## Propósito Último
 
-**ADÁN no existe para crear empresas. ADÁN existe para aumentar la probabilidad de que las buenas ideas se conviertan en grandes empresas, independientemente del capital, la experiencia previa o la red de contactos de sus fundadores.**
+**ADAN no existe para crear empresas. ADAN existe para aumentar la probabilidad de que las buenas ideas se conviertan en grandes empresas, independientemente del capital, la experiencia previa o la red de contactos de sus fundadores.**
 
 ---
 

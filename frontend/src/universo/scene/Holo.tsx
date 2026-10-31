@@ -3,7 +3,7 @@ import { Chart } from '../../components/RichMessage'
 import { ZONES } from '../data'
 import { useUniverso } from '../store'
 
-// Lo que ADÁN muestra en la conversación (gráficos, proyecciones) aparece también en una pantalla de la oficina
+// Lo que ADAN muestra en la conversación (gráficos, proyecciones) aparece también en una pantalla de la oficina
 export default function Holo() {
   const holo = useUniverso((s) => s.holo)
   const close = useUniverso((s) => s.showHolo)

@@ -18,7 +18,7 @@ export default function AuthLayout({ subtitle, children }: { subtitle: string; c
         <div>
           <h2 className="text-4xl font-bold leading-tight mb-4">Crea o reinventa tu empresa con un equipo directivo de IA.</h2>
           <p className="text-adan-muted mb-10 max-w-lg">
-            ADÁN te acompaña nivel por nivel con evidencia, y tú tomas cada decisión.
+            ADAN te acompaña nivel por nivel con evidencia, y tú tomas cada decisión.
           </p>
           <ul className="space-y-6">
             {HIGHLIGHTS.map((h) => (
@@ -32,7 +32,7 @@ export default function AuthLayout({ subtitle, children }: { subtitle: string; c
             ))}
           </ul>
           <Link to="/universo" className="mt-10 inline-flex items-center gap-2 rounded-xl border border-adan-accent/50 bg-adan-accent/10 px-5 py-3 font-semibold hover:bg-adan-accent/20">
-            🌌 Recorre el Universo ADÁN en 3D →
+            🌌 Recorre el Universo ADAN en 3D →
           </Link>
         </div>
         <p className="text-xs text-adan-muted">Paradixe · Sistema Operativo Empresarial</p>
@@ -46,7 +46,7 @@ export default function AuthLayout({ subtitle, children }: { subtitle: string; c
           <div className="bg-adan-surface/70 border border-adan-border rounded-2xl p-6 sm:p-8 shadow-xl shadow-black/30">
             {children}
           </div>
-          <Link to="/universo" className="lg:hidden mt-6 block text-center text-sm text-adan-accent hover:underline">🌌 Recorre el Universo ADÁN en 3D →</Link>
+          <Link to="/universo" className="lg:hidden mt-6 block text-center text-sm text-adan-accent hover:underline">🌌 Recorre el Universo ADAN en 3D →</Link>
           <AiDisclaimer className="mt-6" />
         </main>
       </div>

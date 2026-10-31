@@ -354,9 +354,9 @@ class Indicator(ContratoBase, Base):
 
 
 class BusinessDecision(ContratoBase, Base):
-    """Decisión de Negocio — elección real de la Empresa (distinta de la Decisión de ADÁN). Patrón A.
+    """Decisión de Negocio — elección real de la Empresa (distinta de la Decisión de ADAN). Patrón A.
 
-    `adan_decision_id`: la Decisión de ADÁN que la originó, si existe (AD-CMP-03 §4).
+    `adan_decision_id`: la Decisión de ADAN que la originó, si existe (AD-CMP-03 §4).
     Relación explícita, nunca fusión.
     """
     __tablename__ = "business_decisions"
@@ -484,7 +484,7 @@ class Workspace(ContratoBase, Base):
 
 
 class Agent(ContratoBase, Base):
-    """Agente — rol interno especializado (los 7 del Board y ADÁN). Catálogo global."""
+    """Agente — rol interno especializado (los 7 del Board y ADAN). Catálogo global."""
     __tablename__ = "agents"
 
     code = Column(String(20), nullable=False, unique=True)  # CEO, CFO, COO, CMO, CTO, CLO, CHRO, ADAN

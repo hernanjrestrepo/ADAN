@@ -20,7 +20,7 @@ class Boundary extends Component<{ children: ReactNode }, { failed: boolean }> {
   }
 }
 
-// La oficina de ADÁN al lado de la conversación: el equipo reacciona a lo que hablas y los gráficos salen en pantalla
+// La oficina de ADAN al lado de la conversación: el equipo reacciona a lo que hablas y los gráficos salen en pantalla
 // Subtítulos de quien habla, como en una película
 function Subtitle() {
   const sub = useUniverso((s) => s.subtitle)

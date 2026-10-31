@@ -15,6 +15,7 @@ import ConstitucionPage from './pages/constitucion/ConstitucionPage'
 import SurveyPublicPage from './pages/SurveyPublicPage'
 import FinanzasPage from './pages/finanzas/FinanzasPage'
 import ComunidadPage from './pages/comunidad/ComunidadPage'
+import ParadixeBadge from './components/ParadixeBadge'
 import ApplesPage from './pages/ApplesPage'
 import ConsolaPage from './pages/ConsolaPage'
 import LevelPage from './pages/nivel/LevelPage'
@@ -52,13 +53,14 @@ export default function App() {
   const { user } = useAuth()
   useVisits()
   return (
+    <>
     <Routes>
       <Route path="/login" element={<PublicOnly><LoginPage /></PublicOnly>} />
       <Route path="/register" element={<PublicOnly><RegisterPage /></PublicOnly>} />
       <Route path="/privacidad" element={<PrivacyPage />} />
       <Route path="/encuesta/:token" element={<SurveyPublicPage />} />
       <Route path="/universo" element={
-        <Suspense fallback={<div className="fixed inset-0 flex items-center justify-center bg-[#0a0a0f] text-sm text-slate-400">Abriendo la oficina de ADÁN…</div>}>
+        <Suspense fallback={<div className="fixed inset-0 flex items-center justify-center bg-[#0a0a0f] text-sm text-slate-400">Abriendo la oficina de ADAN…</div>}>
           <UniversoPage />
         </Suspense>} />
       <Route path="/bienvenida" element={<Private><WelcomePage /></Private>} />
@@ -80,5 +82,7 @@ export default function App() {
       <Route path="/consola" element={<Private><ConsolaPage /></Private>} />
       <Route path="*" element={<Navigate to={user ? '/dashboard' : '/login'} replace />} />
     </Routes>
+    <ParadixeBadge />
+    </>
   )
 }

@@ -1,4 +1,4 @@
-"""Entorno de Alembic de ADÁN.
+"""Entorno de Alembic de ADAN.
 
 La conexión sale de `config.attributes["connection"]` (cuando la app migra al arrancar)
 o de DATABASE_URL. Funciona con SQLite (modo batch para ALTER) y con PostgreSQL.

@@ -164,7 +164,7 @@ def local_site(local_http_server, monkeypatch):
 
 
 # ============================================================
-# Servidor ADÁN real (uvicorn) para pruebas de concurrencia
+# Servidor ADAN real (uvicorn) para pruebas de concurrencia
 # ============================================================
 
 @pytest.fixture(scope="module")

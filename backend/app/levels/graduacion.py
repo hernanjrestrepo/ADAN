@@ -1,6 +1,6 @@
 """El cierre de todo el proceso: la graduación al cerrar el Nivel 7 y el modo continuo.
 
-Al graduarse, ADÁN: 1) consolida la memoria, 2) convoca la sesión final del Board (¿la empresa está lista para operar
+Al graduarse, ADAN: 1) consolida la memoria, 2) convoca la sesión final del Board (¿la empresa está lista para operar
 y crecer?), 3) escribe el Libro de la Empresa (la ficha, lo que se construyó en cada Nivel, las decisiones, los
 riesgos asumidos y el plan de 90 días con sus indicadores) y 4) emite el certificado. Después sigue el modo
 continuo: el fundador reporta cada mes sus indicadores, Camila los compara con el plan y cada trimestre sesiona
@@ -79,7 +79,7 @@ def _save(db: Session, project: Project, kind: str, title: str, content: str) ->
 
 
 def _book(company: Company, ficha: dict, plan: dict, board, delivered: list[Document], agreements: list[dict]) -> str:
-    lines = [f"# Libro de la Empresa — {company.name}", "", f"_Construido con ADÁN · graduación del {datetime.now():%d/%m/%Y}_",
+    lines = [f"# Libro de la Empresa — {company.name}", "", f"_Construido con ADAN · graduación del {datetime.now():%d/%m/%Y}_",
              "", "## Resumen ejecutivo", plan.get("resumen_ejecutivo", "")]
     if ficha:
         lines += ["", "## Ficha de la empresa", ""] + [f"- **{k}:** {v}" for k, v in ficha.items()]
@@ -107,7 +107,7 @@ def _book(company: Company, ficha: dict, plan: dict, board, delivered: list[Docu
     if plan.get("kpis"):
         lines += ["", "## Indicadores del modo continuo", "", "| Indicador | Meta | Unidad | Frecuencia |", "|---|---|---|---|"]
         lines += [f"| {k['nombre']} | {k['meta']} | {k['unidad']} | {k['frecuencia']} |" for k in plan["kpis"]]
-    lines += ["", "---", "ADÁN te acompaña en modo continuo: reporta tus indicadores cada mes y el Board sesiona cada trimestre."]
+    lines += ["", "---", "ADAN te acompaña en modo continuo: reporta tus indicadores cada mes y el Board sesiona cada trimestre."]
     return "\n".join(lines)
 
 
@@ -132,7 +132,7 @@ async def graduate(llm: LLMAdapter, db: Session, project: Project, company: Comp
     context = memoria.context(db, project, "plan crecimiento indicadores metas", 7)[:9000]
     resp = await for_tier(llm, "standard").chat_json([
         LLMMessage("system", (
-            "Eres ADÁN cerrando el proceso de creación de la empresa con el fundador. Con la memoria (la ficha y los "
+            "Eres ADAN cerrando el proceso de creación de la empresa con el fundador. Con la memoria (la ficha y los "
             "acuerdos mandan) y el resultado del Board escribe: `resumen_ejecutivo` (máximo 180 palabras: qué empresa "
             "quedó construida, para quién, cómo gana dinero y su estado), `plan_90_dias` (3 periodos: días 1-30, "
             "31-60 y 61-90, cada uno con objetivo y 3 a 5 acciones concretas), `kpis` (4 a 6 indicadores medibles "
@@ -144,11 +144,11 @@ async def graduate(llm: LLMAdapter, db: Session, project: Project, company: Comp
     book = _save(db, project, BOOK_DOC, f"Libro de la Empresa — {company.name}",
                  _book(company, mem.get("ficha", {}), plan, board, delivered, mem.get("acuerdos", [])))
     data = {"estado": "lista", "fecha": _now(), "certificado": f"ADAN-{uuid.uuid4().hex[:8].upper()}",
-            "frase": plan.get("frase") or f"{company.name} completó los 7 Niveles de ADÁN.",
+            "frase": plan.get("frase") or f"{company.name} completó los 7 Niveles de ADAN.",
             "kpis": plan.get("kpis", []), "board": {"decision": board.decision, "preparacion": round(board.score)} if board else None,
             "libro_id": book.id}
     _save(db, project, GRAD_DOC, "Graduación", json.dumps(data, ensure_ascii=False))
-    timeline.post(db, project, (f"🎓 **¡{company.name} se graduó de ADÁN!** Completaste los 7 Niveles. Te dejé el "
+    timeline.post(db, project, (f"🎓 **¡{company.name} se graduó de ADAN!** Completaste los 7 Niveles. Te dejé el "
                                 "**Libro de la Empresa** con todo lo construido y el plan de 90 días, y tu certificado. "
                                 "Desde hoy seguimos en **modo continuo**: cada mes me cuentas tus indicadores y cada "
                                 "trimestre sesiona el Board."), agent="ceo", nivel=7, graduacion=True,
@@ -184,7 +184,7 @@ async def check_in(llm: LLMAdapter, db: Session, project: Project, values: dict[
              for name, value in values.items()]
     resp = await for_tier(llm, "standard").chat([
         LLMMessage("system", (
-            "Eres Camila, CFO de ADÁN, en el seguimiento mensual del modo continuo. Compara lo real con la meta, "
+            "Eres Camila, CFO de ADAN, en el seguimiento mensual del modo continuo. Compara lo real con la meta, "
             "celebra lo que va bien, señala lo que se desvía y propone 2 acciones concretas para el próximo mes. "
             "Cálida y directa, máximo 120 palabras.")),
         LLMMessage("user", "Indicadores del mes:\n" + "\n".join(lines) + (f"\nNota del fundador: {note}" if note else "")

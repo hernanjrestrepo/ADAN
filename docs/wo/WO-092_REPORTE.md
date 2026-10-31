@@ -42,7 +42,7 @@
   - Rutas privadas y públicas.
 - **Nivel 1 dividido en paneles:** `ChatPanel`, `BoardRoomPanel`, `DiagnosisPanel` y `ScoresPanel`. El contenedor maneja el estado y cancela la carga si el usuario cambia de empresa.
 - **Los errores se muestran en la página.** Se quitaron todos los `alert()` del navegador.
-- **Los mensajes de ADÁN se muestran como markdown.** Antes aparecían los `**` en crudo, como se ve en la evidencia.
+- **Los mensajes de ADAN se muestran como markdown.** Antes aparecían los `**` en crudo, como se ve en la evidencia.
 - **Accesibilidad básica:** `label` en cada campo, `role="dialog"` en el diálogo de empresa, `role="alert"`, `aria-live` en el chat, `progressbar` en los scores y `aria-current` en las migas de pan.
 - **ESLint** (`eslint.config.js`, config plana) y **Playwright** (`playwright.config.ts`) con un API simulado (`e2e/fakeApi.ts`): las pruebas de la interfaz no necesitan backend ni LLM, así que pueden correr en CI (WO-093).
 - `Dockerfile` con Node 22 y `npm ci`; `.dockerignore`; `package-lock.json` regenerado.

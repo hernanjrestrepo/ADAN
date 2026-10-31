@@ -11,7 +11,7 @@ import { logoSvg, svgDataUrl, type LogoConcept } from '../../lib/logo'
 import type { BrandData } from '../../types'
 
 // La marca de la empresa, construida con el equipo: nombres pegajosos (ciencia del naming), logos en vector para
-// escoger, slogan y manual de marca. Lo elegido se vuelve la identidad en todo ADÁN y en las oficinas.
+// escoger, slogan y manual de marca. Lo elegido se vuelve la identidad en todo ADAN y en las oficinas.
 
 const STYLE_LABEL: Record<string, string> = { icono_texto: 'Ícono + nombre', monograma: 'Monograma', emblema: 'Emblema', solo_texto: 'Solo texto' }
 
@@ -152,7 +152,7 @@ export default function MarcaPage() {
 
           <Card>
             <h2 className="text-xl font-bold">2. Logo</h2>
-            <p className="text-sm text-adan-muted mt-1">El director de arte propone 4 conceptos distintos (ícono, monograma, emblema y solo texto) con psicología del color y contraste para leer. Elige uno: queda como identidad de tu empresa en ADÁN y en las oficinas.</p>
+            <p className="text-sm text-adan-muted mt-1">El director de arte propone 4 conceptos distintos (ícono, monograma, emblema y solo texto) con psicología del color y contraste para leer. Elige uno: queda como identidad de tu empresa en ADAN y en las oficinas.</p>
             <div className="mt-3 rounded-xl border border-adan-border bg-adan-bg p-3" data-testid="logo-propio">
               <p className="text-sm font-semibold">¿Tu empresa ya tiene logo?</p>
               <p className="text-xs text-adan-muted">Súbelo o pega la dirección de la imagen en tu web: lo adopto tal cual y saco tu paleta de colores.</p>

@@ -11,15 +11,15 @@ Aprobador: Hernán / Junta Directiva
 
 # AD-004 — Product Evolution
 
-> Este documento no es un roadmap. No enumera versiones, fechas ni funcionalidades futuras — eso pertenece a la ejecución, no a la especificación. Responde una sola pregunta: **¿cómo puede evolucionar ADÁN durante los próximos veinticinco años sin perder la identidad que AD-001 y AD-002 ya fijaron como inviolable?** Todo lo que sigue son reglas de cambio, no un plan de cambios.
+> Este documento no es un roadmap. No enumera versiones, fechas ni funcionalidades futuras — eso pertenece a la ejecución, no a la especificación. Responde una sola pregunta: **¿cómo puede evolucionar ADAN durante los próximos veinticinco años sin perder la identidad que AD-001 y AD-002 ya fijaron como inviolable?** Todo lo que sigue son reglas de cambio, no un plan de cambios.
 
-**Nivel de contenido:** mixto. Las reglas de esta sección son Principio Permanente — deberían regir la evolución de ADÁN sin importar qué versión, qué equipo o qué tecnología esté vigente. Los umbrales numéricos específicos usados como ejemplo (cuántos casos de uso, cuántos documentos) son Decisión de Diseño — se calibran con la experiencia real del producto, sin que eso comprometa la regla que ilustran.
+**Nivel de contenido:** mixto. Las reglas de esta sección son Principio Permanente — deberían regir la evolución de ADAN sin importar qué versión, qué equipo o qué tecnología esté vigente. Los umbrales numéricos específicos usados como ejemplo (cuántos casos de uso, cuántos documentos) son Decisión de Diseño — se calibran con la experiencia real del producto, sin que eso comprometa la regla que ilustran.
 
 ---
 
 ## Respuesta directa a la pregunta central
 
-ADÁN evoluciona **añadiendo alcance dentro de los límites que ya son inviolables, nunca renegociando esos límites**. Todo lo declarado en AD-001 §12 (los seis principios inviolables), en AD-001 §1.1 (qué jamás intentará convertirse), en las diez reglas de AD-002, y en los nueve Meta-Principios de Ingeniería, permanece fijo durante los veinticinco años de esta visión. Lo que cambia —funcionalidades, niveles de detalle, motores técnicos, mecánicas de experiencia— cambia *dentro* de ese marco. El día en que un cambio propuesto solo pueda justificarse rompiendo uno de esos límites, ese cambio no es evolución: es una ruptura de identidad, y este documento no la autoriza — solo el Board, mediante una nueva versión de AD-001, podría hacerlo.
+ADAN evoluciona **añadiendo alcance dentro de los límites que ya son inviolables, nunca renegociando esos límites**. Todo lo declarado en AD-001 §12 (los seis principios inviolables), en AD-001 §1.1 (qué jamás intentará convertirse), en las diez reglas de AD-002, y en los nueve Meta-Principios de Ingeniería, permanece fijo durante los veinticinco años de esta visión. Lo que cambia —funcionalidades, niveles de detalle, motores técnicos, mecánicas de experiencia— cambia *dentro* de ese marco. El día en que un cambio propuesto solo pueda justificarse rompiendo uno de esos límites, ese cambio no es evolución: es una ruptura de identidad, y este documento no la autoriza — solo el Board, mediante una nueva versión de AD-001, podría hacerlo.
 
 ---
 
@@ -37,10 +37,10 @@ Categorías explícitas de Decisión de Diseño, sujetas a evolución sin necesi
 
 ## 2. Qué nunca podrá cambiar
 
-Esta sección no redefine nada — únicamente consolida, por referencia, todo lo que ya es inviolable en otros documentos, para que quien lea AD-004 tenga en un solo lugar la lista completa de lo que la evolución de ADÁN no puede tocar:
+Esta sección no redefine nada — únicamente consolida, por referencia, todo lo que ya es inviolable en otros documentos, para que quien lea AD-004 tenga en un solo lugar la lista completa de lo que la evolución de ADAN no puede tocar:
 
 - Los seis principios inviolables de AD-001 §12 (evidencia obligatoria, aprobación explícita del cliente, razonamiento disponible, Gemelo Digital permanente, límites de ecosistema y categoría, Humildad Intelectual).
-- Las ocho categorías que ADÁN jamás intentará convertirse, AD-001 §1.1 (ERP, CRM, sistema contable, IDE, herramienta de diseño primaria, motor de búsqueda, red social, plataforma de pagos genérica).
+- Las ocho categorías que ADAN jamás intentará convertirse, AD-001 §1.1 (ERP, CRM, sistema contable, IDE, herramienta de diseño primaria, motor de búsqueda, red social, plataforma de pagos genérica).
 - Las diez reglas de sistema de AD-002 v2.0.
 - Los nueve Meta-Principios de Ingeniería de este anexo.
 - La Declaración de Misión de AD-001 (diseñar, validar, construir, operar, transformar, escalar) — puede *ampliarse* en cómo se ejecuta, nunca *reducirse* de vuelta a solo "crear empresas".
@@ -51,7 +51,7 @@ Ninguna Funcionalidad (categoría AD-FUNC, AD-003 §2) se incorpora al producto 
 
 1. **Evidencia del problema.** Debe existir un problema real, demostrado con casos de uso concretos o solicitudes documentadas de clientes reales — no una intuición del equipo de producto (Meta-Principio 2).
 2. **Prueba de no-redundancia.** Debe demostrarse que el problema no puede resolverse combinando Funcionalidades y Comportamientos ya existentes (Economía Conceptual, AD-002 §1.10).
-3. **Verificación contra AD-001 §1.1.** Debe explicitarse contra cuál de las ocho categorías excluidas podría estar rozando la propuesta, y justificar por qué no cruza la línea. Si cruza, no se construye dentro de ADÁN — se orquesta hacia el componente del ecosistema correspondiente (AD-000 §4).
+3. **Verificación contra AD-001 §1.1.** Debe explicitarse contra cuál de las ocho categorías excluidas podría estar rozando la propuesta, y justificar por qué no cruza la línea. Si cruza, no se construye dentro de ADAN — se orquesta hacia el componente del ecosistema correspondiente (AD-000 §4).
 4. **Checklist de Justificación de Diseño** (AD-002 §2) — las siete dimensiones, respondidas.
 5. **Registro como Decisión** — con Justificación, Alternativas evaluadas y Motivo de descarte de cada alternativa (v3.1 §1), antes de que exista una sola línea del documento AD-FUNC correspondiente.
 
@@ -59,21 +59,21 @@ Una Funcionalidad que no puede superar el paso 1 no nace. Una que no puede super
 
 ## 4. Cuándo una Funcionalidad se convierte en un producto independiente
 
-Una Funcionalidad se gradúa fuera de ADÁN, hacia el Ecosistema Paradixe como componente propio, cuando se cumplen las tres condiciones a la vez:
+Una Funcionalidad se gradúa fuera de ADAN, hacia el Ecosistema Paradixe como componente propio, cuando se cumplen las tres condiciones a la vez:
 
-- Su valor es útil **fuera** del contexto de acompañar a una empresa a través de los Niveles de ADÁN — alguien pagaría por ella de forma independiente.
+- Su valor es útil **fuera** del contexto de acompañar a una empresa a través de los Niveles de ADAN — alguien pagaría por ella de forma independiente.
 - Tiene un ciclo de vida de usuario propio, distinto del recorrido de los Niveles.
-- Extraerla **reduce** la complejidad interna de ADÁN sin reducir el valor que ofrece (Meta-Principio 3 y 5 aplicados en sentido inverso: a veces la respuesta correcta a demasiada complejidad no es dejar de construir algo, sino separarlo).
+- Extraerla **reduce** la complejidad interna de ADAN sin reducir el valor que ofrece (Meta-Principio 3 y 5 aplicados en sentido inverso: a veces la respuesta correcta a demasiada complejidad no es dejar de construir algo, sino separarlo).
 
-**Ejemplo ilustrativo, no un compromiso de roadmap:** si Gamification Engine (AD-FUNC-04) creciera hasta el punto de que EVA o ATO también quisieran usarlo para sus propios usuarios, esa demanda cruzada es la señal de que debería graduarse a componente compartido del ecosistema, en vez de seguir viviendo exclusivamente dentro de ADÁN.
+**Ejemplo ilustrativo, no un compromiso de roadmap:** si Gamification Engine (AD-FUNC-04) creciera hasta el punto de que EVA o ATO también quisieran usarlo para sus propios usuarios, esa demanda cruzada es la señal de que debería graduarse a componente compartido del ecosistema, en vez de seguir viviendo exclusivamente dentro de ADAN.
 
 La graduación de una Funcionalidad a producto independiente es, en sí misma, una Decisión irreversible o de muy alto costo de reversión — requiere, por el Meta-Principio 8, un nivel de evidencia superior al de una Decisión ordinaria, y pasa necesariamente por el mismo comité que aprueba decisiones estructurales de ecosistema, no solo por el flujo normal de un AD-FUNC.
 
 ## 5. Cuándo un producto pasa a formar parte del ecosistema
 
-En sentido inverso: un componente externo (adquirido, incubado, o construido por Paradixe fuera de ADÁN) se incorpora al Ecosistema Paradixe solo si cumple los Principios de Interoperabilidad ya fijados en AD-000 §4 — en particular, No Duplicación de Capacidad (no puede reconstruir algo que ya resuelve otro componente existente) y Contrato Explícito (debe integrarse mediante API versionada, nunca acceso directo a datos de otro componente).
+En sentido inverso: un componente externo (adquirido, incubado, o construido por Paradixe fuera de ADAN) se incorpora al Ecosistema Paradixe solo si cumple los Principios de Interoperabilidad ya fijados en AD-000 §4 — en particular, No Duplicación de Capacidad (no puede reconstruir algo que ya resuelve otro componente existente) y Contrato Explícito (debe integrarse mediante API versionada, nunca acceso directo a datos de otro componente).
 
-Esta decisión, a diferencia de las anteriores, **no le corresponde a AD-004 ni a ningún documento de la especificación de ADÁN** — le corresponde a la autoridad de todo el ecosistema, hoy sin documento propio (la futura Constitución de Paradixe, AD-000 §7). AD-004 solo fija las condiciones que ADÁN, como componente ya existente del ecosistema, exige de cualquier nuevo par antes de aceptar interoperar con él.
+Esta decisión, a diferencia de las anteriores, **no le corresponde a AD-004 ni a ningún documento de la especificación de ADAN** — le corresponde a la autoridad de todo el ecosistema, hoy sin documento propio (la futura Constitución de Paradixe, AD-000 §7). AD-004 solo fija las condiciones que ADAN, como componente ya existente del ecosistema, exige de cualquier nuevo par antes de aceptar interoperar con él.
 
 ## 6. Cómo se controla el crecimiento del dominio
 
@@ -85,7 +85,7 @@ El control no es discrecional — son tres mecanismos ya existentes, aplicados d
 
 ## 7. Cómo se evita el feature creep
 
-La defensa principal ya existe y no es nueva en este documento — es la combinación de AD-001 §1.1 (qué NO es ADÁN) con la secuencia de nacimiento de la sección 3. El feature creep ocurre cuando una funcionalidad se construye porque "sería útil" sin pasar por ese filtro. AD-004 agrega una sola regla operativa nueva: **toda propuesta de Funcionalidad que no pueda completar los cinco pasos de la sección 3 en un plazo razonable no se pospone indefinidamente en un estado ambiguo — se rechaza formalmente y se registra como Decisión descartada**, para que no reaparezca sin evidencia nueva seis meses después bajo otro nombre.
+La defensa principal ya existe y no es nueva en este documento — es la combinación de AD-001 §1.1 (qué NO es ADAN) con la secuencia de nacimiento de la sección 3. El feature creep ocurre cuando una funcionalidad se construye porque "sería útil" sin pasar por ese filtro. AD-004 agrega una sola regla operativa nueva: **toda propuesta de Funcionalidad que no pueda completar los cinco pasos de la sección 3 en un plazo razonable no se pospone indefinidamente en un estado ambiguo — se rechaza formalmente y se registra como Decisión descartada**, para que no reaparezca sin evidencia nueva seis meses después bajo otro nombre.
 
 ## 8. Cómo se preserva la coherencia del ecosistema a largo plazo
 
@@ -134,6 +134,6 @@ Ninguna nueva al cierre de esta versión — las de AD-000 (relaciones entre par
 
 | Versión | Fecha | Cambio | Motivo |
 |---|---|---|---|
-| v1.0 | 2026-07-14 | Creación inicial: reglas de evolución de ADÁN a 25 años — qué puede/no puede cambiar, nacimiento y graduación de Funcionalidades, incorporación de componentes al ecosistema, control de crecimiento del dominio, prevención de feature creep, y mecanismo nuevo de Revisión Periódica de Coherencia | Quinto documento de la WO-000, primero redactado bajo el Anexo de Meta-Principios de Ingeniería recién aprobado |
+| v1.0 | 2026-07-14 | Creación inicial: reglas de evolución de ADAN a 25 años — qué puede/no puede cambiar, nacimiento y graduación de Funcionalidades, incorporación de componentes al ecosistema, control de crecimiento del dominio, prevención de feature creep, y mecanismo nuevo de Revisión Periódica de Coherencia | Quinto documento de la WO-000, primero redactado bajo el Anexo de Meta-Principios de Ingeniería recién aprobado |
 | v1.0 — Aprobada | 2026-07-14 | Aprobación formal del Board, sin cambios de contenido. Se congela. Cierra el núcleo filosófico de la WO-000 (AD-001, AD-002, AD-004) — a partir de aquí la especificación pasa a modelar el dominio real, comenzando con un Enterprise Taxonomy Workshop previo a AD-005 | Cierre del ciclo de revisión de AD-004 |
 | — | 2026-07-14 | **Superseded por v1.1** el mismo día: se agrega un sexto criterio de existencia a la secuencia de nacimiento de Funcionalidades (sección 3) — ninguna existe si no modifica el Gemelo Digital, mejora el conocimiento del cliente, o produce evidencia útil para la siguiente decisión | Instrucción directa del Board al iniciar la categoría AD-FUNC, para evitar funcionalidades decorativas o aisladas |

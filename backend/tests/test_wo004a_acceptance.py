@@ -2,7 +2,7 @@
 WO-004A — Enterprise Memory Acceptance Test
 
 Solo validar. No modificar código.
-Demuestra que ADÁN aprende, recuerda, detecta contradicciones,
+Demuestra que ADAN aprende, recuerda, detecta contradicciones,
 conserva versiones e incorpora correcciones humanas.
 """
 
@@ -360,7 +360,7 @@ class TestWO004Acceptance:
         print("\n" + "=" * 70)
         if len(errors) == 0:
             print("WO-004A — APROBADA")
-            print("ADÁN aprende, recuerda, detecta contradicciones,")
+            print("ADAN aprende, recuerda, detecta contradicciones,")
             print("conserva versiones e incorpora correcciones humanas.")
         else:
             print("WO-004A — RECHAZADA")

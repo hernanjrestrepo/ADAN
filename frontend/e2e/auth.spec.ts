@@ -36,7 +36,7 @@ test('registro, sesión y cierre de sesión', async ({ page }) => {
   await expect(page).toHaveURL(/\/bienvenida$/)
   expect(api.callsTo('POST', '/auth/register')[0]?.body).toMatchObject({ accept_data_policy: true, share_aggregated: false })
   await expect(page.getByRole('banner').getByText(USER.name)).toBeVisible()
-  await expect(page.getByText(/ADÁN es una inteligencia artificial/)).toBeVisible()
+  await expect(page.getByText(/ADAN es una inteligencia artificial/)).toBeVisible()
   // El token no se guarda en el navegador: la sesión es la cookie httpOnly del backend
   expect(await page.evaluate(() => localStorage.length)).toBe(0)
 
@@ -56,4 +56,16 @@ test('toda petición lleva la cabecera anti-CSRF', async ({ page }) => {
   await expect(page).toHaveURL(/\/bienvenida$/)
   expect(api.calls.length).toBeGreaterThan(0)
   for (const call of api.calls) expect(call.headers['x-requested-with']).toBe('adan')
+})
+
+test('el logo de Paradixe está abajo a la derecha y abre su sitio', async ({ page }) => {
+  await new FakeApi().install(page)
+  await page.goto('/login')
+  const badge = page.getByTestId('paradixe-badge')
+  await expect(badge).toHaveAttribute('href', 'https://www.paradixe.xyz/es/')
+  await expect(badge).toHaveAttribute('target', '_blank')
+  const box = await badge.boundingBox()
+  const view = page.viewportSize()!
+  expect(box!.x + box!.width).toBeGreaterThan(view.width - 40)
+  expect(box!.y + box!.height).toBeGreaterThan(view.height - 40)
 })

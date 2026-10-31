@@ -23,7 +23,7 @@ export default function ReportModal() {
           <button type="button" onClick={() => window.print()} className="rounded-xl bg-white/10 px-3 py-1.5 text-xs font-semibold hover:bg-white/20">🖨️ Imprimir / PDF</button>
           <button type="button" onClick={() => close(null)} aria-label="Cerrar" className="rounded-xl bg-white/10 px-3 py-1.5 text-xs hover:bg-white/20">✕</button>
         </div>
-        <p className="text-[11px] font-semibold tracking-[0.3em] text-violet-300">ADÁN · NIVEL {level.number} · {level.name.toUpperCase()}</p>
+        <p className="text-[11px] font-semibold tracking-[0.3em] text-violet-300">ADAN · NIVEL {level.number} · {level.name.toUpperCase()}</p>
         <h2 className="mt-2 text-3xl font-bold">{report.title}</h2>
         <p className="text-slate-400">{report.subtitle}</p>
         <div className="mt-3 flex flex-wrap gap-2 text-[11px]">
@@ -64,7 +64,7 @@ export default function ReportModal() {
           })}
         </div>
         <p className="mt-6 text-[11px] text-slate-500">
-          ADÁN es una inteligencia artificial. Sus análisis no reemplazan la asesoría profesional (legal, tributaria, financiera u otra),
+          ADAN es una inteligencia artificial. Sus análisis no reemplazan la asesoría profesional (legal, tributaria, financiera u otra),
           y Paradixe no responde por las decisiones que se tomen con base en ellos.
         </p>
       </article>

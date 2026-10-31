@@ -1,4 +1,4 @@
-"""Guion del Descubrimiento del Dolor: ADÁN entiende cada respuesta, sigue un orden y no repite."""
+"""Guion del Descubrimiento del Dolor: ADAN entiende cada respuesta, sigue un orden y no repite."""
 import json
 
 from app.ai.base import LLMAdapter, LLMResponse
@@ -133,7 +133,7 @@ def test_streaming_prompt_asks_only_for_the_reply():
 
 
 # ============================================================
-# Board Room: evalúa lo que ADÁN entendió, no la charla cruda
+# Board Room: evalúa lo que ADAN entendió, no la charla cruda
 # ============================================================
 
 class BoardLLM(ScriptLLM):

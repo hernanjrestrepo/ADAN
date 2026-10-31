@@ -1,10 +1,10 @@
-"""Carga Xmart Travel en ADÁN desde las respuestas de Hernán (2026-10-02).
+"""Carga Xmart Travel en ADAN desde las respuestas de Hernán (2026-10-02).
 
 Regla de honestidad (AD-CMP-05): solo lo marcado [Sé] entra como dato; los [Supuesto] quedan
 como hipótesis en el texto (nunca como evidencia), y lo [Solo Hernán] queda listado como pendiente.
 No hay entrevistas con clientes: el Gate del Nivel 1 debe decir, con razón, que falta evidencia.
 
-Uso (con ADÁN corriendo, p. ej. `docker compose up`):
+Uso (con ADAN corriendo, p. ej. `docker compose up`):
     python scripts/seed_xmart_travel.py --base http://localhost:5174 \
         --email tu@correo.com --name "Hernán Restrepo" --password '...'
 Crea la cuenta si no existe (aceptando la política de datos) o entra con ella.
@@ -110,7 +110,7 @@ def main() -> None:
     ap.add_argument("--email", required=True)
     ap.add_argument("--name", default="Hernán Restrepo")
     ap.add_argument("--password", required=True)
-    ap.add_argument("--no-chat", action="store_true", help="no enviar el primer mensaje a ADÁN (no usa el modelo)")
+    ap.add_argument("--no-chat", action="store_true", help="no enviar el primer mensaje a ADAN (no usa el modelo)")
     args = ap.parse_args()
     api = Api(args.base)
 
@@ -162,7 +162,7 @@ def main() -> None:
 
     if not args.no_chat:
         reply = must(api.call("POST", f"/nivel1/{cid}/chat", {"message": FIRST_MESSAGE}), "primer mensaje")
-        print("\nADÁN responde:\n" + reply["message"]["content"])
+        print("\nADAN responde:\n" + reply["message"]["content"])
     print(f"\nListo: entra a {args.base.rstrip('/')}/nivel1/{cid}")
 
 

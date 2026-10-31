@@ -33,7 +33,7 @@ def _project(db: Session, company_id: str, user: User):
 
 def _context(db: Session, project: Project, company, llm) -> str:
     brief = Nivel1Service(llm, db).board_brief(project)
-    return company_context(db, project, company) + (f"\n\nLo que ADÁN sabe del dolor y la evidencia:\n{brief[:5000]}" if brief else "")
+    return company_context(db, project, company) + (f"\n\nLo que ADAN sabe del dolor y la evidencia:\n{brief[:5000]}" if brief else "")
 
 
 def _got(data, what: str):

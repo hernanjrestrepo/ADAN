@@ -195,7 +195,7 @@ curl -X POST http://localhost:8050/api/v1/nivel1/{id}/gate-review
 
 **WO-001 está CERRADA al 90%.**
 
-El Nivel 1 de ADÁN funciona completamente de extremo a extremo:
+El Nivel 1 de ADAN funciona completamente de extremo a extremo:
 - docker compose up → sistema arranca
 - Registro → JWT auth
 - Crear empresa → persistencia

@@ -1,4 +1,4 @@
-# TECH_DEBT — Deuda Técnica ADÁN Nivel 1
+# TECH_DEBT — Deuda Técnica ADAN Nivel 1
 
 **Fecha de Registro:** 2026-07-24  
 **WO de Origen:** WO-001 (Cerrada)  

@@ -186,7 +186,7 @@ def responsible_score(decided: int, executed: int, divergent_documented: int, le
     items = [EvidenceItem(TESTIMONY)] * decided + [EvidenceItem(EXTERNAL)] * (executed + levels_completed)
     result = score_dimension("responsible", items)
     if decided == 0:
-        result.reasoning = "Score del Responsable: todavía no hay decisiones tomadas en ADÁN."
+        result.reasoning = "Score del Responsable: todavía no hay decisiones tomadas en ADAN."
     else:
         result.reasoning = (f"Score del Responsable: {decided} decisiones tomadas, {executed} ejecutadas, "
                             f"{levels_completed} Niveles cerrados; {divergent_documented} decisiones distintas "

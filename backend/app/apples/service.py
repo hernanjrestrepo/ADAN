@@ -54,7 +54,7 @@ def ensure_profile(db: Session, user: User, sponsor_code: str | None = None) -> 
     db.add(prof)
     db.flush()
     if prof.sponsor_id and settings.APPLES_WELCOME_REFERRAL > 0:
-        # Regalo a quien llega invitado (no a quien invita: inscribir no paga), solo para usar en ADÁN
+        # Regalo a quien llega invitado (no a quien invita: inscribir no paga), solo para usar en ADAN
         _move(db, user.id, "bienvenida", settings.APPLES_WELCOME_REFERRAL, f"bienvenida:{user.id}",
               "Regalo de bienvenida por llegar con un enlace de invitación")
     return prof

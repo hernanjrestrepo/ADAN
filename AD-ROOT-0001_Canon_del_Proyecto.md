@@ -1,10 +1,10 @@
-# AD-ROOT-0001 — Canon del Proyecto ADÁN
+# AD-ROOT-0001 — Canon del Proyecto ADAN
 
 **Fecha de redacción:** 2026-07-31
-**Estado:** ✅ VIGENTE — 2026-07-31, por Hernán (CTO ADÁN), en cumplimiento de `AD-DEC-0001 §5`.
+**Estado:** ✅ VIGENTE — 2026-07-31, por Hernán (CTO ADAN), en cumplimiento de `AD-DEC-0001 §5`.
 **Actualizado:** 2026-09-24 — repositorio y rama oficiales (§1, §2), WO-094 (§4) y ubicación de las líneas (§6), por decisión de Hernán; documentación canónica (§5) y `.claude/launch.json` en WO-096. Ver historial al final.
-**Deriva de:** `AD-DEC-0001` (Historia Oficial de ADÁN) — la línea oficial decidida es Build C.
-**Propósito:** este es el documento que un agente o desarrollador nuevo debe leer antes de escribir una sola línea de código para ADÁN — sin tener que reconstruir la genealogía por auditoría forense, como fue necesario esta vez (Regla 1 de `AD-GOV-0001`).
+**Deriva de:** `AD-DEC-0001` (Historia Oficial de ADAN) — la línea oficial decidida es Build C.
+**Propósito:** este es el documento que un agente o desarrollador nuevo debe leer antes de escribir una sola línea de código para ADAN — sin tener que reconstruir la genealogía por auditoría forense, como fue necesario esta vez (Regla 1 de `AD-GOV-0001`).
 
 ---
 
@@ -37,7 +37,7 @@ Event Bus · EMS · TEF · Board · DKA · OOS · Voice
 
 ```
 WO-000 → WO-009   histórico (blueprint + intentos de implementación previos)
-WO-090            Consolidación Oficial de ADÁN Enterprise (congelación de Build C, ex "WO-100")
+WO-090            Consolidación Oficial de ADAN Enterprise (congelación de Build C, ex "WO-100")
 WO-091            Migración Enterprise — PostgreSQL + pgvector (ex "WO-101")
 WO-092            TypeScript (ex "WO-102")
 WO-093            Producción Enterprise — CI/CD, observabilidad, seguridad (ex "WO-103")
@@ -61,7 +61,7 @@ WO-101 → WO-106   RESERVADO — cadena SaaS (multi-tenant, billing, administra
 
 **Actualización 2026-09-24 sobre WO-090:** el código de Build C quedó versionado por primera vez (commit `abc6b6c`, hecho por Hernán desde la laptop) y publicado en `main` de `hernanjrestrepo/ADAN`. Siguen pendientes el tag de baseline y la revisión humana previa al cierre (EPWO-053). WO-090 no se declara cerrada aquí: su cierre lo decide Hernán.
 
-**WO-090 — Consolidación Oficial de ADÁN Enterprise: ABIERTA el 2026-07-31** (renumerada de "WO-100" tras detectar colisión con la reserva preexistente de Business Architecture — ver nota arriba), autorizada por Hernán (CTO). Alcance: congelar Build C como baseline oficial, catalogar WOs existentes y mapearlas a este esquema, generar inventario técnico y `BASELINE_ENTERPRISE_v1.md`. Explícitamente prohibido en su alcance: agregar features, refactorizar masivamente, migrar de base de datos, cambiar de lenguaje, modificar la arquitectura funcional. Ningún commit de congelación (rama/tag) se ejecuta hasta que los 4 entregables de WO-090 estén revisados y aprobados. Ver `REPORTE_CONSOLIDACION_WO090.md` para el resultado.
+**WO-090 — Consolidación Oficial de ADAN Enterprise: ABIERTA el 2026-07-31** (renumerada de "WO-100" tras detectar colisión con la reserva preexistente de Business Architecture — ver nota arriba), autorizada por Hernán (CTO). Alcance: congelar Build C como baseline oficial, catalogar WOs existentes y mapearlas a este esquema, generar inventario técnico y `BASELINE_ENTERPRISE_v1.md`. Explícitamente prohibido en su alcance: agregar features, refactorizar masivamente, migrar de base de datos, cambiar de lenguaje, modificar la arquitectura funcional. Ningún commit de congelación (rama/tag) se ejecuta hasta que los 4 entregables de WO-090 estén revisados y aprobados. Ver `REPORTE_CONSOLIDACION_WO090.md` para el resultado.
 
 ## 5. Documentación canónica
 
@@ -75,7 +75,7 @@ WO-101 → WO-106   RESERVADO — cadena SaaS (multi-tenant, billing, administra
 
 ✅
 - **Build A** (`adan-platform/`) → **Archivo histórico.** Sin más desarrollo. Desde el 2026-09-24 vive en `adan-platform/` de este repositorio, con su historial completo. Su `docs/blueprint/` tenía la versión más completa del blueprint (AD-003 v1.2, AD-006 v1.2, AD-FUNC-07/08/09); desde WO-096 esas versiones están también en `docs/wo-000/`. Lo que se puede reutilizar de su código está en `docs/wo/WO-096_MAPA_REUTILIZACION.md`.
-- **Build B** (rama `adan/platform-integration`) → **Referencia técnica.** Se preserva como repositorio de reutilización (PostgreSQL, pgvector, arquitectura enterprise, implementaciones ya probadas). No compite con Build C ni recibe desarrollo bajo el rol de línea oficial. *Pendiente (aprobado 2026-09-24):* importarlo a este repositorio desde el monorepo local, solo la carpeta de ADÁN y con su historial.
+- **Build B** (rama `adan/platform-integration`) → **Referencia técnica.** Se preserva como repositorio de reutilización (PostgreSQL, pgvector, arquitectura enterprise, implementaciones ya probadas). No compite con Build C ni recibe desarrollo bajo el rol de línea oficial. *Pendiente (aprobado 2026-09-24):* importarlo a este repositorio desde el monorepo local, solo la carpeta de ADAN y con su historial.
 - **Prototipo 2024** (`autonomous/`) → **Histórico.** Lambda de AWS que se clona a sí misma y pipeline CodePipeline/CodeBuild; sin relación de código con A, B o C.
 
 ---

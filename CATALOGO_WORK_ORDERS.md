@@ -1,6 +1,6 @@
-# Catálogo de Work Orders — ADÁN (WO-090, Sprint 2)
+# Catálogo de Work Orders — ADAN (WO-090, Sprint 2)
 
-**Fecha:** 2026-07-31 · **Parte de:** WO-090 — Consolidación Oficial de ADÁN Enterprise
+**Fecha:** 2026-07-31 · **Parte de:** WO-090 — Consolidación Oficial de ADAN Enterprise
 **Método:** cada fila proviene de evidencia directa (commit, tag, comentario `# WO-0XX` en código, o sección de documento) — donde no hay evidencia directa, se marca explícitamente en vez de inferir el tema.
 
 ---
@@ -53,7 +53,7 @@ Build A/B y Build C usan el rango **WO-001 a WO-012 dos veces, para cosas distin
 
 | WO | Tema | Estado |
 |---|---|---|
-| WO-090 | Consolidación Oficial de ADÁN Enterprise (esta WO) | Abierta: faltan el tag de baseline y la revisión humana (`AD-ROOT-0001 §4`) |
+| WO-090 | Consolidación Oficial de ADAN Enterprise (esta WO) | Abierta: faltan el tag de baseline y la revisión humana (`AD-ROOT-0001 §4`) |
 | WO-091 | Migración Enterprise — PostgreSQL + pgvector | ✅ `docs/wo/WO-091_REPORTE.md` |
 | WO-092 | TypeScript | ✅ `docs/wo/WO-092_REPORTE.md` |
 | WO-093 | Producción Enterprise — CI/CD, observabilidad, seguridad (alcance de "multiempresa" con solapamiento sin resolver contra WO-101-106, ver `AD-ROOT-0001 §4`) | ✅ `docs/wo/WO-093_REPORTE.md` |

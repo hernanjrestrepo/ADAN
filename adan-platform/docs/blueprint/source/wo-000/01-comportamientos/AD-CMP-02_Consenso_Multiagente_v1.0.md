@@ -22,7 +22,7 @@ Aprobador: Hernán / Junta Directiva (validación en el próximo Gate Review)
 Cuando más de un Agente participa en analizar una pregunta o generar una recomendación, el procedimiento es:
 
 1. **Cada Agente involucrado produce su análisis de forma independiente**, dentro de su especialidad declarada (AD-003, entidad Agente).
-2. **Se identifica el nivel de acuerdo entre los análisis.** Si coinciden en la sustancia (aunque difieran en fraseo), se sintetiza una sola respuesta sin exponer el proceso interno — el usuario recibe una respuesta de ADÁN, no cinco de sus Agentes.
+2. **Se identifica el nivel de acuerdo entre los análisis.** Si coinciden en la sustancia (aunque difieran en fraseo), se sintetiza una sola respuesta sin exponer el proceso interno — el usuario recibe una respuesta de ADAN, no cinco de sus Agentes.
 3. **Si hay discrepancia material** (dos Agentes llegan a recomendaciones opuestas o a evidencia contradictoria), no se promedia ni se elige arbitrariamente una — se activa el procedimiento de la sección 2.
 
 ## 2. Resolución de discrepancias materiales

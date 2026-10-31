@@ -24,7 +24,7 @@ def create_company(
 ):
     # Nace el Gemelo: Empresa, Narrativa Fundacional, Proyecto, Workspace y 7 Niveles (AD-CMP-06 §1)
     company = lifecycle.birth(db, user, body.name, body.description, body.industry, body.country)
-    # ADÁN hace la primera pregunta real del Nivel 1 sin esperar a que el cliente escriba (AD-FUNC-06)
+    # ADAN hace la primera pregunta real del Nivel 1 sin esperar a que el cliente escriba (AD-FUNC-06)
     seed_first_question(db, user, company)
     db.commit()
     db.refresh(company)
@@ -48,7 +48,7 @@ class BrandBody(BaseModel):
 
 @router.put("/{company_id}/marca", response_model=CompanyResponse)
 def set_brand(company_id: str, body: BrandBody, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
-    """La identidad visual de la empresa: colores y logo que el entorno de ADÁN usa al trabajar en ella."""
+    """La identidad visual de la empresa: colores y logo que el entorno de ADAN usa al trabajar en ella."""
     company = get_owned_company(db, company_id, user)
     if body.logo and not body.logo.startswith(("data:image/png;base64,", "data:image/jpeg;base64,",
                                                "data:image/webp;base64,", "data:image/svg+xml;base64,")):

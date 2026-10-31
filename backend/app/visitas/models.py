@@ -1,4 +1,4 @@
-"""Visitas a ADÁN: cada página que se abre, para el mapa y las cifras de la consola (como en Xmart Travel).
+"""Visitas a ADAN: cada página que se abre, para el mapa y las cifras de la consola (como en Xmart Travel).
 
 Sin datos personales: el país lo pone Cloudflare (CF-IPCountry) y el visitante es un resumen (hash) de la IP y el
 navegador que cambia cada día, así que no se puede seguir a nadie de un día a otro.

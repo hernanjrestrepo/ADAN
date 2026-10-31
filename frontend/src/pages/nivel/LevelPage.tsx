@@ -83,7 +83,7 @@ export default function LevelPage() {
     try {
       const data = await api.chatLevel(nivel, companyId, text)
       await afterReply(data.message)
-      // El fundador dijo que sí al cierre que propuso ADÁN: subimos al siguiente piso
+      // El fundador dijo que sí al cierre que propuso ADAN: subimos al siguiente piso
       if (data.closed?.next) window.setTimeout(() => navigate(`/nivel/${data.closed!.next}/${companyId}`), 3500)
     } catch (err) {
       setError(errorMessage(err))

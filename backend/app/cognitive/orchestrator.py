@@ -1,5 +1,5 @@
 """
-Cognitive Orchestrator — Orquestador del cerebro cognitivo de ADÁN.
+Cognitive Orchestrator — Orquestador del cerebro cognitivo de ADAN.
 
 Coordina todos los componentes del sistema cognitivo en un flujo
 end-to-end: usuario → memoria → conocimiento → plan → ejecución → respuesta.
@@ -423,7 +423,7 @@ class CognitiveOrchestrator:
         company_id: str,
     ) -> str:
         """Genera respuesta usando LLM con contexto completo."""
-        system_prompt = """Eres ADÁN, un Sistema Operativo Empresarial con inteligencia artificial.
+        system_prompt = """Eres ADAN, un Sistema Operativo Empresarial con inteligencia artificial.
 Tu trabajo es analizar empresas y provide insights accionables.
 
 REGLAS:
@@ -521,7 +521,7 @@ REGLAS:
                     card = Card(
                         project_id=project.id,
                         level_id=level.id,
-                        title="Conversación con ADÁN",
+                        title="Conversación con ADAN",
                         card_type="cognitive",
                         status=CardStatus.ACTIVE,
                     )

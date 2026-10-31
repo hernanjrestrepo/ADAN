@@ -1,4 +1,4 @@
-"""Comunidad ADÁN: perfiles, vitrina de empresas con Sello ADÁN, conexiones y Selecciones Paradixe."""
+"""Comunidad ADAN: perfiles, vitrina de empresas con Sello ADAN, conexiones y Selecciones Paradixe."""
 from __future__ import annotations
 
 import json
@@ -31,7 +31,7 @@ def _latest_json(db: Session, project: Project, doc_type: str) -> dict | None:
 
 
 def seal(db: Session, company: Company) -> dict:
-    """El Sello ADÁN: lo que el Gemelo Digital sabe de la empresa, verificable y no editable por ella."""
+    """El Sello ADAN: lo que el Gemelo Digital sabe de la empresa, verificable y no editable por ella."""
     project = db.query(Project).filter(Project.company_id == company.id).first()
     if not project:
         return {}

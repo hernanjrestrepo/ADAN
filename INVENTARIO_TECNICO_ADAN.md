@@ -1,4 +1,4 @@
-# Inventario Técnico — ADÁN Build C (WO-090, Sprint 3)
+# Inventario Técnico — ADAN Build C (WO-090, Sprint 3)
 
 **Fecha:** 2026-07-31 · **Alcance:** `repos-active/adan/{backend,frontend,docs,docker-compose.yml}` (Build C, ahora línea oficial). Generado por análisis estático (grep/AST de nombres) y una consulta directa a la base de datos real — no por ejecución del sistema (eso es Sprint 4).
 

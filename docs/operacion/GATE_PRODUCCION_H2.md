@@ -1,6 +1,6 @@
 # Gate de Producción de la plataforma (hito H2)
 
-**Preparado:** 2026-09-24, por Claude Code, al cerrar WO-093 · **Firma:** Hernán (CTO ADÁN): *pendiente*
+**Preparado:** 2026-09-24, por Claude Code, al cerrar WO-093 · **Firma:** Hernán (CTO ADAN): *pendiente*
 **Referencia:** EPWO-054 (Gate de Producción). El texto de EPWO vive fuera de este repositorio. Esta lista reúne los criterios que el plan (`docs/auditoria/PLAN_WO_ADAN_100.md`) exige a la plataforma y la evidencia de cada uno.
 
 > **Qué certifica este Gate:** que la **plataforma** (H2: WO-091, WO-097, WO-092 y WO-093) se puede operar en producción. **No** certifica el producto: los Niveles 2 a 7, el scoring por evidencia y el modelo de IA de calidad son H3 y H4. El Gate de Producción del producto completo es WO-122.

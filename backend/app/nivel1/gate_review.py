@@ -5,7 +5,7 @@ le pedía incluir esas palabras. Ahora decide solo sobre la evidencia clasificad
 (AD-CMP-05) con la regla del Nivel (app/scoring/engine.py, GATE_RULES):
 
 - Evidencia suficiente → se propone cerrar el Nivel; se cierra solo si el cliente aprueba.
-- Evidencia insuficiente → ADÁN dice exactamente qué falta. El cliente puede avanzar igual,
+- Evidencia insuficiente → ADAN dice exactamente qué falta. El cliente puede avanzar igual,
   bajo su responsabilidad: queda como decisión distinta a la recomendada, con los 6 campos
   de AD-FUNC-02 §2.5 (AD-CMP-01 §3).
 """

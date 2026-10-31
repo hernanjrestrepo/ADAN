@@ -8,7 +8,7 @@ import { api, errorMessage } from '../lib/api'
 import type { AppleNetwork, ApplePrices, ApplePurchase, AppleWallet } from '../types'
 
 // Billetera de @pples: 1 @pple = USD 1. Se compran con dinero real (Wompi) y se gastan en los Niveles y servicios de
-// ADÁN y Paradixe; no se convierten de vuelta en dinero. También la red: 0,5 % por cada uno de 7 niveles hacia arriba.
+// ADAN y Paradixe; no se convierten de vuelta en dinero. También la red: 0,5 % por cada uno de 7 niveles hacia arriba.
 
 const KIND_LABEL: Record<string, string> = {
   compra: '💳 Compra', nivel: '🏁 Nivel', nivel_bono: '🏁 Nivel (regaladas)', referido: '🌳 Red', bienvenida: '🎁 Bienvenida',
@@ -109,7 +109,7 @@ export default function ApplesPage() {
             <Card className="md:col-span-1">
               <p className="text-sm text-adan-muted">Tu saldo</p>
               <p className="mt-1 text-5xl font-black">🍎 {apples(wallet.balance)}</p>
-              <p className="mt-1 text-xs text-adan-muted">@pples · 1 @pple = USD 1 · se gastan dentro de ADÁN y Paradixe</p>
+              <p className="mt-1 text-xs text-adan-muted">@pples · 1 @pple = USD 1 · se gastan dentro de ADAN y Paradixe</p>
               {wallet.provider === 'simulador' && <p className="mt-3 rounded-lg bg-adan-warning/10 p-2 text-xs text-adan-warning">Modo de prueba: los pagos se simulan hasta conectar Wompi.</p>}
             </Card>
             <Card className="md:col-span-2">
@@ -168,7 +168,7 @@ export default function ApplesPage() {
             </div>
             <p className="mt-3 text-xs text-adan-muted">
               Se cotiza aparte: {prices.apart.join(', ').toLowerCase()}. Ejemplo de MVP listo: una landing ~🍎 {prices.mvp_examples.landing?.apples},
-              una app sencilla ~🍎 {prices.mvp_examples.app?.apples}; ADÁN te cotiza antes de construir.
+              una app sencilla ~🍎 {prices.mvp_examples.app?.apples}; ADAN te cotiza antes de construir.
             </p>
           </Card>
 

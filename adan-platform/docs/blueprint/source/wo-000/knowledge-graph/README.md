@@ -1,6 +1,6 @@
 # Knowledge Graph de la WO-000
 
-Propuesta por el Board el 2026-07-14, al aprobar AD-002. No es infraestructura del producto ADÁN — es infraestructura de la propia especificación, para que la coherencia entre 58 documentos y potencialmente más de 2.000 páginas sea verificable mecánicamente, no solo de memoria.
+Propuesta por el Board el 2026-07-14, al aprobar AD-002. No es infraestructura del producto ADAN — es infraestructura de la propia especificación, para que la coherencia entre 58 documentos y potencialmente más de 2.000 páginas sea verificable mecánicamente, no solo de memoria.
 
 ## Qué es `kg.json`
 
@@ -20,7 +20,7 @@ Este archivo se actualiza como parte obligatoria de la autoauditoría previa a l
 3. Agregar un nodo en `principles` si el documento declara una regla permanente nueva.
 4. Agregar los `edges` correspondientes — como mínimo, uno `depends_on` por cada dependencia declarada; adicionalmente, cualquier `awaits_full_spec` que el nuevo documento resuelva (cambiando el nodo de `concepts` correspondiente para que ya no diga `authoritative_owner_status: "pendiente"`).
 
-No existe todavía un motor de consultas sobre este grafo — hoy es un archivo de datos estructurado, pensado para inspección manual o para cargarse con cualquier herramienta que lea JSON. Su propósito inmediato es responder preguntas como *"¿qué documentos dependen del Gemelo Digital?"* leyendo el archivo directamente. Su propósito de largo plazo, señalado por el Board, es alimentar el RAG interno de ADÁN una vez que AD-ARQ-06 (RAG) se construya — este archivo es, en ese sentido, el primer dato de entrenamiento real de esa futura capacidad, no solo una ayuda de mantenimiento de la documentación.
+No existe todavía un motor de consultas sobre este grafo — hoy es un archivo de datos estructurado, pensado para inspección manual o para cargarse con cualquier herramienta que lea JSON. Su propósito inmediato es responder preguntas como *"¿qué documentos dependen del Gemelo Digital?"* leyendo el archivo directamente. Su propósito de largo plazo, señalado por el Board, es alimentar el RAG interno de ADAN una vez que AD-ARQ-06 (RAG) se construya — este archivo es, en ese sentido, el primer dato de entrenamiento real de esa futura capacidad, no solo una ayuda de mantenimiento de la documentación.
 
 ## Estado actual
 

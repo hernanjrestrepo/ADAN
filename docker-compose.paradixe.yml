@@ -1,4 +1,4 @@
-# ADÁN en el servidor de Paradixe (adan.paradixe.xyz), detrás del Caddy que ya atiende los puertos 80 y 443.
+# ADAN en el servidor de Paradixe (adan.paradixe.xyz), detrás del Caddy que ya atiende los puertos 80 y 443.
 #
 #   COMPOSE_OVERRIDE=docker-compose.paradixe.yml scripts/deploy.sh
 #

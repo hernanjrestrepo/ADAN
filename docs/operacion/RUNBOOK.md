@@ -1,6 +1,6 @@
-# Runbook de operación de ADÁN
+# Runbook de operación de ADAN
 
-**Desde:** WO-093 (2026-09-24). **Para:** quien despliega y opera ADÁN en producción.
+**Desde:** WO-093 (2026-09-24). **Para:** quien despliega y opera ADAN en producción.
 
 ---
 

@@ -30,7 +30,7 @@ const ENTITY_LABELS: Record<string, string> = {
   decision: 'Decisión', level: 'Nivel', evidence: 'Evidencia', scores: 'Score',
 }
 
-export const ACTOR_LABELS: Record<string, string> = { user: 'Tú', agent: 'Agente', system: 'ADÁN' }
+export const ACTOR_LABELS: Record<string, string> = { user: 'Tú', agent: 'Agente', system: 'ADAN' }
 
 export function describeEvent(e: TimelineEvent): string {
   const entity = ENTITY_LABELS[e.entity_type] ?? e.entity_type

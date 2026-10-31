@@ -1,5 +1,5 @@
 """
-CEO Agent — Agente ejecutivo principal de ADÁN.
+CEO Agent — Agente ejecutivo principal de ADAN.
 
 Piensa como ejecutivo:
 1. Interpreta el objetivo
@@ -47,7 +47,7 @@ class ExecutiveReasoning:
     missing_info_summary: str = ""
 
 
-CEO_SYSTEM_PROMPT = """Eres el CEO Agent de ADÁN, un Sistema Operativo Empresarial con inteligencia artificial.
+CEO_SYSTEM_PROMPT = """Eres el CEO Agent de ADAN, un Sistema Operativo Empresarial con inteligencia artificial.
 
 Tu rol es pensar como un CEO ejecutivo. No respondes inmediatamente. Primero analizas, luego decides.
 

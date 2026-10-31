@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test'
 import { FakeApi } from './fakeApi'
 
-test('sin empresas, el onboarding hace una sola pregunta y lleva a la primera pregunta de ADÁN', async ({ page }) => {
+test('sin empresas, el onboarding hace una sola pregunta y lleva a la primera pregunta de ADAN', async ({ page }) => {
   const api = new FakeApi()
   api.loggedIn = true
   await api.install(page)
@@ -13,7 +13,7 @@ test('sin empresas, el onboarding hace una sola pregunta y lleva a la primera pr
 
   await page.getByRole('radio', { name: /Ya tengo una empresa/ }).check()
   await page.getByLabel('Nombre de la empresa').fill('Nueva SAS')
-  await page.getByRole('button', { name: 'Empezar con ADÁN' }).click()
+  await page.getByRole('button', { name: 'Empezar con ADAN' }).click()
 
   await expect(page).toHaveURL(/\/nivel1\/c-new$/)
   expect(api.callsTo('POST', '/onboarding/start')[0]?.body).toEqual({ company_name: 'Nueva SAS', stage: 'existing' })

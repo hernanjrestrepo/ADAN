@@ -1,4 +1,4 @@
-# WO-000 — Índice Maestro de Especificación de Producto ADÁN (v3.11)
+# WO-000 — Índice Maestro de Especificación de Producto ADAN (v3.11)
 
 **Tipo de documento:** Árbol documental — **APROBADO Y CONGELADO** (sin cambios de estructura desde v3.1).
 **Estado de la WO-000:** **Fase 1 (Fundamentos) completa.** AD-000 a AD-007, Anexo de Meta-Principios, y los tres workshops del Ciclo Dominio. Fase 2 (Comportamientos, Funcionalidades, UX, Arquitectura, IA, Operación, Platform Services, Integraciones) es el siguiente bloque de trabajo.
@@ -30,10 +30,10 @@
 | AD-006 | Domain Model (Software) | Aprobado y congelado | v1.1 |
 | AD-007 | Gemelo Digital | Construido y autoauditado — congelado | v1.0 |
 
-**Total de entidades formalizadas: 26 de negocio (AD-005) + 12 operativas de ADÁN (AD-006), unidas bajo un límite de agregación único (AD-007).**
+**Total de entidades formalizadas: 26 de negocio (AD-005) + 12 operativas de ADAN (AD-006), unidas bajo un límite de agregación único (AD-007).**
 
 ---
 
 ## 2. Nota de cierre — fin de Fase 1
 
-Ocho documentos, un anexo transversal y tres workshops de descubrimiento después, la WO-000 tiene una identidad de producto (AD-001), reglas de sistema (AD-002), vocabulario controlado (AD-003), reglas de evolución (AD-004), disciplina de ingeniería (Anexo), y un modelo completo del mundo que ADÁN entiende y de cómo lo representa (AD-005, AD-006, AD-007). Ningún documento de Fase 2 puede introducir una entidad de dominio nueva sin abrir una nueva versión de AD-005, AD-006 o AD-007 — la Regla de Entidades (v3.1 §1) sigue vigente sin cambios. El siguiente bloque de trabajo es Fase 2, empezando por la categoría Funcionalidades (AD-FUNC), que ya tiene su primer punto de partida resuelto: AD-FUNC-01 puede ahora fijar el número definitivo de Niveles contra una entidad `Nivel` formalizada.
+Ocho documentos, un anexo transversal y tres workshops de descubrimiento después, la WO-000 tiene una identidad de producto (AD-001), reglas de sistema (AD-002), vocabulario controlado (AD-003), reglas de evolución (AD-004), disciplina de ingeniería (Anexo), y un modelo completo del mundo que ADAN entiende y de cómo lo representa (AD-005, AD-006, AD-007). Ningún documento de Fase 2 puede introducir una entidad de dominio nueva sin abrir una nueva versión de AD-005, AD-006 o AD-007 — la Regla de Entidades (v3.1 §1) sigue vigente sin cambios. El siguiente bloque de trabajo es Fase 2, empezando por la categoría Funcionalidades (AD-FUNC), que ya tiene su primer punto de partida resuelto: AD-FUNC-01 puede ahora fijar el número definitivo de Niveles contra una entidad `Nivel` formalizada.

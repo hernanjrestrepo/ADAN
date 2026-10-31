@@ -20,12 +20,12 @@ export default function Onboarding() {
         <div className="flex flex-wrap items-center gap-4">
           <AdanMark size={64} className="drop-shadow-[0_0_18px_rgba(124,155,255,0.55)]" />
           <div className="leading-none">
-            <p className="u-brand text-4xl sm:text-5xl">ADÁN</p>
+            <p className="u-brand text-4xl sm:text-5xl">ADAN</p>
             <p className="mt-1.5 text-[11px] font-semibold tracking-[0.35em] text-slate-400">BY PARADIXE · UNIVERSO</p>
           </div>
         </div>
         <h1 className="mt-5 text-3xl sm:text-4xl font-bold leading-tight">
-          Hola, soy ADÁN. <span className="u-glow-text">Mi equipo y yo te esperamos en la oficina.</span>
+          Hola, soy ADAN. <span className="u-glow-text">Mi equipo y yo te esperamos en la oficina.</span>
         </h1>
         <p className="mt-3 text-slate-300 max-w-2xl">
           Soy el CEO de tu equipo directivo de IA. Te acompaño en siete Niveles, del dolor del cliente al escalamiento, con un

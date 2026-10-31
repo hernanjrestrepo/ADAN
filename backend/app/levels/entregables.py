@@ -1,6 +1,6 @@
 """Los entregables de cada Nivel como documentos de la Biblioteca.
 
-Al cerrar un Nivel, ADÁN redacta cada entregable (Lienzo de Propuesta de Valor, Plan de lanzamiento, Precios
+Al cerrar un Nivel, ADAN redacta cada entregable (Lienzo de Propuesta de Valor, Plan de lanzamiento, Precios
 finales…) con lo que se habló y se acordó, separando datos de supuestos. Para los Niveles que se cerraron antes
 de que existiera esto, la Biblioteca los prepara bajo pedido. Corre en segundo plano con su propia sesión.
 """
@@ -28,7 +28,7 @@ _SECTIONS = (
 )
 
 WRITER = (
-    "Eres el equipo de ADÁN redactando un entregable formal de la empresa del fundador. Usa SOLO lo que se habló y "
+    "Eres el equipo de ADAN redactando un entregable formal de la empresa del fundador. Usa SOLO lo que se habló y "
     "se acordó (memoria y conversación): no inventes cifras; si un dato no está, márcalo como «supuesto» o "
     "«pendiente de validar» y di cómo validarlo. Formato Markdown limpio y profesional: título, resumen de 2 líneas "
     "y las secciones propias de ese entregable (por ejemplo, el Lienzo de Propuesta de Valor con trabajos, dolores, "
@@ -66,7 +66,7 @@ def _transcript(db: Session, project: Project, n: int, limit: int = 40) -> str:
     from app.models.models import Message
 
     msgs = db.query(Message).filter(Message.conversation_id == conv.id).order_by(Message.created_at.desc()).limit(limit).all()
-    return "\n".join(f"{'Fundador' if m.role == 'user' else (m.agent_name or 'ADÁN')}: {m.content[:600]}" for m in reversed(msgs))
+    return "\n".join(f"{'Fundador' if m.role == 'user' else (m.agent_name or 'ADAN')}: {m.content[:600]}" for m in reversed(msgs))
 
 
 async def build_level(llm: LLMAdapter, db: Session, project: Project, n: int, only: list[str] | None = None) -> int:

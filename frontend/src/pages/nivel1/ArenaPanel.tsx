@@ -104,7 +104,7 @@ export default function ArenaPanel({ companyId, onError }: { companyId: string; 
         {(!session || decided) && (
           <div className="mt-4">
             <textarea aria-label="Tu pitch" value={pitch} onChange={(e) => setPitch(e.target.value)} rows={3} maxLength={8000}
-              placeholder="Opcional: tu pitch en tus palabras. Si lo dejas vacío, los inversionistas leen lo que ADÁN ya sabe de tu empresa."
+              placeholder="Opcional: tu pitch en tus palabras. Si lo dejas vacío, los inversionistas leen lo que ADAN ya sabe de tu empresa."
               className="w-full resize-y rounded-xl border border-adan-border bg-adan-bg px-3 py-2 text-sm focus:border-adan-accent focus:outline-hidden" />
             <MicButton onText={(t) => setPitch((v) => (v ? `${v} ${t}` : t))} className="mt-3 mr-2 rounded-lg border border-adan-border px-3 py-2 text-sm hover:border-adan-accent" />
             <Button className="mt-3" onClick={start} loading={busy}>{session ? 'Volver a entrar a La Arena' : 'Entrar a La Arena'}</Button>

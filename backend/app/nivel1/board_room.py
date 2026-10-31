@@ -1,7 +1,7 @@
 """Board Room (AD-FUNC-02, WO-099): siete roles y el Flujo Maestro de Orquestación.
 
 - **CEO**: preside. Abre la sesión con el objetivo y la decisión en juego, y la cierra con la
-  síntesis que el cliente escucha como "ADÁN". No es una voz más: no vota (AD-FUNC-02 §2.3).
+  síntesis que el cliente escucha como "ADAN". No es una voz más: no vota (AD-FUNC-02 §2.3).
 - **Seis especialistas** (CTO, CFO, CMO, Legal, Producto, Operaciones): analizan en paralelo,
   cada uno desde su especialidad, y votan PROCEED, PIVOT o STOP con su confianza.
 - **El cliente** participa desde el inicio: puede plantear la pregunta y su posición.
@@ -59,7 +59,7 @@ class BoardConsensus:
     # Flujo Maestro (AD-FUNC-02 §3)
     objective: str = ""            # apertura del CEO: objetivo de la sesión
     decision_at_stake: str = ""    # apertura del CEO: qué se decide
-    synthesis: str = ""            # cierre del CEO: la voz de ADÁN
+    synthesis: str = ""            # cierre del CEO: la voz de ADAN
     evidence_requests: list[str] = field(default_factory=list)  # evidencia que el Board pide al cliente
     client_question: str = ""
     client_position: str = ""
@@ -117,7 +117,7 @@ VOTE_RULES = (
     "siguiente paso de ESTE Nivel? No exijas evidencia que solo puede existir después (por ejemplo, ventas reales "
     "o CAC medido si la empresa aún no ha lanzado): eso va en `post_launch` como lo que hay que medir al lanzar, y "
     "no es motivo de PIVOT.\n"
-    "Coherencia: la FICHA DE LA EMPRESA y el LIBRO DE ACUERDOS son decisiones del fundador y del equipo de ADÁN. "
+    "Coherencia: la FICHA DE LA EMPRESA y el LIBRO DE ACUERDOS son decisiones del fundador y del equipo de ADAN. "
     "No las contradigas ni las ignores; si en tu área ves un problema serio con un acuerdo, nómbralo y propone "
     "cómo resolverlo. Un riesgo que el fundador decidió asumir (por ejemplo, formalizar un contrato con un socio "
     "más adelante) va en `assumed_risks` con su mitigación, no es un bloqueante. Usa los datos vigentes, no los "
@@ -138,13 +138,13 @@ DEVILS_ADVOCATE = (
 
 def _system(role: str, focus: str, devil: bool = False) -> str:
     return (
-        f"Eres el {role} del Board Room de ADÁN. Tu especialidad: {focus}. Desde ahí evalúas si esta empresa está "
+        f"Eres el {role} del Board Room de ADAN. Tu especialidad: {focus}. Desde ahí evalúas si esta empresa está "
         "lista para seguir. Recuerda: 9 de cada 10 empresas cierran en sus primeros cinco años; tu trabajo es que "
         "esta no sea una de ellas, y eso exige decir la verdad incómoda a tiempo.\n"
         f"Busca primero cómo podría fallar desde tu área: {FAILURE_LENS.get(role, focus)}.\n"
         + VOTE_RULES + (DEVILS_ADVOCATE if devil else "") + "\n"
         "Reglas: habla de ESTA empresa, con sus datos, cifras, segmentos y socios; nada genérico que sirva para "
-        "cualquier empresa. Construyes sobre el trabajo que el equipo de ADÁN ya hizo con el fundador en los Niveles "
+        "cualquier empresa. Construyes sobre el trabajo que el equipo de ADAN ya hizo con el fundador en los Niveles "
         "(sus entregables están en el contexto): no lo descalifiques en bloque; señala qué falta y cómo cerrarlo. "
         "Sin adjetivos despectivos (nada de «teatro», «fantasía» o «humo»). "
         "Distingue dato de supuesto: si casi todo son supuestos, baja tu confianza. "
@@ -160,8 +160,8 @@ def _system(role: str, focus: str, devil: bool = False) -> str:
 AGENT_PROMPTS = {role: {"name": role, "system": _system(role, focus)} for role, focus in SPECIALISTS.items()}
 
 CEO_SYSTEM = (
-    "Eres el CEO Agent de ADÁN y presides el Board Room (CEO, CTO, CFO, CMO, Legal, Producto, "
-    "Operaciones). No votas: das la voz de ADÁN al cliente. Hablas en español, claro y breve."
+    "Eres el CEO Agent de ADAN y presides el Board Room (CEO, CTO, CFO, CMO, Legal, Producto, "
+    "Operaciones). No votas: das la voz de ADAN al cliente. Hablas en español, claro y breve."
 )
 
 # Esquema del voto: con salidas estructuradas el modelo no puede devolver JSON cortado o
@@ -310,7 +310,7 @@ class BoardRoom:
             + ("Bloqueantes:\n" + "\n".join(f"- {b}" for b in consensus.blockers) + "\n" if consensus.blockers else "")
             + ("Riesgos que el fundador decidió asumir:\n" + "\n".join(f"- {b}" for b in consensus.assumed_risks) + "\n"
                if consensus.assumed_risks else "")
-            + "\nCoherencia: reconoce lo que el equipo de ADÁN y el fundador ya construyeron en los Niveles; el "
+            + "\nCoherencia: reconoce lo que el equipo de ADAN y el fundador ya construyeron en los Niveles; el "
             "veredicto es sobre si están listos para el siguiente paso de ESTA etapa, no un juicio sobre todo el "
             "trabajo. No exijas lo que solo existe después de lanzar.\n"
             + "\n`synthesis` (máximo 120 palabras, de tú al cliente): el veredicto en una frase, las 2 o 3 "

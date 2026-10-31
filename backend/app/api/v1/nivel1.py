@@ -116,7 +116,7 @@ def get_nivel1_status(
         "messages": messages,
         "scores": scores,
         "documents": documents,
-        # Guion del descubrimiento: qué entendió ADÁN de cada tema y qué falta
+        # Guion del descubrimiento: qué entendió ADAN de cada tema y qué falta
         "discovery": discovery_progress(db, conversation, project),
     }
 
@@ -129,7 +129,7 @@ def require_level_paid(db: Session, company_id: str, level: int) -> None:
 
 
 async def transcribe_later(bind, llm: LLMAdapter, company_id: str, user_id: str, files: list[tuple[str, bytes]]) -> None:
-    """Transcribe las grabaciones en el servidor y ADÁN aprende de ellas como de cualquier documento."""
+    """Transcribe las grabaciones en el servidor y ADAN aprende de ellas como de cualquier documento."""
     import os
     import tempfile
     db = Session(bind=bind)
@@ -162,7 +162,7 @@ async def transcribe_later(bind, llm: LLMAdapter, company_id: str, user_id: str,
                 await service.learn_from_documents(project, level, docs)
         else:
             conversation = service.get_or_create_conversation(service.get_or_create_pain_card(project, level))
-            db.add(Message(conversation_id=conversation.id, role="assistant", agent_name="ADÁN",
+            db.add(Message(conversation_id=conversation.id, role="assistant", agent_name="ADAN",
                            content="No pude transcribir la grabación. ¿Me la envías en otro formato (MP3, M4A o MP4)?"))
             db.commit()
     except Exception:  # noqa: BLE001
@@ -324,7 +324,7 @@ async def upload_documents(
     llm: LLMAdapter = Depends(get_llm),
     _usage: None = Depends(track_llm_usage),
 ):
-    """El cliente carga su documentación (idea o empresa existente): ADÁN extrae el texto, lo guarda en la
+    """El cliente carga su documentación (idea o empresa existente): ADAN extrae el texto, lo guarda en la
     memoria de la empresa y aprende de él (guion del dolor, evidencia verificable, vacíos y riesgos)."""
     get_owned_company(db, company_id, user)
     project = db.query(Project).filter(Project.company_id == company_id).first()
@@ -398,7 +398,7 @@ async def upload_documents(
         result = {"reply": "", "degraded": None, "learning": {}}
     if to_transcribe:
         names = ", ".join(d.filename for d in to_transcribe)
-        note = Message(conversation_id=conversation.id, role="assistant", agent_name="ADÁN",
+        note = Message(conversation_id=conversation.id, role="assistant", agent_name="ADAN",
                        content=f"🎙️ Recibí {names}. Lo estoy transcribiendo; cuando termine te cuento aquí lo que entendí.",
                        metadata_json={"investigando": {"consulta": f"transcripción de {names}"}})
         db.add(note)
@@ -429,7 +429,7 @@ async def arena_start(company_id: str, body: ArenaStart | None = None, nivel: in
     brief = await Nivel1Service(llm, db).arena_brief(project, nivel)
     pitch = body.pitch.strip() if body else ""
     if not brief.strip() and not pitch:
-        raise HTTPException(status_code=400, detail="Cuéntale primero a ADÁN tu empresa, o escribe tu pitch.")
+        raise HTTPException(status_code=400, detail="Cuéntale primero a ADAN tu empresa, o escribe tu pitch.")
     session = await Arena(llm, db).start(project, brief, pitch)
     timeline.arena_questions(db, project, session, nivel=nivel)
     return session

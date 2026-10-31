@@ -21,7 +21,7 @@ Depende de: ENTERPRISE_TAXONOMY_WORKSHOP.md, WORKSHOP_DE_RELACIONES.md
 
 **Una empresa nace cuando una Narrativa Fundacional se combina con evidencia suficiente de que existe un problema real y con un compromiso de recursos irreversible.**
 
-Sin compromiso de recursos, lo que existe es una intención, no un nacimiento — el mismo umbral que AD-CMP-01 ya exige para avanzar de Nivel dentro de ADÁN (avance por evidencia, no por conversación), aplicado aquí al nacimiento mismo de la organización que ADÁN acompaña. *Ancla teórica:* la etapa de "Courtship" del modelo de ciclo de vida corporativo de Ichak Adizes — el compromiso, no la idea, es lo que distingue una empresa de un proyecto de conversación.
+Sin compromiso de recursos, lo que existe es una intención, no un nacimiento — el mismo umbral que AD-CMP-01 ya exige para avanzar de Nivel dentro de ADAN (avance por evidencia, no por conversación), aplicado aquí al nacimiento mismo de la organización que ADAN acompaña. *Ancla teórica:* la etapa de "Courtship" del modelo de ciclo de vida corporativo de Ichak Adizes — el compromiso, no la idea, es lo que distingue una empresa de un proyecto de conversación.
 
 ### Ley 2 — Ley de Aprendizaje
 
@@ -43,7 +43,7 @@ Sin compromiso de recursos, lo que existe es una intención, no un nacimiento �
 
 ### Ley 5 — Ley de Estancamiento
 
-**Una empresa se estanca cuando su Madurez Organizacional deja de crecer en relación a su Edad — no cuando su Ingreso deja de crecer.** Una empresa puede seguir facturando lo mismo mientras se estanca conceptualmente (el ciclo de la Ley 3 se detuvo), y puede estar en pleno estancamiento financiero mientras sigue aprendiendo y madurando activamente. Confundir ambas señales lleva a diagnósticos equivocados: ADÁN no debería alertar estancamiento solo por una meseta de ingresos, sino por una meseta en el ciclo de retroalimentación de la Ley 3.
+**Una empresa se estanca cuando su Madurez Organizacional deja de crecer en relación a su Edad — no cuando su Ingreso deja de crecer.** Una empresa puede seguir facturando lo mismo mientras se estanca conceptualmente (el ciclo de la Ley 3 se detuvo), y puede estar en pleno estancamiento financiero mientras sigue aprendiendo y madurando activamente. Confundir ambas señales lleva a diagnósticos equivocados: ADAN no debería alertar estancamiento solo por una meseta de ingresos, sino por una meseta en el ciclo de retroalimentación de la Ley 3.
 
 *Ancla teórica:* consistencia directa con el hallazgo del Enterprise Taxonomy Workshop (Addendum, punto A4) de que Edad y Madurez son variables independientes — el estancamiento es, formalmente, la divergencia entre ambas curvas.
 

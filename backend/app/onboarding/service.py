@@ -2,7 +2,7 @@
 
 - Antes de la primera pregunta se captura lo mínimo (§2): nombre, correo y una señal de que
   existe una Empresa o la intención de crearla. Todo lo demás se difiere.
-- La primera pregunta real de ADÁN queda escrita en la conversación del Nivel 1 en cuanto nace
+- La primera pregunta real de ADAN queda escrita en la conversación del Nivel 1 en cuanto nace
   la Empresa (§3), y el tiempo desde el registro se mide (§3.4, meta < 30 s).
 - La Identidad Progresiva (§3.1) es una etiqueta derivada de lo que ya hay en el Gemelo, nunca
   un campo guardado.
@@ -21,7 +21,7 @@ from app.models.models import (
 )
 from app.twin.models import BusinessDecision
 
-FIRST_QUESTION_AGENT = "ADÁN"
+FIRST_QUESTION_AGENT = "ADAN"
 
 # Escalera de AD-FUNC-06 §3.1 (Anónimo y Visitante existen antes del registro)
 IDENTITY = [
@@ -29,7 +29,7 @@ IDENTITY = [
     ("responsable", "Responsable de Empresa", "Confirmaste que eres responsable de una Empresa"),
     ("lider_activo", "Líder Activo", "Recibiste tu primer Diagnóstico real del Nivel 1"),
     ("cliente_activo", "Cliente Activo", "Registraste tu primera Decisión de Negocio real"),
-    ("embajador", "Embajador", "Una recomendación de ADÁN que aceptaste se sostuvo en el tiempo"),
+    ("embajador", "Embajador", "Una recomendación de ADAN que aceptaste se sostuvo en el tiempo"),
 ]
 SUSTAINED_DAYS = 30
 
@@ -37,16 +37,16 @@ SUSTAINED_DAYS = 30
 def first_question(user: User, company: Company) -> str:
     first_name = (user.name or "").split(" ")[0] or "hola"
     if company.origin_stage == "explore":
-        # Sin idea todavía: ADÁN empieza por la persona para proponerle oportunidades que le calcen
-        return (f"Hola, {first_name}. Soy ADÁN. No necesitas tener una idea para empezar: vamos a encontrar juntos "
+        # Sin idea todavía: ADAN empieza por la persona para proponerle oportunidades que le calcen
+        return (f"Hola, {first_name}. Soy ADAN. No necesitas tener una idea para empezar: vamos a encontrar juntos "
                 "la oportunidad que mejor te calce. Primero cuéntame de ti: ¿a qué te dedicas o te has dedicado, qué "
                 "sabes hacer muy bien y qué problemas ves en tu día a día que nadie resuelve bien? Después hablamos "
                 "de tu tiempo, tu capital y si tienes socios.")
     if company.origin_stage == "existing":
-        return (f"Hola, {first_name}. Soy ADÁN y voy a acompañarte con «{company.name}». Para conocerla bien: ¿qué "
+        return (f"Hola, {first_name}. Soy ADAN y voy a acompañarte con «{company.name}». Para conocerla bien: ¿qué "
                 "vende hoy, a quién y cuánto tiempo lleva? Y si tienes documentos (estados financieros, plan de "
                 "negocio, presentaciones, actas), súbelos con 📎 y los leo antes de seguir.")
-    return (f"Hola, {first_name}. Soy ADÁN y voy a acompañarte con «{company.name}». Empecemos por lo "
+    return (f"Hola, {first_name}. Soy ADAN y voy a acompañarte con «{company.name}». Empecemos por lo "
             "importante: ¿qué problema quieres resolver y a quién le duele? Cuéntamelo con tus palabras, "
             "no hace falta que esté pulido.")
 
@@ -56,7 +56,7 @@ def _utc(dt: datetime) -> datetime:
 
 
 def seed_first_question(db: Session, user: User, company: Company) -> Message | None:
-    """ADÁN hace la primera pregunta real del Nivel 1 apenas nace la Empresa (AD-FUNC-06 §1)."""
+    """ADAN hace la primera pregunta real del Nivel 1 apenas nace la Empresa (AD-FUNC-06 §1)."""
     project = db.query(Project).filter(Project.company_id == company.id).first()
     level = db.query(Level).filter(Level.project_id == project.id, Level.number == 1).first() if project else None
     if level is None:

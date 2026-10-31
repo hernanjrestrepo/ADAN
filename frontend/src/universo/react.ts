@@ -35,7 +35,7 @@ export function reactTo(message: Message, force = false) {
     const said = plain(message.content).slice(0, 900)
     const emotion = message.metadata_json?.reaccion?.agente === speaker ? message.metadata_json?.reaccion?.emocion : undefined
     talk(speaker, said.slice(0, 320), (emotion as Emotion | undefined) ?? 'hablando')
-    u.caption(message.agent_name ?? agent?.name ?? inv?.name ?? 'ADÁN', said, inv?.color ?? agent?.color ?? '#60a5fa')
+    u.caption(message.agent_name ?? agent?.name ?? inv?.name ?? 'ADAN', said, inv?.color ?? agent?.color ?? '#60a5fa')
     if ((force || message.metadata_json?.escena === 'oficina') && AGENT_IDS.has(speaker)) {
       if (force) useUniverso.setState({ board: null, arena: null, focusZone: null })
       u.present(speaker, Math.min(26000, Math.max(7000, said.length * 60)))

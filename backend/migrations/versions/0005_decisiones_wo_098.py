@@ -1,4 +1,4 @@
-"""Decisión de ADÁN completa (WO-098): AD-CMP-03 y AD-FUNC-02 §2.5
+"""Decisión de ADAN completa (WO-098): AD-CMP-03 y AD-FUNC-02 §2.5
 
 - options: opciones con fundamento, nivel de evidencia y Confidence Level.
 - recommended_option / chosen_option.

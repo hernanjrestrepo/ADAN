@@ -1,5 +1,5 @@
 """
-API Endpoint para el Sistema Cognitivo de ADÁN.
+API Endpoint para el Sistema Cognitivo de ADAN.
 
 Endpoint principal del vertical slice de WO-003.
 """
@@ -63,7 +63,7 @@ async def cognitive_think(
     current_user: User = Depends(llm_user),
 ):
     """
-    Endpoint principal del cerebro cognitivo de ADÁN.
+    Endpoint principal del cerebro cognitivo de ADAN.
     
     Procesa una solicitud del usuario a través de todo el pipeline:
     Memoria → Conocimiento → Planificación → Ejecución → Evaluación → Respuesta

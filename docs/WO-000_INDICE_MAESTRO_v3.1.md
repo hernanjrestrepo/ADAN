@@ -1,4 +1,4 @@
-# WO-000 — Índice Maestro de Especificación de Producto ADÁN (v3.1)
+# WO-000 — Índice Maestro de Especificación de Producto ADAN (v3.1)
 
 **Tipo de documento:** Árbol documental — **APROBADO**. Congelado salvo inconsistencia arquitectónica de alto impacto durante la redacción.
 **Estado de la WO-000:** Cerrada la fase de diseño del árbol. Entra en fase de construcción de contenido, empezando por AD-000.
@@ -21,7 +21,7 @@ Todo lo demás —58 documentos, categorías, dependencias, secuenciación, tota
 
 ## 1. Estándares Editoriales Obligatorios (aplican a los 58 documentos, sin excepción)
 
-**Prueba de Reconstrucción (heredada de v3, sin cambios).** Todo documento debe redactarse pensando en una sola pregunta: *si el código de ADÁN desaparece esta noche, ¿un equipo de ingeniería distinto podría reconstruir el sistema completo leyendo solo estos documentos, sin reinterpretar ni inventar nada?* Si la respuesta es no, el documento está incompleto. Queda promovida de criterio de esta WO a norma editorial de Paradixe — ver sección 4.
+**Prueba de Reconstrucción (heredada de v3, sin cambios).** Todo documento debe redactarse pensando en una sola pregunta: *si el código de ADAN desaparece esta noche, ¿un equipo de ingeniería distinto podría reconstruir el sistema completo leyendo solo estos documentos, sin reinterpretar ni inventar nada?* Si la respuesta es no, el documento está incompleto. Queda promovida de criterio de esta WO a norma editorial de Paradixe — ver sección 4.
 
 **Regla de no duplicación (nueva).** Ningún documento repite información ya definida en otro. Cuando un concepto, entidad, regla o cifra ya existe en otro documento, se referencia por código (ej. *"ver AD-006, entidad Decisión"*), nunca se copia ni se reformula. Motivo: una sola fuente de verdad por concepto — si se duplica, en la primera actualización futura los duplicados divergen y nadie sabe cuál es el correcto. Excepción explícita: este índice maestro, cuyo propósito es ser el único punto de consulta consolidado del árbol completo, no está sujeto a esta regla frente a los documentos que resume.
 
@@ -78,6 +78,6 @@ Cada versión trae su propio **Historial de cambios** (una de las 7 secciones de
 
 **Estado:** árbol documental aprobado. A partir de aquí, cualquier ajuste al árbol mismo requiere que aparezca una inconsistencia arquitectónica de alto impacto durante la redacción — no una preferencia de forma.
 
-**La Constitución de Paradixe** (gobernando EVA, ARQAI, Genexis, CSI, ADÁN y futuros productos, no solo ADÁN) queda fuera de esta WO-000, tal como se decidió: es un documento paralelo, de mayor jerarquía que cualquier Ecosystem Vision de un producto individual. AD-000 (sección siguiente) se escribe sabiendo que en el futuro heredará de esa Constitución cuando exista; mientras tanto, AD-000 declara sus propios principios de ecosistema al nivel de ADÁN, sin inventar autoridad que no le corresponde sobre EVA, ARQAI, Genexis o CSI.
+**La Constitución de Paradixe** (gobernando EVA, ARQAI, Genexis, CSI, ADAN y futuros productos, no solo ADAN) queda fuera de esta WO-000, tal como se decidió: es un documento paralelo, de mayor jerarquía que cualquier Ecosystem Vision de un producto individual. AD-000 (sección siguiente) se escribe sabiendo que en el futuro heredará de esa Constitución cuando exista; mientras tanto, AD-000 declara sus propios principios de ecosistema al nivel de ADAN, sin inventar autoridad que no le corresponde sobre EVA, ARQAI, Genexis o CSI.
 
 **Siguiente paso:** redacción de `AD-000 — Paradixe Ecosystem Vision v1.0`.

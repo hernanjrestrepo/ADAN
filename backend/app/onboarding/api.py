@@ -38,7 +38,7 @@ def me(db: Session = Depends(get_db), user: User = Depends(get_current_user)):
 
 @router.post("/start", status_code=201)
 def start(body: StartBody, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
-    """Nace la Empresa con lo mínimo y ADÁN hace su primera pregunta real (AD-FUNC-06 §1, §3)."""
+    """Nace la Empresa con lo mínimo y ADAN hace su primera pregunta real (AD-FUNC-06 §1, §3)."""
     name = body.company_name.strip()
     if not name and body.stage != "explore":
         raise HTTPException(status_code=422, detail="Escribe el nombre de tu empresa o de tu idea")

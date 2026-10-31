@@ -1,5 +1,5 @@
 // El humor de la oficina: clic izquierdo en un personaje = viene al frente y te cuenta algo (los demás se ríen);
-// clic derecho = lo regañas, se asusta y se disculpa. Las bromas del proyecto las genera ADÁN una vez al día;
+// clic derecho = lo regañas, se asusta y se disculpa. Las bromas del proyecto las genera ADAN una vez al día;
 // estas son las de siempre, por si todavía no han llegado.
 import { AGENTS } from './data'
 import { useUniverso } from './store'

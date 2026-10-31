@@ -11,7 +11,7 @@ Aprobador: Hernán / Junta Directiva (validación en el próximo Gate Review)
 
 # AD-FUNC-01 — Los 7 Niveles
 
-> Primer documento de la categoría Funcionalidades — y el primero evaluado bajo el Criterio de Existencia de AD-004 v1.1 §3.1. No describe siete pantallas ni siete formularios. Describe un proceso de transformación empresarial: en cada Nivel, algo cambia de verdad — lo que ADÁN sabe de la Empresa, lo que el cliente entiende de su propio negocio, y lo que queda escrito de forma permanente en el Gemelo Digital. Un Nivel que no produce las tres cosas no es un Nivel válido bajo esta especificación.
+> Primer documento de la categoría Funcionalidades — y el primero evaluado bajo el Criterio de Existencia de AD-004 v1.1 §3.1. No describe siete pantallas ni siete formularios. Describe un proceso de transformación empresarial: en cada Nivel, algo cambia de verdad — lo que ADAN sabe de la Empresa, lo que el cliente entiende de su propio negocio, y lo que queda escrito de forma permanente en el Gemelo Digital. Un Nivel que no produce las tres cosas no es un Nivel válido bajo esta especificación.
 
 **Nivel de contenido:** mixto. La estructura de tres preguntas y el requisito de avance por evidencia (sección 0) son Principio Permanente. El contenido específico de cada Nivel es Decisión de Diseño, sujeto a AD-004 §1 (el número y orden de Niveles puede evolucionar sin romper AD-CMP-01).
 
@@ -21,7 +21,7 @@ Aprobador: Hernán / Junta Directiva (validación en el próximo Gate Review)
 
 Cada uno de los siete Niveles se especifica respondiendo, sin excepción:
 
-1. **¿Qué descubre ADÁN sobre la Empresa en este Nivel?** — la evidencia nueva que entra al sistema.
+1. **¿Qué descubre ADAN sobre la Empresa en este Nivel?** — la evidencia nueva que entra al sistema.
 2. **¿Qué aprende el cliente en este Nivel?** — el conocimiento verificable que el cliente no tenía antes de empezar.
 3. **¿Qué cambia en el Gemelo Digital cuando el Nivel termina?** — qué entidades de AD-005/AD-006 se crean, actualizan o versionan.
 
@@ -45,7 +45,7 @@ Abierta desde AD-003 §Preguntas Abiertas. Se resuelve aquí con la evidencia di
 
 ### Nivel 1 — El Dolor (Validación del Problema)
 
-- **¿Qué descubre ADÁN?** Si el problema declarado es real, urgente y afecta a más personas que al propio fundador — validado contra CSI (tendencias, foros, estudios de mercado), no solo contra la palabra del cliente. El perfil del Usuario Principal (motivación, experiencia previa, recursos disponibles).
+- **¿Qué descubre ADAN?** Si el problema declarado es real, urgente y afecta a más personas que al propio fundador — validado contra CSI (tendencias, foros, estudios de mercado), no solo contra la palabra del cliente. El perfil del Usuario Principal (motivación, experiencia previa, recursos disponibles).
 - **¿Qué aprende el cliente?** Si su idea resuelve un problema real y digno de perseguir, o si necesita pivotar antes de invertir más tiempo o capital — la primera decisión "go/no-go" honesta de todo el proceso.
 - **¿Qué cambia en el Gemelo Digital?** Nace el Gemelo Digital (AD-CMP-06, Ley de Origen). Se registra la Narrativa Fundacional inicial, el Usuario Principal, la primera Decisión de Negocio (validar o pivotar), y el primer Score (Problem Score) con su Confidence Level.
 - **Entregable:** Diagnóstico del Dolor — problema, evidencia externa, perfil del emprendedor.
@@ -53,7 +53,7 @@ Abierta desde AD-003 §Preguntas Abiertas. Se resuelve aquí con la evidencia di
 
 ### Nivel 2 — Propuesta de Valor y Diseño Estratégico
 
-- **¿Qué descubre ADÁN?** Cómo se diferencia la propuesta frente a alternativas existentes (Competidor, Mercado ya registrados) y qué tan defendible es esa diferenciación.
+- **¿Qué descubre ADAN?** Cómo se diferencia la propuesta frente a alternativas existentes (Competidor, Mercado ya registrados) y qué tan defendible es esa diferenciación.
 - **¿Qué aprende el cliente?** Si su solución original necesita ajustarse — la propuesta puede evolucionar aquí, no es un trámite (Chat 1.docx: "este nivel no es un mero trámite... la idea inicial puede evolucionar").
 - **¿Qué cambia en el Gemelo Digital?** Se registran Mercado, Competidor(es), y una primera versión de Producto/Servicio. Solution Score.
 - **Entregable:** Propuesta de Valor formal, matriz comparativa contra el mercado.
@@ -61,7 +61,7 @@ Abierta desde AD-003 §Preguntas Abiertas. Se resuelve aquí con la evidencia di
 
 ### Nivel 3 — Plan de Negocios y Estructura Empresarial
 
-- **¿Qué descubre ADÁN?** La estructura legal y tributaria óptima según el mercado objetivo (vía CSI), proyecciones financieras verificadas contra benchmarks reales (vía EVA, evitando que el cliente "sueñe con cifras que no son"), y una estrategia de marketing con costos de adquisición realistas.
+- **¿Qué descubre ADAN?** La estructura legal y tributaria óptima según el mercado objetivo (vía CSI), proyecciones financieras verificadas contra benchmarks reales (vía EVA, evitando que el cliente "sueñe con cifras que no son"), y una estrategia de marketing con costos de adquisición realistas.
 - **¿Qué aprende el cliente?** Cuánto capital realmente necesita, qué estructura legal le conviene, y cuál es su estructura organizacional (incluyendo qué roles pueden ser agénticos vs. humanos).
 - **¿Qué cambia en el Gemelo Digital?** Se crean Departamento y Cargo, Activo/Pasivo iniciales, Objetivo/Meta/Indicador, Documento (acta de constitución y ruta legal), Accionista/Inversionista si aplica. Business Score.
 - **Entregable:** Plan de negocio, acta de constitución, organigrama híbrido, proyecciones financieras auditadas.
@@ -69,7 +69,7 @@ Abierta desde AD-003 §Preguntas Abiertas. Se resuelve aquí con la evidencia di
 
 ### Nivel 4 — Diseño y Construcción del MVP
 
-- **¿Qué descubre ADÁN?** Qué construir exactamente (blueprint técnico), adaptado al nivel de lenguaje técnico del Usuario Principal (ya perfilado en Nivel 1).
+- **¿Qué descubre ADAN?** Qué construir exactamente (blueprint técnico), adaptado al nivel de lenguaje técnico del Usuario Principal (ya perfilado en Nivel 1).
 - **¿Qué aprende el cliente?** Si el producto real que puede construirse coincide con la propuesta de valor validada, o si hace falta ajustar diseño, marca o alcance antes de comprometer recursos de construcción.
 - **¿Qué cambia en el Gemelo Digital?** Producto/Servicio se actualiza a su versión de construcción; nace una Iniciativa de construcción (orquestada hacia Genexis, AD-000 §5); primer Documento de tipo blueprint técnico. Product Score.
 - **Entregable:** Blueprint del MVP, mockups validados por el cliente, roadmap de desarrollo.
@@ -77,7 +77,7 @@ Abierta desde AD-003 §Preguntas Abiertas. Se resuelve aquí con la evidencia di
 
 ### Nivel 5 — Validación Simulada y Ajuste
 
-- **¿Qué descubre ADÁN?** Cómo reaccionarían clientes e inversionistas simulados ante el MVP — fricciones que no eran evidentes en el diseño (AD-005 §5, conecta con Ley de Adaptación).
+- **¿Qué descubre ADAN?** Cómo reaccionarían clientes e inversionistas simulados ante el MVP — fricciones que no eran evidentes en el diseño (AD-005 §5, conecta con Ley de Adaptación).
 - **¿Qué aprende el cliente?** Dónde están los puntos débiles de su modelo antes de arriesgar capital o reputación real con clientes reales.
 - **¿Qué cambia en el Gemelo Digital?** Se registran Riesgos identificados (propiedad transversal, AD-005 §3), ajustes documentados como nuevas Decisiones de Negocio. Market Score y Execution Score.
 - **Entregable:** Informe de simulación, tablero de métricas simuladas, plan de ajuste.
@@ -85,19 +85,19 @@ Abierta desde AD-003 §Preguntas Abiertas. Se resuelve aquí con la evidencia di
 
 ### Nivel 6 — Lanzamiento y Operación Real
 
-- **¿Qué descubre ADÁN?** Cómo se comporta la Empresa en el mundo real — los primeros Sucesos Empresariales genuinos, primeros Ingresos y Gastos reales, primeros Clientes Finales reales (no simulados).
+- **¿Qué descubre ADAN?** Cómo se comporta la Empresa en el mundo real — los primeros Sucesos Empresariales genuinos, primeros Ingresos y Gastos reales, primeros Clientes Finales reales (no simulados).
 - **¿Qué aprende el cliente?** Si su negocio funciona con el mercado real, la prueba que ninguna simulación puede reemplazar.
-- **¿Qué cambia en el Gemelo Digital?** La Etapa del Ciclo de Vida de la Empresa (AD-005 §4) transiciona de "validada" a "operando". El Proyecto (AD-006) pasa a modo de operación continua — el límite exacto donde EVA, no ADÁN, asume la optimización financiera recurrente (AD-000 §6, AD-001 §1.1).
+- **¿Qué cambia en el Gemelo Digital?** La Etapa del Ciclo de Vida de la Empresa (AD-005 §4) transiciona de "validada" a "operando". El Proyecto (AD-006) pasa a modo de operación continua — el límite exacto donde EVA, no ADAN, asume la optimización financiera recurrente (AD-000 §6, AD-001 §1.1).
 - **Entregable:** MVP desplegado en producción, primer ciclo de operación documentado.
 - **Avance:** al menos un Suceso Empresarial real de ingreso o adquisición de cliente, registrado y verificado — no simulado.
 
 ### Nivel 7 — Escalamiento
 
-- **¿Qué descubre ADÁN?** Patrones de crecimiento y los cuellos de botella estructurales que predice AD-005 §5 (Ley 4, crisis de coordinación de Greiner) — cuándo el mecanismo que trajo a la Empresa hasta aquí deja de escalar.
+- **¿Qué descubre ADAN?** Patrones de crecimiento y los cuellos de botella estructurales que predice AD-005 §5 (Ley 4, crisis de coordinación de Greiner) — cuándo el mecanismo que trajo a la Empresa hasta aquí deja de escalar.
 - **¿Qué aprende el cliente?** Cuándo y cómo reestructurar (nuevos Departamento/Cargo), cuándo levantar capital, y qué tan rápido está madurando realmente su organización — no solo cuánto está facturando.
 - **¿Qué cambia en el Gemelo Digital?** La Velocidad de Maduración Organizacional (AD-005 §4) se vuelve la métrica central de seguimiento continuo. Pueden registrarse nuevas Iniciativas de expansión o internacionalización (AD-000 §5, otros puntos de entrada del ecosistema).
 - **Entregable:** Diagnóstico de escalamiento, plan de reestructuración si aplica.
-- **Avance:** no aplica en el mismo sentido que los Niveles anteriores — Nivel 7 es el punto donde el acompañamiento de ADÁN se vuelve continuo, no secuencial (conecta con AD-005 §5, Ley 10: ciclo, no línea — una Empresa puede volver a un estado de Crisis o Reinvención desde aquí, no solo avanzar).
+- **Avance:** no aplica en el mismo sentido que los Niveles anteriores — Nivel 7 es el punto donde el acompañamiento de ADAN se vuelve continuo, no secuencial (conecta con AD-005 §5, Ley 10: ciclo, no línea — una Empresa puede volver a un estado de Crisis o Reinvención desde aquí, no solo avanzar).
 
 ---
 

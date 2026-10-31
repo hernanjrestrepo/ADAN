@@ -56,7 +56,7 @@ function BrandEditor({ company, onSaved, onClose }: { company: Company; onSaved:
     <div role="dialog" aria-label="Identidad de la empresa"
       className="absolute left-0 top-full z-50 mt-2 w-80 rounded-2xl border border-adan-border bg-adan-surface p-4 shadow-xl">
       <p className="text-sm font-bold">Identidad de {company.name}</p>
-      <p className="text-xs text-adan-muted mt-1">ADÁN usa estos colores y tu logo en todo el entorno de esta empresa.</p>
+      <p className="text-xs text-adan-muted mt-1">ADAN usa estos colores y tu logo en todo el entorno de esta empresa.</p>
       <div className="mt-3 flex items-center gap-3">
         <CompanyMark company={{ name: company.name, logo, brand_color: color }} size={48} />
         <div className="flex-1 space-y-2 text-xs">
@@ -87,7 +87,7 @@ function BrandEditor({ company, onSaved, onClose }: { company: Company; onSaved:
   )
 }
 
-// Lo que se puede abrir de cada Nivel en ADÁN real
+// Lo que se puede abrir de cada Nivel en ADAN real
 const LEVEL_LINK: Record<number, (id: string) => string> = {
   1: (id) => `/nivel1/${id}`,
   2: (id) => `/nivel/2/${id}`, 3: (id) => `/nivel/3/${id}`, 4: (id) => `/nivel/4/${id}`,

@@ -1,4 +1,4 @@
-# AGENT_ORCHESTRATION — Cómo se Orquestan los Agentes de ADÁN
+# AGENT_ORCHESTRATION — Cómo se Orquestan los Agentes de ADAN
 
 **WO:** WO-002.1  
 **Fecha:** 2026-07-24  
@@ -9,7 +9,7 @@
 
 ## 1. Visión General
 
-ADÁN opera como una organización con roles especializados. Cada agente tiene una responsabilidad clara, entradas definidas, salidas específicas y estados posibles. No son chatbots independientes — son componentes de un sistema orquestado que trabaja en conjunto.
+ADAN opera como una organización con roles especializados. Cada agente tiene una responsabilidad clara, entradas definidas, salidas específicas y estados posibles. No son chatbots independientes — son componentes de un sistema orquestado que trabaja en conjunto.
 
 **Principio fundamental:** Ningún agente actúa solo sin que el orquestador lo autorice. Ningún agente modifica el estado del sistema directamente — todos los cambios pasan por el orquestador.
 

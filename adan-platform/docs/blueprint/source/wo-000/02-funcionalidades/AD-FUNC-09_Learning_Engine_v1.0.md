@@ -11,9 +11,9 @@ Aprobador: Hernán / Junta Directiva (validación en el próximo Gate Review)
 
 # AD-FUNC-09 — Learning Engine
 
-> Cierra el loop completo que el propio Plan Maestro de Ejecución declara como el corazón del producto (§1): *Empresa nueva → Onboarding → Diagnóstico → Board Room → Estrategia → Plan → Seguimiento → Aprendizaje → Actualización del Gemelo Digital.* Este documento no inventa el aprendizaje desde cero — recoge y unifica cuatro semillas ya sembradas, cada una en el documento que la originó, y especifica el mecanismo que faltaba: cómo se capturan las señales, qué ajustan, qué recuerda ADÁN, y qué límites tiene ese aprendizaje. Es, por mandato del propio Plan Maestro, el documento más grande de esta WO — dividido en 10 secciones numeradas para que ninguna se pierda en el volumen.
+> Cierra el loop completo que el propio Plan Maestro de Ejecución declara como el corazón del producto (§1): *Empresa nueva → Onboarding → Diagnóstico → Board Room → Estrategia → Plan → Seguimiento → Aprendizaje → Actualización del Gemelo Digital.* Este documento no inventa el aprendizaje desde cero — recoge y unifica cuatro semillas ya sembradas, cada una en el documento que la originó, y especifica el mecanismo que faltaba: cómo se capturan las señales, qué ajustan, qué recuerda ADAN, y qué límites tiene ese aprendizaje. Es, por mandato del propio Plan Maestro, el documento más grande de esta WO — dividido en 10 secciones numeradas para que ninguna se pierda en el volumen.
 
-**Nivel de contenido:** el principio de que ADÁN aprende de las decisiones (no solo del éxito) y las Salvaguardas de la sección 6 son Principio Permanente — ninguna presión comercial o técnica futura puede levantarlas sin una nueva versión de este documento. El mecanismo concreto de agregación entre empresas (sección 5, Playbook) y los pesos/umbrales de recalibración son Decisión de Diseño, sujetos a AD-004 §1 y, sobre todo, a evidencia real todavía inexistente.
+**Nivel de contenido:** el principio de que ADAN aprende de las decisiones (no solo del éxito) y las Salvaguardas de la sección 6 son Principio Permanente — ninguna presión comercial o técnica futura puede levantarlas sin una nueva versión de este documento. El mecanismo concreto de agregación entre empresas (sección 5, Playbook) y los pesos/umbrales de recalibración son Decisión de Diseño, sujetos a AD-004 §1 y, sobre todo, a evidencia real todavía inexistente.
 
 ---
 
@@ -21,7 +21,7 @@ Aprobador: Hernán / Junta Directiva (validación en el próximo Gate Review)
 
 Verificación explícita antes de escribir una sola línea nueva — ninguna de las siguientes ideas nace aquí, todas ya estaban registradas:
 
-1. **AD-FUNC-02 §2.5** — "ADÁN aprende de las decisiones, no solo del éxito." Cuando el cliente decide distinto a lo recomendado, se registran 6 campos (incluida "Responsabilidad asumida"), con 5 preguntas de ejemplo que el Learning Engine debería poder responder algún día: ¿en qué tipo de empresas el Board suele equivocarse? ¿qué perfiles de empresarios toman mejores decisiones contra la recomendación? ¿qué modelos LLM sobreestiman ciertos riesgos? ¿en qué industrias conviene ser más conservador? ¿cuándo un fundador debe ignorar la recomendación del sistema?
+1. **AD-FUNC-02 §2.5** — "ADAN aprende de las decisiones, no solo del éxito." Cuando el cliente decide distinto a lo recomendado, se registran 6 campos (incluida "Responsabilidad asumida"), con 5 preguntas de ejemplo que el Learning Engine debería poder responder algún día: ¿en qué tipo de empresas el Board suele equivocarse? ¿qué perfiles de empresarios toman mejores decisiones contra la recomendación? ¿qué modelos LLM sobreestiman ciertos riesgos? ¿en qué industrias conviene ser más conservador? ¿cuándo un fundador debe ignorar la recomendación del sistema?
 2. **AD-FUNC-05 §10** — el ciclo Brecha → Capacidad → Estrategia elegida → Implementación → Resultado → ROI real → Desviación frente al ROI esperado → Aprendizaje → Recalibración del Confidence Level.
 3. **AD-FUNC-06 §10.1** — el Playbook Empresarial, registrado explícitamente como activo futuro, no construido por falta de evidencia real.
 4. **AD-FUNC-07 §5** — Score por Estrategia, el mecanismo concreto que trackea el desempeño real de una Estrategia ejecutada en el tiempo.
@@ -32,11 +32,11 @@ Este documento es donde las cuatro convergen.
 
 ## 1. Qué es esta Funcionalidad
 
-La capa que compara lo que ADÁN esperaba con lo que realmente ocurrió, en cualquier punto del ciclo completo (Onboarding, Diagnóstico, Board Room, Estrategia, Plan, Seguimiento), y ajusta tres cosas —nunca más de tres, por disciplina explícita— a partir de esa comparación: **Scores** (su Confidence Level), **priors del Motor de Estrategias** (qué tan probable es que un tipo de Estrategia funcione para un perfil de Empresa dado), y el **Gemelo Digital** (que registra el propio acto de aprendizaje como evidencia, Patrón C, AD-008).
+La capa que compara lo que ADAN esperaba con lo que realmente ocurrió, en cualquier punto del ciclo completo (Onboarding, Diagnóstico, Board Room, Estrategia, Plan, Seguimiento), y ajusta tres cosas —nunca más de tres, por disciplina explícita— a partir de esa comparación: **Scores** (su Confidence Level), **priors del Motor de Estrategias** (qué tan probable es que un tipo de Estrategia funcione para un perfil de Empresa dado), y el **Gemelo Digital** (que registra el propio acto de aprendizaje como evidencia, Patrón C, AD-008).
 
 Lo que NO es:
 
-- No es una funcionalidad que decide por el cliente — ajusta cómo ADÁN estima y recomienda, nunca ejecuta nada por sí sola (hereda sin excepción AD-001 §5 y AD-FUNC-02 §2).
+- No es una funcionalidad que decide por el cliente — ajusta cómo ADAN estima y recomienda, nunca ejecuta nada por sí sola (hereda sin excepción AD-001 §5 y AD-FUNC-02 §2).
 - No es el Playbook Empresarial ya construido — es donde el Playbook eventualmente vivirá, cuando exista evidencia real suficiente (sección 5).
 - No es un mecanismo que optimiza tiempo en plataforma ni engagement — la Regla Anti-Manipulación de AD-FUNC-04 §3 aplica aquí con la misma fuerza (sección 6).
 
@@ -68,7 +68,7 @@ Cuando la Desviación ROI esperado/real (o cualquier otra señal de la sección 
 Cuando existe evidencia agregada suficiente (sección 5, umbral explícito, no arbitrario), la Probabilidad de éxito que AD-FUNC-05 §8 estima para una Estrategia candidata puede informarse con el patrón aprendido — nunca sustituye el análisis caso por caso, lo pondera. Sin evidencia agregada suficiente, este loop está inactivo por diseño, no hay valor por defecto que aparente aprendizaje donde no lo hay (mismo Principio de Humildad Intelectual de AD-001 §6.1).
 
 ### 3.3 Registro en el Gemelo Digital
-Todo evento de aprendizaje (una recalibración, una desviación detectada) se registra como Patrón C (Registro Permanente, AD-008) — nunca sobreescribe el historial anterior, se acumula. Esto es lo que permite, sin mecanismo adicional, reconstruir *cuándo* ADÁN aprendió algo y *por qué* — coherente con AD-002 regla 1.6 (toda IA debe justificar).
+Todo evento de aprendizaje (una recalibración, una desviación detectada) se registra como Patrón C (Registro Permanente, AD-008) — nunca sobreescribe el historial anterior, se acumula. Esto es lo que permite, sin mecanismo adicional, reconstruir *cuándo* ADAN aprendió algo y *por qué* — coherente con AD-002 regla 1.6 (toda IA debe justificar).
 
 ---
 
@@ -96,8 +96,8 @@ Este es el punto exacto donde la semilla de AD-FUNC-06 §10.1 se especifica, no 
 ## 6. Límites y salvaguardas (Principio Permanente, sin excepción)
 
 1. **El Learning Engine nunca ejecuta.** Ajusta Confidence Level y priors internos de estimación — nunca una Decisión de Negocio, nunca una Estrategia. La autoridad de ejecución sigue siendo, sin excepción, del cliente (AD-001 §5, AD-FUNC-02 §2, AD-FUNC-05 §9).
-2. **Nunca optimiza tiempo en plataforma ni engagement.** Aplica, sin relajarse, la prueba más general de AD-FUNC-04 §3: ninguna recalibración puede aumentar el uso de ADÁN sin aumentar evidencia real en el Gemelo Digital.
-3. **Nunca trata a una Empresa como intercambiable con otra.** Un patrón del Playbook informa, no decide — la recomendación final siempre pasa por el análisis específico de AD-FUNC-05 sobre la Empresa real (AD-001 §5: "ADÁN nunca trata a dos empresas como intercambiables").
+2. **Nunca optimiza tiempo en plataforma ni engagement.** Aplica, sin relajarse, la prueba más general de AD-FUNC-04 §3: ninguna recalibración puede aumentar el uso de ADAN sin aumentar evidencia real en el Gemelo Digital.
+3. **Nunca trata a una Empresa como intercambiable con otra.** Un patrón del Playbook informa, no decide — la recomendación final siempre pasa por el análisis específico de AD-FUNC-05 sobre la Empresa real (AD-001 §5: "ADAN nunca trata a dos empresas como intercambiables").
 4. **Nunca aprende de una sola conversación como si fuera evidencia suficiente** — hereda sin excepción la jerarquía de validez de AD-CMP-05 §1.
 5. **Ningún patrón se declara "seguro" sin su Confidence Level y el número de casos que lo sostienen, visible.** Nunca se oculta que un patrón está basado en pocos casos.
 6. **El aprendizaje de desacuerdos (semilla 1, sección 0) nunca se usa para presionar al cliente a seguir la recomendación del Board la próxima vez** — se usa para mejorar la evidencia que el Board presenta, nunca para reducir la autoridad de ejecución del cliente.
@@ -126,7 +126,7 @@ Ninguna entidad nueva se crea en esta versión. La Memoria de aprendizaje por Em
 4. **¿Impacto sobre documentos futuros?** AD-ARQ-10 debe fijar el umbral N del Playbook con datos reales. WO-008 (Learning Engine v1, este mismo plan) implementa los loops 3.1 y 3.3 primero — 3.2 (priors) queda inactivo hasta que exista evidencia agregada real.
 5. **¿Riesgo arquitectónico nuevo?** Sí, el más importante de todo este documento: que la presión por demostrar "inteligencia adaptativa" empuje a activar el loop 3.2 (priors) sin el umbral de evidencia real cumplido — la sección 6 fija la barrera explícitamente por esto.
 6. **¿Confidence Level honesto?** 38% — el mecanismo es coherente con todo lo ya construido, pero cero loops tienen todavía un caso real ejecutado (eso es, literalmente, el trabajo de WO-008 y WO-009 de este mismo plan).
-7. **Prueba "si desapareciera":** las cuatro semillas de la sección 0 quedarían dispersas en cuatro documentos sin un mecanismo unificado que las conecte — ADÁN registraría evidencia sin nunca recalibrarse con ella.
+7. **Prueba "si desapareciera":** las cuatro semillas de la sección 0 quedarían dispersas en cuatro documentos sin un mecanismo unificado que las conecte — ADAN registraría evidencia sin nunca recalibrarse con ella.
 8. **Prueba "10 años":** el principio (comparar lo esperado contra lo real, ajustar solo Confidence/priors/Gemelo, nunca ejecutar, nunca manipular) no depende de qué modelo de IA calcule las recalibraciones — es una disciplina epistémica, no una arquitectura técnica.
 9. **¿Colisiones de nombre verificadas?** Sí — "Aprendizaje" no colisiona con ningún término ya fijado en AD-003; se verificó explícitamente que este documento no duplica el Playbook (lo hereda, sección 5) ni el ciclo de AD-FUNC-05 §10 (lo generaliza a las otras 3 señales, sección 2).
 10. **¿Autoauditoría entregada junto al documento?** Sí.
@@ -174,4 +174,4 @@ Ninguna nueva.
 
 | Versión | Fecha | Cambio | Motivo |
 |---|---|---|---|
-| v1.0 | 2026-07-17 | Creación inicial: unifica las 4 semillas ya sembradas (AD-FUNC-02 §2.5, AD-FUNC-05 §10, AD-FUNC-06 §10.1, AD-FUNC-07 §5) en 3 loops de aprendizaje (recalibración de Confidence, priors de Estrategia, registro en Gemelo Digital), memoria por Empresa vs. agregada (Playbook, mecanismo especificado sin construirse), y 6 Salvaguardas permanentes que impiden ejecución autónoma, optimización de engagement, y activación prematura del Playbook | WO-000 Sprint 4 del Plan Maestro de Ejecución ADÁN v1.0 — documento más grande de la WO, dividido en 10 secciones por mandato explícito |
+| v1.0 | 2026-07-17 | Creación inicial: unifica las 4 semillas ya sembradas (AD-FUNC-02 §2.5, AD-FUNC-05 §10, AD-FUNC-06 §10.1, AD-FUNC-07 §5) en 3 loops de aprendizaje (recalibración de Confidence, priors de Estrategia, registro en Gemelo Digital), memoria por Empresa vs. agregada (Playbook, mecanismo especificado sin construirse), y 6 Salvaguardas permanentes que impiden ejecución autónoma, optimización de engagement, y activación prematura del Playbook | WO-000 Sprint 4 del Plan Maestro de Ejecución ADAN v1.0 — documento más grande de la WO, dividido en 10 secciones por mandato explícito |

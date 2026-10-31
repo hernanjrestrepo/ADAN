@@ -1,9 +1,9 @@
-"""Comunidad ADÁN (AD-000 v2.0, componente Comunidad): la red de empresas, emprendedores, inversionistas y
+"""Comunidad ADAN (AD-000 v2.0, componente Comunidad): la red de empresas, emprendedores, inversionistas y
 mentores del ecosistema Paradixe.
 
 - `community_profiles`: el perfil público de cada persona (opcional: solo aparece si la persona lo publica).
 - `community_listings`: la vitrina de una empresa. Lo que la empresa declara (qué hace, qué busca) va junto al
-  **Sello ADÁN**, que no lo escribe nadie: sale del Gemelo Digital (Niveles cerrados, Problem Score, evidencia,
+  **Sello ADAN**, que no lo escribe nadie: sale del Gemelo Digital (Niveles cerrados, Problem Score, evidencia,
   decisión del Board, La Arena). Las Selecciones Paradixe las marcan los curadores de Paradixe.
 - `community_connections`: seguir, pedir contacto o mostrar interés de inversión. El correo de cada parte solo se
   comparte cuando la otra acepta (Ley 1581: mínimo dato).
@@ -73,7 +73,7 @@ class CompanyListing(Base):
     looking_for = Column(JSONType, nullable=False, default=list)
     amount_sought_usd = Column(Float, nullable=True)
     website = Column(String(300), nullable=False, default="")
-    # Sello ADÁN: calculado del Gemelo Digital al publicar y al actualizar (nunca lo edita la empresa)
+    # Sello ADAN: calculado del Gemelo Digital al publicar y al actualizar (nunca lo edita la empresa)
     seal = Column(JSONType, nullable=False, default=dict)
     paradixe_selection = Column(Boolean, nullable=False, default=False)
     selection_note = Column(Text, nullable=False, default="")

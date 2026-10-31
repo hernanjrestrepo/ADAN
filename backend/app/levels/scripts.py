@@ -1,4 +1,4 @@
-"""Los 7 Niveles de ADÁN como guiones de trabajo en la Sala. Metodología híbrida acordada con Hernán (2026-10-25):
+"""Los 7 Niveles de ADAN como guiones de trabajo en la Sala. Metodología híbrida acordada con Hernán (2026-10-25):
 Customer Development (Steve Blank y Bob Dorf), The Lean Startup (Eric Ries), Running Lean (Ash Maurya), The Mom Test
 (Rob Fitzpatrick), Value Proposition Design y Business Model Generation (Osterwalder y Pigneur), Testing Business
 Ideas (Bland y Osterwalder), Disciplined Entrepreneurship (Bill Aulet), Lean Analytics (Croll y Yoskovitz), métricas

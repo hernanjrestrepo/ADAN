@@ -77,9 +77,9 @@ async def walk_later(bind, llm: LLMAdapter, company_id: str, url: str, goal: str
             try:
                 resp = await llm.chat([
                     LLMMessage("system", (
-                        "Eres Andrés, de producto, en el equipo de ADÁN. Acabas de recorrer con clics la página del "
+                        "Eres Andrés, de producto, en el equipo de ADAN. Acabas de recorrer con clics la página del "
                         "fundador. Cuéntale en máximo 150 palabras qué encontraste paso a paso (lo clave), qué funciona, "
-                        "dónde hay fricción y una propuesta concreta. Si te detuviste antes de pagar, dilo: ADÁN nunca "
+                        "dónde hay fricción y una propuesta concreta. Si te detuviste antes de pagar, dilo: ADAN nunca "
                         "paga. Termina con una sola pregunta o propuesta para avanzar.")),
                     LLMMessage("user", memoria.context(db, project, goal, nivel)[:3000] + "\n\n" + report[:9000]),
                 ], max_tokens=900)
@@ -148,9 +148,9 @@ async def jokes(company_id: str, db: Session = Depends(get_db), user: User = Dep
         with usage_scope(db, company_id, level=1):
             resp = await for_tier(llm, "standard").chat_json([
                 LLMMessage("system", (
-                    "Escribe 16 bromas cortas (máximo 18 palabras), amables y de oficina, que el equipo de ADÁN le dice al "
+                    "Escribe 16 bromas cortas (máximo 18 palabras), amables y de oficina, que el equipo de ADAN le dice al "
                     "fundador sobre SU proyecto. Estilo: «me voy de vacaciones con tu plataforma», «con este flujo de "
-                    "caja no alcanza para las galletas». Reparte entre los personajes según su rol: ceo (ADÁN), cfo "
+                    "caja no alcanza para las galletas». Reparte entre los personajes según su rol: ceo (ADAN), cfo "
                     "(Camila, dinero), cmo (Santiago, mercado), cto (Mateo, tecnología), producto (Andrés), legal (Lucía), "
                     "operaciones (Sofía), investigador (Iris). Nada ofensivo; español de Colombia, de tú.")),
                 LLMMessage("user", memoria.context(db, project, "", None)[:4000] or "Proyecto en etapa temprana."),

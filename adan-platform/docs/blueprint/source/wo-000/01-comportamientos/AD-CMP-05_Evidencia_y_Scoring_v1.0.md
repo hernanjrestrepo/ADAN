@@ -40,7 +40,7 @@ Ninguna afirmación sin clasificar entra al cálculo. Si la evidencia disponible
 
 ## 3. Relación con Indicador (AD-005)
 
-Un Score (evaluación que ADÁN hace de una Empresa) es distinto de un Indicador (una métrica que la propia Empresa usa para medir su Meta, AD-005) — pero puede consumir Indicadores como una fuente más de evidencia dentro de la jerarquía de la sección 1 (un Indicador reportado por la Empresa es, en la práctica, un dato verificable si tiene fuente, o un testimonio del cliente si no la tiene). No se fusionan los dos conceptos — se relacionan.
+Un Score (evaluación que ADAN hace de una Empresa) es distinto de un Indicador (una métrica que la propia Empresa usa para medir su Meta, AD-005) — pero puede consumir Indicadores como una fuente más de evidencia dentro de la jerarquía de la sección 1 (un Indicador reportado por la Empresa es, en la práctica, un dato verificable si tiene fuente, o un testimonio del cliente si no la tiene). No se fusionan los dos conceptos — se relacionan.
 
 ## 4. Actualización del Score en el tiempo
 

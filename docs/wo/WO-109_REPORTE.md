@@ -10,7 +10,7 @@
 
 | Verificación | Resultado |
 |---|---|
-| Canon | `docs/auditoria/PLAN_WO_ADAN_100.md` §4 y `AD-DEC-0002` decisión 1: ADÁN suministra agentes por hora, día, semana o mes para tareas de cada empresa. Es su ingreso recurrente. |
+| Canon | `docs/auditoria/PLAN_WO_ADAN_100.md` §4 y `AD-DEC-0002` decisión 1: ADAN suministra agentes por hora, día, semana o mes para tareas de cada empresa. Es su ingreso recurrente. |
 | Reutilización | <ul><li>`agent_factory`: solo existía en memoria; ahora es un catálogo persistente.</li><li>Work Orders y Assignments del OOS.</li><li>TEF: ejecutor con permisos, timeouts y auditoría persistente (WO-097).</li><li>Motor de WO-099: el nivel de modelo según la complejidad y el costo por empresa (`llm_usage`).</li></ul> |
 | Fuera de alcance | Los precios (WO-100). El sistema no los inventa: cada contrato dice "Precio por definir (WO-100)". |
 
@@ -23,7 +23,7 @@
 | **Tareas = Work Orders del OOS** | Cada encargo es una Work Order de la organización OOS de la empresa (se crea si no existe), asignada al agente con su Assignment. Así el OOS ve todo el trabajo. |
 | **Ejecución con TEF y WO-099** | Cada ejecución sigue cuatro pasos:<ol><li>El agente decide, con salida estructurada, si usa una de sus herramientas.</li><li>Si la usa, la ejecuta TEF, con permisos y auditoría.</li><li>Entrega su resultado con el modelo de su nivel.</li><li>Si el modelo falla, el intento queda registrado y la tarea sigue abierta, con el motivo.</li></ol> |
 | **Revisión del cliente** | Cada entrega queda "para revisar". El cliente la aprueba o pide cambios, y sus correcciones llegan al agente en la siguiente ejecución. |
-| **Medición y reporte** | `hire_work_logs` es un Registro Permanente, protegido por triggers. Por ejecución guarda:<ul><li>el tiempo real;</li><li>los tokens y el costo del modelo para ADÁN;</li><li>el modelo usado y si hubo degradación;</li><li>las herramientas usadas y el resultado.</li></ul>El reporte al cliente muestra horas contratadas, usadas y restantes, las entregas y las tareas por estado. |
+| **Medición y reporte** | `hire_work_logs` es un Registro Permanente, protegido por triggers. Por ejecución guarda:<ul><li>el tiempo real;</li><li>los tokens y el costo del modelo para ADAN;</li><li>el modelo usado y si hubo degradación;</li><li>las herramientas usadas y el resultado.</li></ul>El reporte al cliente muestra horas contratadas, usadas y restantes, las entregas y las tareas por estado. |
 | **Interfaz** | Página `/agentes/{empresa}` con:<ul><li>el catálogo, con período y cantidad, y las horas que incluye;</li><li>los contratos, con su barra de horas;</li><li>la opción de encargar una tarea y ponerla a trabajar;</li><li>la revisión de cada entrega, para aprobarla o pedir cambios.</li></ul>Se llega desde el tablero. |
 | **Migración `0008`** | Tablas `hire_offerings`, `hire_contracts` y `hire_work_logs`, esta última con triggers append-only. |
 

@@ -1,4 +1,4 @@
-# TOOL_ARCHITECTURE — Sistema de Herramientas de ADÁN
+# TOOL_ARCHITECTURE — Sistema de Herramientas de ADAN
 
 **WO:** WO-002.1  
 **Fecha:** 2026-07-24  
@@ -9,9 +9,9 @@
 
 ## 1. Visión General
 
-Las herramientas son las manos de ADÁN. Mientras los agentes son la mente (piensan, planifican, deciden), las herramientas son lo que ejecuta acciones concretas: buscar en internet, calcular, generar documentos, acceder a bases de datos, enviar emails.
+Las herramientas son las manos de ADAN. Mientras los agentes son la mente (piensan, planifican, deciden), las herramientas son lo que ejecuta acciones concretas: buscar en internet, calcular, generar documentos, acceder a bases de datos, enviar emails.
 
-**Principio:** ADÁN no puede hacer nada sin herramientas. Las herramientas son la interfaz entre la cognición y la acción.
+**Principio:** ADAN no puede hacer nada sin herramientas. Las herramientas son la interfaz entre la cognición y la acción.
 
 ---
 

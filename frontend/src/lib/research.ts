@@ -1,7 +1,7 @@
 import { api } from './api'
 import type { Message } from '../types'
 
-// ADÁN responde de una vez y, si anunció una búsqueda en internet, los hallazgos llegan después en otro mensaje
+// ADAN responde de una vez y, si anunció una búsqueda en internet, los hallazgos llegan después en otro mensaje
 export async function waitForResearch(companyId: string, afterId: string, timeoutMs = 150_000, nivel = 1): Promise<Message[] | null> {
   const started = Date.now()
   while (Date.now() - started < timeoutMs) {

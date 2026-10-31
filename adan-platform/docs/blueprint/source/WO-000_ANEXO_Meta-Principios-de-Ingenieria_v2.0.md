@@ -12,7 +12,7 @@ Supersede a: WO-000_ANEXO_Meta-Principios-de-Ingenieria_v1.0.md (aprobado y cong
 
 # WO-000 — Anexo: Meta-Principios de Ingeniería (v2.0)
 
-> AD-001 gobierna quién es ADÁN. AD-002 gobierna qué debe garantizar el sistema. Este anexo gobierna cómo se toman las decisiones de construcción durante toda la vida del proyecto. No es un documento del Blueprint; es el criterio con el que se juzga cada documento del Blueprint, incluidos los que ya existen.
+> AD-001 gobierna quién es ADAN. AD-002 gobierna qué debe garantizar el sistema. Este anexo gobierna cómo se toman las decisiones de construcción durante toda la vida del proyecto. No es un documento del Blueprint; es el criterio con el que se juzga cada documento del Blueprint, incluidos los que ya existen.
 
 **Nivel de contenido:** Principio Permanente en su totalidad.
 

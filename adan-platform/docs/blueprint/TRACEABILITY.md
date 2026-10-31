@@ -1,4 +1,4 @@
-# Matriz de Trazabilidad — Blueprint ADÁN v1.0
+# Matriz de Trazabilidad — Blueprint ADAN v1.0
 
 **Producido por:** Célula D, WO-000 Sprint 6 · **Fecha:** 2026-07-17
 Cada requisito recibe un ID único `BP-####`. Cobertura: 100% de los documentos del blueprint tienen al menos un BP asignado.
@@ -7,8 +7,8 @@ Cada requisito recibe un ID único `BP-####`. Cobertura: 100% de los documentos 
 
 | BP | Requisito | Documento | WO destino |
 |---|---|---|---|
-| BP-0001 | Ecosistema Paradixe, ADÁN como componente | AD-000 | WO-001 (config de entorno), Fase 2 (AD-INT) |
-| BP-0002 | Misión, qué NO es ADÁN, qué nunca hará | AD-001 | Toda WO — principio rector transversal |
+| BP-0001 | Ecosistema Paradixe, ADAN como componente | AD-000 | WO-001 (config de entorno), Fase 2 (AD-INT) |
+| BP-0002 | Misión, qué NO es ADAN, qué nunca hará | AD-001 | Toda WO — principio rector transversal |
 | BP-0003 | 10 reglas de sistema (trazabilidad, versión, confianza) | AD-002 | WO-001 Sprint 3-4 (Contrato Base en modelos) |
 | BP-0004 | Lenguaje controlado (21 términos) | AD-003 v1.2 | WO-001 (naming en código), WO-010 (UX en español) |
 | BP-0005 | Criterio de Existencia, Regla de Entidades | AD-004 | Todo AD-FUNC — ya verificado en cada uno |

@@ -73,7 +73,7 @@ def list_evidence(company_id: str, dimension: Optional[str] = None, include_arch
 async def add_evidence(company_id: str, body: EvidenceBody, db: Session = Depends(get_db),
                        user: User = Depends(acting_user)):
     _, project = _writable(db, company_id, user)
-    # Si la fuente es un enlace, ADÁN la abre y deja constancia (WO-108): verificable → verificado
+    # Si la fuente es un enlace, ADAN la abre y deja constancia (WO-108): verificable → verificado
     verification = await external.verify_source(body.source.strip()) if external.looks_like_url(body.source) else None
     try:
         item = service.record_evidence(db, project, user, dimension=body.dimension, claim=body.claim,

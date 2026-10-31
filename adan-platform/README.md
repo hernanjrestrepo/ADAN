@@ -1,4 +1,4 @@
-# ADÁN — Sistema Operativo Empresarial
+# ADAN — Sistema Operativo Empresarial
 
 Agentes especializados, orquestación, gemelo digital, aprendizaje continuo y automatización empresarial. Primer usuario: Paradixe (dogfooding completo).
 

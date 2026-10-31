@@ -19,7 +19,7 @@ test("lanzar el agente de diagnostico y ver el resultado real", async ({ page })
   await page.getByRole("link", { name: /agente de diagn/i }).click();
   await expect(page).toHaveURL(/\/agents/);
 
-  await page.getByLabel(/cuéntale a adán/i).fill("No se si mis clientes pagarian por esto.");
+  await page.getByLabel(/cuéntale a adan/i).fill("No se si mis clientes pagarian por esto.");
   await page.getByRole("button", { name: /diagnosticar/i }).click();
 
   // Se escopea al panel de "ejecucion en curso" (no al historial, que puede tener

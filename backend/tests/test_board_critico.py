@@ -64,5 +64,5 @@ async def test_the_devils_advocate_rotates_each_session():
         devils = [v.agent for v in consensus.votes if v.devils_advocate]
         assert devils == [list(SPECIALISTS)[n]]
         assert sum("ABOGADO DEL DIABLO" in s for s in llm.systems) == 1
-        assert all("9 de cada 10 empresas" in s for s in llm.systems if "Board Room de ADÁN" in s and "Eres el C" in s
+        assert all("9 de cada 10 empresas" in s for s in llm.systems if "Board Room de ADAN" in s and "Eres el C" in s
                    or "Eres el L" in s or "Eres el P" in s or "Eres el O" in s)

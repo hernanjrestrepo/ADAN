@@ -275,7 +275,7 @@ def test_b9_stream_events_are_json_and_response_is_saved(client, db_session, com
     events = [json.loads(line[len("data: "):]) for line in resp.text.split("\n\n") if line.startswith("data: ")]
     assert [e["token"] for e in events if "token" in e] == ["línea 1", "\nlínea 2"]
     assert events[-1]["done"] is True and events[-1]["disclaimer"] == AI_DISCLAIMER
-    # El primero es la pregunta inicial de ADÁN (onboarding, WO-108); el último, la respuesta en streaming
+    # El primero es la pregunta inicial de ADAN (onboarding, WO-108); el último, la respuesta en streaming
     assistant = db_session.query(Message).filter_by(role="assistant").order_by(Message.created_at).all()
     assert len(assistant) == 2 and (assistant[0].metadata_json or {}).get("onboarding") is True
     assert assistant[-1].content == "línea 1\nlínea 2"

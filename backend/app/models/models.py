@@ -136,7 +136,7 @@ class Company(Base):
     jurisdiction = Column(String(100), nullable=True)  # AD-005 §2.1 (WO-098)
     founded_on = Column(Date, nullable=True)  # de aquí sale la Edad (AD-005 §4)
     intangibles = Column(JSONType, nullable=True)  # cultura, confianza, propósito… (AD-005 §3)
-    # Identidad visual: el entorno de ADÁN toma estos colores y el logo cuando trabajas en esta empresa
+    # Identidad visual: el entorno de ADAN toma estos colores y el logo cuando trabajas en esta empresa
     brand_color = Column(String(9), nullable=True)
     brand_accent = Column(String(9), nullable=True)
     logo = Column(Text, nullable=True)  # imagen pequeña como data URL (PNG, JPG, SVG o WebP)

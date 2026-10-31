@@ -111,14 +111,14 @@ export default function Nivel1Page() {
     }
   }
 
-  // Documentación del cliente: ADÁN la lee, la guarda en la memoria de la empresa y aprende de ella
+  // Documentación del cliente: ADAN la lee, la guarda en la memoria de la empresa y aprende de ella
   const handleUpload = async (files: File[]) => {
     setUploading(true)
     try {
       const result = await api.uploadDocuments(companyId, files)
       if (result.errors.length) setError(result.errors.join(' '))
       await loadStatus()
-      // Audio y video se transcriben aparte: lo que entendió ADÁN llega en un momento
+      // Audio y video se transcriben aparte: lo que entendió ADAN llega en un momento
       const status = await api.getNivel1Status(companyId)
       const last = status.messages[status.messages.length - 1]
       if (last?.metadata_json?.investigando || last?.metadata_json?.trabajando) {

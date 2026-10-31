@@ -44,7 +44,7 @@ test('sin evidencia suficiente, avanzar es decisión del cliente y se documenta'
   await expect(page.getByRole('button', { name: 'Aprobar cierre del Nivel 1' })).toHaveCount(0)
 
   await page.getByRole('button', { name: 'Avanzar bajo mi responsabilidad' }).click()
-  await expect(result).toContainText('ADÁN recomienda seguir trabajando el Nivel')
+  await expect(result).toContainText('ADAN recomienda seguir trabajando el Nivel')
   await expect(page.getByRole('link', { name: 'Ir a Decisiones →' })).toHaveAttribute('href', '/gemelo/c1?tab=decisions')
 })
 

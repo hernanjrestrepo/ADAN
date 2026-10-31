@@ -13,9 +13,9 @@ Este documento **resume; no reemplaza.** En caso de cualquier conflicto entre lo
 
 ---
 
-## 1. Qué es ADÁN, en un párrafo
+## 1. Qué es ADAN, en un párrafo
 
-ADÁN es la inteligencia orquestadora del Ecosistema Paradixe aplicada a una empresa específica: acompaña a esa empresa desde una idea sin validar hasta una organización madura, tomando y documentando cada decisión sobre evidencia, nunca sobre supuestos. No es un chatbot ni un generador de MVPs — es un Sistema Operativo Empresarial para cualquier etapa del ciclo de vida de una organización. Su misión formal: **"Diseñar, validar, construir, operar, transformar y escalar empresas extraordinarias, mediante inteligencia artificial y conocimiento colectivo."** Su propósito último: aumentar la probabilidad de que las buenas ideas se conviertan en grandes empresas, independientemente del capital, la experiencia previa o la red de contactos de sus fundadores.
+ADAN es la inteligencia orquestadora del Ecosistema Paradixe aplicada a una empresa específica: acompaña a esa empresa desde una idea sin validar hasta una organización madura, tomando y documentando cada decisión sobre evidencia, nunca sobre supuestos. No es un chatbot ni un generador de MVPs — es un Sistema Operativo Empresarial para cualquier etapa del ciclo de vida de una organización. Su misión formal: **"Diseñar, validar, construir, operar, transformar y escalar empresas extraordinarias, mediante inteligencia artificial y conocimiento colectivo."** Su propósito último: aumentar la probabilidad de que las buenas ideas se conviertan en grandes empresas, independientemente del capital, la experiencia previa o la red de contactos de sus fundadores.
 
 ---
 
@@ -25,24 +25,24 @@ ADÁN es la inteligencia orquestadora del Ecosistema Paradixe aplicada a una emp
 
 | # | Documento | Responde | Estado |
 |---|---|---|---|
-| 1 | AD-000 — Paradixe Ecosystem Vision | ¿Qué ecosistema rodea a ADÁN y qué lugar ocupa en él? | Aprobado y congelado, v1.0 |
-| 2 | AD-001 — Product DNA | ¿Quién es ADÁN, permanentemente? | Aprobado y congelado, v1.0 |
+| 1 | AD-000 — Paradixe Ecosystem Vision | ¿Qué ecosistema rodea a ADAN y qué lugar ocupa en él? | Aprobado y congelado, v1.0 |
+| 2 | AD-001 — Product DNA | ¿Quién es ADAN, permanentemente? | Aprobado y congelado, v1.0 |
 | 3 | AD-002 — Principios del Sistema | ¿Qué debe garantizar el sistema, siempre? | Aprobado y congelado, v2.0 |
 | 4 | AD-003 — Product Language | ¿Qué significa cada término oficial? | Aprobado y congelado, v1.0 |
-| 5 | AD-004 — Product Evolution | ¿Cómo puede cambiar ADÁN sin perder su identidad? | Aprobado y congelado, v1.0 |
+| 5 | AD-004 — Product Evolution | ¿Cómo puede cambiar ADAN sin perder su identidad? | Aprobado y congelado, v1.0 |
 | — | Anexo — Meta-Principios de Ingeniería | ¿Cómo se toman las decisiones de construcción? | Aprobado y congelado, v2.0 |
 | — | Ciclo Dominio (3 workshops) | ¿Qué es una empresa, cómo se relacionan sus partes, cómo evoluciona? | Aprobado como base, no congelados formalmente |
 | 6 | AD-005 — Enterprise Domain Model | ¿Cómo está constituida una organización? | Aprobado y congelado, v1.0 |
-| 7 | AD-006 — Domain Model (Software) | ¿Cómo representa ADÁN esa organización en software? | Aprobado y congelado, v1.1 |
-| 8 | AD-007 — Gemelo Digital | ¿Qué unifica el mundo de la empresa con el mundo de ADÁN? | Aprobado y congelado, v1.1 |
+| 7 | AD-006 — Domain Model (Software) | ¿Cómo representa ADAN esa organización en software? | Aprobado y congelado, v1.1 |
+| 8 | AD-007 — Gemelo Digital | ¿Qué unifica el mundo de la empresa con el mundo de ADAN? | Aprobado y congelado, v1.1 |
 | 9 | AD-008 — Objetos del Sistema | ¿Qué estados, acciones y permisos tiene cada entidad? | Aprobado y congelado, v1.0 |
 | 10 | AD-CMP-01 — Progresión entre Niveles | ¿Cómo avanza un Nivel? | Aprobado y congelado, v1.0 |
 | 11 | AD-CMP-02 — Consenso Multiagente | ¿Cómo producen los Agentes una sola respuesta? | Aprobado y congelado, v1.0 |
 | 12 | AD-CMP-03 — Comportamiento de Decisiones | ¿Cómo se aprueba una Decisión? | Aprobado y congelado, v1.0 |
-| 13 | AD-CMP-04 — Memoria y Contexto | ¿Qué recuerda ADÁN y qué olvida? | Aprobado y congelado, v1.0 |
+| 13 | AD-CMP-04 — Memoria y Contexto | ¿Qué recuerda ADAN y qué olvida? | Aprobado y congelado, v1.0 |
 | 14 | AD-CMP-05 — Evidencia y Scoring | ¿Cómo se convierte una conversación en un Score? | Aprobado y congelado, v1.0 |
 | 15 | AD-CMP-06 — Digital Twin Lifecycle | ¿Cómo nace, crece, se fusiona y se archiva un Gemelo Digital? | Aprobado y congelado, v1.0 |
-| 8 | AD-007 — Gemelo Digital | ¿Qué unifica el mundo de la empresa con el mundo de ADÁN? | Construido y autoauditado, v1.0 |
+| 8 | AD-007 — Gemelo Digital | ¿Qué unifica el mundo de la empresa con el mundo de ADAN? | Construido y autoauditado, v1.0 |
 
 **15 de 58 documentos del árbol oficial (25,9%). Fase 1 (Fundamentos + Comportamientos) completa, verificada por Gate Review. AD-FUNC (Funcionalidades) es la siguiente categoría.**
 
@@ -50,18 +50,18 @@ ADÁN es la inteligencia orquestadora del Ecosistema Paradixe aplicada a una emp
 
 ## 3. Los principios que gobiernan todo el sistema
 
-### 3.1 Los seis principios inviolables de ADÁN (AD-001 §12)
+### 3.1 Los seis principios inviolables de ADAN (AD-001 §12)
 
 1. Ninguna decisión avanza sin evidencia.
 2. Ninguna decisión importante avanza sin aprobación explícita del cliente.
 3. Ninguna recomendación se presenta sin su razonamiento disponible si se solicita.
 4. Ninguna empresa pierde su historial — el Gemelo Digital es permanente.
-5. ADÁN nunca actúa fuera de los límites de ecosistema (AD-000) ni de categoría (AD-001 §1.1).
-6. ADÁN reconoce los límites de su conocimiento — Principio de Humildad Intelectual.
+5. ADAN nunca actúa fuera de los límites de ecosistema (AD-000) ni de categoría (AD-001 §1.1).
+6. ADAN reconoce los límites de su conocimiento — Principio de Humildad Intelectual.
 
-### 3.2 Las ocho cosas que ADÁN nunca intentará ser (AD-001 §1.1)
+### 3.2 Las ocho cosas que ADAN nunca intentará ser (AD-001 §1.1)
 
-ERP · CRM de propósito general · sistema contable · IDE o reemplazo de desarrolladores · herramienta primaria de diseño gráfico · motor de búsqueda de propósito general · red social · plataforma de pagos genérica. Cada una tiene dueño en el ecosistema — no en ADÁN.
+ERP · CRM de propósito general · sistema contable · IDE o reemplazo de desarrolladores · herramienta primaria de diseño gráfico · motor de búsqueda de propósito general · red social · plataforma de pagos genérica. Cada una tiene dueño en el ecosistema — no en ADAN.
 
 ### 3.3 Las diez reglas de sistema (AD-002 v2.0)
 
@@ -91,11 +91,11 @@ Regla de No Duplicación · Estructura de cierre obligatoria (Dependencias, Docu
 | Término | Significado fijado |
 |---|---|
 | Ecosistema Paradixe | Red de componentes de IA (EVA, ARQAI, ATO, Genexis, CSI, Marketplace, Paradixe Capital, Token del Ecosistema, Enterprise Intelligence) que cubren cualquier etapa del ciclo de vida de una empresa |
-| ADÁN | Nombre propio, la inteligencia orquestadora — nunca "la IA", "el bot" o "el asistente" |
-| Orquestador | El rol de ADÁN dentro del ecosistema: decide qué activar, en qué orden, con qué motor |
+| ADAN | Nombre propio, la inteligencia orquestadora — nunca "la IA", "el bot" o "el asistente" |
+| Orquestador | El rol de ADAN dentro del ecosistema: decide qué activar, en qué orden, con qué motor |
 | Gemelo Digital | El límite de agregación permanente que une a una Empresa con su Proyecto — no una entidad de datos por separado |
-| Empresa / Proyecto | Empresa = el sujeto real de negocio (AD-005). Proyecto = el contenedor de software de ADÁN (AD-006). Nunca sinónimos |
-| Decisión / Decisión de Negocio / Elección de Diseño | Tres conceptos distintos que comparten raíz: el objeto interno de ADÁN, la decisión real de la empresa cliente, y la categoría de contenido de esta misma WO-000 |
+| Empresa / Proyecto | Empresa = el sujeto real de negocio (AD-005). Proyecto = el contenedor de software de ADAN (AD-006). Nunca sinónimos |
+| Decisión / Decisión de Negocio / Elección de Diseño | Tres conceptos distintos que comparten raíz: el objeto interno de ADAN, la decisión real de la empresa cliente, y la categoría de contenido de esta misma WO-000 |
 | Confidence Level | Indicador 0-100% de cuánto de un contenido está respaldado por evidencia — aplica tanto a los documentos de la WO-000 como, más adelante, a las salidas del propio producto |
 | Principio Permanente / Decisión de Diseño | Distinción entre lo que debe seguir siendo cierto en veinte años y lo que puede evolucionar sin romper ese principio |
 
@@ -128,16 +128,16 @@ Origen · Aprendizaje (bucle simple vs. doble) · Adaptación · Crecimiento y C
 
 ---
 
-## 6. El dominio operativo — cómo se representa ADÁN a sí mismo (AD-006)
+## 6. El dominio operativo — cómo se representa ADAN a sí mismo (AD-006)
 
-**12 entidades adicionales**, que nunca fueron responsabilidad de AD-005 porque pertenecen al mundo de ADÁN, no al mundo de la empresa modelada: Usuario, Usuario Principal (renombrado de "Fundador" — ya no aplicaba desde que la misión se amplió más allá de startups), Proyecto, Workspace, Nivel, Card, Conversación, Agente, Tarea, Decisión (de ADÁN), Score, Evento (técnico).
+**12 entidades adicionales**, que nunca fueron responsabilidad de AD-005 porque pertenecen al mundo de ADAN, no al mundo de la empresa modelada: Usuario, Usuario Principal (renombrado de "Fundador" — ya no aplicaba desde que la misión se amplió más allá de startups), Proyecto, Workspace, Nivel, Card, Conversación, Agente, Tarea, Decisión (de ADAN), Score, Evento (técnico).
 
 **Contrato Base** — siete atributos que heredan las 38 entidades (26 + 12) sin repetirse: identificador único, historial de versiones, estado (activo/archivado, nunca eliminado), responsable del último cambio, evidencia asociada, nivel de confianza declarado, razonamiento disponible bajo solicitud. Es la primera implementación a nivel de software de las diez reglas de AD-002.
 
 **AD-005 y AD-006 modelan dos universos distintos, no el mismo universo con dos nombres:**
 
 ```
-DOMINIO EMPRESARIAL (AD-005, 26)      DOMINIO OPERATIVO DE ADÁN (AD-006, 12)
+DOMINIO EMPRESARIAL (AD-005, 26)      DOMINIO OPERATIVO DE ADAN (AD-006, 12)
 Empresa, Cliente Final, Mercado,       Usuario, Proyecto, Workspace, Nivel,
 Proceso, Riesgo, Decisión de           Card, Conversación, Agente, Tarea,
 Negocio...                             Decisión, Score, Evento...
@@ -183,7 +183,7 @@ Cada flecha es una dependencia real, registrada en el Knowledge Graph (`docs/wo-
 | 6 | Reglas de nacimiento/graduación de Funcionalidades; control de crecimiento del dominio | AD-004 |
 | 7 | 10 Meta-Principios, Emergencia en posición 2 | Anexo v2.0 |
 | 8 | 172 → 26 entidades de negocio; Riesgo e Intangible transversales; Edad/Madurez/Velocidad/Etapa derivadas; 10 Leyes Dinámicas | AD-005 |
-| 9 | 12 entidades operativas de ADÁN; Contrato Base; "Fundador" → "Usuario Principal" | AD-006 |
+| 9 | 12 entidades operativas de ADAN; Contrato Base; "Fundador" → "Usuario Principal" | AD-006 |
 | 10 | Gemelo Digital como límite de agregación, no entidad nueva | AD-007 |
 
 ### Decisiones deliberadamente NO congeladas — pendientes, con dueño claro

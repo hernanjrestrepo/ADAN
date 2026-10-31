@@ -31,7 +31,7 @@ export function Login() {
         onSubmit={handleSubmit}
         className="w-full max-w-sm rounded-lg border border-adan-border bg-adan-surface p-8"
       >
-        <h1 className="mb-1 text-2xl font-semibold">ADÁN</h1>
+        <h1 className="mb-1 text-2xl font-semibold">ADAN</h1>
         <p className="mb-6 text-sm text-adan-muted">Sistema Operativo Empresarial</p>
 
         <label className="mb-1 block text-sm text-adan-muted" htmlFor="email">

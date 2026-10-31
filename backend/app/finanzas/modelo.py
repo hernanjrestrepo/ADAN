@@ -1,4 +1,4 @@
-"""Motor del flujo de caja: con los supuestos (que propone el CFO de ADÁN y el cliente puede corregir), calcula
+"""Motor del flujo de caja: con los supuestos (que propone el CFO de ADAN y el cliente puede corregir), calcula
 mes a mes ingresos, costos, EBITDA, impuestos, inversión, financiación y caja. Las cuentas las hace el código,
 no el modelo de lenguaje: son exactas y repetibles.
 """

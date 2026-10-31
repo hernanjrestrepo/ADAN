@@ -1,4 +1,4 @@
-# EVENT_BUS — Sistema de Eventos de ADÁN
+# EVENT_BUS — Sistema de Eventos de ADAN
 
 **WO:** WO-002.1  
 **Fecha:** 2026-07-24  
@@ -9,7 +9,7 @@
 
 ## 1. Visión General
 
-El Event Bus es el sistema nervioso de ADÁN. Todo lo que pasa en el sistema — cada acción, cada cambio, cada decisión — se publica como un evento. Los agentes se suscriben a los eventos que les interesan y reaccionan en consecuencia.
+El Event Bus es el sistema nervioso de ADAN. Todo lo que pasa en el sistema — cada acción, cada cambio, cada decisión — se publica como un evento. Los agentes se suscriben a los eventos que les interesan y reaccionan en consecuencia.
 
 **Principio:** El sistema de eventos es el backbone de trazabilidad. Si algo pasó, hay un evento. Si algo se puede reconstruir, se reconstruye desde eventos.
 

@@ -1,4 +1,4 @@
-"""La memoria del proyecto, custodiada por ADÁN y compartida con todo el equipo en cada turno.
+"""La memoria del proyecto, custodiada por ADAN y compartida con todo el equipo en cada turno.
 
 Tres partes:
 - Libro de acuerdos: lo decidido, lo descartado («no volver a preguntar») y los datos confirmados por el fundador.
@@ -138,7 +138,7 @@ def context(db: Session, project: Project, query: str = "", nivel: int | None = 
     name = founder_name(db, project)
     if name:
         parts.append(f"El fundador se llama {name}. Andrés, Camila, Santiago, Mateo, Lucía, Sofía e Iris son del equipo de "
-                     f"ADÁN: nunca llames así al fundador.")
+                     f"ADAN: nunca llames así al fundador.")
     if data.get("ficha"):
         parts.append("FICHA DE LA EMPRESA (fuente única de verdad: todas las cuentas y afirmaciones salen de aquí; si "
                      "algo la contradice, gana la ficha):\n"
@@ -163,7 +163,7 @@ def context(db: Session, project: Project, query: str = "", nivel: int | None = 
             f"«{title}»: {piece}" for title, piece in found))
     if not parts:
         return ""
-    return "MEMORIA DEL PROYECTO (la custodia ADÁN; todo el equipo la conoce):\n" + "\n\n".join(parts)
+    return "MEMORIA DEL PROYECTO (la custodia ADAN; todo el equipo la conoce):\n" + "\n\n".join(parts)
 
 
 # --- Consolidación: memoria sin contradicciones y ficha de parámetros --------------------------------------------
@@ -182,7 +182,7 @@ CONSOLIDATE_SCHEMA = {
 }
 
 CONSOLIDATOR = (
-    "Eres ADÁN, custodio de la memoria del proyecto. Lees lo que dijo el FUNDADOR en las conversaciones de los "
+    "Eres ADAN, custodio de la memoria del proyecto. Lees lo que dijo el FUNDADOR en las conversaciones de los "
     "Niveles (sus palabras mandan; lo que propuso el equipo solo cuenta si él lo aprobó) y el libro de acuerdos "
     "actual. Devuelves:\n"
     "1) `ficha`: los parámetros de la empresa como fuente única de verdad, cada uno con `campo` y `valor` corto: "
@@ -220,7 +220,7 @@ async def consolidate(llm, db: Session, project: Project) -> dict:
             if m.role == "user":
                 lines.append(f"FUNDADOR: {m.content[:900]}")
             elif not (isinstance(m.metadata_json, dict) and m.metadata_json.get("mesa")):
-                lines.append(f"{m.agent_name or 'ADÁN'}: {m.content[:300]}")
+                lines.append(f"{m.agent_name or 'ADAN'}: {m.content[:300]}")
         if lines:
             talks.append(f"=== Nivel {lv.number} ===\n" + "\n".join(lines)[-14000:])
     current = "\n".join(f"- [{a['tipo']}, Nivel {a.get('nivel', '?')}] {a['texto']}" for a in data["acuerdos"])

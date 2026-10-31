@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 
-// Dictado por voz con el reconocimiento del navegador (Chrome, Edge, Safari). El audio no pasa por ADÁN:
+// Dictado por voz con el reconocimiento del navegador (Chrome, Edge, Safari). El audio no pasa por ADAN:
 // el navegador lo convierte a texto y ese texto queda en la caja para que la persona lo revise antes de enviar.
 
 interface Recognition {

@@ -99,6 +99,6 @@ def test_the_board_session_and_its_dialogue_live_in_the_same_conversation(client
     msgs = client.get(f"/api/v1/nivel1/{cid}/status", headers=h).json()["messages"]
     board = [m for m in msgs if (m.get("metadata_json") or {}).get("escena") == "board"]
     names = [m["agent_name"] for m in board]
-    assert names[0] == "ADÁN" and "Camila · CFO" in names and "Lucía · Legal" in names
+    assert names[0] == "ADAN" and "Camila · CFO" in names and "Lucía · Legal" in names
     assert any(m["role"] == "user" and m["content"] == "Tengo 20 preventas" for m in board)
-    assert "Cambio mi voto" in board[-2]["content"] and board[-1]["agent_name"] == "ADÁN"
+    assert "Cambio mi voto" in board[-2]["content"] and board[-1]["agent_name"] == "ADAN"

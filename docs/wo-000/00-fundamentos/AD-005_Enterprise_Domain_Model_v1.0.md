@@ -11,7 +11,7 @@ Aprobador: Hernán / Junta Directiva
 
 # AD-005 — Enterprise Domain Model
 
-> Este documento responde una sola pregunta: **¿cómo está constituida una organización, independientemente de su tamaño, industria, país o momento de vida?** No describe software. No hay tablas, clases ni bases de datos aquí — eso es AD-006. Este documento es la constitución conceptual del mundo empresarial que ADÁN entenderá durante los próximos veinte años. Todo lo construido en el Ciclo Dominio —172 conceptos enumerados, 32 relaciones catalogadas, 10 leyes dinámicas ancladas en teoría— converge aquí, y converge **reducido**, no ampliado: de 172 conceptos candidatos, este documento selecciona 26 entidades núcleo. La reducción no es una pérdida — es la aplicación más grande, hasta ahora, de la Regla de Economía Conceptual (AD-002 §1.10) y el Principio de Emergencia (Anexo v2.0 §2) en toda la WO-000.
+> Este documento responde una sola pregunta: **¿cómo está constituida una organización, independientemente de su tamaño, industria, país o momento de vida?** No describe software. No hay tablas, clases ni bases de datos aquí — eso es AD-006. Este documento es la constitución conceptual del mundo empresarial que ADAN entenderá durante los próximos veinte años. Todo lo construido en el Ciclo Dominio —172 conceptos enumerados, 32 relaciones catalogadas, 10 leyes dinámicas ancladas en teoría— converge aquí, y converge **reducido**, no ampliado: de 172 conceptos candidatos, este documento selecciona 26 entidades núcleo. La reducción no es una pérdida — es la aplicación más grande, hasta ahora, de la Regla de Economía Conceptual (AD-002 §1.10) y el Principio de Emergencia (Anexo v2.0 §2) en toda la WO-000.
 
 **Nivel de contenido:** mixto, señalado explícitamente en cada sección. Los criterios de admisión (sección 1) y las leyes dinámicas (sección 5) son Principio Permanente. La lista específica de 26 entidades (sección 2) es, en su mayoría, Principio Permanente por representar estructura universal — salvo donde se indica lo contrario, son Decisión de Diseño sujeta a evolución sin romper el criterio de admisión que las produjo.
 
@@ -67,10 +67,10 @@ Organizadas en seis clusters. Cada entidad indica su definición conceptual y su
 | Entidad | Definición conceptual | Atributos conceptuales clave |
 |---|---|---|
 | **Proceso** | Una secuencia repetible de actividad que la Empresa ejecuta para producir un resultado | Objetivo del proceso, frecuencia, puede originar Iniciativas (Workshop de Relaciones §3) |
-| **Iniciativa** | Un esfuerzo interno, delimitado en el tiempo, para lograr un cambio específico — nombre definitivo, distinto de "Proyecto" (reservado para ADÁN, AD-003) | Objetivo, Empleados involucrados, Presupuesto asociado |
-| **Suceso Empresarial** | Algo que ocurrió en el mundo real de la Empresa — nombre definitivo, distinto de "Evento" (reservado para el registro técnico de ADÁN, AD-006) | Naturaleza (rutinario, crítico, fundacional), fecha, puede originar o ser originado por una Decisión de Negocio |
+| **Iniciativa** | Un esfuerzo interno, delimitado en el tiempo, para lograr un cambio específico — nombre definitivo, distinto de "Proyecto" (reservado para ADAN, AD-003) | Objetivo, Empleados involucrados, Presupuesto asociado |
+| **Suceso Empresarial** | Algo que ocurrió en el mundo real de la Empresa — nombre definitivo, distinto de "Evento" (reservado para el registro técnico de ADAN, AD-006) | Naturaleza (rutinario, crítico, fundacional), fecha, puede originar o ser originado por una Decisión de Negocio |
 | **Contrato** | Un acuerdo formal entre la Empresa y otra parte (Proveedor, Cliente, Empleado, Socio) | Partes, vigencia, se formaliza mediante uno o más Documentos |
-| **Documento** | Cualquier archivo con contenido y metadatos relevante para la Empresa | Atributo `Origen` (generado internamente / recibido de un tercero) — resuelve la colisión con el "Documento" de ADÁN sin crear dos entidades (Addendum A1) |
+| **Documento** | Cualquier archivo con contenido y metadatos relevante para la Empresa | Atributo `Origen` (generado internamente / recibido de un tercero) — resuelve la colisión con el "Documento" de ADAN sin crear dos entidades (Addendum A1) |
 
 ### 2.5 Dirección y Evidencia
 
@@ -79,7 +79,7 @@ Organizadas en seis clusters. Cada entidad indica su definición conceptual y su
 | **Objetivo** | Una declaración cualitativa de dirección estratégica | Horizonte de tiempo, se concreta mediante una o más Metas |
 | **Meta** | La cuantificación de un Objetivo (equivalente a un Key Result) | Valor objetivo, fecha límite |
 | **Indicador** | Lo que se mide para verificar el avance hacia una Meta (KPI es el subtipo más común, no una entidad separada) | Fórmula conceptual, frecuencia de medición |
-| **Decisión de Negocio** | Una elección real tomada por la Empresa — nombre definitivo, distinto de "Decisión" (objeto de ADÁN, AD-006) y de "Elección de Diseño" (documentación de la WO-000) | Quién la tomó (Empleado en su Cargo), Documentos que la respaldan, modo de aprendizaje que representa (bucle simple o doble, Ley 2) |
+| **Decisión de Negocio** | Una elección real tomada por la Empresa — nombre definitivo, distinto de "Decisión" (objeto de ADAN, AD-006) y de "Elección de Diseño" (documentación de la WO-000) | Quién la tomó (Empleado en su Cargo), Documentos que la respaldan, modo de aprendizaje que representa (bucle simple o doble, Ley 2) |
 
 ### 2.6 Finanzas
 
@@ -116,7 +116,7 @@ Todas viven como atributos (algunos derivados) de la entidad Empresa — ninguna
 
 ## 5. Leyes Dinámicas del Dominio
 
-Las diez leyes del Workshop de Comportamientos se incorporan aquí como reglas formales del dominio — no como comportamiento de ADÁN (eso es AD-CMP), sino como verdades sobre cómo se comportan las organizaciones que ADÁN modela. Se listan por nombre, con referencia a su desarrollo completo en el workshop de origen, en cumplimiento de la Regla de No Duplicación:
+Las diez leyes del Workshop de Comportamientos se incorporan aquí como reglas formales del dominio — no como comportamiento de ADAN (eso es AD-CMP), sino como verdades sobre cómo se comportan las organizaciones que ADAN modela. Se listan por nombre, con referencia a su desarrollo completo en el workshop de origen, en cumplimiento de la Regla de No Duplicación:
 
 1. **Ley de Origen** — nacimiento por Narrativa Fundacional + evidencia + compromiso irreversible de recursos.
 2. **Ley de Aprendizaje** — ciclo Decisión de Negocio → Suceso Empresarial → Evidencia → ajuste; bucle simple vs. bucle doble.
@@ -162,7 +162,7 @@ Tres categorías, ninguna por descuido:
 - AD-006 Domain Model (software) — traduce estas 26 entidades a estructuras operables; no puede introducir una entidad de negocio que no esté aquí sin antes crear una nueva versión de AD-005 (Regla de Entidades, v3.1 §1)
 - AD-007 Gemelo Digital — representa una instancia de Empresa (y sus 25 entidades relacionadas) en el tiempo; la metáfora de "genoma" descartada en el Taxonomy Workshop se recupera aquí como lenguaje explicativo cuando AD-007 se redacte
 - AD-CMP-06 Digital Twin Lifecycle — implementa el archivado permanente exigido por la Ley 8 (Muerte)
-- AD-FUNC-01 (7 Niveles) — el acompañamiento de ADÁN opera sobre estas 26 entidades desde el primer Nivel
+- AD-FUNC-01 (7 Niveles) — el acompañamiento de ADAN opera sobre estas 26 entidades desde el primer Nivel
 
 ## Impacto sobre otros módulos
 
@@ -173,7 +173,7 @@ Tres categorías, ninguna por descuido:
 
 ## Riesgos
 
-- **Riesgo de que 26 entidades resulten insuficientes en la práctica.** Es una hipótesis fuerte, no probada contra datos reales todavía — el primer uso real de ADÁN con un cliente es la prueba definitiva. Mitigación: la Regla de Entidades exige que cualquier entidad faltante se agregue mediante una nueva versión de este documento, nunca silenciosamente en AD-006.
+- **Riesgo de que 26 entidades resulten insuficientes en la práctica.** Es una hipótesis fuerte, no probada contra datos reales todavía — el primer uso real de ADAN con un cliente es la prueba definitiva. Mitigación: la Regla de Entidades exige que cualquier entidad faltante se agregue mediante una nueva versión de este documento, nunca silenciosamente en AD-006.
 - **Riesgo de que la resolución de Reputación (Empresa y Marca a la vez, sección 6) genere ambigüedad de cálculo en AD-FUNC-07.** Se documenta la decisión conceptual aquí; su mecanismo de cálculo dual queda para el documento de Arquitectura correspondiente.
 - **Riesgo de la nueva metodología misma:** este documento se congela sin una ronda de revisión previa del Board, por instrucción explícita. El riesgo se mitiga con la autoauditoría completa (ver conversación de entrega) y con la posibilidad, ya ejercida varias veces en esta WO-000, de abrir una nueva versión ante cualquier contradicción objetiva que aparezca.
 
@@ -183,12 +183,12 @@ Ninguna nueva — las heredadas de los tres workshops (número de Niveles 6 vs. 
 
 ## Decisiones pendientes
 
-- Validar las 26 entidades núcleo contra un caso de negocio real (el primer cliente acompañado por ADÁN) antes de considerar esta lista definitivamente probada, no solo lógicamente derivada.
+- Validar las 26 entidades núcleo contra un caso de negocio real (el primer cliente acompañado por ADAN) antes de considerar esta lista definitivamente probada, no solo lógicamente derivada.
 - Diseñar el mecanismo de extensión por industria (sección 6) cuando exista evidencia de qué industrias lo requieren primero.
 
 ## Historial de cambios
 
 | Versión | Fecha | Cambio | Motivo |
 |---|---|---|---|
-| v1.0 | 2026-07-14 | Creación inicial: 26 entidades núcleo seleccionadas de 172 conceptos candidatos, 2 propiedades transversales, 4 dimensiones de identidad, 10 leyes dinámicas incorporadas por referencia. Construido, autoauditado y congelado en un solo ciclo, bajo la nueva metodología "se construye, se autoaudita, se congela, se continúa" | Documento fundacional del modelo empresarial de ADÁN — instrucción directa del Board de avanzar sin más iteraciones de workshop |
+| v1.0 | 2026-07-14 | Creación inicial: 26 entidades núcleo seleccionadas de 172 conceptos candidatos, 2 propiedades transversales, 4 dimensiones de identidad, 10 leyes dinámicas incorporadas por referencia. Construido, autoauditado y congelado en un solo ciclo, bajo la nueva metodología "se construye, se autoaudita, se congela, se continúa" | Documento fundacional del modelo empresarial de ADAN — instrucción directa del Board de avanzar sin más iteraciones de workshop |
 | — | 2026-07-14 | Validación final del Board, sin cambios de contenido, confirmada en el Gate Review de Fase 1 | Cierre formal de la aprobación pendiente |

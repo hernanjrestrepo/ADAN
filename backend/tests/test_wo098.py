@@ -207,7 +207,7 @@ def test_an_agent_can_propose_but_never_approve_or_execute(db_session, twin):
             db_session.commit()
         db_session.rollback()
 
-    # ADÁN (sistema) tampoco aprueba (AD-008 §3)
+    # ADAN (sistema) tampoco aprueba (AD-008 §3)
     initiative = db_session.query(CompanyInitiative).filter_by(name="Recortar costos").one()
     initiative.state = "approved"
     with pytest.raises(TwinRuleError):

@@ -1,4 +1,4 @@
-# KNOWLEDGE_GRAPH — Grafo de Conocimiento de ADÁN
+# KNOWLEDGE_GRAPH — Grafo de Conocimiento de ADAN
 
 **WO:** WO-002.1  
 **Fecha:** 2026-07-24  
@@ -9,9 +9,9 @@
 
 ## 1. Visión General
 
-El Knowledge Graph es la representación estructurada de todo lo que ADÁN sabe. No es una base de datos relacional — es un grafo donde las entidades son nodos y las relaciones son aristas. Cada nodo y cada arista tienen propiedades, versiones, niveles de confianza y fuentes.
+El Knowledge Graph es la representación estructurada de todo lo que ADAN sabe. No es una base de datos relacional — es un grafo donde las entidades son nodos y las relaciones son aristas. Cada nodo y cada arista tienen propiedades, versiones, niveles de confianza y fuentes.
 
-**Principio:** El Knowledge Graph es la fuente de verdad semántica. Cuando un agente pregunta "¿qué sabe ADÁN sobre la empresa X?", la respuesta viene del grafo.
+**Principio:** El Knowledge Graph es la fuente de verdad semántica. Cuando un agente pregunta "¿qué sabe ADAN sobre la empresa X?", la respuesta viene del grafo.
 
 ---
 
@@ -19,7 +19,7 @@ El Knowledge Graph es la representación estructurada de todo lo que ADÁN sabe.
 
 ### 2.1 Empresa (Company)
 
-**Descripción:** Una organización empresarial registrada en ADÁN.
+**Descripción:** Una organización empresarial registrada en ADAN.
 
 **Propiedades:**
 | Propiedad | Tipo | Descripción |
@@ -201,7 +201,7 @@ Document → SUPPORTS → Decision
 
 ### 2.8 Conversación (Conversation)
 
-**Descripción:** Una conversación entre el usuario y ADÁN.
+**Descripción:** Una conversación entre el usuario y ADAN.
 
 **Propiedades:**
 | Propiedad | Tipo | Descripción |
@@ -354,7 +354,7 @@ Cada relación tiene propiedades propias:
 
 | Propiedad | Tipo | Descripción |
 |---|---|---|
-| `confidence` | float (0-1) | Qué tan seguro está ADÁN de esta relación |
+| `confidence` | float (0-1) | Qué tan seguro está ADAN de esta relación |
 | `source` | str | De dónde vino la información |
 | `verified` | bool | ¿Ha sido verificada manualmente? |
 | `last_validated` | datetime | Última vez que se verificó |
@@ -610,7 +610,7 @@ Agente detecta hecha
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                    KNOWLEDGE GRAPH: ADÁN                         │
+│                    KNOWLEDGE GRAPH: ADAN                         │
 │                                                                  │
 │  ┌──────────┐                                                   │
 │  │ Hernán   │──── FOUNDS ────▶┌──────────────┐                  │
@@ -635,7 +635,7 @@ Agente detecta hecha
 │                               └──────────────┘                  │
 │                                                                  │
 │  ┌──────────────┐                                               │
-│  │  ADÁN        │──── BELONGS_TO ────▶ Paradixe                 │
+│  │  ADAN        │──── BELONGS_TO ────▶ Paradixe                 │
 │  │  (Project)   │                                               │
 │  └──────┬───────┘                                               │
 │         │                                                        │

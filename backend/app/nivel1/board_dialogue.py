@@ -107,7 +107,7 @@ def _system(agent: str | None, objectors: list[str]) -> str:
            + ", ".join(objectors or ["los que objetaron"]) + "), uno por uno, diciendo si su explicación le basta o "
            "qué le falta exactamente. Después el CEO modera.")
     return (
-        "Eres el Board Room de ADÁN conversando con el fundador después de votar. Cada especialista habla desde su área "
+        "Eres el Board Room de ADAN conversando con el fundador después de votar. Cada especialista habla desde su área "
         "y con los datos de ESTA empresa. Explica con claridad a alguien que no sabe del tema: por qué votó así, qué "
         "evidencia concreta pide (qué medir, con quién, cuántos) y cómo conseguirla rápido y barato. "
         f"{who}\n"
@@ -182,7 +182,7 @@ def as_context(db: Session, project: Project) -> str:
 
 
 def continue_anyway(db: Session, project: Project, consensus: BoardConsensus, reason: str) -> dict:
-    """El fundador decide seguir aunque el Board no aprobó. ADÁN no lo bloquea: deja constancia de las objeciones que
+    """El fundador decide seguir aunque el Board no aprobó. ADAN no lo bloquea: deja constancia de las objeciones que
     quedan abiertas y de su motivo, y eso entra como inferencia en contra que baja la calificación (Problem Score)."""
     from app.scoring import service as scoring
     from app.scoring import engine

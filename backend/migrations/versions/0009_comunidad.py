@@ -1,4 +1,4 @@
-"""Comunidad: perfiles, vitrina de empresas con Sello ADÁN y conexiones.
+"""Comunidad: perfiles, vitrina de empresas con Sello ADAN y conexiones.
 
 Revision ID: 0009
 Revises: 0008

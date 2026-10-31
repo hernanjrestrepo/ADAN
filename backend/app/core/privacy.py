@@ -8,7 +8,7 @@ POLICY_VERSION = "2026-10"
 DATA_PROCESSING = "data_processing"
 AGGREGATED_INTELLIGENCE = "aggregated_intelligence"
 PURPOSES = {
-    DATA_PROCESSING: "Tratamiento de mis datos para prestarme el servicio de ADÁN",
+    DATA_PROCESSING: "Tratamiento de mis datos para prestarme el servicio de ADAN",
     AGGREGATED_INTELLIGENCE: ("Uso de mis datos, anonimizados y agregados con los de otras empresas, para "
                               "producir inteligencia de mercado. Nunca se venden datos crudos"),
 }

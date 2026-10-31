@@ -9,7 +9,7 @@ import type { OnboardingState } from '../types'
 
 // Política de tratamiento de datos (Ley 1581 de 2012, AD-DEC-0002 decisión 8). Versión 2026-10.
 const SECTIONS: { title: string; body: string }[] = [
-  { title: 'Quién trata tus datos', body: 'Paradixe, a través de ADÁN, es responsable del tratamiento de los datos que registras: tu nombre, tu correo y la información de tus empresas.' },
+  { title: 'Quién trata tus datos', body: 'Paradixe, a través de ADAN, es responsable del tratamiento de los datos que registras: tu nombre, tu correo y la información de tus empresas.' },
   { title: 'Para qué', body: 'Para prestarte el servicio: acompañarte nivel por nivel, guardar el Gemelo Digital de tus empresas y producir los análisis que ves. Las respuestas las genera una inteligencia artificial.' },
   { title: 'Inteligencia agregada (opcional)', body: 'Solo si lo autorizas, tus datos se usan anonimizados y agregados con los de otras empresas para producir inteligencia de mercado. Nunca se venden datos crudos ni se identifica a tu empresa.' },
   { title: 'Tus derechos', body: 'Puedes conocer, actualizar y rectificar tus datos, pedir prueba de esta autorización, revocarla y pedir la supresión de tus datos. Cada cambio de consentimiento queda registrado con su fecha; nada se borra en silencio.' },
@@ -43,7 +43,7 @@ export default function PrivacyPage() {
   return (
     <div className="min-h-screen">
       <main className="max-w-3xl mx-auto p-4 sm:p-8 space-y-6">
-        <Link to={user ? '/dashboard' : '/login'} aria-label="Volver a ADÁN"><Logo /></Link>
+        <Link to={user ? '/dashboard' : '/login'} aria-label="Volver a ADAN"><Logo /></Link>
         <div>
           <h1 className="text-3xl font-bold">Política de tratamiento de datos</h1>
           <p className="text-sm text-adan-muted mt-1">Versión 2026-10 · Ley 1581 de 2012</p>

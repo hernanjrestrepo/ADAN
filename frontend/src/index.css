@@ -70,7 +70,7 @@ body {
   background: #64748b;
 }
 
-/* Markdown de las respuestas de ADÁN (sin el plugin de tipografía de Tailwind) */
+/* Markdown de las respuestas de ADAN (sin el plugin de tipografía de Tailwind) */
 .markdown > * + * { margin-top: 0.75rem; }
 .markdown ul { list-style: disc; padding-left: 1.25rem; }
 .markdown ol { list-style: decimal; padding-left: 1.25rem; }

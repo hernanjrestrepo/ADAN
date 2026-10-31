@@ -12,7 +12,7 @@ Antes de cada flush de SQLAlchemy:
 5. **Eventos sistemáticos** (AD-008 §4): toda transición de A, B o D, y toda entidad de
    negocio creada o archivada, genera un Evento de dominio para el Timeline.
 
-El actor sale de app/twin/actor.py (por defecto, ADÁN/sistema).
+El actor sale de app/twin/actor.py (por defecto, ADAN/sistema).
 """
 from __future__ import annotations
 
@@ -178,7 +178,7 @@ def _check_transition(obj, pattern: str, old: str, new: str, actor: Actor) -> No
         raise TwinRuleError(f"{entity}: transición no permitida {old} → {new} (Patrón {pattern}, AD-008)")
 
     if pattern == "A" and new in ("approved", "rejected", "executed") and actor.kind != "user":
-        # AD-008 §3: ni un Agente ni ADÁN aprueban, rechazan o ejecutan; solo el cliente
+        # AD-008 §3: ni un Agente ni ADAN aprueban, rechazan o ejecutan; solo el cliente
         raise TwinRuleError(
             f"{entity}: solo el Usuario Principal puede pasar a '{new}' (actor: {actor}, AD-008 §3)"
         )

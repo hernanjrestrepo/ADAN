@@ -1,4 +1,4 @@
-"""Quién hace cada cambio (AD-008 §3): Usuario Principal, Usuario, Agente o ADÁN (sistema).
+"""Quién hace cada cambio (AD-008 §3): Usuario Principal, Usuario, Agente o ADAN (sistema).
 
 El actor viaja en un ContextVar para que el hook de persistencia (app/twin/hooks.py) pueda
 validar permisos y registrar el responsable sin tener que pasarlo por cada función.
@@ -32,7 +32,7 @@ class Actor:
 
     @classmethod
     def system(cls, reason: str | None = None) -> "Actor":
-        return cls("system", None, reason or "ADÁN")
+        return cls("system", None, reason or "ADAN")
 
     def __str__(self) -> str:
         return f"{self.kind}:{self.id}" if self.id else self.kind

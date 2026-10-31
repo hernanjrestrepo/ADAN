@@ -4,7 +4,7 @@ import { useUniverso } from '../store'
 
 const PACE = { gathering: 3200, pitch: 4400, deciding: 2300 } as const
 
-// La Arena: ADÁN presenta y cuatro inversionistas exigentes deciden uno por uno. Sin convencerlos no se cierra el Nivel 5.
+// La Arena: ADAN presenta y cuatro inversionistas exigentes deciden uno por uno. Sin convencerlos no se cierra el Nivel 5.
 export default function ArenaOverlay() {
   const arena = useUniverso((s) => s.arena)
   const advance = useUniverso((s) => s.advanceArena)
@@ -23,14 +23,14 @@ export default function ArenaOverlay() {
 
   return (
     <section aria-label="La Arena" aria-live="polite"
-      className="u-no-print u-glass u-rise fixed z-30 bottom-3 left-2 right-2 md:left-[410px] md:right-3 lg:left-1/2 lg:right-auto lg:-translate-x-1/2 lg:w-[760px] rounded-3xl p-5 ring-1 ring-red-400/40">
+      className="u-no-print u-glass u-rise fixed z-30 bottom-12 left-2 right-2 md:left-[410px] md:right-3 lg:left-1/2 lg:right-auto lg:-translate-x-1/2 lg:w-[760px] rounded-3xl p-5 ring-1 ring-red-400/40">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
           <p className="text-[11px] font-semibold tracking-[0.3em] text-red-300">LA ARENA · NIVEL 5</p>
           <h2 className="text-lg font-bold">Convence a cuatro inversionistas</h2>
         </div>
         <span className="rounded-full bg-white/5 px-3 py-1 text-xs">
-          {arena.phase === 'gathering' ? 'Los inversionistas toman asiento…' : arena.phase === 'pitch' ? 'ADÁN presenta tu empresa' : `${yes} invierten · ${shown.length - yes} no`}
+          {arena.phase === 'gathering' ? 'Los inversionistas toman asiento…' : arena.phase === 'pitch' ? 'ADAN presenta tu empresa' : `${yes} invierten · ${shown.length - yes} no`}
         </span>
       </div>
       <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-2">
@@ -52,7 +52,7 @@ export default function ArenaOverlay() {
       {arena.phase === 'decided' && (
         <div className="mt-4 u-rise">
           <p className={`rounded-2xl p-3 text-sm ${arena.passed ? 'bg-emerald-400/10 text-emerald-100' : 'bg-red-500/10 text-red-100'}`}>
-            <b>ADÁN (CEO):</b> {arena.passed
+            <b>ADAN (CEO):</b> {arena.passed
               ? 'Pasamos La Arena: hay inversionistas dispuestos a entrar. Ya puedes cerrar el Nivel 5.'
               : 'No convencimos a nadie. Lo que señalaron es lo que haría cerrar la empresa: blíndalo y volvemos a entrar.'}
           </p>

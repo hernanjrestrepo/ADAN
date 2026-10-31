@@ -1,7 +1,7 @@
 """Pasarela de pagos detrás de un solo contrato, como en Xmart Travel: la persona paga en la página ALOJADA por la
-pasarela (ADÁN nunca ve la tarjeta) y el resultado llega por webhook firmado o se consulta directamente.
+pasarela (ADAN nunca ve la tarjeta) y el resultado llega por webhook firmado o se consulta directamente.
 
-- `simulador`: sin llaves. La "página de pago" es una pantalla de ADÁN que aprueba o rechaza: sirve para probar.
+- `simulador`: sin llaves. La "página de pago" es una pantalla de ADAN que aprueba o rechaza: sirve para probar.
 - `wompi`: Web Checkout de Wompi (Bancolombia) con firma de integridad; eventos `transaction.updated` verificados con
   el secreto de eventos. Con llaves de producción se sigue en el simulador mientras PAYMENTS_LIVE esté apagado.
 """
@@ -44,7 +44,7 @@ def integrity_signature(reference: str, amount_in_cents: int, currency: str = "C
 
 
 def checkout_url(reference: str, amount_cop: int, redirect: str) -> str:
-    """Enlace a la página de pago. En el simulador, a la pantalla de prueba de ADÁN."""
+    """Enlace a la página de pago. En el simulador, a la pantalla de prueba de ADAN."""
     if provider() == "simulador":
         return f"{settings.PUBLIC_URL}/apples?compra={reference}&simulador=1"
     cents = amount_cop * 100

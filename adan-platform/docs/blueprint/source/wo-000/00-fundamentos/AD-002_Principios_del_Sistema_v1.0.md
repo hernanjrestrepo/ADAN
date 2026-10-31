@@ -11,7 +11,7 @@ Aprobador: Hernán / Junta Directiva
 
 # AD-002 — Principios del Sistema
 
-> AD-001 declaró *quién es* ADÁN — su identidad, su filosofía, lo que jamás romperá. Este documento traduce esa identidad en **reglas de sistema**: lo que debe ser verdad, siempre, en cualquier instancia del producto, independientemente de qué funcionalidad, vista o motor técnico la implemente. AD-001 responde por qué algo importa; AD-002 responde qué debe garantizarse para que siga importando en la práctica. Ninguna de las nueve reglas de este documento describe *cómo* se implementa (eso es Fase 2 — Arquitectura); todas describen *qué* debe cumplirse siempre, sin excepción, para que ADÁN siga siendo ADÁN.
+> AD-001 declaró *quién es* ADAN — su identidad, su filosofía, lo que jamás romperá. Este documento traduce esa identidad en **reglas de sistema**: lo que debe ser verdad, siempre, en cualquier instancia del producto, independientemente de qué funcionalidad, vista o motor técnico la implemente. AD-001 responde por qué algo importa; AD-002 responde qué debe garantizarse para que siga importando en la práctica. Ninguna de las nueve reglas de este documento describe *cómo* se implementa (eso es Fase 2 — Arquitectura); todas describen *qué* debe cumplirse siempre, sin excepción, para que ADAN siga siendo ADAN.
 
 **Nivel de contenido de este documento:** Principio Permanente en su totalidad. Las nueve reglas de la sección 1 no deberían necesitar una nueva versión en veinte años; su implementación técnica sí evolucionará constantemente, pero eso ocurre en otros documentos (AD-CMP, AD-ARQ), nunca aquí.
 
@@ -25,8 +25,8 @@ Cada regla incluye de dónde proviene en AD-001, qué garantiza, y qué escenari
 
 Ninguna afirmación relevante del sistema se sostiene sin datos, fuente o razonamiento verificable detrás.
 
-- **Deriva de:** AD-001 §2 (el problema que resuelve ADÁN), Filosofía #2 ("una decisión sin evidencia no es una decisión").
-- **Garantiza:** que cada score, cada recomendación y cada documento generado por ADÁN pueda defenderse ante la pregunta "¿de dónde sale esto?".
+- **Deriva de:** AD-001 §2 (el problema que resuelve ADAN), Filosofía #2 ("una decisión sin evidencia no es una decisión").
+- **Garantiza:** que cada score, cada recomendación y cada documento generado por ADAN pueda defenderse ante la pregunta "¿de dónde sale esto?".
 - **Violación de ejemplo:** un agente afirma "tu mercado objetivo tiene alta demanda" sin citar la fuente de esa afirmación (un dato de CSI, una entrevista, un benchmark). Si no puede citarse, no puede afirmarse.
 
 ### 1.2 Todo es trazable
@@ -58,7 +58,7 @@ Toda decisión registrada identifica quién la propuso y quién la aprobó — n
 Ninguna información generada por el sistema se descarta silenciosamente; lo que deja de ser relevante se archiva, nunca se borra.
 
 - **Deriva de:** AD-001, Visión a 25 Años ("el Gemelo Digital de las primeras empresas... debería seguir existiendo, seguir siendo consultable"), AD-001 §12 (principio inviolable #4).
-- **Garantiza:** que una empresa acompañada por ADÁN nunca pierda su historial, incluso si pivota, se pausa o cambia de fundador.
+- **Garantiza:** que una empresa acompañada por ADAN nunca pierda su historial, incluso si pivota, se pausa o cambia de fundador.
 - **Violación de ejemplo:** al reiniciar la estrategia de una empresa, se sobreescribe el historial de decisiones anteriores en vez de archivarlo y comenzar una nueva rama.
 
 ### 1.6 Toda IA debe justificar
@@ -85,7 +85,7 @@ Ninguna interacción relevante desaparece al cerrar una sesión; se resume, se c
 - **Deriva de:** AD-001 §1 ("nunca pierde contexto, nunca olvida una decisión anterior").
 - **Garantiza:** que el cliente nunca tenga que repetir información ya provista, sin importar cuánto tiempo haya pasado entre sesiones.
 - **Adelanto técnico:** la mecánica de resumen y jerarquía de contexto se especifica en AD-CMP-04; esta regla solo fija que debe existir, no cómo.
-- **Violación de ejemplo:** el cliente vuelve después de un mes y ADÁN le pregunta de nuevo información que ya había dado en el Nivel 1.
+- **Violación de ejemplo:** el cliente vuelve después de un mes y ADAN le pregunta de nuevo información que ya había dado en el Nivel 1.
 
 ### 1.9 Todo tiene un nivel de confianza declarado
 

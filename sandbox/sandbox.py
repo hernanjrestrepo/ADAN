@@ -1,4 +1,4 @@
-"""Sandbox de ejecución de código Python de ADÁN (WO-093).
+"""Sandbox de ejecución de código Python de ADAN (WO-093).
 
 Servicio aparte, sin dependencias fuera de la biblioteca estándar. Cada ejecución corre en un
 proceso hijo con:

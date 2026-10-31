@@ -4,7 +4,7 @@ Se muestra en la interfaz, al final de cada documento generado y en las respuest
 """
 
 AI_DISCLAIMER = (
-    "ADÁN es una inteligencia artificial. Sus análisis y recomendaciones no reemplazan "
+    "ADAN es una inteligencia artificial. Sus análisis y recomendaciones no reemplazan "
     "la asesoría de profesionales (legal, tributaria, financiera u otra), y Paradixe no se "
     "hace responsable por los resultados de las decisiones que se tomen con base en ellos."
 )

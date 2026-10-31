@@ -9,7 +9,7 @@ import { Field } from '../components/ui/Field'
 import { LoadingState } from '../components/ui/States'
 import { api, errorMessage } from '../lib/api'
 
-// Onboarding (AD-FUNC-06): una sola pregunta y directo a la conversación con ADÁN.
+// Onboarding (AD-FUNC-06): una sola pregunta y directo a la conversación con ADAN.
 // Si la persona vuelve a medio camino, se retoma desde el último paso real (§3.3).
 export default function WelcomePage() {
   const { user, logout } = useAuth()
@@ -62,7 +62,7 @@ export default function WelcomePage() {
       <div className="flex-1 flex items-center justify-center p-4">
       <main className="w-full max-w-lg">
         <div className="mb-8"><Logo size="lg" /></div>
-        <p className="text-adan-muted">Hola{firstName ? `, ${firstName}` : ''}. Soy ADÁN. Solo una pregunta antes de empezar.</p>
+        <p className="text-adan-muted">Hola{firstName ? `, ${firstName}` : ''}. Soy ADAN. Solo una pregunta antes de empezar.</p>
         <h1 className="text-3xl font-bold mt-2 mb-6">¿Desde dónde arrancamos?</h1>
         <form onSubmit={start} className="space-y-5">
           <fieldset>
@@ -83,7 +83,7 @@ export default function WelcomePage() {
           </fieldset>
           {stage === 'explore' ? (
             <p className="rounded-lg bg-adan-surface p-3 text-sm text-adan-muted">
-              No necesitas una idea. ADÁN te pregunta por tu experiencia, lo que sabes hacer, tu tiempo y tu capital, y te
+              No necesitas una idea. ADAN te pregunta por tu experiencia, lo que sabes hacer, tu tiempo y tu capital, y te
               propone oportunidades que te calcen. Si quieres, ponle un nombre a esta exploración.
             </p>
           ) : null}
@@ -91,7 +91,7 @@ export default function WelcomePage() {
             value={name} onChange={(e) => setName(e.target.value)} required={stage !== 'explore'} maxLength={255}
             placeholder={stage === 'explore' ? 'Ej.: Mi próxima empresa' : 'Ej.: Café Andino'} />
           <Alert message={error} />
-          <Button type="submit" block loading={starting} disabled={stage !== 'explore' && !name.trim()}>Empezar con ADÁN</Button>
+          <Button type="submit" block loading={starting} disabled={stage !== 'explore' && !name.trim()}>Empezar con ADAN</Button>
           <p className="text-xs text-adan-muted text-center">
             Lo demás (industria, país, equipo, finanzas) lo iremos completando juntos cuando haga falta.
           </p>

@@ -2,7 +2,7 @@
 Identificador: WO-000-ANEXO-MPI (no es un código AD-XXX — este anexo no cuenta entre los 58 documentos del árbol, es un estándar transversal que rige cómo se construyen todos ellos)
 Nombre: Meta-Principios de Ingeniería
 Versión: v1.0 — APROBADA Y CONGELADA. Superseded el mismo día por v2.0 — ver WO-000_ANEXO_Meta-Principios-de-Ingenieria_v2.0.md
-Estado: Aprobado y congelado. No editar en el sitio. El Board señaló que este anexo probablemente se reutilizará en otros productos de Paradixe, no solo en ADÁN — ver nota en Historial de cambios
+Estado: Aprobado y congelado. No editar en el sitio. El Board señaló que este anexo probablemente se reutilizará en otros productos de Paradixe, no solo en ADAN — ver nota en Historial de cambios
 Confidence Level: 60%
 Fecha de aprobación: 2026-07-14
 Responsable (autor del borrador): CC (Claude Code)
@@ -11,7 +11,7 @@ Aprobador: Hernán / Junta Directiva
 
 # WO-000 — Anexo: Meta-Principios de Ingeniería
 
-> AD-001 gobierna quién es ADÁN. AD-002 gobierna qué debe garantizar el sistema. Este anexo gobierna algo distinto de ambos: **cómo se toman las decisiones de construcción** —de documentación hoy, de arquitectura mañana— durante toda la vida del proyecto. No es un documento del Blueprint; es el criterio con el que se juzga cada documento del Blueprint, incluidos los que ya existen. Por eso vive como anexo transversal de la WO-000, no como un AD-XXX más.
+> AD-001 gobierna quién es ADAN. AD-002 gobierna qué debe garantizar el sistema. Este anexo gobierna algo distinto de ambos: **cómo se toman las decisiones de construcción** —de documentación hoy, de arquitectura mañana— durante toda la vida del proyecto. No es un documento del Blueprint; es el criterio con el que se juzga cada documento del Blueprint, incluidos los que ya existen. Por eso vive como anexo transversal de la WO-000, no como un AD-XXX más.
 
 **Nivel de contenido:** Principio Permanente en su totalidad — igual que AD-001 y AD-002, estos nueve principios deberían seguir siendo el criterio de decisión dentro de veinte años, independientemente de qué tecnología, equipo o modelo de negocio ejecute el proyecto en ese momento.
 
@@ -30,7 +30,7 @@ Ninguna decisión de dominio (qué es una entidad, qué significa un término, q
 
 Toda decisión de diseño de la propia WO-000 —qué documento escribir, qué estructura usar, qué término fijar— se justifica con evidencia (uso real, riesgo demostrado, contradicción encontrada), no con preferencia estética.
 
-- **Justificación:** este principio ya existe a nivel de *producto* (AD-001 Filosofía #2, AD-002 regla 1.1) — aquí se extiende explícitamente al *proceso de construir el producto*. No es un principio nuevo, es el mismo principio aplicado un nivel más arriba: si ADÁN debe evidencia a sus clientes, quienes construyen ADÁN se deben evidencia a sí mismos.
+- **Justificación:** este principio ya existe a nivel de *producto* (AD-001 Filosofía #2, AD-002 regla 1.1) — aquí se extiende explícitamente al *proceso de construir el producto*. No es un principio nuevo, es el mismo principio aplicado un nivel más arriba: si ADAN debe evidencia a sus clientes, quienes construyen ADAN se deben evidencia a sí mismos.
 - **Violación de ejemplo:** agregar un documento nuevo "porque parece más completo", sin poder señalar qué riesgo concreto mitiga.
 
 ### 3. La simplicidad prevalece sobre la sofisticación innecesaria
@@ -104,7 +104,7 @@ Esta sección existe deliberadamente para que el proceso de selección quede tan
 ## Documentos relacionados
 
 - Todo documento futuro de la WO-000 — este anexo es el criterio de juicio, no un documento a implementar.
-- AD-004 Product Evolution (primer documento redactado bajo este anexo — se apoya directamente en los principios 1, 5, 6, 7 y 9 para definir qué puede y no puede cambiar en ADÁN)
+- AD-004 Product Evolution (primer documento redactado bajo este anexo — se apoya directamente en los principios 1, 5, 6, 7 y 9 para definir qué puede y no puede cambiar en ADAN)
 - Toda la categoría Arquitectura (Fase 2) — el principio 9 aplica con mayor fuerza ahí que en cualquier otro lugar de la WO-000.
 
 ## Impacto sobre otros módulos
@@ -129,5 +129,5 @@ Ninguna decisión de negocio pendiente en este anexo.
 | Versión | Fecha | Cambio | Motivo |
 |---|---|---|---|
 | v1.0 | 2026-07-14 | Creación inicial: ocho meta-principios instruidos por el Board, más un noveno propuesto y justificado por Claude Code, más una sección explícita de tres principios considerados y descartados | Anexo transversal de la WO-000, solicitado por el Board antes de iniciar AD-004 |
-| v1.0 — Aprobada | 2026-07-14 | Aprobación formal del Board, sin cambios de contenido. Se congela. El Board señaló explícitamente que este anexo probablemente será reutilizado, sin modificación de fondo, como estándar de ingeniería para otros productos de Paradixe (EVA, ARQAI, Genexis, CSI) más allá de ADÁN — no se actúa sobre esa observación en esta versión, se deja registrada para cuando corresponda | Cierre del ciclo de revisión del Anexo |
+| v1.0 — Aprobada | 2026-07-14 | Aprobación formal del Board, sin cambios de contenido. Se congela. El Board señaló explícitamente que este anexo probablemente será reutilizado, sin modificación de fondo, como estándar de ingeniería para otros productos de Paradixe (EVA, ARQAI, Genexis, CSI) más allá de ADAN — no se actúa sobre esa observación en esta versión, se deja registrada para cuando corresponda | Cierre del ciclo de revisión del Anexo |
 | — | 2026-07-14 | **Superseded por v2.0** el mismo día: se agrega el Principio de Emergencia (décimo), motivado por dos rechazos reales de conceptos nuevos (Enterprise Genome, ciclo de vida de relaciones) que usaron ese razonamiento sin que todavía existiera como regla explícita. Este archivo v1.0 se conserva como evidencia histórica | Segundo caso de la disciplina de versionado sobre un documento ya aprobado (el primero fue AD-002 v1.0→v2.0) |

@@ -109,7 +109,7 @@ def expediente_status(company_id: str, item_id: str, body: StatusBody, db: Sessi
 @router.post("/{company_id}/expediente/{item_id}/preparar")
 async def expediente_prepare(company_id: str, item_id: str, db: Session = Depends(get_db), user: User = Depends(llm_user),
                              llm: LLMAdapter = Depends(get_llm)):
-    """ADÁN deja listo el trámite: documentos redactados, qué llevar, portal y paso a paso."""
+    """ADAN deja listo el trámite: documentos redactados, qué llevar, portal y paso a paso."""
     company, project = _ctx(db, company_id, user)
     exp = Expediente(llm, db)
     view = exp.view(project, company)
@@ -144,7 +144,7 @@ def expediente_doc(company_id: str, doc_id: str, db: Session = Depends(get_db), 
 @router.post("/{company_id}/expediente/{item_id}/documento")
 async def expediente_upload(company_id: str, item_id: str, file: UploadFile = File(...), db: Session = Depends(get_db),
                             user: User = Depends(llm_user), llm: LLMAdapter = Depends(get_llm)):
-    """El fundador carga el documento oficial (PDF o foto) y ADÁN lo lee y valida contra los datos de la empresa."""
+    """El fundador carga el documento oficial (PDF o foto) y ADAN lo lee y valida contra los datos de la empresa."""
     company, project = _ctx(db, company_id, user)
     exp = Expediente(llm, db)
     item = _item(exp.view(project, company)["pais"], item_id)
@@ -397,7 +397,7 @@ def update_ficha(company_id: str, body: FichaBody, db: Session = Depends(get_db)
 @router.post("/{company_id}/memoria/consolidar")
 async def consolidate_memory(company_id: str, db: Session = Depends(get_db), user: User = Depends(llm_user),
                              llm: LLMAdapter = Depends(get_llm)):
-    """ADÁN relee todas las conversaciones, recupera los acuerdos, quita contradicciones y arma la ficha."""
+    """ADAN relee todas las conversaciones, recupera los acuerdos, quita contradicciones y arma la ficha."""
     _, project = _ctx(db, company_id, user)
     with usage_scope(db, company_id, level=1):
         data = await memoria.consolidate(llm, db, project)
