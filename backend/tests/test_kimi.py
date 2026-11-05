@@ -71,4 +71,17 @@ async def test_router_uses_kimi_and_degrades_with_its_name(kimi_settings, monkey
     monkeypatch.setattr(KimiAdapter, "_http", lambda self: httpx.AsyncClient(transport=httpx.MockTransport(failing)))
     router = ModelRouter(FakeLLM(chat_replies=["local"]))
     r = await router.for_tier("standard").chat([LLMMessage("user", "u")])
-    assert r.content == "local" and r.metadata["degraded"] == "Kimi no disponible (HTTPStatusError)"
+    assert r.content == "local" and r.metadata["degraded"] == "Kimi no disponible (HTTP 400: sin saldo)"
+
+
+def test_failure_reason_shows_the_provider_message_or_the_error_type():
+    from app.ai.router import failure_reason
+
+    def status_error(status, body):
+        request = httpx.Request("POST", "https://x/chat/completions")
+        return httpx.HTTPStatusError("x", request=request, response=httpx.Response(status, json=body, request=request))
+
+    assert failure_reason(status_error(401, {"error": {"message": "Invalid API key"}})) == "HTTP 401: Invalid API key"
+    assert failure_reason(status_error(404, {"error": {"message": "No endpoints found for kimi-k2.6"}})).startswith("HTTP 404")
+    assert failure_reason(status_error(500, {})) == "HTTP 500"
+    assert failure_reason(RuntimeError("x")) == "RuntimeError"

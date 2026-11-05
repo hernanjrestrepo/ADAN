@@ -49,6 +49,24 @@ def tier_model(tier: str) -> str:
             "complex": settings.LLM_MODEL_COMPLEX}.get(tier, settings.DEFAULT_MODEL)
 
 
+def failure_reason(exc: Exception) -> str:
+    """Por qué falló el proveedor, para que el cliente lo vea en el aviso: con un error HTTP, el código y el
+    mensaje del proveedor (clave inválida, sin saldo, modelo que no existe...); si no, el tipo de error."""
+    response = getattr(exc, "response", None)
+    status = getattr(response, "status_code", None)
+    if status is None:
+        return type(exc).__name__
+    detail = ""
+    try:
+        body = response.json()
+        error = body.get("error") if isinstance(body, dict) else None
+        detail = (error.get("message") if isinstance(error, dict) else error) or ""
+    except Exception:  # cuerpo que no es JSON, o respuesta de streaming sin leer
+        pass
+    detail = " ".join(str(detail).split())[:140]
+    return f"HTTP {status}: {detail}" if detail else f"HTTP {status}"
+
+
 class TieredLLM(LLMAdapter):
     """Vista del enrutador fija en un nivel: se usa como cualquier LLMAdapter."""
 
@@ -70,7 +88,7 @@ class TieredLLM(LLMAdapter):
                 logger.warning("%s no disponible para %s (%s: %s): se usa Ollama", label, operation,
                                type(exc).__name__, str(exc)[:200])
                 response = await call(self.local, None)
-                response.metadata["degraded"] = f"{label} no disponible ({type(exc).__name__})"
+                response.metadata["degraded"] = f"{label} no disponible ({failure_reason(exc)})"
                 record_usage(response, self.tier, operation)
                 return response
         response = await call(self.local, None)
