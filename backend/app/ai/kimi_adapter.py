@@ -52,11 +52,13 @@ class KimiAdapter(LLMAdapter):
                 "temperature": KIMI_TEMPERATURE, "max_tokens": max_tokens * 2,
                 "thinking": {"type": "disabled"}, **extra}
 
+    def _headers(self) -> dict:
+        return {"Authorization": f"Bearer {self._api_key}"}
+
     async def _post(self, body: dict) -> dict:
         client = self._http()
         try:
-            r = await client.post(f"{self._base_url}/chat/completions", json=body,
-                                  headers={"Authorization": f"Bearer {self._api_key}"})
+            r = await client.post(f"{self._base_url}/chat/completions", json=body, headers=self._headers())
             r.raise_for_status()
             return r.json()
         finally:
@@ -102,7 +104,7 @@ class KimiAdapter(LLMAdapter):
         client = self._http()
         try:
             async with client.stream("POST", f"{self._base_url}/chat/completions", json=body,
-                                     headers={"Authorization": f"Bearer {self._api_key}"}) as r:
+                                     headers=self._headers()) as r:
                 r.raise_for_status()
                 async for line in r.aiter_lines():
                     if not line.startswith("data:"):
@@ -173,3 +175,38 @@ class KimiAdapter(LLMAdapter):
 
     def list_models(self) -> list[str]:
         return [self._default_model]
+
+
+class OpenRouterAdapter(KimiAdapter):
+    """OpenRouter: la misma API compatible con OpenAI, con otra dirección, otra clave y otro id de modelo.
+
+    Diferencias con Moonshot: el razonamiento se apaga con `reasoning` (no `thinking`), el costo real viene en
+    `usage.cost` y la búsqueda integrada `$web_search` no existe (el servicio responde sin buscar y lo dice).
+    """
+    chat_search = None  # sin búsqueda web integrada
+
+    def __init__(self, api_key: str | None = None, default_model: str | None = None,
+                 base_url: str | None = None, client: httpx.AsyncClient | None = None):
+        super().__init__(api_key=api_key or settings.OPENROUTER_API_KEY,
+                         default_model=default_model or settings.OPENROUTER_MODEL,
+                         base_url=base_url or settings.OPENROUTER_BASE_URL, client=client)
+
+    def _headers(self) -> dict:
+        # Identifican a la app en OpenRouter (opcionales)
+        return {**super()._headers(), "HTTP-Referer": "https://adan.run", "X-Title": "ADAN"}
+
+    def _body(self, messages, model, max_tokens, **extra) -> dict:
+        return {"model": model, "messages": [{"role": m.role, "content": m.content} for m in messages],
+                "temperature": KIMI_TEMPERATURE, "max_tokens": max_tokens * 2,
+                "reasoning": {"enabled": False}, "usage": {"include": True}, **extra}
+
+    def _to_response(self, data, model, start):
+        response = super()._to_response(data, model, start)
+        response.provider = "openrouter"
+        real = (data.get("usage") or {}).get("cost")
+        if isinstance(real, (int, float)):
+            response.cost_usd = float(real)
+        else:
+            response.cost_usd = (response.prompt_tokens * settings.OPENROUTER_PRICE_INPUT
+                                 + response.completion_tokens * settings.OPENROUTER_PRICE_OUTPUT) / 1_000_000
+        return response

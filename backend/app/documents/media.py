@@ -36,8 +36,16 @@ class MediaError(RuntimeError):
     pass
 
 
+def _vision() -> tuple[str, str, str, dict]:
+    """Dirección, clave, modelo y ajuste de razonamiento del proveedor que lee imágenes (Kimi u OpenRouter)."""
+    if settings.LLM_CLOUD_PROVIDER == "openrouter" or (not settings.KIMI_API_KEY and settings.OPENROUTER_API_KEY):
+        return (settings.OPENROUTER_BASE_URL, settings.OPENROUTER_API_KEY, settings.OPENROUTER_MODEL,
+                {"reasoning": {"enabled": False}})
+    return settings.KIMI_BASE_URL, settings.KIMI_API_KEY, settings.KIMI_MODEL, {"thinking": {"type": "disabled"}}
+
+
 def can_see() -> bool:
-    return bool(settings.KIMI_API_KEY)
+    return bool(_vision()[1])
 
 
 async def ocr_image(data: bytes, mime: str, prompt: str | None = None) -> str:
@@ -45,13 +53,14 @@ async def ocr_image(data: bytes, mime: str, prompt: str | None = None) -> str:
     if not can_see():
         raise MediaError("La lectura de imágenes no está disponible en este momento.")
     # Como en el adaptador: sin «thinking» Kimi k2.6 acepta temperatura distinta de 1
-    body = {"model": settings.KIMI_MODEL, "max_tokens": 3000, "temperature": KIMI_TEMPERATURE, "thinking": {"type": "disabled"},
+    base_url, api_key, model, reasoning = _vision()
+    body = {"model": model, "max_tokens": 3000, "temperature": KIMI_TEMPERATURE, **reasoning,
             "messages": [{"role": "user", "content": [
         {"type": "image_url", "image_url": {"url": f"data:{mime};base64,{base64.b64encode(data).decode()}"}},
         {"type": "text", "text": prompt or OCR_PROMPT}]}]}
     async with httpx.AsyncClient(timeout=120) as client:
-        r = await client.post(f"{settings.KIMI_BASE_URL.rstrip('/')}/chat/completions", json=body,
-                              headers={"Authorization": f"Bearer {settings.KIMI_API_KEY}"})
+        r = await client.post(f"{base_url.rstrip('/')}/chat/completions", json=body,
+                              headers={"Authorization": f"Bearer {api_key}"})
     if r.status_code != 200:
         raise MediaError(f"No se pudo leer la imagen (código {r.status_code}).")
     return (r.json()["choices"][0]["message"].get("content") or "").strip()

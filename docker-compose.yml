@@ -22,6 +22,10 @@ services:
       - KIMI_API_KEY=${KIMI_API_KEY:-}
       - KIMI_BASE_URL=${KIMI_BASE_URL:-https://api.moonshot.ai/v1}
       - KIMI_MODEL=${KIMI_MODEL:-kimi-k2.6}
+      # OpenRouter (LLM_CLOUD_PROVIDER=openrouter): el id del modelo es el de su catálogo
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY:-}
+      - OPENROUTER_BASE_URL=${OPENROUTER_BASE_URL:-https://openrouter.ai/api/v1}
+      - OPENROUTER_MODEL=${OPENROUTER_MODEL:-moonshotai/kimi-k2.6}
       - EMBEDDING_PROVIDER=ollama
       - EMBEDDING_MODEL=nomic-embed-text
       - LLM_PROVIDER=ollama

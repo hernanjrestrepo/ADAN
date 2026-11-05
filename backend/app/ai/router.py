@@ -13,7 +13,8 @@ Sin `ANTHROPIC_API_KEY`, o si Claude falla, la llamada cae a Ollama y la respues
 marcada como degradada (`metadata["degraded"]`): el servicio sigue, con menor calidad.
 
 Con `LLM_CLOUD_PROVIDER=kimi` (o `auto` sin clave de Anthropic) la nube es Kimi (`KIMI_MODEL`
-para `fast`, `standard` y `complex`), con la misma caída a Ollama si falla.
+para `fast`, `standard` y `complex`); con `openrouter` (o `auto` sin claves de Anthropic ni Kimi), OpenRouter
+(`OPENROUTER_MODEL`). En todos los casos, la misma caída a Ollama si falla.
 """
 from __future__ import annotations
 
@@ -31,20 +32,35 @@ EFFORT = {"fast": None, "standard": "low", "complex": "medium"}
 
 
 def cloud_provider() -> str | None:
-    """El proveedor de nube vigente: Claude o Kimi según `LLM_CLOUD_PROVIDER` y las claves que haya."""
+    """El proveedor de nube vigente según `LLM_CLOUD_PROVIDER` y las claves que haya.
+
+    En `auto`: Claude si hay clave de Anthropic; si no, Kimi; si no, OpenRouter.
+    """
     choice = settings.LLM_CLOUD_PROVIDER
-    if choice == "kimi" or (choice == "auto" and not settings.ANTHROPIC_API_KEY):
+    if choice == "openrouter":
+        return "openrouter" if settings.OPENROUTER_API_KEY else None
+    if choice == "kimi":
         return "kimi" if settings.KIMI_API_KEY else None
-    return "anthropic" if settings.ANTHROPIC_API_KEY else None
+    if choice == "anthropic":
+        return "anthropic" if settings.ANTHROPIC_API_KEY else None
+    if settings.ANTHROPIC_API_KEY:
+        return "anthropic"
+    if settings.KIMI_API_KEY:
+        return "kimi"
+    return "openrouter" if settings.OPENROUTER_API_KEY else None
 
 
-CLOUD_LABEL = {"anthropic": "Claude", "kimi": "Kimi", None: "Claude"}
-MISSING_KEY = {"kimi": "sin KIMI_API_KEY"}
+CLOUD_LABEL = {"anthropic": "Claude", "kimi": "Kimi", "openrouter": "OpenRouter", None: "Claude"}
+MISSING_KEY = {"kimi": "sin KIMI_API_KEY", "openrouter": "sin OPENROUTER_API_KEY"}
 
 
 def tier_model(tier: str) -> str:
-    if tier != "simple" and cloud_provider() == "kimi":
-        return settings.KIMI_MODEL
+    if tier != "simple":
+        provider = cloud_provider()
+        if provider == "kimi":
+            return settings.KIMI_MODEL
+        if provider == "openrouter":
+            return settings.OPENROUTER_MODEL
     return {"fast": settings.LLM_MODEL_FAST, "standard": settings.LLM_MODEL_STANDARD,
             "complex": settings.LLM_MODEL_COMPLEX}.get(tier, settings.DEFAULT_MODEL)
 
@@ -110,9 +126,9 @@ class TieredLLM(LLMAdapter):
             prompt, model=model or m, system=system, temperature=temperature, max_tokens=max_tokens))
 
     async def chat_search(self, messages, max_tokens=4096) -> LLMResponse:
-        """Responder investigando en internet (Kimi). Si el proveedor no sabe buscar o falla, responde sin
+        """Responder investigando en internet (Kimi; OpenRouter no tiene búsqueda integrada). Si el proveedor no sabe buscar o falla, responde sin
         búsqueda y lo deja dicho en `metadata["searched"] = False`: nunca se presenta como verificado."""
-        if self.claude is not None and hasattr(self.claude, "chat_search"):
+        if self.claude is not None and getattr(self.claude, "chat_search", None):
             try:
                 response = await self.claude.chat_search(messages, model=tier_model(self.tier), max_tokens=max_tokens)
                 record_usage(response, self.tier, "chat_search")
@@ -170,6 +186,9 @@ def _default_claude_factory():
     if provider == "kimi":
         from app.ai.kimi_adapter import KimiAdapter
         return lambda tier: KimiAdapter()
+    if provider == "openrouter":
+        from app.ai.kimi_adapter import OpenRouterAdapter
+        return lambda tier: OpenRouterAdapter()
 
     from app.ai.anthropic_adapter import AnthropicAdapter
 
