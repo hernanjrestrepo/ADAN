@@ -45,7 +45,7 @@ class Settings:
     # Enrutamiento de modelos (WO-099, AD-DEC-0002 decisión 3): Ollama para lo simple,
     # Anthropic según la complejidad. Sin ANTHROPIC_API_KEY todo va a Ollama (degradado).
     ANTHROPIC_API_KEY: str = os.getenv("ANTHROPIC_API_KEY", "")
-    # Proveedor de nube: "auto" (Claude si hay clave, si no Kimi), "anthropic" o "kimi"
+    # Proveedor de nube: "auto" (Claude si hay clave; si no Kimi; si no OpenRouter), "anthropic", "kimi" u "openrouter"
     LLM_CLOUD_PROVIDER: str = os.getenv("LLM_CLOUD_PROVIDER", "auto").strip().lower()
     # Kimi (Moonshot), compatible con OpenAI: la misma cuenta de Xmart Travel. Un solo modelo para todos los niveles.
     KIMI_API_KEY: str = os.getenv("KIMI_API_KEY", "")
@@ -53,6 +53,14 @@ class Settings:
     KIMI_MODEL: str = os.getenv("KIMI_MODEL", "kimi-k2.6")
     KIMI_PRICE_INPUT: float = float(os.getenv("KIMI_PRICE_INPUT", "0.95"))   # USD por millón (lista, oct-2026)
     KIMI_PRICE_OUTPUT: float = float(os.getenv("KIMI_PRICE_OUTPUT", "4.0"))
+    # OpenRouter (https://openrouter.ai): una sola clave para muchos modelos, con la API compatible con OpenAI.
+    # El id del modelo es el del catálogo de OpenRouter (p. ej. "moonshotai/kimi-k2.6"): revísalo allí.
+    OPENROUTER_API_KEY: str = os.getenv("OPENROUTER_API_KEY", "")
+    OPENROUTER_BASE_URL: str = os.getenv("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1")
+    OPENROUTER_MODEL: str = os.getenv("OPENROUTER_MODEL", "moonshotai/kimi-k2.6")
+    # Solo si la respuesta no trae el costo real (OpenRouter lo informa en `usage.cost`)
+    OPENROUTER_PRICE_INPUT: float = float(os.getenv("OPENROUTER_PRICE_INPUT", "0.95"))
+    OPENROUTER_PRICE_OUTPUT: float = float(os.getenv("OPENROUTER_PRICE_OUTPUT", "4.0"))
 
     # CSI (AD-000 §3): inteligencia externa del ecosistema Paradixe. Sin URL, ADAN no inventa datos
     # externos: solo verifica las fuentes que aporta el cliente (WO-108).
